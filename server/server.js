@@ -19,7 +19,7 @@ let dbReady = false;
 let initError = null;
 
 // ══════════════════════════════════════════════════════════════════════════
-// HEALTH CHECK DINÁMICO
+// HEALTH CHECK DINÁMICO (registrado ANTES de los error handlers)
 // ══════════════════════════════════════════════════════════════════════════
 // Responde 200 siempre para que Railway no mate el deploy.
 // Incluye el estado real de la DB para monitoreo.
@@ -33,6 +33,10 @@ app.get('/health', (req, res) => {
     ...(initError && { dbError: initError })
   });
 });
+
+// Registrar error handlers (404, Sequelize, validación, genérico)
+// DESPUÉS del health check para que /health no caiga en el 404
+app.registerErrorHandlers();
 
 // ══════════════════════════════════════════════════════════════════════════
 // INICIAR SERVIDOR INMEDIATAMENTE (antes de DB)

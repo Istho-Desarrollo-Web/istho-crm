@@ -103,21 +103,29 @@ app.use(process.env.API_PREFIX || '/api/v1', routes);
 
 // ==============================================
 // MANEJO DE ERRORES
+// Se registran en server.js DESPUÉS del health check
+// para que /health no caiga en el 404 catch-all
 // ==============================================
 
-// Ruta no encontrada (404)
-app.use((req, res, next) => {
-  logger.warn(`Ruta no encontrada: ${req.method} ${req.originalUrl}`);
-  return notFound(res, `Ruta no encontrada: ${req.method} ${req.originalUrl}`);
-});
+/**
+ * Registra los error handlers en el app.
+ * Llamar DESPUÉS de definir todas las rutas (incluido /health).
+ */
+app.registerErrorHandlers = () => {
+  // Ruta no encontrada (404)
+  app.use((req, res, next) => {
+    logger.warn(`Ruta no encontrada: ${req.method} ${req.originalUrl}`);
+    return notFound(res, `Ruta no encontrada: ${req.method} ${req.originalUrl}`);
+  });
 
-// Errores de Sequelize
-app.use(handleSequelizeError);
+  // Errores de Sequelize
+  app.use(handleSequelizeError);
 
-// Errores de validación
-app.use(handleValidationError);
+  // Errores de validación
+  app.use(handleValidationError);
 
-// Error genérico (último recurso)
-app.use(handleGenericError);
+  // Error genérico (último recurso)
+  app.use(handleGenericError);
+};
 
 module.exports = app;
