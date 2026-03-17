@@ -11,54 +11,62 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-// Configuración de la conexión
-const sequelize = new Sequelize(
-  process.env.DB_NAME || 'istho_crm',
-  process.env.DB_USER || 'root',
-  process.env.DB_PASSWORD || '',
-  {
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 3306,
-    dialect: 'mysql',
+// Opciones comunes de Sequelize
+const commonOptions = {
+  dialect: 'mysql',
 
-    // Logging: true en desarrollo, false en producción
-    logging: process.env.DB_LOGGING === 'true'
-      ? (msg) => console.log(`[DB] ${msg}`)
-      : false,
+  // Logging: true en desarrollo, false en producción
+  logging: process.env.DB_LOGGING === 'true'
+    ? (msg) => console.log(`[DB] ${msg}`)
+    : false,
 
-    // Pool de conexiones
-    pool: {
-      max: parseInt(process.env.DB_POOL_MAX) || 10,
-      min: parseInt(process.env.DB_POOL_MIN) || 0,
-      acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
-      idle: parseInt(process.env.DB_POOL_IDLE) || 10000
-    },
+  // Pool de conexiones
+  pool: {
+    max: parseInt(process.env.DB_POOL_MAX) || 10,
+    min: parseInt(process.env.DB_POOL_MIN) || 0,
+    acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
+    idle: parseInt(process.env.DB_POOL_IDLE) || 10000
+  },
 
-    // Timezone Colombia
-    timezone: '-05:00',
+  // Timezone Colombia
+  timezone: '-05:00',
 
-    // Opciones de dialecto
-    dialectOptions: {
-      // SSL para producción (Railway)
-      ...(process.env.NODE_ENV === 'production' && {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false
-        }
-      }),
-      // Formato de fechas
-      dateStrings: true,
-      typeCast: true
-    },
+  // Opciones de dialecto
+  dialectOptions: {
+    // SSL para producción (Railway)
+    ...(process.env.NODE_ENV === 'production' && {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    }),
+    // Formato de fechas
+    dateStrings: true,
+    typeCast: true
+  },
 
-    // Definiciones globales
-    define: {
-      timestamps: true,
-      underscored: true,  // snake_case en BD
-      freezeTableName: true
-    }
+  // Definiciones globales
+  define: {
+    timestamps: true,
+    underscored: true,  // snake_case en BD
+    freezeTableName: true
   }
-);
+};
+
+// Railway provee MYSQL_URL automáticamente al vincular un servicio MySQL
+// Formato: mysql://user:password@host:port/database
+const sequelize = process.env.MYSQL_URL
+  ? new Sequelize(process.env.MYSQL_URL, commonOptions)
+  : new Sequelize(
+      process.env.DB_NAME || 'istho_crm',
+      process.env.DB_USER || 'root',
+      process.env.DB_PASSWORD || '',
+      {
+        ...commonOptions,
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 3306,
+      }
+    );
 
 /**
  * Probar conexión a la base de datos
