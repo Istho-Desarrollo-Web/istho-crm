@@ -1,0 +1,95 @@
+{{!--
+  ISTHO CRM - Plantilla de Bienvenida (v2.0)
+  Variables: nombre, username, email, rol, passwordTemporal, urlLogin, cliente, invitadoPor, esReenvio
+--}}
+
+<div style="padding: 0;">
+  {{#if esReenvio}}
+  <h2 style="color: #1e293b; margin: 0 0 20px 0; font-size: 22px; font-weight: 700;">
+    Reenvio de Credenciales
+  </h2>
+  {{else}}
+  <h2 style="color: #1e293b; margin: 0 0 20px 0; font-size: 22px; font-weight: 700;">
+    Bienvenido a ISTHO CRM
+  </h2>
+  {{/if}}
+
+  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 20px 0;">
+    Hola <strong style="color: #1e293b;">{{nombre}}</strong>,
+  </p>
+
+  {{#if esReenvio}}
+  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 25px 0;">
+    Te reenviamos tus credenciales de acceso al sistema ISTHO CRM{{#if cliente}} para el portal de <strong>{{cliente}}</strong>{{/if}}.
+  </p>
+  {{else}}
+  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 25px 0;">
+    Se ha creado una cuenta para ti en el sistema ISTHO CRM{{#if cliente}} para el portal de clientes de <strong>{{cliente}}</strong>{{/if}}. A continuacion encontraras tus credenciales de acceso:
+  </p>
+  {{/if}}
+
+  <!-- Credenciales -->
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin: 25px 0;">
+    <tr>
+      <td style="padding: 20px 25px; border-bottom: 1px solid #e2e8f0;">
+        <p style="margin: 0 0 3px 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Usuario</p>
+        <p style="margin: 0; color: #1e293b; font-size: 16px; font-weight: 600; font-family: 'Courier New', monospace;">{{username}}</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 20px 25px; border-bottom: 1px solid #e2e8f0;">
+        <p style="margin: 0 0 3px 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Email</p>
+        <p style="margin: 0; color: #1e293b; font-size: 15px;">{{email}}</p>
+      </td>
+    </tr>
+    {{#if passwordTemporal}}
+    <tr>
+      <td style="padding: 20px 25px; border-bottom: 1px solid #e2e8f0; background-color: #fff7ed;">
+        <p style="margin: 0 0 3px 0; color: #c2410c; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Contrasena Temporal</p>
+        <p style="margin: 0; color: #c2410c; font-size: 18px; font-weight: 700; font-family: 'Courier New', monospace; letter-spacing: 2px;">{{passwordTemporal}}</p>
+      </td>
+    </tr>
+    {{/if}}
+    <tr>
+      <td style="padding: 15px 25px;">
+        <p style="margin: 0 0 3px 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Rol</p>
+        <span style="display: inline-block; background-color: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">{{rol}}</span>
+      </td>
+    </tr>
+  </table>
+
+  {{#if passwordTemporal}}
+  <div class="info-box warning">
+    <strong>Importante:</strong> Esta contrasena es temporal. Por seguridad, deberas cambiarla en tu primer inicio de sesion.
+  </div>
+  {{/if}}
+
+  {{#if cliente}}
+  <div class="info-box info">
+    <p style="margin: 0 0 10px 0; font-weight: 600;">Tu acceso al portal incluye:</p>
+    <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+      <li>Consulta de inventario en tiempo real</li>
+      <li>Seguimiento de despachos y entregas</li>
+      <li>Descarga de documentos y cumplidos</li>
+      <li>Reportes y estadisticas de operaciones</li>
+    </ul>
+  </div>
+  {{/if}}
+
+  <!-- Boton -->
+  <div style="text-align: center; margin: 30px 0;">
+    <a href="{{urlLogin}}" class="btn">
+      {{#if cliente}}Acceder al Portal{{else}}Iniciar Sesion{{/if}}
+    </a>
+  </div>
+
+  {{#if invitadoPor}}
+  <p style="color: #64748b; font-size: 13px; text-align: center; margin: 20px 0 0 0;">
+    Invitacion enviada por: <strong>{{invitadoPor}}</strong>
+  </p>
+  {{/if}}
+
+  <p style="color: #94a3b8; font-size: 12px; line-height: 1.5; margin: 25px 0 0 0; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+    Si no solicitaste esta cuenta o tienes alguna pregunta, contacta al administrador del sistema.
+  </p>
+</div>

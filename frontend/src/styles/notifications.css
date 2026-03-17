@@ -1,0 +1,254 @@
+/**
+ * ============================================================================
+ * ISTHO CRM - Estilos de Notificaciones Toast
+ * ============================================================================
+ * Estilos personalizados para notistack que coinciden con el diseño del CRM.
+ * 
+ * INSTRUCCIONES:
+ * Importar este archivo en tu index.css o App.css:
+ * @import './notifications.css';
+ * 
+ * O copiar el contenido directamente en tu archivo CSS principal.
+ * 
+ * @author Coordinación TI ISTHO
+ * @version 1.0.0
+ * @date Enero 2026
+ */
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* CONTENEDOR DE NOTIFICACIONES */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+.notistack-SnackbarContainer {
+  margin-top: 80px !important; /* Espacio para el header flotante */
+  z-index: 9999 !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* ESTILOS BASE PARA TODOS LOS TOAST */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+.notistack-MuiContent,
+.notistack-MuiContent-success,
+.notistack-MuiContent-error,
+.notistack-MuiContent-warning,
+.notistack-MuiContent-info,
+.notistack-MuiContent-default {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  min-width: 300px !important;
+  max-width: 450px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* TOAST SUCCESS - Verde Esmeralda */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+.notistack-MuiContent-success {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 
+    0 10px 40px -10px rgba(5, 150, 105, 0.5),
+    0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.notistack-MuiContent-success::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to right, rgba(255,255,255,0.1), transparent);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* TOAST ERROR - Rojo */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+.notistack-MuiContent-error {
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 
+    0 10px 40px -10px rgba(220, 38, 38, 0.5),
+    0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* TOAST WARNING - Naranja ISTHO */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+.notistack-MuiContent-warning {
+  background: linear-gradient(135deg, #E65100 0%, #D84315 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 
+    0 10px 40px -10px rgba(230, 81, 0, 0.5),
+    0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* TOAST INFO - Azul */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+.notistack-MuiContent-info {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 
+    0 10px 40px -10px rgba(59, 130, 246, 0.5),
+    0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* TOAST DEFAULT - Gris ISTHO */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+.notistack-MuiContent-default {
+  background: linear-gradient(135deg, #455A64 0%, #37474F 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 
+    0 10px 40px -10px rgba(69, 90, 100, 0.5),
+    0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* ICONOS DE LOS TOAST */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+.notistack-MuiContent svg {
+  width: 20px !important;
+  height: 20px !important;
+  margin-right: 8px !important;
+  flex-shrink: 0 !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* BOTÓN DE CERRAR */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+.notistack-MuiContent button,
+.notistack-MuiContent [class*="closeButton"] {
+  color: rgba(255, 255, 255, 0.8) !important;
+  padding: 4px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.notistack-MuiContent button:hover,
+.notistack-MuiContent [class*="closeButton"]:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* ANIMACIONES */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+/* Animación de entrada desde la derecha */
+.notistack-Snackbar {
+  animation: toastSlideIn 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards !important;
+}
+
+@keyframes toastSlideIn {
+  0% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Animación de salida */
+.notistack-Snackbar-exiting {
+  animation: toastSlideOut 0.25s cubic-bezier(0.06, 0.71, 0.55, 1) forwards !important;
+}
+
+@keyframes toastSlideOut {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* EFECTO HOVER EN TOAST */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+.notistack-MuiContent:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* RESPONSIVE */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 600px) {
+  .notistack-SnackbarContainer {
+    left: 16px !important;
+    right: 16px !important;
+    bottom: auto !important;
+    top: 80px !important;
+  }
+  
+  .notistack-MuiContent,
+  .notistack-MuiContent-success,
+  .notistack-MuiContent-error,
+  .notistack-MuiContent-warning,
+  .notistack-MuiContent-info,
+  .notistack-MuiContent-default {
+    min-width: auto !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    font-size: 13px !important;
+    padding: 10px 14px !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* VARIANTE ESPECIAL: INVENTARIO (Naranja ISTHO destacado) */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+.toast-inventory {
+  background: linear-gradient(135deg, #E65100 0%, #BF360C 100%) !important;
+  border-left: 4px solid #FF6D00 !important;
+  box-shadow: 
+    0 10px 40px -10px rgba(230, 81, 0, 0.6),
+    0 4px 6px -2px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* DARK MODE SUPPORT (opcional) */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: dark) {
+  .notistack-MuiContent-success {
+    background: linear-gradient(135deg, #047857 0%, #065F46 100%) !important;
+  }
+  
+  .notistack-MuiContent-error {
+    background: linear-gradient(135deg, #B91C1C 0%, #991B1B 100%) !important;
+  }
+  
+  .notistack-MuiContent-warning {
+    background: linear-gradient(135deg, #D84315 0%, #BF360C 100%) !important;
+  }
+  
+  .notistack-MuiContent-info {
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+  }
+}

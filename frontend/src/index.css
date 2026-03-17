@@ -1,0 +1,113 @@
+@import "tailwindcss";
+@import "./styles/notifications.css";
+
+@variant dark (&:is(.dark *));
+
+@theme {
+  --color-orange-50: #fff7ed;
+  --color-orange-100: #ffedd5;
+  --color-orange-200: #fed7aa;
+  --color-orange-300: #fdba74;
+  --color-orange-400: #fb923c;
+  --color-orange-500: #f97316;
+  --color-orange-600: #ea580c;
+  --color-orange-700: #c2410c;
+  --color-orange-800: #9a3412;
+  --color-orange-900: #7c2d12;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300;
+}
+
+/* ==========================================================================
+   GLOBAL DARK MODE OVERRIDES
+   ==========================================================================
+   These rules automatically convert hardcoded light-mode Tailwind utilities 
+   to their dark-mode semantic equivalents across all modules when .dark is active.
+*/
+.dark .bg-white { background-color: var(--color-slate-800); }
+.dark .bg-slate-50 { background-color: var(--color-slate-900); }
+.dark .bg-slate-100 { background-color: var(--color-slate-700); }
+
+.dark .text-slate-900 { color: var(--color-slate-50); }
+.dark .text-slate-800 { color: var(--color-slate-100); }
+.dark .text-slate-700 { color: var(--color-slate-200); }
+.dark .text-slate-600 { color: var(--color-slate-300); }
+.dark .text-slate-500 { color: var(--color-slate-400); }
+
+.dark .text-gray-900 { color: var(--color-gray-50); }
+.dark .text-gray-800 { color: var(--color-gray-100); }
+.dark .text-gray-700 { color: var(--color-gray-200); }
+.dark .text-gray-600 { color: var(--color-gray-300); }
+.dark .text-gray-500 { color: var(--color-gray-400); }
+
+.dark .border-gray-50 { border-color: color-mix(in srgb, var(--color-slate-700) 50%, transparent); }
+.dark .border-gray-100 { border-color: var(--color-slate-700); }
+.dark .border-gray-200 { border-color: var(--color-slate-600); }
+
+.dark .border-slate-100 { border-color: var(--color-slate-700); }
+.dark .border-slate-200 { border-color: var(--color-slate-600); }
+
+.dark .bg-gradient-to-br.from-slate-50.to-slate-100 {
+  background-image: linear-gradient(to bottom right, var(--color-slate-900), var(--color-slate-950));
+}
+
+.dark .hover\:bg-slate-50:hover { background-color: var(--color-slate-700); }
+.dark .hover\:bg-slate-100:hover { background-color: var(--color-slate-600); }
+.dark .hover\:text-slate-600:hover { color: var(--color-slate-200); }
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-zoomIn {
+  animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
