@@ -235,8 +235,9 @@ export const NotificacionesProvider = ({ children }) => {
   }, [user, isAuthenticated, fetchAll, fetchCount]);
 
   // Escuchar notificaciones en tiempo real via WebSocket
+  const socketConnected = socket?.connected;
   useEffect(() => {
-    if (!socket?.on) return;
+    if (!socket?.on || !socketConnected) return;
 
     const handleNuevaNotificacion = (data) => {
       if (!mountedRef.current) return;
@@ -265,7 +266,7 @@ export const NotificacionesProvider = ({ children }) => {
     return () => {
       socket.off('notificacion:nueva', handleNuevaNotificacion);
     };
-  }, [socket]);
+  }, [socket, socketConnected]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <NotificacionesContext.Provider

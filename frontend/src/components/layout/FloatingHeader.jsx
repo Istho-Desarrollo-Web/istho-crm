@@ -766,15 +766,13 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
             <UserCircle className="w-4 h-4" />
             Mi Perfil
           </button>
-          {!['conductor', 'cliente'].includes(user?.rol) && (
-            <button
-              onClick={() => handleNavigation('/configuracion')}
-              className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
-            >
-              <Settings className="w-4 h-4" />
-              Configuración
-            </button>
-          )}
+          <button
+            onClick={() => handleNavigation('/configuracion')}
+            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          >
+            <Settings className="w-4 h-4" />
+            Configuración
+          </button>
           <button
             onClick={onToggleDark}
             className="flex items-center justify-between w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
@@ -903,15 +901,13 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
               Ver Perfil
             </button>
 
-            {user?.rol === 'admin' && (
-              <button
-                onClick={() => handleNavigate('/configuracion')}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-              >
-                <Settings className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                Configuración
-              </button>
-            )}
+            <button
+              onClick={() => handleNavigate('/configuracion')}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              <Settings className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+              Configuración
+            </button>
 
             <button
               onClick={() => handleNavigate('/notificaciones')}
@@ -1163,7 +1159,7 @@ const FloatingHeader = () => {
 
                   {/* Dropdown de notificaciones */}
                   {isNotifOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-96 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50">
+                    <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-[384px] bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50 -mr-2 sm:mr-0">
                       {/* Header */}
                       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-700">
                         <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">Notificaciones</h3>

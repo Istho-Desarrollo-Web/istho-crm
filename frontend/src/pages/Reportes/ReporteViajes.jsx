@@ -1,35 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Truck, MapPin, CheckCircle, XCircle, DollarSign, FileSpreadsheet, Download, Users, Weight } from 'lucide-react';
+import { Truck, CheckCircle, DollarSign, FileSpreadsheet, Download, Calendar } from 'lucide-react';
 import { KpiCard } from '../../components/common';
 import { BarChart, PieChart } from '../../components/charts';
-import ReportFilters from '../../components/common/ReportFilters';
 import reportesService from '../../api/reportes.service';
-import useNotification from '../../hooks/useNotification';
 import logoNegro from '../../assets/logo-negro.png';
 import logoBlanco from '../../assets/logo-blanco.png';
 
 const ReporteViajes = () => {
   const navigate = useNavigate();
-  const { error: showError } = useNotification();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  const [filtros, setFiltros] = useState({});
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = {};
+      if (fechaDesde) params.fecha_desde = fechaDesde;
+      if (fechaHasta) params.fecha_hasta = fechaHasta;
+      const response = await reportesService.getViajes(params);
+      setData(response.data || response);
+    } catch (err) {
+      console.error('Error cargando reporte viajes:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [fechaDesde, fechaHasta]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await reportesService.getViajes(filtros);
-        setData(response.data || response);
-      } catch (err) {
-        showError('Error al cargar reporte de viajes');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
-  }, [filtros]);
+  }, [fetchData]);
 
   const handleExport = (format) => {
     const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
@@ -61,7 +63,18 @@ const ReporteViajes = () => {
         </div>
 
         {/* Filters */}
-        <ReportFilters onChange={setFiltros} showCliente={false} />
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-slate-400" />
+              <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 min-w-0" placeholder="Desde" />
+            </div>
+            <div className="flex-1 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-slate-400" />
+              <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 min-w-0" placeholder="Hasta" />
+            </div>
+          </div>
+        </div>
 
         {/* KPIs - 4 cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
