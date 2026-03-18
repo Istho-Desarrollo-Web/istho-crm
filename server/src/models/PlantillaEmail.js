@@ -165,13 +165,23 @@ module.exports = (sequelize) => {
     try {
       const fs = require('fs');
       const path = require('path');
+
+      // 1. Logo personalizado subido (uploads - runtime)
       const configPath = path.join(__dirname, '../../uploads/assets/logo-firma.json');
       if (fs.existsSync(configPath)) {
         return JSON.parse(fs.readFileSync(configPath, 'utf8')).dataUri;
       }
+
+      // 2. Logo en uploads (runtime)
       const logoPath = path.join(__dirname, '../../uploads/assets/logo.png');
       if (fs.existsSync(logoPath)) {
         return `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`;
+      }
+
+      // 3. Logo por defecto incluido en el repo (persiste en deploy)
+      const defaultLogoPath = path.join(__dirname, '../assets/logo-default.png');
+      if (fs.existsSync(defaultLogoPath)) {
+        return `data:image/png;base64,${fs.readFileSync(defaultLogoPath).toString('base64')}`;
       }
     } catch { /* ignore */ }
     return null;

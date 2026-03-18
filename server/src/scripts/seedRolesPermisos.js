@@ -129,6 +129,10 @@ const PERMISOS_CATALOGO = [
   { modulo: 'movimientos', accion: 'editar', descripcion: 'Modificar movimientos', grupo: 'Viajes' },
   { modulo: 'movimientos', accion: 'eliminar', descripcion: 'Eliminar movimientos', grupo: 'Viajes' },
   { modulo: 'movimientos', accion: 'aprobar', descripcion: 'Aprobar/rechazar movimientos', grupo: 'Viajes' },
+
+  // Perfil (disponible para todos los roles)
+  { modulo: 'perfil', accion: 'ver', descripcion: 'Ver y editar perfil propio', grupo: 'General' },
+  { modulo: 'perfil', accion: 'cambiar_password', descripcion: 'Cambiar contraseña propia', grupo: 'General' },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -155,6 +159,7 @@ const PERMISOS_POR_ROL = {
     viajes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
     caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'eliminar', 'exportar'],
     movimientos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar'],
+    perfil: ['ver', 'cambiar_password'],
   },
 
   financiera: {
@@ -166,6 +171,7 @@ const PERMISOS_POR_ROL = {
     viajes: ['ver', 'exportar'],
     caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'exportar'],
     movimientos: ['ver', 'crear', 'editar', 'aprobar'],
+    perfil: ['ver', 'cambiar_password'],
   },
 
   operador: {
@@ -178,6 +184,7 @@ const PERMISOS_POR_ROL = {
     auditoria: ['ver'],
     kardex: ['ver'],
     notificaciones: ['ver'],
+    perfil: ['ver', 'cambiar_password'],
   },
 
   conductor: {
@@ -187,6 +194,7 @@ const PERMISOS_POR_ROL = {
     viajes: ['ver', 'crear', 'editar'],
     caja_menor: ['ver'],
     movimientos: ['ver', 'crear', 'editar'],
+    perfil: ['ver', 'cambiar_password'],
   },
 
   cliente: {
@@ -198,6 +206,7 @@ const PERMISOS_POR_ROL = {
     auditoria: ['ver'],
     kardex: ['ver'],
     notificaciones: ['ver'],
+    perfil: ['ver', 'cambiar_password'],
   },
 };
 

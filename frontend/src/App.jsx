@@ -166,8 +166,11 @@ const snackbarConfig = {
     horizontal: 'center',
   },
   preventDuplicate: true,
-  dense: false,
-  style: { zIndex: 9999 },
+  dense: true,
+  style: { zIndex: 99999 },
+  classes: {
+    containerRoot: 'notistack-SnackbarContainer',
+  },
 };
 
 // ════════════════════════════════════════════════════════════════════════════
