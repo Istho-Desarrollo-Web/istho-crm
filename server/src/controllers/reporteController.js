@@ -1197,6 +1197,78 @@ const exportarCajaMenorExcel = async (req, res) => {
 };
 
 // =============================================
+// EXPORTAR LISTADO DE CAJAS MENORES A EXCEL
+// =============================================
+
+const exportarCajasMenoresExcel = async (req, res) => {
+  try {
+    const where = {};
+    if (req.query.estado && req.query.estado !== 'todos') where.estado = req.query.estado;
+    if (req.query.conductor_id) where.conductor_id = req.query.conductor_id;
+    if (req.user.esConductor) where.conductor_id = req.user.id;
+
+    const cajas = await CajaMenor.findAll({
+      where,
+      include: [
+        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] },
+      ],
+      order: [['created_at', 'DESC']],
+    });
+
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Cajas Menores');
+
+    sheet.columns = [
+      { header: 'Número', key: 'numero', width: 14 },
+      { header: 'Conductor', key: 'conductor', width: 25 },
+      { header: 'Estado', key: 'estado', width: 12 },
+      { header: 'Saldo Inicial', key: 'saldo_inicial', width: 15 },
+      { header: 'Saldo Trasladado', key: 'saldo_trasladado', width: 15 },
+      { header: 'Total Ingresos', key: 'total_ingresos', width: 15 },
+      { header: 'Total Egresos', key: 'total_egresos', width: 15 },
+      { header: 'Saldo Actual', key: 'saldo_actual', width: 15 },
+      { header: 'Fecha Apertura', key: 'fecha_apertura', width: 14 },
+      { header: 'Fecha Cierre', key: 'fecha_cierre', width: 14 },
+      { header: 'Creado Por', key: 'creador', width: 25 },
+    ];
+
+    sheet.getRow(1).eachCell(cell => {
+      cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } };
+    });
+
+    cajas.forEach(c => {
+      sheet.addRow({
+        numero: c.numero,
+        conductor: c.conductor?.nombre_completo || '',
+        estado: c.estado,
+        saldo_inicial: parseFloat(c.saldo_inicial) || 0,
+        saldo_trasladado: parseFloat(c.saldo_trasladado) || 0,
+        total_ingresos: parseFloat(c.total_ingresos) || 0,
+        total_egresos: parseFloat(c.total_egresos) || 0,
+        saldo_actual: parseFloat(c.saldo_actual) || 0,
+        fecha_apertura: c.fecha_apertura || '',
+        fecha_cierre: c.fecha_cierre || '',
+        creador: c.creador?.nombre_completo || '',
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const filename = `cajas_menores_${new Date().toISOString().split('T')[0]}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+
+    logger.info('Excel cajas menores generado:', { registros: cajas.length });
+  } catch (error) {
+    logger.error('Error al exportar cajas menores Excel:', { message: error.message });
+    return serverError(res, 'Error al generar reporte de cajas menores', error);
+  }
+};
+
+// =============================================
 // EXPORTAR VEHICULOS A EXCEL
 // =============================================
 
@@ -1566,6 +1638,7 @@ module.exports = {
   exportarViajesExcel,
   exportarViajesCsv,
   exportarCajaMenorExcel,
+  exportarCajasMenoresExcel,
   exportarVehiculosExcel,
   exportarVehiculosCsv,
   exportarMovimientosExcel,

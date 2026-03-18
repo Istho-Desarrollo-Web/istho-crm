@@ -64,8 +64,8 @@ const REPORTES_FINANCIEROS = [
     descripcion: 'Historial de viajes, rutas, conductores y estados',
     icon: Truck,
     color: 'bg-blue-500',
-    exportOnly: true,
-    exportEndpoints: { excel: '/reportes/viajes/excel' },
+    exportEndpoints: { excel: '/reportes/viajes/excel', csv: '/reportes/viajes/csv' },
+    navigateTo: '/viajes/viajes',
   },
   {
     id: 'cajas-menores',
@@ -73,6 +73,7 @@ const REPORTES_FINANCIEROS = [
     descripcion: 'Resumen de cajas menores, saldos y movimientos',
     icon: Wallet,
     color: 'bg-amber-500',
+    exportEndpoints: { excel: '/reportes/cajas-menores/excel' },
     navigateTo: '/viajes/cajas-menores',
   },
   {
@@ -81,6 +82,7 @@ const REPORTES_FINANCIEROS = [
     descripcion: 'Detalle de egresos e ingresos por conductor y concepto',
     icon: Receipt,
     color: 'bg-orange-500',
+    exportEndpoints: { excel: '/reportes/movimientos/excel', csv: '/reportes/movimientos/csv' },
     navigateTo: '/viajes/movimientos',
   },
 ];
@@ -136,15 +138,22 @@ const ReporteCard = ({ reporte, canExport }) => {
   const handleView = () => {
     if (reporte.navigateTo) {
       navigate(reporte.navigateTo);
-    } else if (!reporte.exportOnly) {
+    } else {
       navigate(`/reportes/${reporte.id}`);
     }
   };
 
-  const handleExport = () => {
+  const handleExportExcel = () => {
     const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
     const token = localStorage.getItem('istho_token');
     window.open(`${baseUrl}${reporte.exportEndpoints.excel}?token=${token}`, '_blank');
+  };
+
+  const handleExportCsv = () => {
+    if (!reporte.exportEndpoints?.csv) return;
+    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+    const token = localStorage.getItem('istho_token');
+    window.open(`${baseUrl}${reporte.exportEndpoints.csv}?token=${token}`, '_blank');
   };
 
   return (
@@ -158,30 +167,44 @@ const ReporteCard = ({ reporte, canExport }) => {
       <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{reporte.titulo}</h3>
       <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">{reporte.descripcion}</p>
 
-      <div className="flex items-center gap-2">
-        {/* Boton Ver / Navegar (no mostrar si es solo exportacion sin navigateTo) */}
-        {(!reporte.exportOnly || reporte.navigateTo) && (
-          <Button
-            variant="primary"
-            size="sm"
-            icon={Eye}
-            onClick={handleView}
-            fullWidth
-          >
-            {reporte.navigateTo ? 'Ver Modulo' : 'Ver Reporte'}
-          </Button>
-        )}
-        {/* Boton exportar Excel */}
-        {canExport && reporte.exportEndpoints?.excel && (
-          <Button
-            variant={reporte.exportOnly && !reporte.navigateTo ? 'primary' : 'outline'}
-            size="sm"
-            icon={Download}
-            onClick={handleExport}
-            fullWidth={reporte.exportOnly && !reporte.navigateTo}
-          >
-            Exportar Excel
-          </Button>
+      <div className="space-y-2">
+        {/* Boton Ver Modulo / Ver Reporte */}
+        <Button
+          variant="primary"
+          size="sm"
+          icon={Eye}
+          onClick={handleView}
+          fullWidth
+        >
+          {reporte.navigateTo ? 'Ver Modulo' : 'Ver Reporte'}
+        </Button>
+
+        {/* Botones de exportacion */}
+        {canExport && reporte.exportEndpoints && (
+          <div className="flex items-center gap-2">
+            {reporte.exportEndpoints.excel && (
+              <Button
+                variant="outline"
+                size="sm"
+                icon={Download}
+                onClick={handleExportExcel}
+                fullWidth
+              >
+                Excel
+              </Button>
+            )}
+            {reporte.exportEndpoints.csv && (
+              <Button
+                variant="outline"
+                size="sm"
+                icon={Download}
+                onClick={handleExportCsv}
+                fullWidth
+              >
+                CSV
+              </Button>
+            )}
+          </div>
         )}
       </div>
     </div>

@@ -53,6 +53,7 @@ router.get('/clientes/pdf', requiereRolMinimo('operador'), reporteController.exp
 // =============================================
 
 router.get('/viajes/excel', reporteController.exportarViajesExcel);
+router.get('/cajas-menores/excel', reporteController.exportarCajasMenoresExcel);
 router.get('/cajas-menores/:id/excel', reporteController.exportarCajaMenorExcel);
 
 // =============================================

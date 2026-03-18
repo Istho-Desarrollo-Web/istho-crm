@@ -634,7 +634,7 @@ const MovimientosList = () => {
             </div>
 
             {/* Tipo Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl overflow-x-auto flex-nowrap whitespace-nowrap">
               {[
                 { key: 'todos', label: 'Todos' },
                 { key: 'ingreso', label: 'Ingresos' },
@@ -655,7 +655,7 @@ const MovimientosList = () => {
             </div>
 
             {/* Aprobación Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl overflow-x-auto flex-nowrap whitespace-nowrap">
               {[
                 { key: 'todos', label: 'Todos' },
                 { key: 'pendiente', label: 'Pendientes' },

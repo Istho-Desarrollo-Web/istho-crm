@@ -214,12 +214,12 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
     try {
       const payload = isEditing
         ? {
-            conductor_id: formData.conductor_id,
+            conductor_id: formData.conductor_id ? Number(formData.conductor_id) : null,
             saldo_inicial: parseFloat(formData.saldo_inicial) || 0,
-            observaciones: formData.observaciones,
+            observaciones: formData.observaciones || null,
           }
         : {
-            conductor_id: formData.conductor_id,
+            conductor_id: formData.conductor_id ? Number(formData.conductor_id) : null,
             saldo_inicial: parseFloat(formData.saldo_inicial) || 0,
             caja_anterior_id: formData.caja_anterior_id ? Number(formData.caja_anterior_id) : null,
             observaciones: formData.observaciones || null,

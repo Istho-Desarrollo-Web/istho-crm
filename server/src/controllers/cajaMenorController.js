@@ -205,6 +205,11 @@ const actualizar = async (req, res) => {
     const datosAnteriores = caja.toJSON();
     await caja.update(datos, { transaction });
 
+    // Recalcular saldo si cambió el saldo inicial
+    if (datos.saldo_inicial !== undefined) {
+      await caja.recalcularSaldo(transaction);
+    }
+
     await Auditoria.registrar({
       tabla: 'cajas_menores',
       registro_id: caja.id,

@@ -453,10 +453,13 @@ const PerfilUsuario = () => {
     try {
       const response = await usuarioService.subirAvatar(file);
       if (response.success) {
-        // Agregar cache-buster para forzar recarga de la imagen
+        // Actualizar avatar en contexto
         const avatarUrl = response.data.avatar_url;
-        const bustUrl = avatarUrl.includes('?') ? `${avatarUrl}&t=${Date.now()}` : `${avatarUrl}?t=${Date.now()}`;
-        updateUser({ avatar_url: bustUrl });
+        // Solo agregar cache-buster para URLs de servidor, NO para data: URIs (base64)
+        const finalUrl = avatarUrl.startsWith('data:')
+          ? avatarUrl
+          : avatarUrl.includes('?') ? `${avatarUrl}&t=${Date.now()}` : `${avatarUrl}?t=${Date.now()}`;
+        updateUser({ avatar_url: finalUrl });
         success('Foto de perfil actualizada');
       } else {
         throw new Error(response.message);

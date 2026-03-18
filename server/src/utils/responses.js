@@ -13,11 +13,13 @@
  * @param {*} data - Datos a enviar
  * @param {number} statusCode - Código HTTP (default: 200)
  */
-const success = (res, data, statusCode = 200) => {
-  return res.status(statusCode).json({
-    success: true,
-    data
-  });
+const success = (res, data, statusCodeOrMessage = 200) => {
+  // Si el tercer argumento es un string, es un mensaje (no un status code)
+  const isMessage = typeof statusCodeOrMessage === 'string';
+  const statusCode = isMessage ? 200 : statusCodeOrMessage;
+  const response = { success: true, data };
+  if (isMessage) response.message = statusCodeOrMessage;
+  return res.status(statusCode).json(response);
 };
 
 /**

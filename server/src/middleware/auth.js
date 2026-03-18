@@ -210,7 +210,17 @@ const verificarToken = async (req, res, next) => {
           return permisos[modulo][accion] === true;
         }
         // Usuario interno: verificar permisos dinámicos de BD por rol_id
-        if (usuario.rol_id) return rolTienePermiso(usuario.rol_id, modulo, accion);
+        if (usuario.rol_id && rolTienePermiso(usuario.rol_id, modulo, accion)) {
+          return true;
+        }
+        // Fallback: buscar rol por código en cache si rol_id no tiene permisos
+        const rolCodigo = usuario.rol;
+        if (rolCodigo) {
+          const rolEnCache = Object.values(_rolesCache).find(r => r.codigo === rolCodigo);
+          if (rolEnCache && rolTienePermiso(rolEnCache.id, modulo, accion)) {
+            return true;
+          }
+        }
         return false;
       }
     };

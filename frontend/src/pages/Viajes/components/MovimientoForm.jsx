@@ -519,22 +519,52 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                 />
               </InputField>
 
-              {/* Soporte existente (al editar) */}
-              {soporteExistente && !soporte && (
+              {/* Soporte existente (al editar/ver) */}
+              {soporteExistente && !soporte && (() => {
+                const soporteUrl = `${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || ''}${soporteExistente.url}`;
+                const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(soporteExistente.nombre || soporteExistente.url);
+                return (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Soporte actual
+                    </label>
+                    {isImage && (
+                      <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900">
+                        <img
+                          src={soporteUrl}
+                          alt="Soporte"
+                          className="w-full max-h-48 object-contain"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl">
+                      <FileText className="h-5 w-5 text-slate-400 flex-shrink-0" />
+                      <a
+                        href={soporteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline truncate"
+                      >
+                        {soporteExistente.nombre}
+                      </a>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Vista previa del nuevo archivo seleccionado */}
+              {soporte && soporte.type?.startsWith('image/') && (
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Soporte actual
+                    Vista previa
                   </label>
-                  <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl">
-                    <FileText className="h-5 w-5 text-slate-400 flex-shrink-0" />
-                    <a
-                      href={`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || ''}${soporteExistente.url}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline truncate"
-                    >
-                      {soporteExistente.nombre}
-                    </a>
+                  <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900">
+                    <img
+                      src={URL.createObjectURL(soporte)}
+                      alt="Vista previa"
+                      className="w-full max-h-48 object-contain"
+                    />
                   </div>
                 </div>
               )}
