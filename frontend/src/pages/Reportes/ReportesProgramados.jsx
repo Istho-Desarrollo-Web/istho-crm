@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import reportesService from '../../api/reportes.service';
+import { formatDateShort } from '../../utils/formatDate';
 
 // ════════════════════════════════════════════════════════════════
 // FRECUENCIAS PREDEFINIDAS
@@ -327,7 +328,7 @@ const ReportesProgramados = () => {
                         {r.destinatarios?.split(',').length || 0} destinatario(s)
                       </span>
                       {r.ultima_ejecucion && (
-                        <span>Último envío: {new Date(r.ultima_ejecucion).toLocaleDateString('es-CO')}</span>
+                        <span>Último envío: {formatDateShort(r.ultima_ejecucion)}</span>
                       )}
                     </div>
                   </div>

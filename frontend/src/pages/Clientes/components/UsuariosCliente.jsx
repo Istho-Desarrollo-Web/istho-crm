@@ -44,6 +44,7 @@ import usuarioClienteService from '../../../api/usuarioCliente.service';
 
 // Hooks
 import useNotification from '../../../hooks/useNotification';
+import { formatDate } from '../../../../utils/formatDate';
 
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTE FILA DE USUARIO
@@ -131,10 +132,7 @@ const UsuarioRow = ({
         </div>
         <span className={`text-sm ${tieneAccesoReciente() ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
           {usuario.ultimo_acceso
-            ? new Date(usuario.ultimo_acceso).toLocaleDateString('es-CO', {
-                day: 'numeric',
-                month: 'short'
-              })
+            ? formatDate(usuario.ultimo_acceso, { day: 'numeric', month: 'short' })
             : 'Nunca'
           }
         </span>

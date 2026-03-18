@@ -56,6 +56,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSnackbar } from 'notistack';
 import useNotification from '../../hooks/useNotification';
 import { useNotificaciones } from '../../context/NotificacionesContext';
+import { formatDateShort as formatDateSafe } from '../../utils/formatDate';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -71,7 +72,7 @@ const getTimeAgo = (dateStr) => {
   if (hours < 24) return `Hace ${hours}h`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `Hace ${days}d`;
-  return new Date(dateStr).toLocaleDateString('es-CO');
+  return formatDateSafe(dateStr);
 };
 
 // ════════════════════════════════════════════════════════════════════════════

@@ -52,6 +52,7 @@ import DespachoForm from './components/DespachoForm';
 import { useDespachoDetail } from '../../hooks/useDespachos';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
+import { formatDateShort } from '../../utils/formatDate';
 
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTES INTERNOS
@@ -674,7 +675,7 @@ const DespachoDetail = () => {
                               <div>
                                 <p className="font-medium text-slate-800">{doc.nombre}</p>
                                 <p className="text-xs text-slate-500">
-                                  {doc.tipo_documento} • {new Date(doc.created_at).toLocaleDateString('es-CO')}
+                                  {doc.tipo_documento} • {formatDateShort(doc.created_at)}
                                 </p>
                               </div>
                             </div>
@@ -740,10 +741,7 @@ const DespachoDetail = () => {
                 <div className="flex justify-between">
                   <span className="text-slate-500">Fecha creación</span>
                   <span className="text-slate-800">
-                    {despacho.created_at
-                      ? new Date(despacho.created_at).toLocaleDateString('es-CO')
-                      : '-'
-                    }
+                    {formatDateShort(despacho.created_at)}
                   </span>
                 </div>
                 {despacho.cerrador && (

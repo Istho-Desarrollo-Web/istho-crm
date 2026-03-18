@@ -116,6 +116,32 @@ const emitToAll = (event, data) => {
 const getConnectedCount = () => userSockets.size;
 
 /**
+ * Obtener IDs de usuarios conectados
+ */
+const getConnectedUserIds = () => Array.from(userSockets.keys()).map(Number);
+
+/**
+ * Forzar desconexión de un usuario (cierra todos sus sockets)
+ */
+const disconnectUser = (userId) => {
+  if (!io) return false;
+  const sockets = userSockets.get(userId) || userSockets.get(String(userId));
+  if (!sockets || sockets.size === 0) return false;
+
+  sockets.forEach(socketId => {
+    const socket = io.sockets.sockets.get(socketId);
+    if (socket) {
+      socket.emit('session:cerrada', { mensaje: 'Tu sesión fue cerrada por un administrador' });
+      socket.disconnect(true);
+    }
+  });
+
+  userSockets.delete(userId);
+  userSockets.delete(String(userId));
+  return true;
+};
+
+/**
  * Obtener instancia de IO
  */
 const getIO = () => io;
@@ -126,5 +152,7 @@ module.exports = {
   emitToUsers,
   emitToAll,
   getConnectedCount,
+  getConnectedUserIds,
+  disconnectUser,
   getIO,
 };

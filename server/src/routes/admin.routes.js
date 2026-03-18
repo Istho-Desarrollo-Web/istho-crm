@@ -48,4 +48,11 @@ router.delete('/roles/:id', adminController.eliminarRol);
 
 router.get('/permisos', adminController.listarPermisos);
 
+// =============================================
+// SESIONES ACTIVAS
+// =============================================
+
+router.get('/sesiones', adminController.listarSesionesActivas);
+router.post('/sesiones/:id/cerrar', adminController.cerrarSesion);
+
 module.exports = router;

@@ -39,6 +39,7 @@ import { Button, StatusChip, FilterDropdown, KpiCard, ConfirmDialog } from '../.
 import useInventario from '../../hooks/useInventario';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
+import { formatDateShort } from '../../utils/formatDate';
 
 // ════════════════════════════════════════════════════════════════════════════
 // CONSTANTES
@@ -133,7 +134,7 @@ const AlertaCard = ({ alerta, onView, onAtender, onDescartar, canAtender }) => {
                 />
               </div>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                {alerta.created_at ? new Date(alerta.created_at).toLocaleDateString('es-CO') : '-'}
+                {formatDateShort(alerta.created_at)}
               </p>
             </div>
           </div>
@@ -172,7 +173,7 @@ const AlertaCard = ({ alerta, onView, onAtender, onDescartar, canAtender }) => {
           {alerta.tipo === 'vencimiento' && fechaVencimiento && (
             <div className="flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400">
               <Calendar className="w-4 h-4" />
-              Vence: {new Date(fechaVencimiento).toLocaleDateString('es-CO')}
+              Vence: {formatDateShort(fechaVencimiento)}
               {diasRestantes !== undefined && (
                 <span className="text-xs px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 rounded-full">
                   {diasRestantes} días

@@ -18,6 +18,7 @@ import { cajasMenoresService } from '../../api/viajes.service';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
+import { formatDateShort } from '../../utils/formatDate';
 import {
   Wallet,
   Search,
@@ -148,12 +149,14 @@ const RowActions = ({ caja, onView, onEdit, onClose, onDelete }) => {
           Ver detalle
         </MenuItem>
 
-        <ProtectedAction module="caja_menor" action="editar">
-          <MenuItem onClick={() => { onEdit(caja); setAnchorEl(null); }}>
-            <Pencil className="w-4 h-4" />
-            Editar
-          </MenuItem>
-        </ProtectedAction>
+        {caja.estado !== 'cerrada' && (
+          <ProtectedAction module="caja_menor" action="editar">
+            <MenuItem onClick={() => { onEdit(caja); setAnchorEl(null); }}>
+              <Pencil className="w-4 h-4" />
+              Editar
+            </MenuItem>
+          </ProtectedAction>
+        )}
 
         {caja.estado === 'abierta' && (
           <ProtectedAction module="caja_menor" action="cerrar">
@@ -167,15 +170,17 @@ const RowActions = ({ caja, onView, onEdit, onClose, onDelete }) => {
           </ProtectedAction>
         )}
 
-        <ProtectedAction module="caja_menor" action="eliminar">
-          <MenuItem
-            onClick={() => { onDelete(caja); setAnchorEl(null); }}
-            sx={{ color: isDark ? '#f87171 !important' : '#dc2626 !important', '&:hover': { backgroundColor: isDark ? '#450a0a !important' : '#fef2f2 !important' } }}
-          >
-            <Trash2 className="w-4 h-4" />
-            Eliminar
-          </MenuItem>
-        </ProtectedAction>
+        {caja.estado !== 'cerrada' && (
+          <ProtectedAction module="caja_menor" action="eliminar">
+            <MenuItem
+              onClick={() => { onDelete(caja); setAnchorEl(null); }}
+              sx={{ color: isDark ? '#f87171 !important' : '#dc2626 !important', '&:hover': { backgroundColor: isDark ? '#450a0a !important' : '#fef2f2 !important' } }}
+            >
+              <Trash2 className="w-4 h-4" />
+              Eliminar
+            </MenuItem>
+          </ProtectedAction>
+        )}
       </Menu>
     </>
   );
@@ -515,7 +520,7 @@ const CajaMenorList = () => {
                               {caja.numero || `CM-${caja.id}`}
                             </p>
                             <p className="text-xs text-slate-400 dark:text-slate-500">
-                              Apertura: {caja.fecha_apertura ? new Date(caja.fecha_apertura).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                              Apertura: {formatDateShort(caja.fecha_apertura)}
                             </p>
                           </div>
                         </div>
@@ -581,7 +586,7 @@ const CajaMenorList = () => {
                       <div>
                         <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{caja.numero || `CM-${caja.id}`}</p>
                         <p className="text-xs text-slate-400">
-                          {caja.fecha_apertura ? new Date(caja.fecha_apertura).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                          {formatDateShort(caja.fecha_apertura)}
                         </p>
                       </div>
                     </div>

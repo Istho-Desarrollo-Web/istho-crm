@@ -28,6 +28,8 @@ import {
 } from 'lucide-react';
 
 import { KpiCard, Button } from '../../components/common';
+import { formatDate } from '../../utils/formatDate';
+import { getGreeting } from '../../utils/greeting';
 import { cajasMenoresService, movimientosService, vehiculosService } from '../../api/viajes.service';
 import { useAuth } from '../../context/AuthContext';
 import useNotification from '../../hooks/useNotification';
@@ -133,14 +135,7 @@ const formatCOP = (valor) => {
   return `$ ${num.toLocaleString('es-CO')}`;
 };
 
-const formatFecha = (fecha) => {
-  if (!fecha) return '-';
-  return new Date(fecha).toLocaleDateString('es-CO', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-};
+const formatFecha = (fecha) => formatDate(fecha);
 
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
@@ -326,7 +321,7 @@ const DashboardFinanciera = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">
-              Bienvenido, {user?.nombre_completo?.split(' ')[0] || 'Usuario'}
+              {getGreeting()}, {user?.nombre_completo?.split(' ')[0] || 'Usuario'}
             </h1>
             <p className="text-slate-500 mt-1 dark:text-slate-400">
               Panel Financiero

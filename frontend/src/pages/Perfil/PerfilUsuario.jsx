@@ -45,6 +45,7 @@ import { Button, Modal, StatusChip } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import useNotification from '../../hooks/useNotification';
 import authService from '../../api/auth.service';
+import { formatDate } from '../../utils/formatDate';
 import usuarioService from '../../api/usuarioService';
 import { getServerFileUrl } from '../../api/client';
 
@@ -691,7 +692,7 @@ const PerfilUsuario = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <StatCardMini icon={Activity} label="Rol" value={rolLabels[user.rol] || user.rol} color="bg-blue-500" />
           <StatCardMini icon={Building2} label={isPortalUser ? 'Cliente' : 'Departamento'} value={isPortalUser ? (clienteInfo?.razon_social?.split(' ')[0] || '-') : (user.departamento || 'Operaciones')} color="bg-emerald-500" />
-          <StatCardMini icon={Clock} label="Último Acceso" value={user.ultimo_acceso ? new Date(user.ultimo_acceso).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }) : 'N/A'} color="bg-violet-500" />
+          <StatCardMini icon={Clock} label="Último Acceso" value={user.ultimo_acceso ? formatDate(user.ultimo_acceso, { day: 'numeric', month: 'short' }) : 'N/A'} color="bg-violet-500" />
           <StatCardMini icon={Award} label="Días Activo" value={diasActivo} color="bg-amber-500" />
         </div>
 
@@ -810,9 +811,7 @@ const PerfilUsuario = () => {
                             <p className="text-slate-500 dark:text-slate-400">Fecha de Registro</p>
                             <p className="font-medium text-slate-800 dark:text-slate-100">
                               {user.created_at
-                                ? new Date(user.created_at).toLocaleDateString('es-CO', {
-                                    year: 'numeric', month: 'long', day: 'numeric'
-                                  })
+                                ? formatDate(user.created_at, { year: 'numeric', month: 'long', day: 'numeric' })
                                 : 'No disponible'
                               }
                             </p>

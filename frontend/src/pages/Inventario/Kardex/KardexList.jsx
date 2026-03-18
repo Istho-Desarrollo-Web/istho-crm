@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { Pagination } from '../../../components/common';
 import { exportToCsv } from '../../../utils/exportCsv';
+import { formatDate } from '../../../utils/formatDate';
 
 // ════════════════════════════════════════════════════════════════════════════
 // CONFIGURACIÓN DE ESTADOS
@@ -393,7 +394,7 @@ const KardexList = () => {
                       <td className="py-4 px-4 hidden lg:table-cell">
                         <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
                           <Calendar className="w-4 h-4 text-slate-400" />
-                          {new Date(item.fecha_ingreso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          {formatDate(item.fecha_ingreso)}
                         </div>
                       </td>
                       <td className="py-4 px-4" onClick={(e) => e.stopPropagation()}>

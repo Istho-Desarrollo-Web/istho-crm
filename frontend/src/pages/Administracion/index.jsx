@@ -8,13 +8,15 @@
  */
 
 import { useState } from 'react';
-import { Users, Shield, Settings } from 'lucide-react';
+import { Users, Shield, Settings, Wifi } from 'lucide-react';
 import UsuariosList from './UsuariosList';
 import RolesList from './RolesList';
+import SesionesActivas from './SesionesActivas';
 
 const TABS = [
   { id: 'usuarios', label: 'Usuarios', icon: Users },
   { id: 'roles', label: 'Roles y Permisos', icon: Shield },
+  { id: 'sesiones', label: 'Sesiones Activas', icon: Wifi },
 ];
 
 const Administracion = () => {
@@ -67,6 +69,7 @@ const Administracion = () => {
         {/* Content */}
         {activeTab === 'usuarios' && <UsuariosList />}
         {activeTab === 'roles' && <RolesList />}
+        {activeTab === 'sesiones' && <SesionesActivas />}
 
         {/* Footer */}
         <footer className="text-center py-6 mt-8 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">

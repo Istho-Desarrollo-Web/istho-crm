@@ -17,7 +17,7 @@ const SocketContext = createContext(null);
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const [connected, setConnected] = useState(false);
   const socketRef = useRef(null);
   const listenersRef = useRef(new Map());
@@ -68,6 +68,12 @@ export const SocketProvider = ({ children }) => {
       if (import.meta.env.DEV) {
         console.warn('[WS] Error de conexión:', err.message);
       }
+    });
+
+    // Sesión cerrada por admin
+    socket.on('session:cerrada', (data) => {
+      alert(data?.mensaje || 'Tu sesión fue cerrada por un administrador');
+      logout();
     });
 
     socketRef.current = socket;

@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 
 import { Button } from '../../components/common';
+import { formatDateShort } from '../../utils/formatDate';
+import { getGreeting } from '../../utils/greeting';
 import { cajasMenoresService, viajesService, movimientosService } from '../../api/viajes.service';
 import { useAuth } from '../../context/AuthContext';
 import { getServerFileUrl } from '../../api/client';
@@ -198,7 +200,7 @@ const DashboardConductor = () => {
         )}
         <div className="min-w-0">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">
-            Hola, {nombre}
+            {getGreeting()}, {nombre}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5" />
@@ -359,7 +361,7 @@ const DashboardConductor = () => {
                       {viaje.fecha && (
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          {new Date(viaje.fecha).toLocaleDateString('es-CO')}
+                          {formatDateShort(viaje.fecha)}
                         </span>
                       )}
                       {viaje.destino && (

@@ -54,6 +54,7 @@ import UsuariosCliente from './components/UsuariosCliente'; // ← NUEVO
 import useClientes from '../../hooks/useClientes';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
+import { formatDateShort } from '../../utils/formatDate';
 
 // Services
 import inventarioService from '../../api/inventario.service';
@@ -795,10 +796,8 @@ const ClienteDetail = () => {
                       <span className="text-slate-500 dark:text-slate-400 w-32">Cliente desde:</span>
                       <span className="text-slate-800 dark:text-slate-200">
                         {cliente.fecha_inicio_relacion
-                          ? new Date(cliente.fecha_inicio_relacion).toLocaleDateString('es-CO')
-                          : cliente.created_at
-                            ? new Date(cliente.created_at).toLocaleDateString('es-CO')
-                            : '-'
+                          ? formatDateShort(cliente.fecha_inicio_relacion)
+                          : formatDateShort(cliente.created_at)
                         }
                       </span>
                     </div>

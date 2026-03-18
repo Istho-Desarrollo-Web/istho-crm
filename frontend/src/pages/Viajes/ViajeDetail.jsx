@@ -41,6 +41,7 @@ import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
 import MovimientoForm from './components/MovimientoForm';
+import { formatDateShort } from '../../utils/formatDate';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -62,15 +63,7 @@ const formatCOP = (value) => {
 /**
  * Formato fecha corta DD/MM/YYYY
  */
-const formatFecha = (fecha) => {
-  if (!fecha) return '-';
-  const d = new Date(fecha);
-  return d.toLocaleDateString('es-CO', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-};
+const formatFecha = (fecha) => formatDateShort(fecha);
 
 /**
  * Mapa de etiquetas de conceptos (mismos que MovimientosList)

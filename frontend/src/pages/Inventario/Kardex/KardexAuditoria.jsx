@@ -47,6 +47,7 @@ import auditoriasService from '../../../api/auditorias.service';
 import { useAlert } from '../../../context/AlertContext';
 import { useAuth } from '../../../context/AuthContext';
 import CierreAuditoriaModal from '../../../components/common/CierreAuditoriaModal';
+import { formatDateShort } from '../../../utils/formatDate';
 
 // URL base del servidor para archivos estaticos (sin /api/v1)
 const SERVER_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/api\/v1\/?$/, '');
@@ -945,7 +946,7 @@ const KardexAuditoria = () => {
                   <span>•</span>
                   <span>Kardex</span>
                   <span>•</span>
-                  <span>{new Date(kardexData.fecha_ingreso).toLocaleDateString('es-CO')}</span>
+                  <span>{formatDateShort(kardexData.fecha_ingreso)}</span>
                 </div>
               </div>
             </div>

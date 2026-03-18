@@ -32,6 +32,7 @@ import EnviarReporteModal from '../../components/common/EnviarReporteModal';
 import reportesService from '../../api/reportes.service';
 import clientesService from '../../api/clientes.service';
 import { useSnackbar } from 'notistack';
+import { formatDateShort } from '../../utils/formatDate';
 
 // ============================================
 // MAIN COMPONENT
@@ -315,9 +316,7 @@ const ReporteClientes = () => {
                       </td>
                       <td className="py-3 px-4 text-center">
                         <span className="text-sm text-slate-500 dark:text-slate-400">
-                          {(cliente.created_at || cliente.createdAt)
-                            ? new Date(cliente.created_at || cliente.createdAt).toLocaleDateString('es-CO')
-                            : '-'}
+                          {formatDateShort(cliente.created_at || cliente.createdAt)}
                         </span>
                       </td>
                     </tr>

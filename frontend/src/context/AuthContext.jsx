@@ -386,27 +386,26 @@ export const AuthProvider = ({ children }) => {
   const hasPermission = useCallback((modulo, accion) => {
     if (!state.user) return false;
 
-    // Admin siempre tiene todos los permisos
-    if (state.user.permisos?.esAdmin) return true;
+    const rol = state.user.rol || 'cliente';
 
-    // Intentar primero con permisos dinámicos del backend
+    // Admin siempre tiene todos los permisos
+    if (rol === 'admin' || rol === 'administrador' || state.user.permisos?.esAdmin) return true;
+
+    // Intentar con permisos dinámicos del backend
     const backendPermisos = state.user.permisos?.permisos;
     if (backendPermisos && typeof backendPermisos === 'object') {
-      // Formato backend: { modulo: ['accion1', 'accion2'] } o { modulo: { accion: true } }
       const moduloPermisos = backendPermisos[modulo];
-      if (Array.isArray(moduloPermisos)) {
-        return moduloPermisos.includes(accion);
+      if (Array.isArray(moduloPermisos) && moduloPermisos.includes(accion)) {
+        return true;
       }
-      if (moduloPermisos && typeof moduloPermisos === 'object') {
-        return moduloPermisos[accion] === true;
+      if (moduloPermisos && typeof moduloPermisos === 'object' && moduloPermisos[accion] === true) {
+        return true;
       }
     }
 
-    // Fallback a permisos hardcodeados por rol
-    const rol = state.user.rol || 'cliente';
-    const permisos = PERMISOS_POR_ROL[rol] || PERMISOS_POR_ROL.cliente;
-
-    return permisos[modulo]?.includes(accion) || false;
+    // Fallback a permisos hardcodeados por rol (siempre como respaldo)
+    const permisosFallback = PERMISOS_POR_ROL[rol] || PERMISOS_POR_ROL.cliente;
+    return permisosFallback[modulo]?.includes(accion) || false;
   }, [state.user]);
   
   /**

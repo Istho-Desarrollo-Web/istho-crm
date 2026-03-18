@@ -47,6 +47,7 @@ import auditoriasService from '../../../api/auditorias.service';
 import { useAlert } from '../../../context/AlertContext';
 import { useAuth } from '../../../context/AuthContext';
 import CierreAuditoriaModal from '../../../components/common/CierreAuditoriaModal';
+import { formatDateShort } from '../../../utils/formatDate';
 
 // URL base del servidor para archivos estáticos (sin /api/v1)
 const SERVER_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/api\/v1\/?$/, '');
@@ -953,7 +954,7 @@ const EntradaAuditoria = () => {
                   <span>•</span>
                   <span>{entradaData.tipo_documento}</span>
                   <span>•</span>
-                  <span>{new Date(entradaData.fecha_ingreso).toLocaleDateString('es-CO')}</span>
+                  <span>{formatDateShort(entradaData.fecha_ingreso)}</span>
                 </div>
               </div>
             </div>

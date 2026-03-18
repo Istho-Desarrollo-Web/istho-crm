@@ -13,6 +13,7 @@ const { Usuario, Rol, Permiso, RolPermiso, Cliente, Auditoria, sequelize } = req
 const { success, successMessage, created, serverError, notFound, badRequest, forbidden } = require('../utils/responses');
 const { invalidarCachePermisos } = require('../middleware/auth');
 const logger = require('../utils/logger');
+const socketService = require('../services/socketService');
 const { enviarBienvenidaUsuarioCliente, enviarBienvenida, enviarReseteoPassword } = require('../services/emailService');
 const { getClientIP } = require('../utils/helpers');
 
@@ -781,4 +782,83 @@ module.exports = {
   eliminarRol,
   // Permisos
   listarPermisos,
+  // Sesiones
+  listarSesionesActivas,
+  cerrarSesion,
 };
+
+// =============================================
+// SESIONES ACTIVAS
+// =============================================
+
+/**
+ * GET /admin/sesiones
+ * Listar usuarios con sesión activa (conectados por WebSocket)
+ */
+async function listarSesionesActivas(req, res) {
+  try {
+    const connectedIds = socketService.getConnectedUserIds();
+
+    if (connectedIds.length === 0) {
+      return success(res, []);
+    }
+
+    const usuarios = await Usuario.findAll({
+      where: { id: { [Op.in]: connectedIds } },
+      attributes: ['id', 'username', 'nombre', 'apellido', 'nombre_completo', 'email', 'rol', 'avatar_url', 'ultimo_acceso'],
+    });
+
+    const data = usuarios.map(u => ({
+      id: u.id,
+      username: u.username,
+      nombre_completo: u.nombre_completo || `${u.nombre || ''} ${u.apellido || ''}`.trim() || u.username,
+      email: u.email,
+      rol: u.rol,
+      avatar_url: u.avatar_url,
+      ultimo_acceso: u.ultimo_acceso,
+    }));
+
+    return success(res, data);
+  } catch (error) {
+    logger.error('Error al listar sesiones activas:', { message: error.message });
+    return serverError(res, 'Error al obtener sesiones activas', error);
+  }
+}
+
+/**
+ * POST /admin/sesiones/:id/cerrar
+ * Forzar cierre de sesión de un usuario
+ */
+async function cerrarSesion(req, res) {
+  try {
+    const { id } = req.params;
+
+    if (Number(id) === req.user.id) {
+      return badRequest(res, 'No puedes cerrar tu propia sesión desde aquí');
+    }
+
+    const usuario = await Usuario.findByPk(id, { attributes: ['id', 'username', 'nombre_completo'] });
+    if (!usuario) {
+      return notFound(res, 'Usuario no encontrado');
+    }
+
+    const disconnected = socketService.disconnectUser(Number(id));
+
+    await Auditoria.registrar({
+      tabla: 'usuarios',
+      registro_id: usuario.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_nuevos: { accion: 'cerrar_sesion' },
+      ip_address: req.ip,
+      descripcion: `Sesión de ${usuario.nombre_completo || usuario.username} cerrada forzosamente por admin`,
+    });
+
+    logger.info('Sesión cerrada por admin:', { targetUser: usuario.username, admin: req.user.username });
+    return successMessage(res, `Sesión de ${usuario.nombre_completo || usuario.username} cerrada`, { disconnected });
+  } catch (error) {
+    logger.error('Error al cerrar sesión:', { message: error.message });
+    return serverError(res, 'Error al cerrar sesión', error);
+  }
+}

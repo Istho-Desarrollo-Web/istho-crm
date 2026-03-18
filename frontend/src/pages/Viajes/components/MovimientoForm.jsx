@@ -156,7 +156,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
     fetchCajas();
   }, [open, isConductor, user?.id]);
 
-  // Cargar viajes cuando cambia la caja menor
+  // Cargar viajes del conductor (asociados a la caja o propios)
   useEffect(() => {
     if (!formData.caja_menor_id) {
       setViajes([]);
@@ -165,7 +165,14 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
 
     const fetchViajes = async () => {
       try {
-        const response = await viajesService.getAll({ caja_menor_id: formData.caja_menor_id });
+        // Cargar viajes de la caja + viajes del conductor sin caja asignada
+        const params = {};
+        if (isConductor) {
+          params.conductor_id = user.id;
+        } else {
+          params.caja_menor_id = formData.caja_menor_id;
+        }
+        const response = await viajesService.getAll(params);
         if (response.success) {
           setViajes(response.data?.rows || response.data || []);
         }
@@ -175,7 +182,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
     };
 
     fetchViajes();
-  }, [formData.caja_menor_id]);
+  }, [formData.caja_menor_id, isConductor, user?.id]);
 
   // Cargar datos del movimiento en modo edición o resetear
   useEffect(() => {

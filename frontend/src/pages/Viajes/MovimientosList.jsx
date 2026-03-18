@@ -76,6 +76,16 @@ const formatMoney = (value) => {
   return `$${Number(value).toLocaleString('es-CO')}`;
 };
 
+/** Formatear fecha evitando desfase de timezone */
+const formatDate = (fecha) => {
+  if (!fecha) return '-';
+  // Si es solo fecha (YYYY-MM-DD), agregar T12:00 para evitar desfase UTC
+  const str = String(fecha);
+  const d = str.length === 10 ? new Date(str + 'T12:00:00') : new Date(str);
+  if (isNaN(d)) return '-';
+  return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
 const PAGE_SIZE = 20;
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -170,12 +180,14 @@ const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar, onRechaza
           Ver detalle
         </MenuItem>
 
-        <ProtectedAction module="movimientos" action="editar">
-          <MenuItem onClick={() => { onEdit(movimiento); setAnchorEl(null); }}>
-            <Pencil className="w-4 h-4" />
-            Editar
-          </MenuItem>
-        </ProtectedAction>
+        {isPendiente && (
+          <ProtectedAction module="movimientos" action="editar">
+            <MenuItem onClick={() => { onEdit(movimiento); setAnchorEl(null); }}>
+              <Pencil className="w-4 h-4" />
+              Editar
+            </MenuItem>
+          </ProtectedAction>
+        )}
 
         {isPendiente && (
           <ProtectedAction module="movimientos" action="aprobar">
@@ -821,8 +833,8 @@ const MovimientosList = () => {
                               #{mov.consecutivo || mov.id}
                             </p>
                             <p className="text-xs text-slate-400 dark:text-slate-500">
-                              {(mov.created_at || mov.fecha)
-                                ? new Date(mov.created_at || mov.fecha).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+                              {(mov.createdAt || mov.created_at || mov.fecha)
+                                ? formatDate(mov.createdAt || mov.created_at || mov.fecha)
                                 : '-'}
                             </p>
                           </div>
@@ -919,8 +931,8 @@ const MovimientosList = () => {
                       <div>
                         <p className="text-sm font-bold text-slate-800 dark:text-slate-100">#{mov.consecutivo || mov.id}</p>
                         <p className="text-xs text-slate-400">
-                          {(mov.created_at || mov.fecha)
-                            ? new Date(mov.created_at || mov.fecha).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+                          {(mov.createdAt || mov.created_at || mov.fecha)
+                            ? formatDate(mov.createdAt || mov.created_at || mov.fecha)
                             : '-'}
                         </p>
                       </div>

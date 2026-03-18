@@ -32,6 +32,7 @@ import {
 
 // Common Components
 import { KpiCard, DataTable, AlertWidget } from '../../components/common';
+import { formatDateShort } from '../../utils/formatDate';
 
 // Charts
 import { BarChart, PieChart } from '../../components/charts';
@@ -43,6 +44,7 @@ import { useAuth } from '../../context/AuthContext';
 import useDashboard from '../../hooks/useDashboard';
 import useNotification from '../../hooks/useNotification';
 import inventarioService from '../../api/inventario.service';
+import { getGreeting } from '../../utils/greeting';
 import logoNegro from '../../assets/logo-negro.png';
 import logoBlanco from '../../assets/logo-blanco.png';
 
@@ -345,7 +347,7 @@ const Dashboard = () => {
       ? `Vence en ${alerta.dias_restantes || '?'} días`
       : `${alerta.stock_actual ?? alerta.stockActual ?? 0} ${alerta.unidad_medida || 'UND'} disponibles`,
     date: alerta.fecha_vencimiento
-      ? `Vence: ${new Date(alerta.fecha_vencimiento).toLocaleDateString('es-CO')}`
+      ? `Vence: ${formatDateShort(alerta.fecha_vencimiento)}`
       : alerta.cliente_nombre || alerta.cliente || '',
     originalData: alerta,
   }));
@@ -361,7 +363,7 @@ const Dashboard = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">
-              Bienvenido, {user?.nombre_completo?.split(' ')[0] || 'Usuario'}
+              {getGreeting()}, {user?.nombre_completo?.split(' ')[0] || 'Usuario'}
             </h1>
             <p className="text-slate-500 mt-1 dark:text-slate-400">
               Panel de Auditoría WMS

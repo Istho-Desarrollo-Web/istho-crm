@@ -243,6 +243,10 @@ export const ADMIN_ENDPOINTS = {
 
   // Permisos
   PERMISOS: '/admin/permisos',
+
+  // Sesiones
+  SESIONES: '/admin/sesiones',
+  SESION_CERRAR: (id) => `/admin/sesiones/${id}/cerrar`,
 };
 
 // ════════════════════════════════════════════════════════════════════════════

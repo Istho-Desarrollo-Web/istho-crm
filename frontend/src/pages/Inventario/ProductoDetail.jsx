@@ -57,6 +57,7 @@ import MovimientoForm from './components/MovimientoForm';
 import useInventario from '../../hooks/useInventario';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
+import { formatDateShort } from '../../utils/formatDate';
 
 // Service
 import inventarioService from '../../api/inventario.service';
@@ -916,7 +917,7 @@ const ProductoDetail = () => {
                                 </td>
                                 <td className="py-3 px-2 font-mono text-xs text-slate-500 dark:text-slate-400">{caja.documento}</td>
                                 <td className="py-3 px-2 text-xs text-slate-500 dark:text-slate-400">
-                                  {caja.fecha ? new Date(caja.fecha).toLocaleDateString('es-CO') : '-'}
+                                  {formatDateShort(caja.fecha)}
                                 </td>
                               </tr>
                             ))}

@@ -38,6 +38,7 @@ import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
 import { Clock } from 'lucide-react';
+import { formatDate } from '../../utils/formatDate';
 
 // ════════════════════════════════════════════════════════════════════════════
 import CajaMenorForm from './components/CajaMenorForm';
@@ -61,14 +62,7 @@ const formatCOP = (value) => {
 /**
  * Formato fecha corta
  */
-const formatFecha = (fecha) => {
-  if (!fecha) return '-';
-  return new Date(fecha).toLocaleDateString('es-CO', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-};
+const formatFecha = (fecha) => formatDate(fecha);
 
 // ════════════════════════════════════════════════════════════════════════════
 // SUMMARY CARD
