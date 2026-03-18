@@ -154,10 +154,15 @@ const crear = async (req, res) => {
       }
     }
 
-    // Manejar archivo de soporte
+    // Manejar archivo de soporte (guardar como base64 en BD)
     if (req.file) {
-      datos.soporte_url = `/uploads/soportes/${req.file.filename}`;
+      const fs = require('fs');
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const base64 = fileBuffer.toString('base64');
+      const mimeType = req.file.mimetype || 'application/octet-stream';
+      datos.soporte_url = `data:${mimeType};base64,${base64}`;
       datos.soporte_nombre = req.file.originalname;
+      try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
     }
 
     datos.consecutivo = await MovimientoCajaMenor.generarConsecutivo();
@@ -187,6 +192,18 @@ const crear = async (req, res) => {
 
     await transaction.commit();
     logger.info('Movimiento creado:', { id: movimiento.id, consecutivo: movimiento.consecutivo });
+
+    // Notificar a financieros si es un gasto pendiente de aprobación
+    if (!datos.aprobado) {
+      notificacionService.notificarGastoPendiente({
+        id: movimiento.id,
+        consecutivo: movimiento.consecutivo,
+        concepto: movimiento.concepto,
+        valor: movimiento.valor,
+        caja_menor_id: movimiento.caja_menor_id,
+        conductor_nombre: req.user.nombre_completo,
+      }).catch(() => {});
+    }
 
     const resultado = await MovimientoCajaMenor.findByPk(movimiento.id, {
       include: [
@@ -235,8 +252,13 @@ const actualizar = async (req, res) => {
     }
 
     if (req.file) {
-      datos.soporte_url = `/uploads/soportes/${req.file.filename}`;
+      const fs = require('fs');
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const base64 = fileBuffer.toString('base64');
+      const mimeType = req.file.mimetype || 'application/octet-stream';
+      datos.soporte_url = `data:${mimeType};base64,${base64}`;
       datos.soporte_nombre = req.file.originalname;
+      try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
     }
 
     const datosAnteriores = movimiento.toJSON();

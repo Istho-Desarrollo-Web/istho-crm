@@ -44,10 +44,12 @@ const CONCEPTOS_EGRESO = [
   { value: 'ligas', label: 'Ligas' },
   { value: 'parqueadero', label: 'Parqueadero' },
   { value: 'urea', label: 'UREA' },
+  { value: 'liquidacion', label: 'Liquidación de Caja' },
 ];
 
 const CONCEPTOS_INGRESO = [
   { value: 'ingreso_adicional', label: 'Ingreso Adicional' },
+  { value: 'recarga', label: 'Recarga de Saldo' },
   { value: 'cuadre_de_caja', label: 'Cuadre de Caja' },
   { value: 'peajes_ingreso', label: 'Peajes Ingreso' },
   { value: 'ligas_ingresos', label: 'Ligas Ingresos' },
@@ -521,8 +523,13 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
 
               {/* Soporte existente (al editar/ver) */}
               {soporteExistente && !soporte && (() => {
-                const soporteUrl = `${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || ''}${soporteExistente.url}`;
-                const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(soporteExistente.nombre || soporteExistente.url);
+                const isDataUri = soporteExistente.url?.startsWith('data:');
+                const soporteUrl = isDataUri
+                  ? soporteExistente.url
+                  : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || ''}${soporteExistente.url}`;
+                const isImage = isDataUri
+                  ? soporteExistente.url.startsWith('data:image/')
+                  : /\.(jpg|jpeg|png|gif|webp)$/i.test(soporteExistente.nombre || soporteExistente.url);
                 return (
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -544,6 +551,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                         href={soporteUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        download={soporteExistente.nombre}
                         className="text-sm text-blue-600 dark:text-blue-400 hover:underline truncate"
                       >
                         {soporteExistente.nombre}

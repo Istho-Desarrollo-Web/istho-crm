@@ -89,6 +89,7 @@ router.put('/cambiar-password', verificarToken, verificarPermisoCliente('perfil'
  * @desc    Subir foto de perfil
  * @access  Privado
  */
+router.put('/me/preferencias', verificarToken, authController.actualizarPreferencias);
 router.post('/me/avatar', verificarToken, uploadAvatar.single('avatar'), authController.subirAvatar);
 
 /**

@@ -1,59 +1,52 @@
 /**
  * ISTHO CRM - Configuracion Page
- * Página de configuración del sistema
- * 
- * @author Coordinación TI ISTHO
- * @date Enero 2026
+ * Preferencias del usuario con persistencia en backend.
+ *
+ * @author Coordinacion TI ISTHO
+ * @version 2.0.0
+ * @date Marzo 2026
  */
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import {
   Settings,
   Bell,
   Moon,
   Sun,
   Globe,
-  Mail,
-  Smartphone,
   Shield,
-  Database,
-  Cloud,
-  HardDrive,
-  Palette,
-  Monitor,
-  Volume2,
-  VolumeX,
   Clock,
   Calendar,
-  ChevronRight,
   Check,
-  Info,
-  AlertTriangle,
+  Loader2,
+  Save,
 } from 'lucide-react';
 
-// Layout
-
-
-// Components
 import { Button } from '../../components/common';
+import { useAuth } from '../../context/AuthContext';
+import { useThemeContext } from '../../context/ThemeContext';
+import usuarioService from '../../api/usuarioService';
+import useNotification from '../../hooks/useNotification';
+import logoNegro from '../../assets/logo-negro.png';
+import logoBlanco from '../../assets/logo-blanco.png';
 
-// ============================================
+// ════════════════════════════════════════════════════════════════════════════
 // TOGGLE SWITCH
-// ============================================
+// ════════════════════════════════════════════════════════════════════════════
+
 const ToggleSwitch = ({ enabled, onChange, disabled = false }) => (
   <button
     onClick={() => !disabled && onChange(!enabled)}
     disabled={disabled}
     className={`
       relative w-11 h-6 rounded-full transition-colors duration-200
-      ${enabled ? 'bg-orange-500' : 'bg-slate-200'}
+      ${enabled ? 'bg-orange-500' : 'bg-slate-300 dark:bg-slate-600'}
       ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
     `}
   >
     <span
       className={`
-        absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm
+        absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm
         transition-transform duration-200
         ${enabled ? 'translate-x-5' : 'translate-x-0'}
       `}
@@ -61,389 +54,301 @@ const ToggleSwitch = ({ enabled, onChange, disabled = false }) => (
   </button>
 );
 
-// ============================================
-// SETTING ITEM
-// ============================================
-const SettingItem = ({ icon: Icon, title, description, children }) => (
-  <div className="flex items-center justify-between py-4 border-b border-gray-100 last:border-0">
-    <div className="flex items-center gap-4">
+// ════════════════════════════════════════════════════════════════════════════
+// SELECT FIELD
+// ════════════════════════════════════════════════════════════════════════════
+
+const SelectField = ({ value, onChange, options }) => (
+  <select
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all min-w-[180px]"
+  >
+    {options.map((opt) => (
+      <option key={opt.value} value={opt.value}>{opt.label}</option>
+    ))}
+  </select>
+);
+
+// ════════════════════════════════════════════════════════════════════════════
+// SETTING ROW
+// ════════════════════════════════════════════════════════════════════════════
+
+const SettingRow = ({ icon: Icon, title, description, children }) => (
+  <div className="flex items-center justify-between py-4 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
+    <div className="flex items-start gap-3 flex-1 min-w-0">
       {Icon && (
-        <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
-          <Icon className="w-5 h-5 text-slate-500" />
+        <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 mt-0.5">
+          <Icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
         </div>
       )}
-      <div>
-        <p className="font-medium text-slate-800">{title}</p>
-        {description && <p className="text-sm text-slate-500">{description}</p>}
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{title}</p>
+        {description && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{description}</p>}
       </div>
     </div>
-    <div className="flex items-center gap-2">
+    <div className="flex-shrink-0 ml-4">
       {children}
     </div>
   </div>
 );
 
-// ============================================
-// SETTING SECTION
-// ============================================
-const SettingSection = ({ title, children }) => (
-  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-    <div className="px-6 py-4 border-b border-gray-100 bg-slate-50">
-      <h3 className="font-semibold text-slate-800">{title}</h3>
+// ════════════════════════════════════════════════════════════════════════════
+// SECTION CARD
+// ════════════════════════════════════════════════════════════════════════════
+
+const SectionCard = ({ icon: Icon, title, children }) => (
+  <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+    <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-slate-700">
+      <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+        <Icon className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+      </div>
+      <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">{title}</h2>
     </div>
-    <div className="px-6">
+    <div className="px-5 py-2">
       {children}
     </div>
   </div>
 );
 
-// ============================================
-// MAIN COMPONENT
-// ============================================
+// ════════════════════════════════════════════════════════════════════════════
+// DEFAULTS
+// ════════════════════════════════════════════════════════════════════════════
+
+const DEFAULT_PREFS = {
+  tema: 'light',
+  notificaciones_email: false,
+  notificaciones_sonido: true,
+  alertas_despachos: true,
+  alertas_inventario: true,
+  alertas_clientes: true,
+  alertas_viajes: true,
+  zona_horaria: 'America/Bogota',
+  formato_fecha: 'DD/MM/YYYY',
+  tiempo_sesion: 30,
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+// COMPONENTE PRINCIPAL
+// ════════════════════════════════════════════════════════════════════════════
+
 const Configuracion = () => {
-  const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
+  const { isDark, toggleDark } = useThemeContext();
+  const { success, error: showError } = useNotification();
 
-  // Estados de configuración
-  const [settings, setSettings] = useState({
-    // Apariencia
-    darkMode: false,
-    compactMode: false,
-    animations: true,
+  const [prefs, setPrefs] = useState(DEFAULT_PREFS);
+  const [loading, setLoading] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
-    // Notificaciones
-    emailNotifications: true,
-    pushNotifications: true,
-    smsNotifications: false,
-    soundEnabled: true,
+  // Cargar preferencias del usuario
+  useEffect(() => {
+    if (user?.preferencias) {
+      setPrefs({ ...DEFAULT_PREFS, ...user.preferencias });
+    }
+  }, [user?.preferencias]);
 
-    // Notificaciones específicas
-    notifyDespachos: true,
-    notifyInventario: true,
-    notifyClientes: true,
-    notifyReportes: false,
+  // Sincronizar tema con ThemeContext
+  useEffect(() => {
+    const temaActual = isDark ? 'dark' : 'light';
+    if (prefs.tema !== temaActual) {
+      setPrefs(prev => ({ ...prev, tema: temaActual }));
+    }
+  }, [isDark]); // eslint-disable-line
 
-    // Regional
-    language: 'es',
-    timezone: 'America/Bogota',
-    dateFormat: 'DD/MM/YYYY',
-    currency: 'COP',
+  const handleChange = (key, value) => {
+    setPrefs(prev => ({ ...prev, [key]: value }));
+    setHasChanges(true);
 
-    // Seguridad
-    twoFactorAuth: false,
-    sessionTimeout: '30',
-
-    // Datos
-    autoBackup: true,
-    backupFrequency: 'daily',
-  });
-
-  const handleToggle = (key) => {
-    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+    // Tema se aplica inmediatamente
+    if (key === 'tema') {
+      const shouldBeDark = value === 'dark';
+      if (isDark !== shouldBeDark) toggleDark();
+    }
   };
 
-  const handleSelect = (key, value) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const response = await usuarioService.guardarPreferencias(prefs);
+      if (response.success !== false) {
+        updateUser({ preferencias: prefs });
+        success('Preferencias guardadas correctamente');
+        setHasChanges(false);
+      }
+    } catch (err) {
+      showError('Error al guardar preferencias');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
+      <main className="pt-28 px-4 pb-8 max-w-3xl mx-auto">
 
-
-      <main className="pt-28 px-4 pb-8 max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-800">Configuración</h1>
-          <p className="text-slate-500 mt-1">
-            Personaliza tu experiencia en el sistema
-          </p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Configuración</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Personaliza tu experiencia en el CRM</p>
+          </div>
+          {hasChanges && (
+            <Button variant="primary" icon={Save} onClick={handleSave} loading={loading}>
+              Guardar
+            </Button>
+          )}
         </div>
 
-        {/* Apariencia */}
-        <SettingSection title="Apariencia">
-          <SettingItem
-            icon={settings.darkMode ? Moon : Sun}
-            title="Modo Oscuro"
-            description="Cambiar entre tema claro y oscuro"
-          >
-            <ToggleSwitch
-              enabled={settings.darkMode}
-              onChange={() => handleToggle('darkMode')}
-            />
-          </SettingItem>
+        <div className="space-y-6">
 
-          <SettingItem
-            icon={Monitor}
-            title="Modo Compacto"
-            description="Reduce el espaciado para mostrar más contenido"
-          >
-            <ToggleSwitch
-              enabled={settings.compactMode}
-              onChange={() => handleToggle('compactMode')}
-            />
-          </SettingItem>
-
-          <SettingItem
-            icon={Palette}
-            title="Animaciones"
-            description="Habilitar transiciones y efectos visuales"
-          >
-            <ToggleSwitch
-              enabled={settings.animations}
-              onChange={() => handleToggle('animations')}
-            />
-          </SettingItem>
-        </SettingSection>
-
-        {/* Notificaciones */}
-        <SettingSection title="Notificaciones">
-          <SettingItem
-            icon={Mail}
-            title="Notificaciones por Email"
-            description="Recibir alertas en tu correo electrónico"
-          >
-            <ToggleSwitch
-              enabled={settings.emailNotifications}
-              onChange={() => handleToggle('emailNotifications')}
-            />
-          </SettingItem>
-
-          <SettingItem
-            icon={Bell}
-            title="Notificaciones Push"
-            description="Alertas en tiempo real en el navegador"
-          >
-            <ToggleSwitch
-              enabled={settings.pushNotifications}
-              onChange={() => handleToggle('pushNotifications')}
-            />
-          </SettingItem>
-
-          <SettingItem
-            icon={Smartphone}
-            title="Notificaciones SMS"
-            description="Mensajes de texto para alertas críticas"
-          >
-            <ToggleSwitch
-              enabled={settings.smsNotifications}
-              onChange={() => handleToggle('smsNotifications')}
-            />
-          </SettingItem>
-
-          <SettingItem
-            icon={settings.soundEnabled ? Volume2 : VolumeX}
-            title="Sonidos"
-            description="Reproducir sonido con las notificaciones"
-          >
-            <ToggleSwitch
-              enabled={settings.soundEnabled}
-              onChange={() => handleToggle('soundEnabled')}
-            />
-          </SettingItem>
-        </SettingSection>
-
-        {/* Alertas por Módulo */}
-        <SettingSection title="Alertas por Módulo">
-          <SettingItem
-            title="Despachos"
-            description="Nuevos despachos, cambios de estado, retrasos"
-          >
-            <ToggleSwitch
-              enabled={settings.notifyDespachos}
-              onChange={() => handleToggle('notifyDespachos')}
-            />
-          </SettingItem>
-
-          <SettingItem
-            title="Inventario"
-            description="Stock bajo, productos agotados, vencimientos"
-          >
-            <ToggleSwitch
-              enabled={settings.notifyInventario}
-              onChange={() => handleToggle('notifyInventario')}
-            />
-          </SettingItem>
-
-          <SettingItem
-            title="Clientes"
-            description="Nuevos clientes, actualizaciones, tickets"
-          >
-            <ToggleSwitch
-              enabled={settings.notifyClientes}
-              onChange={() => handleToggle('notifyClientes')}
-            />
-          </SettingItem>
-
-          <SettingItem
-            title="Reportes"
-            description="Reportes programados completados"
-          >
-            <ToggleSwitch
-              enabled={settings.notifyReportes}
-              onChange={() => handleToggle('notifyReportes')}
-            />
-          </SettingItem>
-        </SettingSection>
-
-        {/* Regional */}
-        <SettingSection title="Configuración Regional">
-          <SettingItem
-            icon={Globe}
-            title="Idioma"
-            description="Idioma de la interfaz"
-          >
-            <select
-              value={settings.language}
-              onChange={(e) => handleSelect('language', e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+          {/* ═══ APARIENCIA ═══ */}
+          <SectionCard icon={Moon} title="Apariencia">
+            <SettingRow
+              icon={isDark ? Moon : Sun}
+              title="Modo Oscuro"
+              description="Cambia entre tema claro y oscuro"
             >
-              <option value="es">Español</option>
-              <option value="en">English</option>
-            </select>
-          </SettingItem>
+              <ToggleSwitch
+                enabled={prefs.tema === 'dark'}
+                onChange={(v) => handleChange('tema', v ? 'dark' : 'light')}
+              />
+            </SettingRow>
+          </SectionCard>
 
-          <SettingItem
-            icon={Clock}
-            title="Zona Horaria"
-            description="Zona horaria para fechas y horas"
-          >
-            <select
-              value={settings.timezone}
-              onChange={(e) => handleSelect('timezone', e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+          {/* ═══ NOTIFICACIONES ═══ */}
+          <SectionCard icon={Bell} title="Notificaciones">
+            <SettingRow
+              icon={Bell}
+              title="Sonidos de notificación"
+              description="Reproducir sonido al recibir notificaciones"
             >
-              <option value="America/Bogota">Bogotá (GMT-5)</option>
-              <option value="America/Mexico_City">Ciudad de México (GMT-6)</option>
-              <option value="America/Lima">Lima (GMT-5)</option>
-              <option value="America/Buenos_Aires">Buenos Aires (GMT-3)</option>
-            </select>
-          </SettingItem>
+              <ToggleSwitch
+                enabled={prefs.notificaciones_sonido}
+                onChange={(v) => handleChange('notificaciones_sonido', v)}
+              />
+            </SettingRow>
 
-          <SettingItem
-            icon={Calendar}
-            title="Formato de Fecha"
-            description="Cómo se muestran las fechas"
-          >
-            <select
-              value={settings.dateFormat}
-              onChange={(e) => handleSelect('dateFormat', e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+            <div className="pt-2 pb-1">
+              <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Alertas por Módulo</p>
+            </div>
+
+            <SettingRow title="Despachos" description="Entradas y salidas WMS">
+              <ToggleSwitch
+                enabled={prefs.alertas_despachos}
+                onChange={(v) => handleChange('alertas_despachos', v)}
+              />
+            </SettingRow>
+            <SettingRow title="Inventario" description="Stock bajo, agotados, vencimientos">
+              <ToggleSwitch
+                enabled={prefs.alertas_inventario}
+                onChange={(v) => handleChange('alertas_inventario', v)}
+              />
+            </SettingRow>
+            <SettingRow title="Clientes" description="Nuevos clientes y cambios">
+              <ToggleSwitch
+                enabled={prefs.alertas_clientes}
+                onChange={(v) => handleChange('alertas_clientes', v)}
+              />
+            </SettingRow>
+            <SettingRow title="Viajes y Caja Menor" description="Gastos pendientes, cajas abiertas">
+              <ToggleSwitch
+                enabled={prefs.alertas_viajes}
+                onChange={(v) => handleChange('alertas_viajes', v)}
+              />
+            </SettingRow>
+          </SectionCard>
+
+          {/* ═══ REGIONAL ═══ */}
+          <SectionCard icon={Globe} title="Regional">
+            <SettingRow
+              icon={Globe}
+              title="Zona Horaria"
+              description="Zona horaria para fechas y reportes"
             >
-              <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-              <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-              <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-            </select>
-          </SettingItem>
-        </SettingSection>
-
-        {/* Seguridad */}
-        <SettingSection title="Seguridad">
-          <SettingItem
-            icon={Shield}
-            title="Autenticación de Dos Factores"
-            description="Añade una capa extra de seguridad"
-          >
-            <ToggleSwitch
-              enabled={settings.twoFactorAuth}
-              onChange={() => handleToggle('twoFactorAuth')}
-            />
-          </SettingItem>
-
-          <SettingItem
-            icon={Clock}
-            title="Tiempo de Sesión"
-            description="Cerrar sesión automáticamente después de inactividad"
-          >
-            <select
-              value={settings.sessionTimeout}
-              onChange={(e) => handleSelect('sessionTimeout', e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+              <SelectField
+                value={prefs.zona_horaria}
+                onChange={(v) => handleChange('zona_horaria', v)}
+                options={[
+                  { value: 'America/Bogota', label: 'Bogotá (GMT-5)' },
+                  { value: 'America/Mexico_City', label: 'México (GMT-6)' },
+                  { value: 'America/Lima', label: 'Lima (GMT-5)' },
+                  { value: 'America/Argentina/Buenos_Aires', label: 'Buenos Aires (GMT-3)' },
+                ]}
+              />
+            </SettingRow>
+            <SettingRow
+              icon={Calendar}
+              title="Formato de Fecha"
+              description="Formato para mostrar fechas en el sistema"
             >
-              <option value="15">15 minutos</option>
-              <option value="30">30 minutos</option>
-              <option value="60">1 hora</option>
-              <option value="120">2 horas</option>
-              <option value="never">Nunca</option>
-            </select>
-          </SettingItem>
-        </SettingSection>
+              <SelectField
+                value={prefs.formato_fecha}
+                onChange={(v) => handleChange('formato_fecha', v)}
+                options={[
+                  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+                  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+                  { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
+                ]}
+              />
+            </SettingRow>
+          </SectionCard>
 
-        {/* Datos y Respaldos */}
-        <SettingSection title="Datos y Respaldos">
-          <SettingItem
-            icon={Cloud}
-            title="Respaldo Automático"
-            description="Crear copias de seguridad automáticamente"
-          >
-            <ToggleSwitch
-              enabled={settings.autoBackup}
-              onChange={() => handleToggle('autoBackup')}
-            />
-          </SettingItem>
-
-          {settings.autoBackup && (
-            <SettingItem
-              icon={Database}
-              title="Frecuencia de Respaldo"
-              description="Cada cuánto se realiza el respaldo"
+          {/* ═══ SEGURIDAD ═══ */}
+          <SectionCard icon={Shield} title="Seguridad">
+            <SettingRow
+              icon={Clock}
+              title="Tiempo de Sesión"
+              description="Cerrar sesión automáticamente después de inactividad"
             >
-              <select
-                value={settings.backupFrequency}
-                onChange={(e) => handleSelect('backupFrequency', e.target.value)}
-                className="px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-              >
-                <option value="daily">Diario</option>
-                <option value="weekly">Semanal</option>
-                <option value="monthly">Mensual</option>
-              </select>
-            </SettingItem>
+              <SelectField
+                value={prefs.tiempo_sesion}
+                onChange={(v) => handleChange('tiempo_sesion', Number(v))}
+                options={[
+                  { value: 15, label: '15 minutos' },
+                  { value: 30, label: '30 minutos' },
+                  { value: 60, label: '1 hora' },
+                  { value: 120, label: '2 horas' },
+                  { value: 0, label: 'Nunca' },
+                ]}
+              />
+            </SettingRow>
+          </SectionCard>
+
+          {/* ═══ INFO SISTEMA (solo admin) ═══ */}
+          {user?.rol === 'admin' && (
+            <SectionCard icon={Settings} title="Información del Sistema">
+              <SettingRow title="Versión" description="CRM ISTHO">
+                <span className="text-sm font-mono text-slate-600 dark:text-slate-300">v1.0.0</span>
+              </SettingRow>
+              <SettingRow title="Entorno" description="Ambiente de ejecución">
+                <span className="text-sm font-mono text-emerald-600 dark:text-emerald-400">Producción</span>
+              </SettingRow>
+              <SettingRow title="Base de Datos" description="Motor de base de datos">
+                <span className="text-sm font-mono text-slate-600 dark:text-slate-300">MySQL 8.0</span>
+              </SettingRow>
+            </SectionCard>
           )}
 
-          <SettingItem
-            icon={HardDrive}
-            title="Exportar Datos"
-            description="Descargar una copia de tus datos"
-          >
-            <Button variant="outline" size="sm">
-              Exportar
+        </div>
+
+        {/* Floating save button (mobile) */}
+        {hasChanges && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 sm:hidden">
+            <Button variant="primary" icon={Save} onClick={handleSave} loading={loading} className="shadow-2xl">
+              Guardar Cambios
             </Button>
-          </SettingItem>
-        </SettingSection>
-
-        {/* Info del Sistema */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h3 className="font-semibold text-slate-800 mb-4">Información del Sistema</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-slate-500">Versión</p>
-              <p className="font-medium text-slate-800">CRM ISTHO v1.0.0</p>
-            </div>
-            <div>
-              <p className="text-slate-500">Última Actualización</p>
-              <p className="font-medium text-slate-800">Enero 8, 2026</p>
-            </div>
-            <div>
-              <p className="text-slate-500">Entorno</p>
-              <p className="font-medium text-slate-800">Producción</p>
-            </div>
-            <div>
-              <p className="text-slate-500">Base de Datos</p>
-              <p className="font-medium text-slate-800">MySQL 8.0</p>
-            </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <p className="text-xs text-slate-400">
-              © 2026 ISTHO S.A.S. Todos los derechos reservados.
-              Centro Logístico Industrial del Norte, Girardota - Antioquia
-            </p>
-          </div>
-        </div>
+        )}
 
-        {/* Save Button */}
-        <div className="mt-6 flex justify-end">
-          <Button variant="primary" icon={Check}>
-            Guardar Configuración
-          </Button>
-        </div>
+        {/* Footer */}
+        <footer className="flex flex-col items-center gap-3 py-6 mt-8 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">
+          <div className="flex items-center gap-2">
+            <img src={logoNegro} alt="ISTHO" className="w-6 h-6 rounded dark:hidden" />
+            <img src={logoBlanco} alt="ISTHO" className="w-6 h-6 rounded hidden dark:block" />
+            <span>&copy; 2026 ISTHO S.A.S. - Sistema CRM Interno</span>
+          </div>
+        </footer>
       </main>
     </div>
   );

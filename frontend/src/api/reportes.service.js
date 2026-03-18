@@ -133,6 +133,23 @@ const reportesService = {
     }
   },
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // REPORTES FINANCIEROS (datos JSON para vistas)
+  // ──────────────────────────────────────────────────────────────────────────
+
+  getViajes: async (params) => {
+    try { return await apiClient.get('/reportes/viajes-reporte', { params }); }
+    catch (error) { console.error('Error reporte viajes:', error); throw error; }
+  },
+  getCajasMenores: async (params) => {
+    try { return await apiClient.get('/reportes/cajas-menores-reporte', { params }); }
+    catch (error) { console.error('Error reporte cajas menores:', error); throw error; }
+  },
+  getGastos: async (params) => {
+    try { return await apiClient.get('/reportes/gastos-reporte', { params }); }
+    catch (error) { console.error('Error reporte gastos:', error); throw error; }
+  },
+
   // Enviar reporte por email
   enviarPorEmail: async (data) => {
     try {

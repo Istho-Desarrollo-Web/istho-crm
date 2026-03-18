@@ -808,6 +808,360 @@ const exportarDetalleOperacion = async (operacion) => {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// EXPORTAR VIAJES
+// ═══════════════════════════════════════════════════════════════════════════
+
+const exportarViajes = async (viajes, filtros = {}) => {
+  const wb = crearLibro();
+  const ws = wb.addWorksheet('Viajes', {
+    pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true },
+  });
+
+  const COLS = [
+    { header: 'Número', key: 'num', width: 12, align: 'left' },
+    { header: 'Fecha', key: 'fecha', width: 13, align: 'center' },
+    { header: 'Origen', key: 'origen', width: 18, align: 'left' },
+    { header: 'Destino', key: 'destino', width: 18, align: 'left' },
+    { header: 'Cliente', key: 'cliente', width: 25, align: 'left' },
+    { header: 'Doc. Cliente', key: 'doc', width: 15, align: 'center' },
+    { header: 'Vehículo', key: 'vehiculo', width: 12, align: 'center' },
+    { header: 'Conductor', key: 'conductor', width: 22, align: 'left' },
+    { header: 'Peso (kg)', key: 'peso', width: 12, align: 'right' },
+    { header: 'Valor Viaje', key: 'valor', width: 15, align: 'right' },
+    { header: 'Facturado', key: 'facturado', width: 10, align: 'center' },
+    { header: 'No. Factura', key: 'factura', width: 14, align: 'center' },
+    { header: 'Caja Menor', key: 'caja', width: 12, align: 'center' },
+    { header: 'Estado', key: 'estado', width: 12, align: 'center' },
+  ];
+
+  ws.columns = COLS.map(c => ({ width: c.width }));
+
+  let sub = null;
+  if (filtros.fecha_desde || filtros.fecha_hasta) {
+    sub = `Período: ${filtros.fecha_desde || '...'} al ${filtros.fecha_hasta || '...'} | Generado el ${fechaHoy()}`;
+  }
+
+  let fila = agregarEncabezado(ws, 'REPORTE DE VIAJES', sub, COLS.length);
+
+  const total = viajes.length;
+  const activos = viajes.filter(v => v.estado === 'activo').length;
+  const completados = viajes.filter(v => v.estado === 'completado').length;
+  const totalValor = viajes.reduce((s, v) => s + (parseFloat(v.valor_viaje) || 0), 0);
+  const totalPeso = viajes.reduce((s, v) => s + (parseFloat(v.peso) || 0), 0);
+  const facturados = viajes.filter(v => v.facturado).length;
+
+  fila = agregarResumen(ws, fila, [
+    { label: 'Total Viajes:', value: total },
+    { label: 'Activos:', value: activos },
+    { label: 'Completados:', value: completados },
+    { label: 'Facturados:', value: facturados },
+    { label: 'Valor Total:', value: totalValor, numFmt: '$#,##0' },
+    { label: 'Peso Total:', value: totalPeso, numFmt: '#,##0' },
+  ], COLS.length);
+
+  let dataFila = aplicarEncabezadosTabla(ws, fila, COLS);
+
+  viajes.forEach((v, idx) => {
+    const row = ws.getRow(dataFila);
+    row.height = 20;
+    const vals = [
+      v.numero, v.fecha ? new Date(v.fecha) : null, v.origen, v.destino,
+      v.cliente_nombre || '', v.documento_cliente || '',
+      v.vehiculo?.placa || '', v.conductor?.nombre_completo || '',
+      parseFloat(v.peso) || 0, parseFloat(v.valor_viaje) || 0,
+      v.facturado ? 'Sí' : 'No', v.no_factura || '',
+      v.cajaMenor?.numero || '', (v.estado || '').toUpperCase(),
+    ];
+    vals.forEach((val, ci) => {
+      const cell = row.getCell(ci + 1);
+      cell.value = val;
+      estiloCelda(cell, ci, idx, { align: COLS[ci].align });
+      if (ci === 1 && val) cell.numFmt = 'DD/MM/YYYY';
+      if (ci === 9) cell.numFmt = '$#,##0';
+      if (ci === 8) cell.numFmt = '#,##0';
+      if (ci === 13) {
+        const est = (v.estado || '').toLowerCase();
+        if (est === 'completado') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
+        else if (est === 'anulado') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
+        else if (est === 'activo') { cell.font = { color: { argb: C.naranja } }; }
+      }
+    });
+    dataFila++;
+  });
+
+  dataFila++;
+  agregarFilaTotales(ws, dataFila, [
+    { col: 1, value: 'TOTALES' },
+    { col: 9, value: totalPeso, numFmt: '#,##0' },
+    { col: 10, value: totalValor, numFmt: '$#,##0' },
+  ], COLS.length);
+
+  ws.views = [{ state: 'frozen', ySplit: fila }];
+  return wb.xlsx.writeBuffer();
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EXPORTAR CAJAS MENORES
+// ═══════════════════════════════════════════════════════════════════════════
+
+const exportarCajasMenores = async (cajas) => {
+  const wb = crearLibro();
+  const ws = wb.addWorksheet('Cajas Menores', {
+    pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true },
+  });
+
+  const COLS = [
+    { header: 'Número', key: 'num', width: 14, align: 'left' },
+    { header: 'Conductor', key: 'cond', width: 25, align: 'left' },
+    { header: 'Estado', key: 'estado', width: 12, align: 'center' },
+    { header: 'Saldo Inicial', key: 'si', width: 16, align: 'right' },
+    { header: 'Saldo Trasladado', key: 'st', width: 16, align: 'right' },
+    { header: 'Total Ingresos', key: 'ti', width: 16, align: 'right' },
+    { header: 'Total Egresos', key: 'te', width: 16, align: 'right' },
+    { header: 'Saldo Actual', key: 'sa', width: 16, align: 'right' },
+    { header: 'Fecha Apertura', key: 'fa', width: 14, align: 'center' },
+    { header: 'Fecha Cierre', key: 'fc', width: 14, align: 'center' },
+    { header: 'Creado Por', key: 'creador', width: 22, align: 'left' },
+  ];
+
+  ws.columns = COLS.map(c => ({ width: c.width }));
+
+  let fila = agregarEncabezado(ws, 'REPORTE DE CAJAS MENORES', null, COLS.length);
+
+  const abiertas = cajas.filter(c => c.estado === 'abierta').length;
+  const cerradas = cajas.filter(c => c.estado === 'cerrada').length;
+  const totalSaldoInicial = cajas.reduce((s, c) => s + (parseFloat(c.saldo_inicial) || 0), 0);
+  const totalEgresos = cajas.reduce((s, c) => s + (parseFloat(c.total_egresos) || 0), 0);
+  const totalIngresos = cajas.reduce((s, c) => s + (parseFloat(c.total_ingresos) || 0), 0);
+  const totalSaldoActual = cajas.reduce((s, c) => s + (parseFloat(c.saldo_actual) || 0), 0);
+
+  fila = agregarResumen(ws, fila, [
+    { label: 'Total Cajas:', value: cajas.length },
+    { label: 'Abiertas:', value: abiertas },
+    { label: 'Cerradas:', value: cerradas },
+    { label: 'Saldo Inicial Total:', value: totalSaldoInicial, numFmt: '$#,##0' },
+    { label: 'Total Ingresos:', value: totalIngresos, numFmt: '$#,##0' },
+    { label: 'Total Egresos:', value: totalEgresos, numFmt: '$#,##0' },
+    { label: 'Saldo Actual Total:', value: totalSaldoActual, numFmt: '$#,##0' },
+  ], COLS.length);
+
+  let dataFila = aplicarEncabezadosTabla(ws, fila, COLS);
+
+  cajas.forEach((c, idx) => {
+    const row = ws.getRow(dataFila);
+    row.height = 20;
+    const vals = [
+      c.numero, c.conductor?.nombre_completo || '', (c.estado || '').toUpperCase(),
+      parseFloat(c.saldo_inicial) || 0, parseFloat(c.saldo_trasladado) || 0,
+      parseFloat(c.total_ingresos) || 0, parseFloat(c.total_egresos) || 0,
+      parseFloat(c.saldo_actual) || 0,
+      c.fecha_apertura ? new Date(c.fecha_apertura) : null,
+      c.fecha_cierre ? new Date(c.fecha_cierre) : null,
+      c.creador?.nombre_completo || '',
+    ];
+    vals.forEach((val, ci) => {
+      const cell = row.getCell(ci + 1);
+      cell.value = val;
+      estiloCelda(cell, ci, idx, { align: COLS[ci].align });
+      if ([3, 4, 5, 6, 7].includes(ci)) cell.numFmt = '$#,##0';
+      if (ci === 8 || ci === 9) if (val) cell.numFmt = 'DD/MM/YYYY';
+      if (ci === 2) {
+        const est = (c.estado || '').toLowerCase();
+        if (est === 'abierta') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
+        else if (est === 'cerrada') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.grisClaro } }; cell.font = { color: { argb: C.textoGris } }; }
+      }
+      if (ci === 7 && (parseFloat(c.saldo_actual) || 0) < 0) {
+        cell.font = { bold: true, color: { argb: C.rojo } };
+      }
+    });
+    dataFila++;
+  });
+
+  dataFila++;
+  agregarFilaTotales(ws, dataFila, [
+    { col: 1, value: 'TOTALES' },
+    { col: 4, value: totalSaldoInicial, numFmt: '$#,##0' },
+    { col: 6, value: totalIngresos, numFmt: '$#,##0' },
+    { col: 7, value: totalEgresos, numFmt: '$#,##0' },
+    { col: 8, value: totalSaldoActual, numFmt: '$#,##0' },
+  ], COLS.length);
+
+  ws.views = [{ state: 'frozen', ySplit: fila }];
+  return wb.xlsx.writeBuffer();
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EXPORTAR MOVIMIENTOS
+// ═══════════════════════════════════════════════════════════════════════════
+
+const exportarMovimientos = async (movimientos) => {
+  const wb = crearLibro();
+  const ws = wb.addWorksheet('Movimientos', {
+    pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true },
+  });
+
+  const COLS = [
+    { header: '#', key: 'num', width: 8, align: 'center' },
+    { header: 'Caja Menor', key: 'caja', width: 14, align: 'center' },
+    { header: 'Conductor', key: 'cond', width: 22, align: 'left' },
+    { header: 'Tipo', key: 'tipo', width: 10, align: 'center' },
+    { header: 'Concepto', key: 'concepto', width: 20, align: 'left' },
+    { header: 'Descripción', key: 'desc', width: 28, align: 'left' },
+    { header: 'Valor', key: 'valor', width: 15, align: 'right' },
+    { header: 'Estado', key: 'estado', width: 12, align: 'center' },
+    { header: 'Valor Aprobado', key: 'va', width: 15, align: 'right' },
+    { header: 'Aprobador', key: 'aprobador', width: 22, align: 'left' },
+    { header: 'Viaje', key: 'viaje', width: 16, align: 'left' },
+    { header: 'Fecha', key: 'fecha', width: 14, align: 'center' },
+  ];
+
+  ws.columns = COLS.map(c => ({ width: c.width }));
+
+  let fila = agregarEncabezado(ws, 'REPORTE DE MOVIMIENTOS DE CAJA MENOR', null, COLS.length);
+
+  const totalMov = movimientos.length;
+  const ingresos = movimientos.filter(m => m.tipo_movimiento === 'ingreso');
+  const egresos = movimientos.filter(m => m.tipo_movimiento === 'egreso');
+  const aprobados = movimientos.filter(m => m.aprobado);
+  const pendientes = movimientos.filter(m => !m.aprobado && !m.rechazado);
+  const totalValor = movimientos.reduce((s, m) => s + (parseFloat(m.valor) || 0), 0);
+  const totalAprobado = aprobados.reduce((s, m) => s + (parseFloat(m.valor_aprobado) || 0), 0);
+
+  fila = agregarResumen(ws, fila, [
+    { label: 'Total Movimientos:', value: totalMov },
+    { label: 'Ingresos:', value: ingresos.length },
+    { label: 'Egresos:', value: egresos.length },
+    { label: 'Aprobados:', value: aprobados.length },
+    { label: 'Pendientes:', value: pendientes.length },
+    { label: 'Valor Total:', value: totalValor, numFmt: '$#,##0' },
+    { label: 'Total Aprobado:', value: totalAprobado, numFmt: '$#,##0' },
+  ], COLS.length);
+
+  let dataFila = aplicarEncabezadosTabla(ws, fila, COLS);
+
+  movimientos.forEach((m, idx) => {
+    const row = ws.getRow(dataFila);
+    row.height = 20;
+    const estadoText = m.aprobado ? 'APROBADO' : m.rechazado ? 'RECHAZADO' : 'PENDIENTE';
+    const vals = [
+      m.consecutivo, m.cajaMenor?.numero || '', m.conductor?.nombre_completo || '',
+      (m.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso'),
+      m.concepto, m.descripcion || '',
+      parseFloat(m.valor) || 0, estadoText,
+      parseFloat(m.valor_aprobado) || 0, m.aprobador?.nombre_completo || '',
+      m.viaje ? `#${m.viaje.numero} - ${m.viaje.destino}` : 'Directo',
+      m.created_at ? new Date(m.created_at) : null,
+    ];
+    vals.forEach((val, ci) => {
+      const cell = row.getCell(ci + 1);
+      cell.value = val;
+      estiloCelda(cell, ci, idx, { align: COLS[ci].align });
+      if (ci === 6 || ci === 8) cell.numFmt = '$#,##0';
+      if (ci === 11 && val) cell.numFmt = 'DD/MM/YYYY';
+      if (ci === 3) {
+        cell.font = { bold: true, color: { argb: m.tipo_movimiento === 'ingreso' ? C.verde : C.rojo } };
+      }
+      if (ci === 7) {
+        if (m.aprobado) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
+        else if (m.rechazado) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
+        else { cell.font = { color: { argb: C.naranja } }; }
+      }
+    });
+    dataFila++;
+  });
+
+  dataFila++;
+  agregarFilaTotales(ws, dataFila, [
+    { col: 1, value: 'TOTALES' },
+    { col: 7, value: totalValor, numFmt: '$#,##0' },
+    { col: 9, value: totalAprobado, numFmt: '$#,##0' },
+  ], COLS.length);
+
+  ws.views = [{ state: 'frozen', ySplit: fila }];
+  return wb.xlsx.writeBuffer();
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EXPORTAR VEHICULOS
+// ═══════════════════════════════════════════════════════════════════════════
+
+const exportarVehiculos = async (vehiculos) => {
+  const wb = crearLibro();
+  const ws = wb.addWorksheet('Vehiculos', {
+    pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true },
+  });
+
+  const COLS = [
+    { header: 'Placa', key: 'placa', width: 12, align: 'center' },
+    { header: 'Tipo', key: 'tipo', width: 14, align: 'center' },
+    { header: 'Marca', key: 'marca', width: 14, align: 'left' },
+    { header: 'Modelo', key: 'modelo', width: 10, align: 'center' },
+    { header: 'Color', key: 'color', width: 12, align: 'center' },
+    { header: 'Capacidad (Ton)', key: 'cap', width: 14, align: 'right' },
+    { header: 'Conductor', key: 'cond', width: 22, align: 'left' },
+    { header: 'SOAT Vence', key: 'soat', width: 14, align: 'center' },
+    { header: 'Tecnomecánica Vence', key: 'tecno', width: 18, align: 'center' },
+    { header: 'No. Motor', key: 'motor', width: 18, align: 'left' },
+    { header: 'No. Chasis', key: 'chasis', width: 18, align: 'left' },
+    { header: 'Estado', key: 'estado', width: 14, align: 'center' },
+  ];
+
+  ws.columns = COLS.map(c => ({ width: c.width }));
+
+  let fila = agregarEncabezado(ws, 'REPORTE DE VEHÍCULOS', null, COLS.length);
+
+  const activos = vehiculos.filter(v => v.estado === 'activo').length;
+  const mantenimiento = vehiculos.filter(v => v.estado === 'mantenimiento').length;
+  const inactivos = vehiculos.filter(v => v.estado === 'inactivo').length;
+  const hoy = new Date();
+  const soatVencidos = vehiculos.filter(v => v.vencimiento_soat && new Date(v.vencimiento_soat) < hoy).length;
+  const tecnoVencidos = vehiculos.filter(v => v.vencimiento_tecnicomecanica && new Date(v.vencimiento_tecnicomecanica) < hoy).length;
+
+  fila = agregarResumen(ws, fila, [
+    { label: 'Total Vehículos:', value: vehiculos.length },
+    { label: 'Activos:', value: activos },
+    { label: 'En Mantenimiento:', value: mantenimiento },
+    { label: 'Inactivos:', value: inactivos },
+    { label: 'SOAT Vencidos:', value: soatVencidos },
+    { label: 'Tecnomecánica Vencidos:', value: tecnoVencidos },
+  ], COLS.length);
+
+  let dataFila = aplicarEncabezadosTabla(ws, fila, COLS);
+
+  vehiculos.forEach((v, idx) => {
+    const row = ws.getRow(dataFila);
+    row.height = 20;
+    const vals = [
+      v.placa, v.tipo_vehiculo, v.marca || '', v.modelo || '', v.color || '',
+      parseFloat(v.capacidad_ton) || 0, v.conductor?.nombre_completo || '',
+      v.vencimiento_soat ? new Date(v.vencimiento_soat) : null,
+      v.vencimiento_tecnicomecanica ? new Date(v.vencimiento_tecnicomecanica) : null,
+      v.numero_motor || '', v.numero_chasis || '', (v.estado || '').toUpperCase(),
+    ];
+    vals.forEach((val, ci) => {
+      const cell = row.getCell(ci + 1);
+      cell.value = val;
+      estiloCelda(cell, ci, idx, { align: COLS[ci].align });
+      if (ci === 5) cell.numFmt = '#,##0.00';
+      if ((ci === 7 || ci === 8) && val) {
+        cell.numFmt = 'DD/MM/YYYY';
+        if (val < hoy) { cell.font = { bold: true, color: { argb: C.rojo } }; cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; }
+      }
+      if (ci === 11) {
+        const est = (v.estado || '').toLowerCase();
+        if (est === 'activo') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
+        else if (est === 'mantenimiento') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } }; cell.font = { bold: true, color: { argb: C.naranja } }; }
+        else if (est === 'inactivo') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
+      }
+    });
+    dataFila++;
+  });
+
+  ws.views = [{ state: 'frozen', ySplit: fila }];
+  return wb.xlsx.writeBuffer();
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // EXPORTS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -816,4 +1170,8 @@ module.exports = {
   exportarInventario,
   exportarClientes,
   exportarDetalleOperacion,
+  exportarViajes,
+  exportarCajasMenores,
+  exportarMovimientos,
+  exportarVehiculos,
 };

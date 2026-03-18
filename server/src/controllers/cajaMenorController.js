@@ -165,6 +165,15 @@ const crear = async (req, res) => {
       datos: { caja_menor_id: caja.id }
     }).catch(() => {});
 
+    // Notificar a financieros
+    notificacionService.notificarCajaMenorAbierta({
+      id: caja.id,
+      numero: caja.numero,
+      saldo_inicial: caja.saldo_inicial,
+      saldo_actual: caja.saldo_actual,
+      conductor_nombre: conductor.nombre_completo,
+    }).catch(() => {});
+
     logger.info('Caja menor creada:', { id: caja.id, numero: caja.numero });
 
     const resultado = await CajaMenor.findByPk(caja.id, {
@@ -256,7 +265,30 @@ const cerrar = async (req, res) => {
     await caja.recalcularSaldo(transaction);
     await caja.reload({ transaction });
 
+    const saldoAntesCierre = parseFloat(caja.saldo_actual) || 0;
     const datosAnteriores = caja.toJSON();
+
+    // Si hay saldo sobrante y se elige entregar al conductor, crear egreso de liquidación
+    if (accion_sobrante === 'entregar' && saldoAntesCierre > 0) {
+      const consecutivo = await MovimientoCajaMenor.generarConsecutivo();
+      await MovimientoCajaMenor.create({
+        caja_menor_id: caja.id,
+        conductor_id: caja.conductor_id,
+        tipo_movimiento: 'egreso',
+        concepto: 'liquidacion',
+        descripcion: `Liquidación de saldo al cerrar caja ${caja.numero}. Saldo entregado al conductor.`,
+        valor: saldoAntesCierre,
+        valor_aprobado: saldoAntesCierre,
+        aprobado: true,
+        aprobado_por: req.user.id,
+        fecha_aprobacion: new Date(),
+        consecutivo,
+      }, { transaction });
+
+      // Recalcular saldo (ahora debería quedar en 0)
+      await caja.recalcularSaldo(transaction);
+      await caja.reload({ transaction });
+    }
 
     await caja.update({
       estado: 'cerrada',
@@ -265,6 +297,13 @@ const cerrar = async (req, res) => {
       observaciones_cierre: observaciones_cierre || null
     }, { transaction });
 
+    const saldoFinal = parseFloat(caja.saldo_actual) || 0;
+    const accionDesc = accion_sobrante === 'entregar'
+      ? `Saldo de $${saldoAntesCierre.toLocaleString('es-CO')} entregado al conductor.`
+      : saldoAntesCierre > 0
+        ? `Saldo de $${saldoFinal.toLocaleString('es-CO')} guardado para siguiente caja.`
+        : '';
+
     await Auditoria.registrar({
       tabla: 'cajas_menores',
       registro_id: caja.id,
@@ -272,9 +311,9 @@ const cerrar = async (req, res) => {
       usuario_id: req.user.id,
       usuario_nombre: req.user.nombre_completo,
       datos_anteriores: datosAnteriores,
-      datos_nuevos: { estado: 'cerrada', saldo_actual: caja.saldo_actual },
+      datos_nuevos: { estado: 'cerrada', saldo_actual: saldoFinal, accion_sobrante },
       ip_address: getClientIP(req),
-      descripcion: `Caja menor ${caja.numero} cerrada. Saldo final: $${Number(caja.saldo_actual).toLocaleString('es-CO')}`
+      descripcion: `Caja menor ${caja.numero} cerrada. ${accionDesc}`
     });
 
     await transaction.commit();
@@ -283,13 +322,13 @@ const cerrar = async (req, res) => {
     notificacionService.notificar({
       usuario_id: caja.conductor_id,
       titulo: 'Caja menor cerrada',
-      cuerpo: `La caja ${caja.numero} ha sido cerrada. Saldo final: $${Number(caja.saldo_actual).toLocaleString('es-CO')}`,
+      cuerpo: `La caja ${caja.numero} ha sido cerrada. Saldo final: $${saldoFinal.toLocaleString('es-CO')}. ${accionDesc}`,
       tipo: 'sistema',
       prioridad: 'alta',
       datos: { caja_menor_id: caja.id }
     }).catch(() => {});
 
-    logger.info('Caja menor cerrada:', { id: caja.id, numero: caja.numero, saldo: caja.saldo_actual });
+    logger.info('Caja menor cerrada:', { id: caja.id, numero: caja.numero, saldo: saldoFinal, accion_sobrante });
     return success(res, caja, 'Caja menor cerrada exitosamente');
   } catch (error) {
     try { await transaction.rollback(); } catch (_) {}

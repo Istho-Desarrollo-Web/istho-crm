@@ -309,9 +309,80 @@ const notificarSalidaWms = async (resultado) => {
   });
 };
 
+// ════════════════════════════════════════════════════════════════════════════
+// NOTIFICACIONES FINANCIERAS
+// ════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Notificar a admins, supervisores y financieras
+ */
+const notificarFinancieros = async ({ tipo, titulo, mensaje, prioridad = 'normal', accion_url, accion_label, metadata }) => {
+  try {
+    const ids = await getUsuariosPorRol(['admin', 'supervisor', 'financiera']);
+    if (ids.length === 0) return [];
+    const result = await Notificacion.notificarMultiple(ids, {
+      tipo, titulo, mensaje, prioridad, accion_url, accion_label, metadata,
+    });
+    socketService.emitToUsers(ids, 'notificacion:nueva', {
+      tipo, titulo, mensaje, prioridad, accion_url, accion_label,
+      created_at: new Date(),
+    });
+    return result;
+  } catch (err) {
+    logger.error('[NotificacionService] Error al notificar financieros:', err.message);
+    return [];
+  }
+};
+
+/**
+ * Notificar cuando un conductor registra un gasto (pendiente de aprobación)
+ */
+const notificarGastoPendiente = async (movimiento) => {
+  return notificarFinancieros({
+    tipo: 'sistema',
+    titulo: `Nuevo gasto pendiente #${movimiento.consecutivo}`,
+    mensaje: `${movimiento.conductor_nombre || 'Un conductor'} registró un gasto de $${Number(movimiento.valor).toLocaleString('es-CO')} (${movimiento.concepto}). Requiere aprobación.`,
+    prioridad: 'alta',
+    accion_url: '/viajes/movimientos',
+    accion_label: 'Ver movimientos',
+    metadata: { movimiento_id: movimiento.id, caja_menor_id: movimiento.caja_menor_id },
+  });
+};
+
+/**
+ * Notificar cuando se abre una nueva caja menor
+ */
+const notificarCajaMenorAbierta = async (caja) => {
+  return notificarFinancieros({
+    tipo: 'sistema',
+    titulo: `Nueva caja menor: ${caja.numero}`,
+    mensaje: `Se abrió la caja menor ${caja.numero} para ${caja.conductor_nombre || 'un conductor'} con saldo de $${Number(caja.saldo_actual || caja.saldo_inicial || 0).toLocaleString('es-CO')}.`,
+    prioridad: 'normal',
+    accion_url: `/viajes/cajas-menores/${caja.id}`,
+    accion_label: 'Ver caja',
+    metadata: { caja_menor_id: caja.id },
+  });
+};
+
+/**
+ * Notificar cuando un viaje se completa
+ */
+const notificarViajeCompletado = async (viaje) => {
+  return notificarFinancieros({
+    tipo: 'sistema',
+    titulo: `Viaje completado: ${viaje.numero}`,
+    mensaje: `El viaje ${viaje.numero} (${viaje.origen} → ${viaje.destino}) fue completado por ${viaje.conductor_nombre || 'un conductor'}. Valor: $${Number(viaje.valor_viaje || 0).toLocaleString('es-CO')}.`,
+    prioridad: 'normal',
+    accion_url: `/viajes/viajes/${viaje.id}`,
+    accion_label: 'Ver viaje',
+    metadata: { viaje_id: viaje.id },
+  });
+};
+
 module.exports = {
   notificar,
   notificarAdmins,
+  notificarFinancieros,
   notificarPorCliente,
   notificarStockBajo,
   notificarProductoAgotado,
@@ -322,6 +393,9 @@ module.exports = {
   notificarSalidaWms,
   notificarClienteCreado,
   notificarClienteEliminado,
+  notificarGastoPendiente,
+  notificarCajaMenorAbierta,
+  notificarViajeCompletado,
   getUsuariosPorRol,
   getUsuariosPorCliente,
 };

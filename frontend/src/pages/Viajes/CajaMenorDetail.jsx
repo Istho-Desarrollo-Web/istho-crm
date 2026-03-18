@@ -115,6 +115,7 @@ const CajaMenorDetail = () => {
   const [cerrarDialogOpen, setCerrarDialogOpen] = useState(false);
   const [editFormOpen, setEditFormOpen] = useState(false);
   const [observacionesCierre, setObservacionesCierre] = useState('');
+  const [accionSobrante, setAccionSobrante] = useState('guardar');
   const [cerrarLoading, setCerrarLoading] = useState(false);
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -148,10 +149,18 @@ const CajaMenorDetail = () => {
     try {
       await cajasMenoresService.cerrar(id, {
         observaciones_cierre: observacionesCierre,
+        accion_sobrante: saldoActual > 0 ? accionSobrante : 'sin_saldo',
       });
-      success('Caja menor cerrada exitosamente');
+      success(
+        accionSobrante === 'entregar'
+          ? 'Caja cerrada. Saldo entregado al conductor.'
+          : saldoActual > 0
+            ? 'Caja cerrada. Saldo guardado para la siguiente caja.'
+            : 'Caja menor cerrada exitosamente'
+      );
       setCerrarDialogOpen(false);
       setObservacionesCierre('');
+      setAccionSobrante('guardar');
       fetchCaja();
     } catch (err) {
       apiError(err);
@@ -598,7 +607,7 @@ const CajaMenorDetail = () => {
         onClose={() => setCerrarDialogOpen(false)}
         title="Cerrar Caja Menor"
         subtitle={`Caja ${caja?.numero || ''}`}
-        size="sm"
+        size="md"
         footer={
           <>
             <Button variant="outline" onClick={() => setCerrarDialogOpen(false)}>
@@ -618,10 +627,87 @@ const CajaMenorDetail = () => {
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl flex justify-between items-center">
-            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Saldo Actual</span>
-            <span className="text-xl font-bold text-slate-800 dark:text-white">{formatCOP(saldoActual)}</span>
+          {/* Resumen de saldos */}
+          <div className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-500 dark:text-slate-400">Saldo Inicial</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{formatCOP(caja?.saldo_inicial)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-500 dark:text-slate-400">Total Ingresos</span>
+              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">+{formatCOP(caja?.total_ingresos)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-500 dark:text-slate-400">Total Egresos</span>
+              <span className="text-sm font-medium text-red-600 dark:text-red-400">-{formatCOP(caja?.total_egresos)}</span>
+            </div>
+            <div className="border-t border-slate-200 dark:border-slate-600 pt-2 flex justify-between items-center">
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Saldo Final</span>
+              <span className={`text-xl font-bold ${saldoActual >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                {formatCOP(saldoActual)}
+              </span>
+            </div>
           </div>
+
+          {/* Opciones para saldo sobrante */}
+          {saldoActual > 0 && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                ¿Qué hacer con el saldo restante?
+              </label>
+              <div className="space-y-2">
+                <label
+                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    accionSobrante === 'guardar'
+                      ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-700'
+                      : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="accion_sobrante"
+                    value="guardar"
+                    checked={accionSobrante === 'guardar'}
+                    onChange={() => setAccionSobrante('guardar')}
+                    className="mt-0.5 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                      Guardar saldo para siguiente caja
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      El saldo de {formatCOP(saldoActual)} quedará disponible para trasladar al crear una nueva caja menor
+                    </p>
+                  </div>
+                </label>
+
+                <label
+                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    accionSobrante === 'entregar'
+                      ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-700'
+                      : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="accion_sobrante"
+                    value="entregar"
+                    checked={accionSobrante === 'entregar'}
+                    onChange={() => setAccionSobrante('entregar')}
+                    className="mt-0.5 text-orange-600 focus:ring-orange-500"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                      Entregar saldo al conductor
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Se registrará un egreso de liquidación por {formatCOP(saldoActual)} y la caja cerrará en $0
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-1">
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">

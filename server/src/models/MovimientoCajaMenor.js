@@ -15,12 +15,12 @@ const CONCEPTOS_EGRESO = [
   'cuadre_de_caja', 'descargues', 'acpm', 'administracion', 'alimentacion',
   'comisiones', 'desencarpe', 'encarpe', 'hospedaje', 'otros',
   'seguros', 'repuestos', 'tecnicomecanica', 'peajes', 'ligas',
-  'parqueadero', 'urea'
+  'parqueadero', 'urea', 'liquidacion'
 ];
 
 // Conceptos de ingreso
 const CONCEPTOS_INGRESO = [
-  'ingreso_adicional', 'cuadre_de_caja', 'peajes_ingreso',
+  'ingreso_adicional', 'recarga', 'cuadre_de_caja', 'peajes_ingreso',
   'ligas_ingresos', 'parqueadero_ingresos', 'urea_ingresos'
 ];
 
@@ -116,9 +116,9 @@ module.exports = (sequelize) => {
     },
 
     soporte_url: {
-      type: DataTypes.STRING(500),
+      type: DataTypes.TEXT('medium'),
       allowNull: true,
-      comment: 'Ruta del archivo de soporte (factura, recibo, foto)'
+      comment: 'Soporte como data URI base64 o ruta de archivo'
     },
 
     soporte_nombre: {

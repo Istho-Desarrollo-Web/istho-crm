@@ -518,6 +518,46 @@ const refreshToken = async (req, res) => {
 };
 
 /**
+ * PUT /auth/me/preferencias
+ * Guardar preferencias del usuario
+ */
+const actualizarPreferencias = async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(req.user.id);
+    if (!usuario) {
+      return notFound(res, 'Usuario no encontrado');
+    }
+
+    const preferenciasActuales = usuario.preferencias || {};
+    const nuevasPreferencias = { ...preferenciasActuales, ...req.body };
+
+    // Validar valores permitidos
+    const validos = {
+      tema: ['light', 'dark'],
+      idioma: ['es', 'en'],
+      zona_horaria: ['America/Bogota', 'America/Mexico_City', 'America/Lima', 'America/Argentina/Buenos_Aires'],
+      formato_fecha: ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'],
+      tiempo_sesion: [15, 30, 60, 120, 0],
+    };
+
+    for (const [key, opciones] of Object.entries(validos)) {
+      if (nuevasPreferencias[key] !== undefined && !opciones.includes(nuevasPreferencias[key])) {
+        delete nuevasPreferencias[key];
+      }
+    }
+
+    usuario.preferencias = nuevasPreferencias;
+    await usuario.save();
+
+    logger.info('Preferencias actualizadas:', { userId: usuario.id });
+    return successMessage(res, 'Preferencias guardadas', { preferencias: nuevasPreferencias });
+  } catch (error) {
+    logger.error('Error al actualizar preferencias:', { message: error.message });
+    return serverError(res, 'Error al guardar preferencias', error);
+  }
+};
+
+/**
  * POST /auth/me/avatar
  * Subir foto de perfil
  */
@@ -604,5 +644,6 @@ module.exports = {
   resetPassword,
   refreshToken,
   subirAvatar,
-  eliminarAvatar
+  eliminarAvatar,
+  actualizarPreferencias
 };

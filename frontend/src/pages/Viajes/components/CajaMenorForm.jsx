@@ -348,11 +348,13 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
                 disabled={loadingData}
               >
                 <option value="">Sin traslado (opcional)</option>
-                {cajasCerradas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    Caja #{c.id} - {c.conductor_nombre || 'Sin conductor'} - {formatMoney(c.saldo_actual)}
-                  </option>
-                ))}
+                {cajasCerradas
+                  .filter((c) => parseFloat(c.saldo_actual) > 0)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      Caja #{c.numero || c.id} - {c.conductor_nombre || c.conductor?.nombre_completo || 'Sin conductor'} - {formatMoney(c.saldo_actual)}
+                    </option>
+                  ))}
               </select>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Opcional. Seleccione una caja cerrada para trasladar su saldo.

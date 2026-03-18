@@ -49,6 +49,14 @@ router.get('/clientes/excel', requiereRolMinimo('operador'), reporteController.e
 router.get('/clientes/pdf', requiereRolMinimo('operador'), reporteController.exportarClientesPDF);
 
 // =============================================
+// REPORTES FINANCIEROS (datos JSON para vistas)
+// =============================================
+
+router.get('/viajes-reporte', reporteController.getReporteViajes);
+router.get('/cajas-menores-reporte', reporteController.getReporteCajasMenores);
+router.get('/gastos-reporte', reporteController.getReporteGastos);
+
+// =============================================
 // REPORTES DE VIAJES
 // =============================================
 

@@ -149,6 +149,13 @@ module.exports = (sequelize) => {
       comment: 'Avatar como data URI base64 o ruta de archivo'
     },
     
+    preferencias: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null,
+      comment: 'Preferencias del usuario: tema, notificaciones, zona horaria, formato fecha, sesión'
+    },
+
     // ═══════════════════════════════════════════════════════════════════════
     // CAMPOS DE CONTROL Y ROL
     // ═══════════════════════════════════════════════════════════════════════
@@ -493,6 +500,7 @@ module.exports = (sequelize) => {
       cargo: this.cargo || null,
       departamento: this.departamento || 'Operaciones',
       avatar_url: this.avatar_url || null,
+      preferencias: this.preferencias || null,
       rol: this.rol,
       rol_id: this.rol_id || null,
       activo: this.activo,

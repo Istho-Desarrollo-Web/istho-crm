@@ -20,6 +20,7 @@ export const AUTH_ENDPOINTS = {
   REFRESH: '/auth/refresh',
   ME: '/auth/me',
   ME_AVATAR: '/auth/me/avatar',
+  ME_PREFERENCIAS: '/auth/me/preferencias',
   REGISTRO: '/auth/registro',
   CAMBIAR_PASSWORD: '/auth/cambiar-password',
   FORGOT_PASSWORD: '/auth/forgot-password',

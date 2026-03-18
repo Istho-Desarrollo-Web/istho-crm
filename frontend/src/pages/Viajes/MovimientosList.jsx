@@ -67,6 +67,8 @@ const CONCEPTO_LABELS = {
   ligas_ingresos: 'Ligas Ingresos',
   parqueadero_ingresos: 'Parqueadero Ingresos',
   urea_ingresos: 'UREA Ingresos',
+  recarga: 'Recarga de Saldo',
+  liquidacion: 'Liquidación de Caja',
 };
 
 const formatMoney = (value) => {

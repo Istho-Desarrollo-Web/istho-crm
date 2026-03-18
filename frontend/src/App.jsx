@@ -97,6 +97,9 @@ const ReporteDespachos = lazy(() => import('./pages/Reportes/ReporteDespachos'))
 const ReporteInventario = lazy(() => import('./pages/Reportes/ReporteInventario'));
 const ReporteClientes = lazy(() => import('./pages/Reportes/ReporteClientes'));
 const ReportesProgramados = lazy(() => import('./pages/Reportes/ReportesProgramados'));
+const ReporteViajes = lazy(() => import('./pages/Reportes/ReporteViajes'));
+const ReporteCajasMenores = lazy(() => import('./pages/Reportes/ReporteCajasMenores'));
+const ReporteGastos = lazy(() => import('./pages/Reportes/ReporteGastos'));
 
 // Plantillas de Email
 const PlantillasEmailList = lazy(() => import('./pages/PlantillasEmail/PlantillasEmailList'));
@@ -257,6 +260,9 @@ function App() {
                 <Route path="/reportes/despachos" element={<PortalPermissionRoute module="reportes" action="ver"><ReporteDespachos /></PortalPermissionRoute>} />
                 <Route path="/reportes/inventario" element={<PortalPermissionRoute module="reportes" action="ver"><ReporteInventario /></PortalPermissionRoute>} />
                 <Route path="/reportes/clientes" element={<OperadorRoute><ReporteClientes /></OperadorRoute>} />
+                <Route path="/reportes/viajes" element={<PermissionRoute module="reportes" action="ver"><ReporteViajes /></PermissionRoute>} />
+                <Route path="/reportes/cajas-menores" element={<PermissionRoute module="reportes" action="ver"><ReporteCajasMenores /></PermissionRoute>} />
+                <Route path="/reportes/gastos" element={<PermissionRoute module="reportes" action="ver"><ReporteGastos /></PermissionRoute>} />
                 <Route path="/reportes/programados" element={<SupervisorRoute><ReportesProgramados /></SupervisorRoute>} />
                 <Route path="/reportes/operativo" element={<ReporteDespachos />} />
                 <Route path="/reportes/kpis" element={<OperadorRoute><ReporteDespachos /></OperadorRoute>} />

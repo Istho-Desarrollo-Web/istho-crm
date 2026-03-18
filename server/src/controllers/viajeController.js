@@ -12,6 +12,7 @@ const { Viaje, Vehiculo, CajaMenor, MovimientoCajaMenor, Usuario, Auditoria, seq
 const { success, created, paginated, notFound, conflict, serverError, error: errorResponse } = require('../utils/responses');
 const { parsePaginacion, buildPaginacion, parseOrdenamiento, limpiarObjeto, getClientIP, sanitizarBusqueda } = require('../utils/helpers');
 const logger = require('../utils/logger');
+const notificacionService = require('../services/notificacionService');
 
 const CAMPOS_ORDENAMIENTO = ['numero', 'fecha', 'destino', 'cliente_nombre', 'valor_viaje', 'estado', 'created_at'];
 
@@ -226,6 +227,19 @@ const actualizar = async (req, res) => {
     });
 
     await transaction.commit();
+
+    // Notificar a financieros si el viaje se completó
+    if (datos.estado === 'completado' && datosAnteriores.estado !== 'completado') {
+      notificacionService.notificarViajeCompletado({
+        id: viaje.id,
+        numero: viaje.numero,
+        origen: viaje.origen,
+        destino: viaje.destino,
+        valor_viaje: viaje.valor_viaje,
+        conductor_nombre: req.user.nombre_completo,
+      }).catch(() => {});
+    }
+
     return success(res, viaje, 'Viaje actualizado exitosamente');
   } catch (error) {
     try { await transaction.rollback(); } catch (_) {}

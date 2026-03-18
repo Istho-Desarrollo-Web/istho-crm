@@ -65,7 +65,6 @@ const REPORTES_FINANCIEROS = [
     icon: Truck,
     color: 'bg-blue-500',
     exportEndpoints: { excel: '/reportes/viajes/excel', csv: '/reportes/viajes/csv' },
-    navigateTo: '/viajes/viajes',
   },
   {
     id: 'cajas-menores',
@@ -74,16 +73,14 @@ const REPORTES_FINANCIEROS = [
     icon: Wallet,
     color: 'bg-amber-500',
     exportEndpoints: { excel: '/reportes/cajas-menores/excel' },
-    navigateTo: '/viajes/cajas-menores',
   },
   {
-    id: 'movimientos',
+    id: 'gastos',
     titulo: 'Reporte de Gastos',
     descripcion: 'Detalle de egresos e ingresos por conductor y concepto',
     icon: Receipt,
     color: 'bg-orange-500',
     exportEndpoints: { excel: '/reportes/movimientos/excel', csv: '/reportes/movimientos/csv' },
-    navigateTo: '/viajes/movimientos',
   },
 ];
 

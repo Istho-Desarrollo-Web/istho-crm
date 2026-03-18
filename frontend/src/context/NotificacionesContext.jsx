@@ -26,6 +26,38 @@ const NotificacionesContext = createContext();
 const POLLING_INTERVAL = 30000; // 30 segundos
 const INITIAL_RETRY_DELAY = 2000; // 2 segundos para retry inicial
 
+/**
+ * Genera un sonido de notificación con Web Audio API (sin archivo externo)
+ * Dos tonos cortos: ding-ding
+ */
+const playNotificationSound = () => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const playTone = (freq, startTime, duration) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.3, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    };
+
+    const now = ctx.currentTime;
+    playTone(880, now, 0.12);       // A5 — primer ding
+    playTone(1174.66, now + 0.15, 0.15); // D6 — segundo ding (más alto)
+
+    // Cerrar contexto después
+    setTimeout(() => ctx.close().catch(() => {}), 500);
+  } catch {
+    // Web Audio API no disponible o bloqueada
+  }
+};
+
 export const useNotificaciones = () => {
   const context = useContext(NotificacionesContext);
   if (!context) {
@@ -217,6 +249,12 @@ export const NotificacionesProvider = ({ children }) => {
         { ...data, leida: false, id: data.id || Date.now() },
         ...prev.slice(0, 4), // Mantener máximo 5
       ]);
+
+      // Reproducir sonido si está habilitado en preferencias
+      const sonidoHabilitado = user?.preferencias?.notificaciones_sonido !== false;
+      if (sonidoHabilitado) {
+        playNotificationSound();
+      }
 
       // Guardar última para toast
       setUltimaNotificacion(data);

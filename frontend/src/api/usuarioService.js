@@ -339,6 +339,16 @@ const usuarioService = {
    * @param {File} file - Archivo de imagen
    * @returns {Promise<Object>}
    */
+  guardarPreferencias: async (preferencias) => {
+    try {
+      const response = await apiClient.put(AUTH_ENDPOINTS.ME_PREFERENCIAS, preferencias);
+      return response;
+    } catch (error) {
+      console.error('Error guardando preferencias:', error);
+      throw error;
+    }
+  },
+
   subirAvatar: async (file) => {
     try {
       const uploadClient = createUploadClient();

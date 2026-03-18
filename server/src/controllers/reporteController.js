@@ -1019,53 +1019,7 @@ const exportarViajesExcel = async (req, res) => {
       order: [['fecha', 'DESC']]
     });
 
-    const ExcelJS = require('exceljs');
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Viajes');
-
-    sheet.columns = [
-      { header: 'Número', key: 'numero', width: 12 },
-      { header: 'Fecha', key: 'fecha', width: 12 },
-      { header: 'Origen', key: 'origen', width: 18 },
-      { header: 'Destino', key: 'destino', width: 18 },
-      { header: 'Cliente', key: 'cliente_nombre', width: 25 },
-      { header: 'Doc. Cliente', key: 'documento_cliente', width: 15 },
-      { header: 'Vehículo', key: 'vehiculo', width: 12 },
-      { header: 'Conductor', key: 'conductor', width: 25 },
-      { header: 'Peso (kg)', key: 'peso', width: 12 },
-      { header: 'Valor Viaje', key: 'valor_viaje', width: 15 },
-      { header: 'Facturado', key: 'facturado', width: 10 },
-      { header: 'No. Factura', key: 'no_factura', width: 15 },
-      { header: 'Caja Menor', key: 'caja_menor', width: 12 },
-      { header: 'Estado', key: 'estado', width: 12 },
-    ];
-
-    // Header style
-    sheet.getRow(1).eachCell(cell => {
-      cell.font = { bold: true, color: { argb: 'FFFFFF' } };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } };
-    });
-
-    viajes.forEach(v => {
-      sheet.addRow({
-        numero: v.numero,
-        fecha: v.fecha,
-        origen: v.origen,
-        destino: v.destino,
-        cliente_nombre: v.cliente_nombre || '',
-        documento_cliente: v.documento_cliente || '',
-        vehiculo: v.vehiculo?.placa || '',
-        conductor: v.conductor?.nombre_completo || '',
-        peso: parseFloat(v.peso) || 0,
-        valor_viaje: parseFloat(v.valor_viaje) || 0,
-        facturado: v.facturado ? 'Sí' : 'No',
-        no_factura: v.no_factura || '',
-        caja_menor: v.cajaMenor?.numero || '',
-        estado: v.estado,
-      });
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
+    const buffer = await excelService.exportarViajes(viajes, req.query);
     const filename = `viajes_${new Date().toISOString().split('T')[0]}.xlsx`;
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -1216,46 +1170,7 @@ const exportarCajasMenoresExcel = async (req, res) => {
       order: [['created_at', 'DESC']],
     });
 
-    const ExcelJS = require('exceljs');
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Cajas Menores');
-
-    sheet.columns = [
-      { header: 'Número', key: 'numero', width: 14 },
-      { header: 'Conductor', key: 'conductor', width: 25 },
-      { header: 'Estado', key: 'estado', width: 12 },
-      { header: 'Saldo Inicial', key: 'saldo_inicial', width: 15 },
-      { header: 'Saldo Trasladado', key: 'saldo_trasladado', width: 15 },
-      { header: 'Total Ingresos', key: 'total_ingresos', width: 15 },
-      { header: 'Total Egresos', key: 'total_egresos', width: 15 },
-      { header: 'Saldo Actual', key: 'saldo_actual', width: 15 },
-      { header: 'Fecha Apertura', key: 'fecha_apertura', width: 14 },
-      { header: 'Fecha Cierre', key: 'fecha_cierre', width: 14 },
-      { header: 'Creado Por', key: 'creador', width: 25 },
-    ];
-
-    sheet.getRow(1).eachCell(cell => {
-      cell.font = { bold: true, color: { argb: 'FFFFFF' } };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } };
-    });
-
-    cajas.forEach(c => {
-      sheet.addRow({
-        numero: c.numero,
-        conductor: c.conductor?.nombre_completo || '',
-        estado: c.estado,
-        saldo_inicial: parseFloat(c.saldo_inicial) || 0,
-        saldo_trasladado: parseFloat(c.saldo_trasladado) || 0,
-        total_ingresos: parseFloat(c.total_ingresos) || 0,
-        total_egresos: parseFloat(c.total_egresos) || 0,
-        saldo_actual: parseFloat(c.saldo_actual) || 0,
-        fecha_apertura: c.fecha_apertura || '',
-        fecha_cierre: c.fecha_cierre || '',
-        creador: c.creador?.nombre_completo || '',
-      });
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
+    const buffer = await excelService.exportarCajasMenores(cajas);
     const filename = `cajas_menores_${new Date().toISOString().split('T')[0]}.xlsx`;
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -1292,48 +1207,7 @@ const exportarVehiculosExcel = async (req, res) => {
       order: [['placa', 'ASC']],
     });
 
-    const ExcelJS = require('exceljs');
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Vehiculos');
-
-    sheet.columns = [
-      { header: 'Placa', key: 'placa', width: 12 },
-      { header: 'Tipo', key: 'tipo_vehiculo', width: 15 },
-      { header: 'Marca', key: 'marca', width: 15 },
-      { header: 'Modelo', key: 'modelo', width: 10 },
-      { header: 'Color', key: 'color', width: 12 },
-      { header: 'Capacidad (Ton)', key: 'capacidad_ton', width: 15 },
-      { header: 'Conductor', key: 'conductor', width: 25 },
-      { header: 'SOAT Vence', key: 'vencimiento_soat', width: 14 },
-      { header: 'Tecnomecanica Vence', key: 'vencimiento_tecnicomecanica', width: 20 },
-      { header: 'No. Motor', key: 'numero_motor', width: 18 },
-      { header: 'No. Chasis', key: 'numero_chasis', width: 18 },
-      { header: 'Estado', key: 'estado', width: 14 },
-    ];
-
-    sheet.getRow(1).eachCell(cell => {
-      cell.font = { bold: true, color: { argb: 'FFFFFF' } };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } };
-    });
-
-    vehiculos.forEach(v => {
-      sheet.addRow({
-        placa: v.placa,
-        tipo_vehiculo: v.tipo_vehiculo,
-        marca: v.marca || '',
-        modelo: v.modelo || '',
-        color: v.color || '',
-        capacidad_ton: parseFloat(v.capacidad_ton) || 0,
-        conductor: v.conductor?.nombre_completo || '',
-        vencimiento_soat: v.vencimiento_soat || '',
-        vencimiento_tecnicomecanica: v.vencimiento_tecnicomecanica || '',
-        numero_motor: v.numero_motor || '',
-        numero_chasis: v.numero_chasis || '',
-        estado: v.estado,
-      });
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
+    const buffer = await excelService.exportarVehiculos(vehiculos);
     const filename = `vehiculos_${new Date().toISOString().split('T')[0]}.xlsx`;
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -1378,48 +1252,7 @@ const exportarMovimientosExcel = async (req, res) => {
       order: [['created_at', 'DESC']],
     });
 
-    const ExcelJS = require('exceljs');
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Movimientos');
-
-    sheet.columns = [
-      { header: '#', key: 'consecutivo', width: 8 },
-      { header: 'Caja Menor', key: 'caja_menor', width: 14 },
-      { header: 'Conductor', key: 'conductor', width: 25 },
-      { header: 'Tipo', key: 'tipo', width: 10 },
-      { header: 'Concepto', key: 'concepto', width: 20 },
-      { header: 'Descripcion', key: 'descripcion', width: 30 },
-      { header: 'Valor', key: 'valor', width: 15 },
-      { header: 'Aprobado', key: 'aprobado', width: 12 },
-      { header: 'Valor Aprobado', key: 'valor_aprobado', width: 15 },
-      { header: 'Aprobador', key: 'aprobador', width: 25 },
-      { header: 'Viaje', key: 'viaje', width: 18 },
-      { header: 'Fecha', key: 'fecha', width: 18 },
-    ];
-
-    sheet.getRow(1).eachCell(cell => {
-      cell.font = { bold: true, color: { argb: 'FFFFFF' } };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } };
-    });
-
-    movimientos.forEach(m => {
-      sheet.addRow({
-        consecutivo: m.consecutivo,
-        caja_menor: m.cajaMenor?.numero || '',
-        conductor: m.conductor?.nombre_completo || '',
-        tipo: m.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso',
-        concepto: m.concepto,
-        descripcion: m.descripcion || '',
-        valor: parseFloat(m.valor) || 0,
-        aprobado: m.aprobado ? 'Aprobado' : m.rechazado ? 'Rechazado' : 'Pendiente',
-        valor_aprobado: parseFloat(m.valor_aprobado) || 0,
-        aprobador: m.aprobador?.nombre_completo || '',
-        viaje: m.viaje ? `#${m.viaje.numero} - ${m.viaje.destino}` : 'Directo',
-        fecha: m.created_at,
-      });
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
+    const buffer = await excelService.exportarMovimientos(movimientos);
     const filename = `movimientos_${new Date().toISOString().split('T')[0]}.xlsx`;
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -1623,6 +1456,231 @@ const exportarViajesCsv = async (req, res) => {
   }
 };
 
+// =============================================
+// REPORTE VIAJES (JSON para frontend)
+// =============================================
+
+const getReporteViajes = async (req, res) => {
+  try {
+    const where = {};
+    if (req.query.fecha_desde) where.fecha = { ...(where.fecha || {}), [Op.gte]: req.query.fecha_desde };
+    if (req.query.fecha_hasta) where.fecha = { ...(where.fecha || {}), [Op.lte]: req.query.fecha_hasta };
+    if (req.user.esConductor) where.conductor_id = req.user.id;
+
+    const viajes = await Viaje.findAll({
+      where,
+      include: [
+        { model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa'] },
+        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
+      ],
+      order: [['fecha', 'DESC']],
+    });
+
+    const total = viajes.length;
+    const activos = viajes.filter(v => v.estado === 'activo').length;
+    const completados = viajes.filter(v => v.estado === 'completado').length;
+    const anulados = viajes.filter(v => v.estado === 'anulado').length;
+    const facturados = viajes.filter(v => v.facturado).length;
+    const valorTotal = viajes.reduce((s, v) => s + (parseFloat(v.valor_viaje) || 0), 0);
+    const pesoTotal = viajes.reduce((s, v) => s + (parseFloat(v.peso) || 0), 0);
+
+    // Viajes por estado (for pie chart)
+    const porEstado = [
+      { label: 'Activos', value: activos, color: '#3B82F6' },
+      { label: 'Completados', value: completados, color: '#10B981' },
+      { label: 'Anulados', value: anulados, color: '#EF4444' },
+    ].filter(i => i.value > 0);
+
+    // Viajes por mes (last 6 months, for bar chart)
+    const meses = {};
+    const hoy = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString('es-CO', { month: 'short', year: '2-digit' });
+      meses[key] = { label, value1: 0 };
+    }
+    viajes.forEach(v => {
+      if (!v.fecha) return;
+      const d = new Date(v.fecha);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (meses[key]) meses[key].value1++;
+    });
+    const porMes = Object.values(meses);
+
+    // Top 5 conductores
+    const conductorMap = {};
+    viajes.forEach(v => {
+      const nombre = v.conductor?.nombre_completo || 'Sin asignar';
+      conductorMap[nombre] = (conductorMap[nombre] || 0) + 1;
+    });
+    const topConductores = Object.entries(conductorMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([label, value1]) => ({ label, value1 }));
+
+    // Ultimos 10 viajes
+    const ultimos = viajes.slice(0, 10).map(v => ({
+      id: v.id, numero: v.numero, fecha: v.fecha,
+      origen: v.origen, destino: v.destino,
+      conductor: v.conductor?.nombre_completo || '-',
+      vehiculo: v.vehiculo?.placa || '-',
+      valor_viaje: v.valor_viaje, estado: v.estado,
+      facturado: v.facturado,
+    }));
+
+    return res.json({
+      success: true,
+      data: {
+        kpis: { total, activos, completados, anulados, facturados, valorTotal, pesoTotal },
+        porEstado, porMes, topConductores, ultimos,
+      },
+    });
+  } catch (error) {
+    logger.error('Error en reporte viajes:', { message: error.message });
+    return serverError(res, 'Error al generar reporte de viajes', error);
+  }
+};
+
+// =============================================
+// REPORTE CAJAS MENORES (JSON para frontend)
+// =============================================
+
+const getReporteCajasMenores = async (req, res) => {
+  try {
+    const where = {};
+    if (req.user.esConductor) where.conductor_id = req.user.id;
+
+    const cajas = await CajaMenor.findAll({
+      where,
+      include: [
+        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+      ],
+      order: [['created_at', 'DESC']],
+    });
+
+    const total = cajas.length;
+    const abiertas = cajas.filter(c => c.estado === 'abierta').length;
+    const cerradas = cajas.filter(c => c.estado === 'cerrada').length;
+    const enRevision = cajas.filter(c => c.estado === 'en_revision').length;
+    const totalSaldoInicial = cajas.reduce((s, c) => s + (parseFloat(c.saldo_inicial) || 0), 0);
+    const totalIngresos = cajas.reduce((s, c) => s + (parseFloat(c.total_ingresos) || 0), 0);
+    const totalEgresos = cajas.reduce((s, c) => s + (parseFloat(c.total_egresos) || 0), 0);
+    const totalSaldoActual = cajas.reduce((s, c) => s + (parseFloat(c.saldo_actual) || 0), 0);
+
+    const porEstado = [
+      { label: 'Abiertas', value: abiertas, color: '#10B981' },
+      { label: 'En Revisión', value: enRevision, color: '#F59E0B' },
+      { label: 'Cerradas', value: cerradas, color: '#6B7280' },
+    ].filter(i => i.value > 0);
+
+    const egresosVsIngresos = [
+      { label: 'Ingresos', value: totalIngresos, color: '#10B981' },
+      { label: 'Egresos', value: totalEgresos, color: '#EF4444' },
+    ].filter(i => i.value > 0);
+
+    const ultimas = cajas.slice(0, 10).map(c => ({
+      id: c.id, numero: c.numero, estado: c.estado,
+      conductor: c.conductor?.nombre_completo || '-',
+      saldo_inicial: c.saldo_inicial, saldo_actual: c.saldo_actual,
+      total_egresos: c.total_egresos, total_ingresos: c.total_ingresos,
+      fecha_apertura: c.fecha_apertura, fecha_cierre: c.fecha_cierre,
+    }));
+
+    return res.json({
+      success: true,
+      data: {
+        kpis: { total, abiertas, cerradas, enRevision, totalSaldoInicial, totalIngresos, totalEgresos, totalSaldoActual },
+        porEstado, egresosVsIngresos, ultimas,
+      },
+    });
+  } catch (error) {
+    logger.error('Error en reporte cajas menores:', { message: error.message });
+    return serverError(res, 'Error al generar reporte de cajas menores', error);
+  }
+};
+
+// =============================================
+// REPORTE GASTOS (JSON para frontend)
+// =============================================
+
+const getReporteGastos = async (req, res) => {
+  try {
+    const where = {};
+    if (req.query.fecha_desde) where.created_at = { ...(where.created_at || {}), [Op.gte]: req.query.fecha_desde };
+    if (req.query.fecha_hasta) where.created_at = { ...(where.created_at || {}), [Op.lte]: req.query.fecha_hasta };
+    if (req.user.esConductor) where.conductor_id = req.user.id;
+
+    const movimientos = await MovimientoCajaMenor.findAll({
+      where,
+      include: [
+        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
+        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+      ],
+      order: [['created_at', 'DESC']],
+    });
+
+    const total = movimientos.length;
+    const ingresos = movimientos.filter(m => m.tipo_movimiento === 'ingreso');
+    const egresos = movimientos.filter(m => m.tipo_movimiento === 'egreso');
+    const aprobados = movimientos.filter(m => m.aprobado);
+    const pendientes = movimientos.filter(m => !m.aprobado && !m.rechazado);
+    const rechazados = movimientos.filter(m => m.rechazado);
+    const valorTotal = movimientos.reduce((s, m) => s + (parseFloat(m.valor) || 0), 0);
+    const valorAprobado = aprobados.reduce((s, m) => s + (parseFloat(m.valor_aprobado) || 0), 0);
+
+    // Por estado de aprobación (pie chart)
+    const porAprobacion = [
+      { label: 'Aprobados', value: aprobados.length, color: '#10B981' },
+      { label: 'Pendientes', value: pendientes.length, color: '#F59E0B' },
+      { label: 'Rechazados', value: rechazados.length, color: '#EF4444' },
+    ].filter(i => i.value > 0);
+
+    // Gastos por concepto (bar chart - top 8 conceptos de egreso)
+    const conceptoMap = {};
+    egresos.forEach(m => {
+      const concepto = m.concepto || 'otros';
+      conceptoMap[concepto] = (conceptoMap[concepto] || 0) + (parseFloat(m.valor) || 0);
+    });
+    const CONCEPTO_LABELS = {
+      cuadre_de_caja: 'Cuadre', descargues: 'Descargues', acpm: 'ACPM',
+      administracion: 'Admin', alimentacion: 'Alimentación', comisiones: 'Comisiones',
+      desencarpe: 'Desencarpe', encarpe: 'Encarpe', hospedaje: 'Hospedaje',
+      otros: 'Otros', seguros: 'Seguros', repuestos: 'Repuestos',
+      tecnicomecanica: 'Tecnomec.', peajes: 'Peajes', ligas: 'Ligas',
+      parqueadero: 'Parqueadero', urea: 'UREA', liquidacion: 'Liquidación',
+      recarga: 'Recarga',
+    };
+    const porConcepto = Object.entries(conceptoMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([concepto, valor]) => ({ label: CONCEPTO_LABELS[concepto] || concepto, value1: Math.round(valor) }));
+
+    // Ultimos 10 movimientos
+    const ultimos = movimientos.slice(0, 10).map(m => ({
+      id: m.id, consecutivo: m.consecutivo,
+      tipo_movimiento: m.tipo_movimiento, concepto: m.concepto,
+      valor: m.valor, aprobado: m.aprobado, rechazado: m.rechazado,
+      valor_aprobado: m.valor_aprobado,
+      conductor: m.conductor?.nombre_completo || '-',
+      caja_menor: m.cajaMenor?.numero || '-',
+      fecha: m.created_at,
+    }));
+
+    return res.json({
+      success: true,
+      data: {
+        kpis: { total, ingresos: ingresos.length, egresos: egresos.length, aprobados: aprobados.length, pendientes: pendientes.length, rechazados: rechazados.length, valorTotal, valorAprobado },
+        porAprobacion, porConcepto, ultimos,
+      },
+    });
+  } catch (error) {
+    logger.error('Error en reporte gastos:', { message: error.message });
+    return serverError(res, 'Error al generar reporte de gastos', error);
+  }
+};
+
 module.exports = {
   exportarOperacionesExcel,
   exportarOperacionesPDF,
@@ -1643,6 +1701,10 @@ module.exports = {
   exportarVehiculosCsv,
   exportarMovimientosExcel,
   exportarMovimientosCsv,
+  // Reportes financieros (JSON)
+  getReporteViajes,
+  getReporteCajasMenores,
+  getReporteGastos,
   // Reportes programados
   listarProgramados,
   crearProgramado,

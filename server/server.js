@@ -79,7 +79,7 @@ async function initializeDatabase() {
 
     // Sincronizar modelos
     logger.info('Sincronizando modelos...');
-    await db.syncModels({ alter: process.env.NODE_ENV === 'development' });
+    await db.syncModels({ alter: true });
 
     // Seed de roles y permisos (idempotente)
     logger.info('Verificando roles y permisos...');
