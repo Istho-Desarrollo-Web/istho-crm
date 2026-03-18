@@ -205,10 +205,12 @@ const PERMISOS_POR_ROL = {
 // EJECUCIÓN
 // ═══════════════════════════════════════════════════════════════════════════
 
-async function seed() {
+async function seed({ standalone = true } = {}) {
   try {
-    await sequelize.authenticate();
-    console.log('Conectado a la base de datos.\n');
+    if (standalone) {
+      await sequelize.authenticate();
+      console.log('Conectado a la base de datos.\n');
+    }
 
     // 1. Sincronizar tablas nuevas
     await Rol.sync({ alter: true });
@@ -307,11 +309,15 @@ async function seed() {
     console.log(`  ${migrados} usuarios migrados a rol_id`);
 
     console.log('\n Seed completado exitosamente.');
-    process.exit(0);
+    if (standalone) process.exit(0);
   } catch (error) {
     console.error('Error en seed:', error);
-    process.exit(1);
+    if (standalone) process.exit(1);
+    throw error;
   }
 }
 
-seed();
+module.exports = seed;
+if (require.main === module) {
+  seed({ standalone: true });
+}

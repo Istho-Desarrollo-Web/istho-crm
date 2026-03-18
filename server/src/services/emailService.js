@@ -16,6 +16,10 @@ const nodemailer = require('nodemailer');
 const { getTransporter, defaultFrom } = require('../config/email');
 const logger = require('../utils/logger');
 
+// URL de la app (para botones en emails)
+const APP_URL = process.env.APP_URL
+  || (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',')[0].trim();
+
 // Cache de plantillas compiladas (deshabilitado en desarrollo para recargar cambios)
 const templateCache = {};
 
@@ -361,7 +365,7 @@ const enviarAlertaInventario = async (alertas, correosDestino) => {
       stockBajo: alertas.stockBajo || [],
       proximosVencer: alertas.proximosVencer || [],
       vencidos: alertas.vencidos || [],
-      urlInventario: `${process.env.APP_URL}/inventario`
+      urlInventario: `${APP_URL}/inventario`
     };
 
     // Formatear fechas
@@ -399,7 +403,7 @@ const enviarBienvenida = async (usuario, passwordTemporal = null) => {
       email: usuario.email,
       rol: usuario.rol,
       passwordTemporal,
-      urlLogin: `${process.env.APP_URL}/login`
+      urlLogin: `${APP_URL}/login`
     };
 
     return await enviarCorreo({
@@ -436,7 +440,7 @@ const enviarBienvenidaUsuarioCliente = async ({
       passwordTemporal: password,
       cliente,
       invitadoPor,
-      urlLogin: `${process.env.APP_URL}/login`,
+      urlLogin: `${APP_URL}/login`,
       esReenvio
     };
 
@@ -489,7 +493,7 @@ const enviarReseteoPassword = async ({
       passwordTemporal: passTemp,
       cliente,
       reseteadoPor,
-      urlLogin: `${process.env.APP_URL}/login`
+      urlLogin: `${APP_URL}/login`
     };
 
     return await enviarCorreo({

@@ -81,6 +81,16 @@ async function initializeDatabase() {
     logger.info('Sincronizando modelos...');
     await db.syncModels({ alter: process.env.NODE_ENV === 'development' });
 
+    // Seed de roles y permisos (idempotente)
+    logger.info('Verificando roles y permisos...');
+    const seedRolesPermisos = require('./src/scripts/seedRolesPermisos');
+    await seedRolesPermisos({ standalone: false });
+
+    // Seed de plantillas de email (idempotente)
+    logger.info('Verificando plantillas de email...');
+    const seedPlantillasEmail = require('./src/scripts/seedPlantillasEmail');
+    await seedPlantillasEmail({ standalone: false });
+
     // Crear usuarios por defecto
     await crearAdminPorDefecto();
     await crearSupervisorPorDefecto();
