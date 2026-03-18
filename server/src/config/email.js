@@ -2,24 +2,16 @@
  * ============================================================================
  * ISTHO CRM - Configuración de Email
  * ============================================================================
- * 
- * Configuración del transporter de Nodemailer para envío de correos.
- * 
- * CONFIGURACIÓN REQUERIDA EN .env:
- * - SMTP_HOST=smtp.gmail.com
- * - SMTP_PORT=587
- * - SMTP_USER=tu-email@gmail.com
- * - SMTP_PASS=xxxx xxxx xxxx xxxx (Contraseña de aplicación de Google - 16 caracteres)
- * - SMTP_FROM_NAME=ISTHO CRM
- * - SMTP_FROM_EMAIL=tu-email@gmail.com
- * 
- * IMPORTANTE PARA GMAIL:
- * 1. Activa verificación en 2 pasos en tu cuenta Google
- * 2. Genera una "Contraseña de aplicación" en https://myaccount.google.com/apppasswords
- * 3. Usa esa contraseña de 16 caracteres en SMTP_PASS
- * 
+ *
+ * Soporta dos proveedores:
+ * - Resend (recomendado para producción): usa API HTTP, no necesita SMTP
+ * - Nodemailer SMTP (desarrollo/fallback): usa Gmail u otro SMTP
+ *
+ * Si RESEND_API_KEY está configurada, usa Resend automáticamente.
+ * Si no, usa Nodemailer SMTP como antes.
+ *
  * @author Coordinación TI - ISTHO S.A.S.
- * @version 2.0.0
+ * @version 3.0.0
  */
 
 const nodemailer = require('nodemailer');
@@ -29,46 +21,110 @@ const logger = require('../utils/logger');
 // CONFIGURACIÓN
 // ════════════════════════════════════════════════════════════════════════════
 
-/**
- * Configuración del remitente por defecto
- */
 const defaultFrom = {
   name: process.env.SMTP_FROM_NAME || 'ISTHO CRM',
-  address: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'noreply@istho.com'
+  address: process.env.RESEND_FROM || process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'noreply@istho.com'
 };
 
-/**
- * Configuración SMTP
- */
 const smtpConfig = {
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT) || 587,
-  secure: parseInt(process.env.SMTP_PORT) === 465, // true para 465, false para 587
+  secure: parseInt(process.env.SMTP_PORT) === 465,
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s/g, '') : undefined // Eliminar espacios
+    pass: process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s/g, '') : undefined
   },
   tls: {
-    rejectUnauthorized: false // Para desarrollo
+    rejectUnauthorized: false
   },
-  // Timeouts
   connectionTimeout: 10000,
   greetingTimeout: 10000,
   socketTimeout: 30000
 };
 
 // ════════════════════════════════════════════════════════════════════════════
-// TRANSPORTER
+// RESEND TRANSPORT (wrapper compatible con nodemailer)
 // ════════════════════════════════════════════════════════════════════════════
 
-let transporter = null;
-let transporterVerified = false;
-
 /**
- * Crear transporter de producción (Gmail u otro SMTP)
+ * Crea un objeto compatible con la interfaz de nodemailer transporter
+ * pero que internamente usa la API HTTP de Resend.
+ * Así no hay que modificar emailService.js ni ningún consumidor.
  */
+const createResendTransport = () => {
+  const { Resend } = require('resend');
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  return {
+    /**
+     * sendMail compatible con nodemailer
+     */
+    sendMail: async (mailOptions) => {
+      const payload = {
+        from: mailOptions.from || `${defaultFrom.name} <${defaultFrom.address}>`,
+        to: Array.isArray(mailOptions.to) ? mailOptions.to : mailOptions.to.split(',').map(e => e.trim()),
+        subject: mailOptions.subject,
+        html: mailOptions.html,
+        text: mailOptions.text
+      };
+
+      if (mailOptions.cc) {
+        payload.cc = Array.isArray(mailOptions.cc) ? mailOptions.cc : mailOptions.cc.split(',').map(e => e.trim());
+      }
+      if (mailOptions.bcc) {
+        payload.bcc = Array.isArray(mailOptions.bcc) ? mailOptions.bcc : mailOptions.bcc.split(',').map(e => e.trim());
+      }
+
+      // Adjuntos
+      if (mailOptions.attachments && mailOptions.attachments.length > 0) {
+        const fs = require('fs');
+        payload.attachments = mailOptions.attachments.map(att => {
+          if (att.path) {
+            const content = fs.readFileSync(att.path);
+            return {
+              filename: att.filename,
+              content: content
+            };
+          }
+          return att;
+        });
+      }
+
+      const { data, error } = await resend.emails.send(payload);
+
+      if (error) {
+        throw new Error(error.message || 'Error al enviar con Resend');
+      }
+
+      return {
+        messageId: data.id,
+        accepted: payload.to
+      };
+    },
+
+    /**
+     * verify compatible con nodemailer
+     */
+    verify: async () => {
+      // Resend no necesita verificación de conexión, solo validar que la API key exista
+      if (!process.env.RESEND_API_KEY) {
+        throw new Error('RESEND_API_KEY no configurada');
+      }
+      return true;
+    },
+
+    /**
+     * close compatible con nodemailer
+     */
+    close: () => {}
+  };
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+// SMTP TRANSPORT (nodemailer original)
+// ════════════════════════════════════════════════════════════════════════════
+
 const createProductionTransporter = () => {
-  // Validar configuración
   if (!smtpConfig.auth.user || !smtpConfig.auth.pass) {
     logger.error('❌ Configuración SMTP incompleta', {
       hasUser: !!smtpConfig.auth.user,
@@ -88,26 +144,16 @@ const createProductionTransporter = () => {
   return nodemailer.createTransport(smtpConfig);
 };
 
-/**
- * Crear transporter de desarrollo (Ethereal - correos de prueba)
- */
 const createDevTransporter = async () => {
   try {
-    // Crear cuenta de prueba en Ethereal
     const testAccount = await nodemailer.createTestAccount();
-    
-    logger.info('📧 Cuenta Ethereal creada para desarrollo', {
-      user: testAccount.user
-    });
+    logger.info('📧 Cuenta Ethereal creada para desarrollo', { user: testAccount.user });
 
     return nodemailer.createTransport({
       host: 'smtp.ethereal.email',
       port: 587,
       secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass
-      }
+      auth: { user: testAccount.user, pass: testAccount.pass }
     });
   } catch (error) {
     logger.warn('⚠️ No se pudo crear cuenta Ethereal, usando configuración SMTP', error.message);
@@ -115,79 +161,73 @@ const createDevTransporter = async () => {
   }
 };
 
-/**
- * Obtener transporter (singleton con lazy loading)
- * @returns {Promise<nodemailer.Transporter>}
- */
+// ════════════════════════════════════════════════════════════════════════════
+// TRANSPORTER SINGLETON
+// ════════════════════════════════════════════════════════════════════════════
+
+let transporter = null;
+let transporterVerified = false;
+
 const getTransporter = async () => {
-  // Si ya existe y está verificado, retornarlo
   if (transporter && transporterVerified) {
     return transporter;
   }
 
   try {
-    // Determinar si usar Ethereal (desarrollo sin SMTP configurado) o producción
-    const useEthereal = process.env.NODE_ENV === 'development' && 
-                        process.env.USE_ETHEREAL === 'true' &&
-                        !process.env.SMTP_PASS;
-
-    if (useEthereal) {
-      transporter = await createDevTransporter();
+    // Prioridad: Resend > SMTP > Ethereal
+    if (process.env.RESEND_API_KEY) {
+      logger.info('📧 Usando Resend (API HTTP) como proveedor de email');
+      transporter = createResendTransport();
     } else {
-      transporter = createProductionTransporter();
+      const useEthereal = process.env.NODE_ENV === 'development' &&
+                          process.env.USE_ETHEREAL === 'true' &&
+                          !process.env.SMTP_PASS;
+
+      if (useEthereal) {
+        transporter = await createDevTransporter();
+      } else {
+        transporter = createProductionTransporter();
+      }
     }
 
-    // Verificar conexión
     await transporter.verify();
     transporterVerified = true;
-    
-    logger.info('✅ Conexión SMTP verificada exitosamente');
-    
+    logger.info('✅ Proveedor de email verificado exitosamente');
+
     return transporter;
 
   } catch (error) {
-    logger.error('❌ Error al configurar transporter SMTP:', {
+    logger.error('❌ Error al configurar proveedor de email:', {
       message: error.message,
       code: error.code
     });
 
-    // Mensajes de ayuda según el error
     if (error.message.includes('Invalid login') || error.message.includes('authentication')) {
-      logger.error('💡 SOLUCIÓN: Usa una Contraseña de Aplicación de Google:');
-      logger.error('   1. Ve a https://myaccount.google.com/apppasswords');
-      logger.error('   2. Genera una nueva contraseña');
-      logger.error('   3. Copia los 16 caracteres a SMTP_PASS en .env');
+      logger.error('💡 SOLUCIÓN: Usa una Contraseña de Aplicación de Google');
     }
 
     throw error;
   }
 };
 
-/**
- * Verificar conexión SMTP
- * @returns {Promise<boolean>}
- */
 const verificarConexion = async () => {
   try {
     const transport = await getTransporter();
     await transport.verify();
     return true;
   } catch (error) {
-    logger.error('❌ Error verificando conexión SMTP:', error.message);
+    logger.error('❌ Error verificando conexión de email:', error.message);
     return false;
   }
 };
 
-/**
- * Resetear transporter (útil para reconfiguración)
- */
 const resetTransporter = () => {
-  if (transporter) {
+  if (transporter && transporter.close) {
     transporter.close();
   }
   transporter = null;
   transporterVerified = false;
-  logger.info('🔄 Transporter SMTP reseteado');
+  logger.info('🔄 Transporter de email reseteado');
 };
 
 // ════════════════════════════════════════════════════════════════════════════
