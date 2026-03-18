@@ -4,8 +4,8 @@
  * ============================================================================
  * Gestiona operaciones del perfil de usuario.
  * 
- * ⚠️ NOTA: getPermisos genera permisos localmente basándose en el rol,
- * ya que el backend no tiene endpoint de permisos.
+ * getPermisos obtiene permisos reales desde el backend (GET /auth/me).
+ * Fallback a permisos locales si el backend no responde.
  * 
  * CORRECCIONES v1.2.0:
  * - Compatible con client.js v1.1.0 (ya devuelve response.data)
@@ -25,8 +25,7 @@ import { AUTH_ENDPOINTS } from './endpoints';
 // ============================================================================
 
 /**
- * Matriz de permisos por rol
- * Define qué módulos y acciones tiene cada rol
+ * Fallback local de permisos (solo se usa si el backend no responde)
  */
 const PERMISOS_POR_ROL = {
   admin: {
@@ -34,36 +33,80 @@ const PERMISOS_POR_ROL = {
     clientes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
     inventario: ['ver', 'crear', 'editar', 'eliminar', 'ajustar', 'exportar'],
     operaciones: ['ver', 'crear', 'editar', 'cerrar', 'anular', 'exportar'],
+    despachos: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
     reportes: ['ver', 'crear', 'exportar'],
     usuarios: ['ver', 'crear', 'editar', 'eliminar'],
+    roles: ['ver', 'crear', 'editar', 'eliminar'],
+    auditoria: ['ver', 'exportar', 'reenviar_correo'],
+    kardex: ['ver', 'exportar'],
     configuracion: ['ver', 'editar'],
+    notificaciones: ['ver', 'crear', 'editar', 'eliminar'],
+    vehiculos: ['ver', 'crear', 'editar', 'eliminar'],
+    viajes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
+    caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'eliminar', 'exportar'],
+    movimientos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar'],
+    perfil: ['ver', 'cambiar_password'],
   },
   supervisor: {
     dashboard: ['ver', 'exportar'],
     clientes: ['ver', 'crear', 'editar', 'exportar'],
     inventario: ['ver', 'crear', 'editar', 'ajustar', 'exportar'],
     operaciones: ['ver', 'crear', 'editar', 'cerrar', 'exportar'],
+    despachos: ['ver', 'crear', 'editar', 'exportar'],
     reportes: ['ver', 'exportar'],
     usuarios: ['ver'],
+    auditoria: ['ver', 'exportar', 'reenviar_correo'],
+    kardex: ['ver', 'exportar'],
     configuracion: ['ver'],
+    notificaciones: ['ver', 'editar'],
+    vehiculos: ['ver', 'crear', 'editar', 'eliminar'],
+    viajes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
+    caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'eliminar', 'exportar'],
+    movimientos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar'],
+    perfil: ['ver', 'cambiar_password'],
+  },
+  financiera: {
+    dashboard: ['ver'],
+    clientes: ['ver'],
+    reportes: ['ver', 'exportar'],
+    notificaciones: ['ver'],
+    vehiculos: ['ver'],
+    viajes: ['ver', 'exportar'],
+    caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'exportar'],
+    movimientos: ['ver', 'crear', 'editar', 'aprobar'],
+    perfil: ['ver', 'cambiar_password'],
   },
   operador: {
     dashboard: ['ver'],
     clientes: ['ver'],
     inventario: ['ver', 'ajustar'],
     operaciones: ['ver', 'crear', 'editar'],
+    despachos: ['ver', 'crear', 'editar'],
     reportes: ['ver'],
-    usuarios: [],
-    configuracion: [],
+    auditoria: ['ver'],
+    kardex: ['ver'],
+    notificaciones: ['ver'],
+    perfil: ['ver', 'cambiar_password'],
+  },
+  conductor: {
+    dashboard: ['ver'],
+    notificaciones: ['ver'],
+    vehiculos: ['ver'],
+    viajes: ['ver', 'crear', 'editar'],
+    caja_menor: ['ver'],
+    movimientos: ['ver', 'crear', 'editar'],
+    perfil: ['ver', 'cambiar_password'],
   },
   cliente: {
     dashboard: ['ver'],
-    clientes: [],
     inventario: ['ver'],
     operaciones: ['ver'],
-    reportes: ['ver'],
-    usuarios: [],
-    configuracion: [],
+    despachos: ['ver'],
+    reportes: ['ver', 'exportar'],
+    auditoria: ['ver'],
+    kardex: ['ver'],
+    notificaciones: ['ver'],
+    perfil: ['ver', 'cambiar_password'],
   },
 };
 
@@ -157,51 +200,46 @@ const usuarioService = {
   // ──────────────────────────────────────────────────────────────────────────
   
   /**
-   * Obtener permisos del usuario actual
-   * 
-   * ⚠️ IMPORTANTE: Esta función genera los permisos LOCALMENTE
-   * basándose en el rol del usuario almacenado en localStorage.
-   * No hace llamada al backend.
-   * 
+   * Obtener permisos del usuario actual desde el backend
+   * Fallback a permisos locales si el backend no responde
    * @returns {Promise<Object>} Permisos del usuario
    */
   getPermisos: async () => {
     try {
-      // Obtener usuario del localStorage
-      const userStr = localStorage.getItem('istho_user');
-      
-      if (!userStr) {
+      // Obtener datos actualizados del backend (incluye permisos reales de BD)
+      const response = await apiClient.get(AUTH_ENDPOINTS.ME);
+      if (response.success && response.data) {
+        const user = response.data;
+        const permisos = user.permisos?.permisos || user.permisos || {};
         return {
-          success: false,
-          message: 'No hay sesión activa',
-          data: null,
+          success: true,
+          data: {
+            rol: user.rol,
+            permisos: permisos,
+            permisosArray: Object.entries(permisos).flatMap(([modulo, acciones]) =>
+              Array.isArray(acciones)
+                ? acciones.map(accion => `${modulo}.${accion}`)
+                : Object.keys(acciones).filter(k => acciones[k]).map(accion => `${modulo}.${accion}`)
+            ),
+          },
         };
       }
-      
-      const user = JSON.parse(userStr);
-      const rol = user.rol || 'cliente';
-      
-      // Obtener permisos según el rol
-      const permisos = PERMISOS_POR_ROL[rol] || PERMISOS_POR_ROL.cliente;
-      
-      return {
-        success: true,
-        data: {
-          rol: rol,
-          permisos: permisos,
-          // Formato alternativo como array
-          permisosArray: Object.entries(permisos).flatMap(([modulo, acciones]) =>
-            acciones.map(accion => `${modulo}.${accion}`)
-          ),
-        },
-      };
+      return { success: false, message: 'No se pudieron obtener permisos', data: null };
     } catch (error) {
       console.error('Error obteniendo permisos:', error);
-      return {
-        success: false,
-        message: 'Error al obtener permisos',
-        data: null,
-      };
+      // Fallback a permisos locales si el backend no responde
+      try {
+        const userStr = localStorage.getItem('istho_user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          const permisos = PERMISOS_POR_ROL[user.rol] || {};
+          return {
+            success: true,
+            data: { rol: user.rol, permisos, permisosArray: [] },
+          };
+        }
+      } catch { /* ignore */ }
+      return { success: false, message: 'Error al obtener permisos', data: null };
     }
   },
   
@@ -306,8 +344,9 @@ const usuarioService = {
       const uploadClient = createUploadClient();
       const formData = new FormData();
       formData.append('avatar', file);
+      // uploadClient interceptor ya extrae response.data (body completo)
       const response = await uploadClient.post(AUTH_ENDPOINTS.ME_AVATAR, formData);
-      return response.data;
+      return response;  // devuelve { success, message, data: { avatar_url } }
     } catch (error) {
       return {
         success: false,

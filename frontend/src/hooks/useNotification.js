@@ -22,37 +22,14 @@ import { useCallback } from 'react';
 // ESTILOS PERSONALIZADOS ISTHO
 // ════════════════════════════════════════════════════════════════════════════
 
+// Los estilos visuales se manejan en notifications.css para evitar
+// conflictos entre estilos inline y CSS !important (especialmente en móvil).
 const TOAST_STYLES = {
-  base: {
-    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-    borderRadius: '12px',
-    boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.2)',
-    padding: '12px 16px',
-    fontSize: '14px',
-    fontWeight: '500',
-    minWidth: '300px',
-    maxWidth: '450px',
-  },
-  success: {
-    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-    color: '#ffffff',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
-  error: {
-    background: 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)',
-    color: '#ffffff',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
-  warning: {
-    background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
-    color: '#ffffff',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
-  info: {
-    background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
-    color: '#ffffff',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
+  base: {},
+  success: {},
+  error: {},
+  warning: {},
+  info: {},
   // Estilo especial para alertas de inventario (naranja ISTHO)
   inventory: {
     background: 'linear-gradient(135deg, #E65100 0%, #D84315 100%)',
