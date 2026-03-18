@@ -32,6 +32,8 @@ import {
   User,
   CheckCircle2,
   Loader2,
+  LayoutGrid,
+  LayoutList,
 } from 'lucide-react';
 import { Pagination, ConfirmDialog } from '../../components/common';
 import CajaMenorForm from './components/CajaMenorForm';
@@ -218,6 +220,7 @@ const CajaMenorList = () => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, caja: null });
   const [closeModal, setCloseModal] = useState({ isOpen: false, caja: null });
   const [formLoading, setFormLoading] = useState(false);
+  const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
 
   // ──────────────────────────────────────────────────────────────────────────
   // FETCH DATA
@@ -427,11 +430,27 @@ const CajaMenorList = () => {
           </div>
         </div>
 
-        {/* RESULTS COUNT */}
-        <div className="mb-4">
+        {/* RESULTS COUNT + VIEW TOGGLE */}
+        <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {cajas.length} caja{cajas.length !== 1 && 's'} menor{cajas.length !== 1 && 'es'} encontrada{cajas.length !== 1 && 's'}
           </p>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              title="Vista tabla"
+            >
+              <LayoutList className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              title="Vista tarjetas"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* TABLE */}
@@ -453,7 +472,7 @@ const CajaMenorList = () => {
                 {searchTerm ? 'Intenta ajustar el término de búsqueda' : 'Comienza creando tu primera caja menor'}
               </p>
             </div>
-          ) : (
+          ) : viewMode === 'table' ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -545,6 +564,54 @@ const CajaMenorList = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+              {cajas.map((caja) => (
+                <div
+                  key={caja.id}
+                  onClick={() => handleView(caja)}
+                  className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-amber-200 dark:hover:border-amber-800 transition-all cursor-pointer"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
+                        <Wallet className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{caja.numero || `CM-${caja.id}`}</p>
+                        <p className="text-xs text-slate-400">
+                          {caja.fecha_apertura ? new Date(caja.fecha_apertura).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                        </p>
+                      </div>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <RowActions caja={caja} onView={handleView} onEdit={handleEdit} onClose={handleCloseCaja} onDelete={handleDelete} />
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Conductor</span>
+                      <span className="text-slate-700 dark:text-slate-200 truncate max-w-[150px]">
+                        {caja.conductor?.nombre_completo || caja.conductor?.username || '-'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Saldo Inicial</span>
+                      <span className="text-slate-700 dark:text-slate-200 font-mono">{formatMoney(caja.saldo_inicial)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Saldo Actual</span>
+                      <span className={`font-mono font-bold ${Number(caja.saldo_actual) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {formatMoney(caja.saldo_actual)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-700 flex justify-between items-center">
+                    <StatusBadge estado={caja.estado} />
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

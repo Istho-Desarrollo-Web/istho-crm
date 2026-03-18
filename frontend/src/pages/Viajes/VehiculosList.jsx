@@ -279,7 +279,7 @@ const VehiculosList = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('todos');
-  const [viewMode, setViewMode] = useState('table');
+  const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
 
   // Modales
   const [formModal, setFormModal] = useState({ isOpen: false, vehiculo: null });

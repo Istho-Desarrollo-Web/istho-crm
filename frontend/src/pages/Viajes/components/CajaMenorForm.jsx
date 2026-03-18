@@ -36,9 +36,9 @@ const formatMoney = (value) => {
 /** Formatea número con separadores de miles para input visual */
 const formatThousands = (value) => {
   if (!value && value !== 0) return '';
-  const num = String(value).replace(/[^\d]/g, '');
-  if (!num) return '';
-  return Number(num).toLocaleString('es-CO');
+  const parsed = parseFloat(value);
+  if (isNaN(parsed)) return '';
+  return Math.round(parsed).toLocaleString('es-CO');
 };
 
 /** Extrae número limpio de string formateado */
@@ -193,12 +193,10 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
       newErrors.conductor_id = 'El conductor es requerido';
     }
 
-    if (!isEditing) {
-      if (!formData.saldo_inicial && formData.saldo_inicial !== 0) {
-        newErrors.saldo_inicial = 'El saldo inicial es requerido';
-      } else if (parseFloat(formData.saldo_inicial) < 0) {
-        newErrors.saldo_inicial = 'El saldo inicial no puede ser negativo';
-      }
+    if (!formData.saldo_inicial && formData.saldo_inicial !== 0) {
+      newErrors.saldo_inicial = 'El saldo inicial es requerido';
+    } else if (parseFloat(formData.saldo_inicial) < 0) {
+      newErrors.saldo_inicial = 'El saldo inicial no puede ser negativo';
     }
 
     setErrors(newErrors);
@@ -217,6 +215,7 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
       const payload = isEditing
         ? {
             conductor_id: formData.conductor_id,
+            saldo_inicial: parseFloat(formData.saldo_inicial) || 0,
             observaciones: formData.observaciones,
           }
         : {
@@ -329,8 +328,8 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
               value={formatThousands(formData.saldo_inicial)}
               onChange={(e) => handleChange('saldo_inicial', parseThousands(e.target.value))}
               placeholder="0"
-              disabled={isEditing || loadingData}
-              className={`${baseInputClasses(true, errors.saldo_inicial)} ${isEditing ? 'opacity-60 cursor-not-allowed' : ''}`}
+              disabled={loadingData}
+              className={baseInputClasses(true, errors.saldo_inicial)}
             />
           </InputField>
 

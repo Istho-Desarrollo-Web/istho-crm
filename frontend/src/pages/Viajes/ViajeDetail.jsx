@@ -32,6 +32,7 @@ import {
   Calendar,
   Users,
   Package,
+  Clock,
 } from 'lucide-react';
 
 import { Button, Modal, StatusChip } from '../../components/common';
@@ -526,13 +527,14 @@ const ViajeDetail = () => {
                             <CheckCircle className="w-3.5 h-3.5" />
                             Aprobado
                           </span>
-                        ) : gasto.aprobado === false || gasto.aprobado === 'rechazado' ? (
+                        ) : gasto.rechazado === true || gasto.rechazado === 'true' ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
                             <XCircle className="w-3.5 h-3.5" />
                             Rechazado
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                            <Clock className="w-3.5 h-3.5" />
                             Pendiente
                           </span>
                         )}

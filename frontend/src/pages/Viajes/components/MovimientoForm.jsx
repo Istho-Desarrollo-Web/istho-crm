@@ -91,7 +91,7 @@ const InputField = ({ label, icon: Icon, required, children, error }) => (
 // COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════════════════════════════════════
 
-const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId, defaultViajeId }) => {
+const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId, defaultViajeId, readOnly = false }) => {
   const { success, error } = useNotification();
   const { user } = useAuth();
 
@@ -103,6 +103,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
   const [cajas, setCajas] = useState([]);
   const [viajes, setViajes] = useState([]);
   const [soporte, setSoporte] = useState(null);
+  const [soporteExistente, setSoporteExistente] = useState(null); // { url, nombre } del soporte ya guardado
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [activeTab, setActiveTab] = useState('datos');
@@ -179,6 +180,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
     if (!open) {
       setFormData(INITIAL_FORM);
       setSoporte(null);
+      setSoporteExistente(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -196,9 +198,15 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
               tipo_movimiento: m.tipo_movimiento || '',
               concepto: m.concepto || '',
               concepto_otro: m.concepto_otro || '',
-              valor: m.valor ?? '',
+              valor: m.valor != null ? Math.round(parseFloat(m.valor)) : '',
               descripcion: m.descripcion || '',
             });
+            // Cargar soporte existente si tiene
+            if (m.soporte_url) {
+              setSoporteExistente({ url: m.soporte_url, nombre: m.soporte_nombre || 'Archivo adjunto' });
+            } else {
+              setSoporteExistente(null);
+            }
           } else {
             error('No se pudo cargar la información del movimiento');
             onClose();
@@ -270,9 +278,11 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
 
   const formatThousands = (value) => {
     if (!value && value !== 0) return '';
-    const num = String(value).replace(/[^\d]/g, '');
-    if (!num) return '';
-    return Number(num).toLocaleString('es-CO');
+    // Convertir a número primero para quitar decimales (.00) del backend
+    const parsed = parseFloat(value);
+    if (isNaN(parsed)) return '';
+    const entero = Math.round(parsed);
+    return entero.toLocaleString('es-CO');
   };
 
   const handleSubmit = async () => {
@@ -344,18 +354,22 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
     <Modal
       isOpen={open}
       onClose={onClose}
-      title={isEditing ? 'Editar Movimiento' : 'Nuevo Movimiento'}
-      subtitle={isEditing ? 'Editando movimiento existente' : 'Complete la información del movimiento'}
+      title={readOnly ? 'Detalle Movimiento' : (isEditing ? 'Editar Movimiento' : 'Nuevo Movimiento')}
+      subtitle={readOnly ? `Movimiento #${movimientoId}` : (isEditing ? 'Editando movimiento existente' : 'Complete la información del movimiento')}
       size="lg"
       footer={
-        <>
-          <Button variant="outline" onClick={onClose} disabled={loading}>
-            Cancelar
-          </Button>
-          <Button variant="primary" onClick={handleSubmit} loading={loading} disabled={loadingData}>
-            {isEditing ? 'Guardar Cambios' : 'Registrar Movimiento'}
-          </Button>
-        </>
+        readOnly ? (
+          <Button variant="outline" onClick={onClose}>Cerrar</Button>
+        ) : (
+          <>
+            <Button variant="outline" onClick={onClose} disabled={loading}>
+              Cancelar
+            </Button>
+            <Button variant="primary" onClick={handleSubmit} loading={loading} disabled={loadingData}>
+              {isEditing ? 'Guardar Cambios' : 'Registrar Movimiento'}
+            </Button>
+          </>
+        )
       }
     >
       {loadingData ? (
@@ -391,7 +405,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
 
           {/* Tab 1: Datos del Movimiento */}
           {activeTab === 'datos' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${readOnly ? 'pointer-events-none opacity-75' : ''}`}>
               {/* Caja Menor */}
               <InputField label="Caja Menor" icon={Wallet} required>
                 <select
@@ -492,7 +506,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
 
           {/* Tab 2: Soporte y Descripción */}
           {activeTab === 'soporte' && (
-            <div className="grid grid-cols-1 gap-4">
+            <div className={`grid grid-cols-1 gap-4 ${readOnly ? '[&_textarea]:pointer-events-none [&_textarea]:opacity-75' : ''}`}>
               {/* Descripción */}
               <InputField label="Descripción" icon={FileText}>
                 <textarea
@@ -505,10 +519,31 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                 />
               </InputField>
 
-              {/* Soporte (archivo) */}
+              {/* Soporte existente (al editar) */}
+              {soporteExistente && !soporte && (
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Soporte actual
+                  </label>
+                  <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl">
+                    <FileText className="h-5 w-5 text-slate-400 flex-shrink-0" />
+                    <a
+                      href={`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || ''}${soporteExistente.url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline truncate"
+                    >
+                      {soporteExistente.nombre}
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Soporte (subir nuevo archivo) - ocultar en readOnly */}
+              {!readOnly && (
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Soporte
+                  {soporteExistente && !soporte ? 'Reemplazar soporte' : 'Soporte'}
                 </label>
                 <input
                   type="file"
@@ -553,6 +588,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                   </div>
                 )}
               </div>
+              )}
             </div>
           )}
         </>

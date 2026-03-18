@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Menu, MenuItem, IconButton, Checkbox } from '@mui/material';
 import { useThemeContext } from '../../context/ThemeContext';
 import { movimientosService } from '../../api/viajes.service';
@@ -34,6 +34,8 @@ import {
   FileSpreadsheet,
   Download,
   Loader2,
+  LayoutGrid,
+  LayoutList,
 } from 'lucide-react';
 import { Button, Modal, Pagination, ConfirmDialog } from '../../components/common';
 import MovimientoForm from './components/MovimientoForm';
@@ -123,7 +125,7 @@ const KpiMini = ({ icon: Icon, label, value, color }) => (
 // ROW ACTIONS COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
 
-const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar }) => {
+const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar, onRechazar }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const { isDark } = useThemeContext();
   const open = Boolean(anchorEl);
@@ -185,6 +187,18 @@ const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar }) => {
           </ProtectedAction>
         )}
 
+        {isPendiente && (
+          <ProtectedAction module="movimientos" action="aprobar">
+            <MenuItem
+              onClick={() => { onRechazar(movimiento); setAnchorEl(null); }}
+              sx={{ color: isDark ? '#fca5a5 !important' : '#ea580c !important', '&:hover': { backgroundColor: isDark ? '#431407 !important' : '#fff7ed !important' } }}
+            >
+              <XCircle className="w-4 h-4" />
+              Rechazar
+            </MenuItem>
+          </ProtectedAction>
+        )}
+
         <ProtectedAction module="movimientos" action="eliminar">
           <MenuItem
             onClick={() => { onDelete(movimiento); setAnchorEl(null); }}
@@ -217,7 +231,7 @@ const AprobarMovimientoDialog = ({ isOpen, onClose, movimiento, onAprobar, onRec
   if (!isOpen || !movimiento) return null;
 
   return (
-    <Modal open={isOpen} onClose={onClose} title="Aprobar Movimiento">
+    <Modal isOpen={isOpen} onClose={onClose} title="Aprobar Movimiento">
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
@@ -287,11 +301,12 @@ const AprobarMovimientoDialog = ({ isOpen, onClose, movimiento, onAprobar, onRec
 // ════════════════════════════════════════════════════════════════════════════
 
 const MovimientosList = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, hasPermission } = useAuth();
   const canAprobar = hasPermission('movimientos', 'aprobar');
   const { isDark } = useThemeContext();
-  const { success, apiError, deleted } = useNotification();
+  const { success, error: showError, apiError, deleted } = useNotification();
 
   // ──────────────────────────────────────────────────────────────────────────
   // ESTADOS
@@ -304,6 +319,8 @@ const MovimientosList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [tipoFilter, setTipoFilter] = useState(searchParams.get('tipo_movimiento') || 'todos');
   const [aprobadoFilter, setAprobadoFilter] = useState(searchParams.get('aprobado') || 'todos');
+
+  const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
 
   // Selección masiva
   const [selected, setSelected] = useState([]);
@@ -391,9 +408,13 @@ const MovimientosList = () => {
   };
 
   const handleMassApproval = async () => {
+    if (!selected.length) {
+      showError('Selecciona al menos un movimiento');
+      return;
+    }
     setFormLoading(true);
     try {
-      await movimientosService.aprobarMasivo(selected);
+      await movimientosService.aprobarMasivo({ ids: selected });
       success(`${selected.length} movimiento(s) aprobado(s) correctamente`);
       setSelected([]);
       fetchMovimientos(pagination.page);
@@ -426,6 +447,19 @@ const MovimientosList = () => {
 
   const handleAprobar = (movimiento) => {
     setAprobarModal({ isOpen: true, movimiento });
+  };
+
+  const handleRechazarDirecto = async (movimiento) => {
+    setFormLoading(true);
+    try {
+      await movimientosService.aprobar(movimiento.id, { aprobado: false });
+      success('Movimiento rechazado');
+      fetchMovimientos(pagination.page);
+    } catch (err) {
+      apiError(err);
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -644,11 +678,27 @@ const MovimientosList = () => {
           </div>
         </div>
 
-        {/* RESULTS COUNT */}
-        <div className="mb-4">
+        {/* RESULTS COUNT + VIEW TOGGLE */}
+        <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {pagination.total} movimiento{pagination.total !== 1 && 's'} encontrado{pagination.total !== 1 && 's'}
           </p>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-purple-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              title="Vista tabla"
+            >
+              <LayoutList className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 text-purple-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              title="Vista tarjetas"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* TABLE */}
@@ -683,7 +733,7 @@ const MovimientosList = () => {
                 </ProtectedAction>
               )}
             </div>
-          ) : (
+          ) : viewMode === 'table' ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -736,7 +786,8 @@ const MovimientosList = () => {
                   {movimientos.map((mov) => (
                     <tr
                       key={mov.id}
-                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group"
+                      onClick={() => handleView(mov)}
+                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group cursor-pointer"
                     >
                       {/* Checkbox (solo si puede aprobar) */}
                       {canAprobar && (
@@ -814,9 +865,19 @@ const MovimientosList = () => {
 
                       {/* Caja Menor */}
                       <td className="py-4 px-4">
-                        <span className="text-sm text-purple-600 dark:text-purple-400 font-medium cursor-pointer hover:underline">
-                          {mov.cajaMenor?.numero || mov.caja_menor?.numero ? `${mov.cajaMenor?.numero || mov.caja_menor?.numero}` : '-'}
-                        </span>
+                        {(mov.cajaMenor?.id || mov.caja_menor_id) ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/viajes/cajas-menores/${mov.cajaMenor?.id || mov.caja_menor_id}`);
+                            }}
+                            className="text-sm text-purple-600 dark:text-purple-400 font-medium cursor-pointer hover:underline"
+                          >
+                            {mov.cajaMenor?.numero || mov.caja_menor?.numero || '-'}
+                          </button>
+                        ) : (
+                          <span className="text-sm text-slate-400">-</span>
+                        )}
                       </td>
 
                       {/* Conductor */}
@@ -832,12 +893,86 @@ const MovimientosList = () => {
                           onEdit={handleEdit}
                           onDelete={handleDelete}
                           onAprobar={handleAprobar}
+                          onRechazar={handleRechazarDirecto}
                         />
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+              {movimientos.map((mov) => (
+                <div
+                  key={mov.id}
+                  onClick={() => handleView(mov)}
+                  className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-purple-200 dark:hover:border-purple-800 transition-all cursor-pointer"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                        <Receipt className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">#{mov.consecutivo || mov.id}</p>
+                        <p className="text-xs text-slate-400">
+                          {(mov.created_at || mov.fecha)
+                            ? new Date(mov.created_at || mov.fecha).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+                            : '-'}
+                        </p>
+                      </div>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <RowActions
+                        movimiento={mov}
+                        onView={handleView}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onAprobar={handleAprobar}
+                        onRechazar={handleRechazarDirecto}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Concepto</span>
+                      <span className="text-slate-700 dark:text-slate-200 truncate max-w-[150px]">
+                        {CONCEPTO_LABELS[mov.concepto] || mov.concepto || '-'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Tipo</span>
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        mov.tipo_movimiento === 'ingreso'
+                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                          : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                      }`}>
+                        {mov.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Valor</span>
+                      <span className="text-slate-800 dark:text-slate-100 font-semibold font-mono">{formatMoney(mov.valor)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Conductor</span>
+                      <span className="text-slate-700 dark:text-slate-200 truncate max-w-[150px]">
+                        {mov.conductor?.nombre_completo || mov.conductor?.username || '-'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Caja Menor</span>
+                      <span className="text-purple-600 dark:text-purple-400 font-medium">
+                        {mov.cajaMenor?.numero || mov.caja_menor?.numero || '-'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-700 flex justify-between items-center">
+                    <StatusBadge aprobado={mov.aprobado} rechazado={mov.rechazado} />
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
@@ -895,6 +1030,7 @@ const MovimientosList = () => {
           refresh();
         }}
         movimientoId={formModal.movimiento?.id}
+        readOnly={formModal.movimiento?._readOnly || false}
       />
 
       <ConfirmDialog

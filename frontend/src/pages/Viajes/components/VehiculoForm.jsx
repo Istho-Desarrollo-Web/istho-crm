@@ -147,7 +147,7 @@ const InputField = ({ field, value, onChange, error, conductores, disabled }) =>
             min={field.min}
             step={field.step}
             disabled={disabled}
-            className={baseInputClasses}
+            className={`${baseInputClasses}${field.type === 'date' ? ' min-w-0' : ''}`}
           />
         )}
       </div>

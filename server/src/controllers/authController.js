@@ -532,17 +532,16 @@ const subirAvatar = async (req, res) => {
       return notFound(res, 'Usuario no encontrado');
     }
 
-    // Eliminar avatar anterior si existe
-    if (usuario.avatar_url) {
-      const fs = require('fs');
-      const path = require('path');
-      const oldPath = path.join(__dirname, '../../uploads', usuario.avatar_url.replace('/uploads/', ''));
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath);
-      }
-    }
+    // Convertir archivo a data URI base64 (persiste en BD, no en filesystem)
+    const fs = require('fs');
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const base64 = fileBuffer.toString('base64');
+    const mimeType = req.file.mimetype || 'image/png';
+    const avatar_url = `data:${mimeType};base64,${base64}`;
 
-    const avatar_url = `/uploads/avatars/${req.file.filename}`;
+    // Eliminar archivo temporal del disco (ya no lo necesitamos)
+    try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+
     usuario.avatar_url = avatar_url;
     await usuario.save();
 
@@ -556,7 +555,7 @@ const subirAvatar = async (req, res) => {
       descripcion: 'Foto de perfil actualizada'
     });
 
-    logger.info('Avatar actualizado:', { userId: usuario.id });
+    logger.info('Avatar actualizado (base64):', { userId: usuario.id });
 
     return successMessage(res, 'Foto de perfil actualizada', { avatar_url });
 
@@ -575,15 +574,6 @@ const eliminarAvatar = async (req, res) => {
     const usuario = await Usuario.findByPk(req.user.id);
     if (!usuario) {
       return notFound(res, 'Usuario no encontrado');
-    }
-
-    if (usuario.avatar_url) {
-      const fs = require('fs');
-      const path = require('path');
-      const oldPath = path.join(__dirname, '../../uploads', usuario.avatar_url.replace('/uploads/', ''));
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath);
-      }
     }
 
     usuario.avatar_url = null;

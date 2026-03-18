@@ -144,8 +144,9 @@ module.exports = (sequelize) => {
     },
     
     avatar_url: {
-      type: DataTypes.STRING(255),
-      allowNull: true
+      type: DataTypes.TEXT('medium'),
+      allowNull: true,
+      comment: 'Avatar como data URI base64 o ruta de archivo'
     },
     
     // ═══════════════════════════════════════════════════════════════════════

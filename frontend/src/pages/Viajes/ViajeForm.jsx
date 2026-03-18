@@ -22,9 +22,9 @@ import { useAuth } from '../../context/AuthContext';
 
 const formatThousands = (value) => {
   if (!value && value !== 0) return '';
-  const num = String(value).replace(/[^\d]/g, '');
-  if (!num) return '';
-  return Number(num).toLocaleString('es-CO');
+  const parsed = parseFloat(value);
+  if (isNaN(parsed)) return '';
+  return Math.round(parsed).toLocaleString('es-CO');
 };
 
 const parseThousands = (formatted) => {
@@ -169,9 +169,10 @@ const ViajeForm = () => {
               documento_cliente: v.documento_cliente || '', origen: v.origen || 'GIRARDOTA',
               destino: v.destino || '', caja_menor_id: v.caja_menor_id || '',
               descripcion: v.descripcion || '', peso: v.peso ?? '',
-              valor_descargue: v.valor_descargue ?? '', num_personas: v.num_personas ?? '',
+              valor_descargue: v.valor_descargue != null ? Math.round(parseFloat(v.valor_descargue)) : '',
+              num_personas: v.num_personas ?? '',
               no_factura: v.no_factura || '', facturado: v.facturado || false,
-              valor_viaje: v.valor_viaje ?? '',
+              valor_viaje: v.valor_viaje != null ? Math.round(parseFloat(v.valor_viaje)) : '',
             });
             if (v.peso || v.valor_descargue || v.num_personas) setShowAdicional(true);
             if (v.no_factura || v.facturado || v.valor_viaje) setShowFacturacion(true);
@@ -308,7 +309,7 @@ const ViajeForm = () => {
                 type="date"
                 value={formData.fecha}
                 onChange={e => handleChange('fecha', e.target.value)}
-                className={inputCls(true)}
+                className={`${inputCls(true)} min-w-0`}
                 required
               />
             </FormField>

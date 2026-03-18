@@ -33,12 +33,15 @@ import {
 } from 'lucide-react';
 
 import { Button, Modal, StatusChip, ConfirmDialog } from '../../components/common';
-import { cajasMenoresService } from '../../api/viajes.service';
+import { cajasMenoresService, movimientosService } from '../../api/viajes.service';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
+import { Clock } from 'lucide-react';
 
 // ════════════════════════════════════════════════════════════════════════════
+import CajaMenorForm from './components/CajaMenorForm';
+
 // HELPERS
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -110,6 +113,7 @@ const CajaMenorDetail = () => {
 
   // Dialogs
   const [cerrarDialogOpen, setCerrarDialogOpen] = useState(false);
+  const [editFormOpen, setEditFormOpen] = useState(false);
   const [observacionesCierre, setObservacionesCierre] = useState('');
   const [cerrarLoading, setCerrarLoading] = useState(false);
 
@@ -264,7 +268,7 @@ const CajaMenorDetail = () => {
                   <Button
                     variant="outline"
                     icon={Pencil}
-                    onClick={() => navigate(`/viajes/cajas-menores/${id}/editar`)}
+                    onClick={() => setEditFormOpen(true)}
                   >
                     Editar
                   </Button>
@@ -398,46 +402,101 @@ const CajaMenorDetail = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-gray-100">
-                          <th className="text-left py-3 px-4 font-semibold text-slate-500">Consecutivo</th>
-                          <th className="text-left py-3 px-4 font-semibold text-slate-500">Concepto</th>
-                          <th className="text-center py-3 px-4 font-semibold text-slate-500">Tipo</th>
-                          <th className="text-right py-3 px-4 font-semibold text-slate-500">Valor</th>
-                          <th className="text-center py-3 px-4 font-semibold text-slate-500">Aprobado</th>
-                          <th className="text-right py-3 px-4 font-semibold text-slate-500">Valor Aprobado</th>
+                        <tr className="border-b border-gray-100 dark:border-slate-700">
+                          <th className="text-left py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Consecutivo</th>
+                          <th className="text-left py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Concepto</th>
+                          <th className="text-center py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Tipo</th>
+                          <th className="text-right py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Valor</th>
+                          <th className="text-center py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Estado</th>
+                          <th className="text-right py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Valor Aprobado</th>
+                          {hasPermission('movimientos', 'aprobar') && (
+                            <th className="text-center py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Acciones</th>
+                          )}
                         </tr>
                       </thead>
                       <tbody>
-                        {movimientos.map((mov) => (
-                          <tr
-                            key={mov.id}
-                            className="border-b border-gray-50 hover:bg-slate-50 transition-colors"
-                          >
-                            <td className="py-3 px-4 font-medium text-slate-800">{mov.consecutivo || '-'}</td>
-                            <td className="py-3 px-4 text-slate-600">{mov.concepto || '-'}</td>
-                            <td className="py-3 px-4 text-center">
-                              <Chip
-                                label={mov.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso'}
-                                size="small"
-                                color={mov.tipo_movimiento === 'ingreso' ? 'success' : 'error'}
-                                variant="outlined"
-                              />
-                            </td>
-                            <td className="py-3 px-4 text-right font-medium text-slate-800">
-                              {formatCOP(mov.valor)}
-                            </td>
-                            <td className="py-3 px-4 text-center">
-                              {mov.aprobado ? (
-                                <Chip label="Aprobado" size="small" color="success" />
-                              ) : (
-                                <Chip label="Pendiente" size="small" color="warning" variant="outlined" />
+                        {movimientos.map((mov) => {
+                          const isPendiente = !mov.aprobado && !mov.rechazado;
+                          return (
+                            <tr
+                              key={mov.id}
+                              className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                            >
+                              <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200">#{mov.consecutivo || '-'}</td>
+                              <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{mov.concepto || '-'}</td>
+                              <td className="py-3 px-4 text-center">
+                                <Chip
+                                  label={mov.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso'}
+                                  size="small"
+                                  color={mov.tipo_movimiento === 'ingreso' ? 'success' : 'error'}
+                                  variant="outlined"
+                                />
+                              </td>
+                              <td className="py-3 px-4 text-right font-medium text-slate-800 dark:text-slate-200">
+                                {formatCOP(mov.valor)}
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                {mov.aprobado ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                                    <CheckCircle className="w-3.5 h-3.5" />
+                                    Aprobado
+                                  </span>
+                                ) : mov.rechazado ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                                    <XCircle className="w-3.5 h-3.5" />
+                                    Rechazado
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    Pendiente
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-4 text-right font-medium text-slate-800 dark:text-slate-200">
+                                {mov.valor_aprobado != null ? formatCOP(mov.valor_aprobado) : '-'}
+                              </td>
+                              {hasPermission('movimientos', 'aprobar') && (
+                                <td className="py-3 px-4 text-center">
+                                  {isPendiente ? (
+                                    <div className="flex items-center justify-center gap-1">
+                                      <button
+                                        onClick={async () => {
+                                          try {
+                                            await movimientosService.aprobar(mov.id, { aprobado: true, valor_aprobado: mov.valor });
+                                            success('Movimiento aprobado');
+                                            fetchCaja();
+                                          } catch (err) { apiError(err); }
+                                        }}
+                                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors"
+                                        title="Aprobar"
+                                      >
+                                        <CheckCircle className="h-3.5 w-3.5" />
+                                        Aprobar
+                                      </button>
+                                      <button
+                                        onClick={async () => {
+                                          try {
+                                            await movimientosService.aprobar(mov.id, { aprobado: false });
+                                            success('Movimiento rechazado');
+                                            fetchCaja();
+                                          } catch (err) { apiError(err); }
+                                        }}
+                                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors"
+                                        title="Rechazar"
+                                      >
+                                        <XCircle className="h-3.5 w-3.5" />
+                                        Rechazar
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <span className="text-xs text-slate-400">—</span>
+                                  )}
+                                </td>
                               )}
-                            </td>
-                            <td className="py-3 px-4 text-right font-medium text-slate-800">
-                              {mov.valor_aprobado != null ? formatCOP(mov.valor_aprobado) : '-'}
-                            </td>
-                          </tr>
-                        ))}
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -578,6 +637,17 @@ const CajaMenorDetail = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Modal de edición */}
+      <CajaMenorForm
+        open={editFormOpen}
+        onClose={() => setEditFormOpen(false)}
+        onSuccess={() => {
+          setEditFormOpen(false);
+          fetchCaja();
+        }}
+        cajaId={viaje?.id}
+      />
     </div>
   );
 };

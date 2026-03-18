@@ -209,7 +209,7 @@ const ViajesList = () => {
   const [loading, setLoading] = useState(true);
   const [viajes, setViajes] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
-  const [viewMode, setViewMode] = useState('table');
+  const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
   const [error, setError] = useState(null);
 
   // Modales
