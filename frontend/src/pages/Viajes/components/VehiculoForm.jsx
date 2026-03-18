@@ -60,7 +60,7 @@ const FORM_FIELDS = {
 // INPUT FIELD (mismo patrón que ClienteForm)
 // ════════════════════════════════════════════════════════════════════════════
 
-const InputField = ({ field, value, onChange, error, conductores }) => {
+const InputField = ({ field, value, onChange, error, conductores, disabled }) => {
   const Icon = field.icon;
 
   const baseInputClasses = `
@@ -72,6 +72,7 @@ const InputField = ({ field, value, onChange, error, conductores }) => {
     ${error ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'}
     ${Icon ? 'pl-10' : ''}
     ${field.uppercase ? 'uppercase' : ''}
+    ${disabled ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-900' : ''}
   `;
 
   const handleChange = (e) => {
@@ -104,6 +105,7 @@ const InputField = ({ field, value, onChange, error, conductores }) => {
             name={field.name}
             value={value || ''}
             onChange={handleChange}
+            disabled={disabled}
             className={baseInputClasses}
           >
             <option value="">Seleccionar...</option>
@@ -116,6 +118,7 @@ const InputField = ({ field, value, onChange, error, conductores }) => {
             name={field.name}
             value={value || ''}
             onChange={handleChange}
+            disabled={disabled}
             className={baseInputClasses}
           >
             <option value="">Sin asignar</option>
@@ -130,6 +133,7 @@ const InputField = ({ field, value, onChange, error, conductores }) => {
             onChange={handleChange}
             placeholder={field.placeholder}
             rows={3}
+            disabled={disabled}
             className={baseInputClasses}
           />
         ) : (
@@ -142,6 +146,7 @@ const InputField = ({ field, value, onChange, error, conductores }) => {
             maxLength={field.maxLength}
             min={field.min}
             step={field.step}
+            disabled={disabled}
             className={baseInputClasses}
           />
         )}
@@ -329,13 +334,14 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                   onChange={handleChange}
                   error={errors[field.name]}
                   conductores={conductores}
+                  disabled={readOnly}
                 />
               </div>
             ))}
           </div>
 
           {/* Estado (solo en edición) */}
-          {isEditing && activeTab === 'basico' && (
+          {isEditing && activeTab === 'basico' && !readOnly && (
             <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Estado del Vehículo

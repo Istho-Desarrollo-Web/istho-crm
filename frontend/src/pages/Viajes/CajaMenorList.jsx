@@ -146,7 +146,7 @@ const RowActions = ({ caja, onView, onEdit, onClose, onDelete }) => {
           Ver detalle
         </MenuItem>
 
-        <ProtectedAction module="viajes" action="editar">
+        <ProtectedAction module="caja_menor" action="editar">
           <MenuItem onClick={() => { onEdit(caja); setAnchorEl(null); }}>
             <Pencil className="w-4 h-4" />
             Editar
@@ -154,7 +154,7 @@ const RowActions = ({ caja, onView, onEdit, onClose, onDelete }) => {
         </ProtectedAction>
 
         {caja.estado === 'abierta' && (
-          <ProtectedAction module="viajes" action="cerrar_caja">
+          <ProtectedAction module="caja_menor" action="cerrar">
             <MenuItem
               onClick={() => { onClose(caja); setAnchorEl(null); }}
               sx={{ color: isDark ? '#fbbf24 !important' : '#d97706 !important', '&:hover': { backgroundColor: isDark ? '#422006 !important' : '#fffbeb !important' } }}
@@ -165,7 +165,7 @@ const RowActions = ({ caja, onView, onEdit, onClose, onDelete }) => {
           </ProtectedAction>
         )}
 
-        <ProtectedAction module="viajes" action="eliminar">
+        <ProtectedAction module="caja_menor" action="eliminar">
           <MenuItem
             onClick={() => { onDelete(caja); setAnchorEl(null); }}
             sx={{ color: isDark ? '#f87171 !important' : '#dc2626 !important', '&:hover': { backgroundColor: isDark ? '#450a0a !important' : '#fef2f2 !important' } }}
@@ -341,7 +341,7 @@ const CajaMenorList = () => {
               <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestión de cajas menores y saldos</p>
             </div>
           </div>
-          <ProtectedAction module="viajes" action="crear">
+          <ProtectedAction module="caja_menor" action="crear">
             <button
               onClick={handleCreate}
               className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-colors"

@@ -29,7 +29,8 @@ import PrivateRoute, {
   SupervisorRoute,
   OperadorRoute,
   ClienteRoute,
-  PortalPermissionRoute
+  PortalPermissionRoute,
+  PermissionRoute
 } from './components/auth/PrivateRoute';
 
 // Layout
@@ -278,14 +279,14 @@ function App() {
                 {/* ────────────────────────────────────────────────────────── */}
                 {/* MÓDULO DE VIAJES */}
                 {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/viajes/vehiculos" element={<VehiculosList />} />
-                <Route path="/viajes/cajas-menores" element={<CajaMenorList />} />
-                <Route path="/viajes/cajas-menores/:id" element={<CajaMenorDetail />} />
-                <Route path="/viajes/viajes" element={<ViajesList />} />
-                <Route path="/viajes/viajes/nuevo" element={<ViajeForm />} />
-                <Route path="/viajes/viajes/:id" element={<ViajeDetail />} />
-                <Route path="/viajes/viajes/:id/editar" element={<ViajeForm />} />
-                <Route path="/viajes/movimientos" element={<MovimientosList />} />
+                <Route path="/viajes/vehiculos" element={<PermissionRoute module="vehiculos" action="ver"><VehiculosList /></PermissionRoute>} />
+                <Route path="/viajes/cajas-menores" element={<PermissionRoute module="caja_menor" action="ver"><CajaMenorList /></PermissionRoute>} />
+                <Route path="/viajes/cajas-menores/:id" element={<PermissionRoute module="caja_menor" action="ver"><CajaMenorDetail /></PermissionRoute>} />
+                <Route path="/viajes/viajes" element={<PermissionRoute module="viajes" action="ver"><ViajesList /></PermissionRoute>} />
+                <Route path="/viajes/viajes/nuevo" element={<PermissionRoute module="viajes" action="crear"><ViajeForm /></PermissionRoute>} />
+                <Route path="/viajes/viajes/:id" element={<PermissionRoute module="viajes" action="ver"><ViajeDetail /></PermissionRoute>} />
+                <Route path="/viajes/viajes/:id/editar" element={<PermissionRoute module="viajes" action="editar"><ViajeForm /></PermissionRoute>} />
+                <Route path="/viajes/movimientos" element={<PermissionRoute module="movimientos" action="ver"><MovimientosList /></PermissionRoute>} />
 
                 {/* ────────────────────────────────────────────────────────── */}
                 {/* PERFIL Y CONFIGURACIÓN */}

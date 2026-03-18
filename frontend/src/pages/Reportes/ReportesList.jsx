@@ -1,15 +1,15 @@
 /**
  * ISTHO CRM - ReportesList Page
- * Dashboard principal de reportes con acceso a diferentes tipos
+ * Dashboard principal de reportes con acceso a diferentes tipos.
+ * Filtra reportes visibles segun el rol del usuario.
  *
- * @author Coordinación TI ISTHO
+ * @author Coordinacion TI ISTHO
  * @date Marzo 2026
  */
 
 import { useNavigate } from 'react-router-dom';
 import {
   FileText,
-  TrendingUp,
   Package,
   Users,
   Truck,
@@ -17,20 +17,23 @@ import {
   Calendar,
   Activity,
   Eye,
+  Wallet,
+  Receipt,
 } from 'lucide-react';
 
-// Components
 import { Button } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 
 // ============================================
-// REPORTES DISPONIBLES (Configuración UI)
+// REPORTES POR CATEGORIA
 // ============================================
-const REPORTES_DISPONIBLES = [
+
+// Reportes operativos (admin, supervisor, operador)
+const REPORTES_OPERATIVOS = [
   {
     id: 'despachos',
     titulo: 'Reporte de Despachos',
-    descripcion: 'Análisis de operaciones de ingreso y salida del WMS',
+    descripcion: 'Analisis de operaciones de ingreso y salida del WMS',
     icon: Truck,
     color: 'bg-blue-500',
     exportEndpoints: { excel: '/reportes/operaciones/excel', pdf: '/reportes/operaciones/pdf' },
@@ -38,7 +41,7 @@ const REPORTES_DISPONIBLES = [
   {
     id: 'inventario',
     titulo: 'Reporte de Inventario',
-    descripcion: 'Estado del inventario, stock y valorización por cliente',
+    descripcion: 'Estado del inventario, stock y valorizacion por cliente',
     icon: Package,
     color: 'bg-emerald-500',
     exportEndpoints: { excel: '/reportes/inventario/excel', pdf: '/reportes/inventario/pdf' },
@@ -53,12 +56,96 @@ const REPORTES_DISPONIBLES = [
   },
 ];
 
+// Reportes financieros (financiera, admin, supervisor)
+const REPORTES_FINANCIEROS = [
+  {
+    id: 'viajes',
+    titulo: 'Reporte de Viajes',
+    descripcion: 'Historial de viajes, rutas, conductores y estados',
+    icon: Truck,
+    color: 'bg-blue-500',
+    exportOnly: true,
+    exportEndpoints: { excel: '/reportes/viajes/excel' },
+  },
+  {
+    id: 'cajas-menores',
+    titulo: 'Reporte de Cajas Menores',
+    descripcion: 'Resumen de cajas menores, saldos y movimientos',
+    icon: Wallet,
+    color: 'bg-amber-500',
+    navigateTo: '/viajes/cajas-menores',
+  },
+  {
+    id: 'movimientos',
+    titulo: 'Reporte de Gastos',
+    descripcion: 'Detalle de egresos e ingresos por conductor y concepto',
+    icon: Receipt,
+    color: 'bg-orange-500',
+    navigateTo: '/viajes/movimientos',
+  },
+];
+
+// Reportes para portal de clientes
+const REPORTES_CLIENTE = [
+  {
+    id: 'inventario',
+    titulo: 'Reporte de Inventario',
+    descripcion: 'Estado del inventario y stock de tus productos',
+    icon: Package,
+    color: 'bg-emerald-500',
+    exportEndpoints: { excel: '/reportes/inventario/excel', pdf: '/reportes/inventario/pdf' },
+  },
+  {
+    id: 'despachos',
+    titulo: 'Reporte de Operaciones',
+    descripcion: 'Historial de ingresos y salidas de tus productos',
+    icon: Truck,
+    color: 'bg-blue-500',
+    exportEndpoints: { excel: '/reportes/operaciones/excel', pdf: '/reportes/operaciones/pdf' },
+  },
+];
+
+/**
+ * Selecciona reportes visibles segun el rol del usuario
+ */
+const getReportesPorRol = (rol) => {
+  switch (rol) {
+    case 'financiera':
+      return REPORTES_FINANCIEROS;
+    case 'cliente':
+      return REPORTES_CLIENTE;
+    case 'conductor':
+      return []; // Conductor no ve reportes (usa su dashboard)
+    case 'admin':
+    case 'supervisor':
+      return [...REPORTES_OPERATIVOS, ...REPORTES_FINANCIEROS];
+    case 'operador':
+      return REPORTES_OPERATIVOS;
+    default:
+      return REPORTES_OPERATIVOS;
+  }
+};
+
 // ============================================
 // REPORTE CARD
 // ============================================
 const ReporteCard = ({ reporte, canExport }) => {
   const navigate = useNavigate();
   const Icon = reporte.icon;
+
+  const handleView = () => {
+    if (reporte.navigateTo) {
+      navigate(reporte.navigateTo);
+    } else if (!reporte.exportOnly) {
+      navigate(`/reportes/${reporte.id}`);
+    }
+  };
+
+  const handleExport = () => {
+    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+    const token = localStorage.getItem('istho_token');
+    window.open(`${baseUrl}${reporte.exportEndpoints.excel}?token=${token}`, '_blank');
+  };
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md hover:border-orange-200 dark:hover:border-orange-800 transition-all">
@@ -72,27 +159,28 @@ const ReporteCard = ({ reporte, canExport }) => {
       <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">{reporte.descripcion}</p>
 
       <div className="flex items-center gap-2">
-        <Button
-          variant="primary"
-          size="sm"
-          icon={Eye}
-          onClick={() => navigate(`/reportes/${reporte.id}`)}
-          fullWidth
-        >
-          Ver Reporte
-        </Button>
+        {/* Boton Ver / Navegar (no mostrar si es solo exportacion sin navigateTo) */}
+        {(!reporte.exportOnly || reporte.navigateTo) && (
+          <Button
+            variant="primary"
+            size="sm"
+            icon={Eye}
+            onClick={handleView}
+            fullWidth
+          >
+            {reporte.navigateTo ? 'Ver Modulo' : 'Ver Reporte'}
+          </Button>
+        )}
+        {/* Boton exportar Excel */}
         {canExport && reporte.exportEndpoints?.excel && (
           <Button
-            variant="outline"
+            variant={reporte.exportOnly && !reporte.navigateTo ? 'primary' : 'outline'}
             size="sm"
             icon={Download}
-            onClick={() => {
-              const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-              const token = localStorage.getItem('istho_token');
-              window.open(`${baseUrl}${reporte.exportEndpoints.excel}?token=${token}`, '_blank');
-            }}
+            onClick={handleExport}
+            fullWidth={reporte.exportOnly && !reporte.navigateTo}
           >
-            Excel
+            Exportar Excel
           </Button>
         )}
       </div>
@@ -105,9 +193,17 @@ const ReporteCard = ({ reporte, canExport }) => {
 // ============================================
 const ReportesList = () => {
   const navigate = useNavigate();
-  const { hasPermission, isCliente } = useAuth();
-  // Portal clients use 'descargar', internal roles use 'exportar'
+  const { user, hasPermission } = useAuth();
   const canExport = hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
+
+  const rol = user?.rol || 'operador';
+  const reportes = getReportesPorRol(rol);
+
+  const subtitulo = rol === 'financiera'
+    ? 'Reportes financieros y de gestion de viajes'
+    : rol === 'cliente'
+      ? 'Consulta y exporta reportes de tus productos'
+      : 'Genera y exporta reportes de gestion';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
@@ -116,9 +212,7 @@ const ReportesList = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Reportes</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">
-              Genera y exporta reportes de gestión
-            </p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">{subtitulo}</p>
           </div>
         </div>
 
@@ -130,7 +224,7 @@ const ReportesList = () => {
                 <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{REPORTES_DISPONIBLES.length}</p>
+                <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{reportes.length}</p>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Reportes disponibles</p>
               </div>
             </div>
@@ -142,7 +236,7 @@ const ReportesList = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">Excel / PDF</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Formatos de exportación</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Formatos de exportacion</p>
               </div>
             </div>
           </div>
@@ -160,11 +254,18 @@ const ReportesList = () => {
         </div>
 
         {/* Reportes Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          {REPORTES_DISPONIBLES.map((reporte) => (
-            <ReporteCard key={reporte.id} reporte={reporte} canExport={canExport} />
-          ))}
-        </div>
+        {reportes.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            {reportes.map((reporte) => (
+              <ReporteCard key={reporte.id} reporte={reporte} canExport={canExport} />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-slate-700 text-center mb-6">
+            <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+            <p className="text-slate-500 dark:text-slate-400">No hay reportes disponibles para tu rol</p>
+          </div>
+        )}
 
         {/* Reportes Programados - Solo supervisor+ */}
         {(hasPermission('reportes', 'exportar')) && (
@@ -178,7 +279,7 @@ const ReportesList = () => {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-slate-800 dark:text-slate-100">Reportes Programados</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Configura el envío automático de reportes por email</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Configura el envio automatico de reportes por email</p>
               </div>
               <Eye className="w-5 h-5 text-slate-400" />
             </button>
@@ -187,8 +288,8 @@ const ReportesList = () => {
 
         {/* Footer */}
         <footer className="text-center py-6 mt-8 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">
-          © 2026 ISTHO S.A.S. - Sistema CRM Interno<br />
-          Centro Logístico Industrial del Norte, Girardota, Antioquia
+          &copy; 2026 ISTHO S.A.S. - Sistema CRM Interno<br />
+          Centro Logistico Industrial del Norte, Girardota, Antioquia
         </footer>
       </main>
     </div>

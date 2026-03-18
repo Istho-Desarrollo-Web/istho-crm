@@ -31,6 +31,8 @@ import {
   ShieldAlert,
   User,
   Loader2,
+  LayoutGrid,
+  LayoutList,
 } from 'lucide-react';
 
 // Components
@@ -48,7 +50,6 @@ import { useAuth } from '../../context/AuthContext';
 import { vehiculosService } from '../../api/viajes.service';
 
 // Utils
-import { exportToCsv } from '../../utils/exportCsv';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -278,6 +279,7 @@ const VehiculosList = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('todos');
+  const [viewMode, setViewMode] = useState('table');
 
   // Modales
   const [formModal, setFormModal] = useState({ isOpen: false, vehiculo: null });
@@ -374,14 +376,13 @@ const VehiculosList = () => {
   // ──────────────────────────────────────────────────────────────────────────
 
   const handleExportCsv = () => {
-    exportToCsv(vehiculos, [
-      { key: 'placa', label: 'Placa' },
-      { key: 'tipo_vehiculo', label: 'Tipo Vehículo' },
-      { key: 'capacidad_ton', label: 'Capacidad (Ton)' },
-      { key: 'estado', label: 'Estado' },
-      { key: 'vencimiento_soat', label: 'Venc. SOAT' },
-      { key: 'vencimiento_tecnicomecanica', label: 'Venc. Tecnicomecánica' },
-    ], 'vehiculos');
+    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+    const token = localStorage.getItem('istho_token');
+    const params = new URLSearchParams();
+    if (token) params.set('token', token);
+    if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
+    if (searchTerm) params.set('search', searchTerm);
+    window.open(`${baseUrl}/reportes/vehiculos/csv?${params.toString()}`, '_blank');
   };
 
   const handleExportExcel = () => {
@@ -391,7 +392,7 @@ const VehiculosList = () => {
     if (token) params.set('token', token);
     if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
     if (searchTerm) params.set('search', searchTerm);
-    window.open(`${baseUrl}/viajes/vehiculos/excel?${params.toString()}`, '_blank');
+    window.open(`${baseUrl}/reportes/vehiculos/excel?${params.toString()}`, '_blank');
   };
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -479,7 +480,7 @@ const VehiculosList = () => {
             </div>
 
             {/* Estado Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl overflow-x-auto flex-nowrap whitespace-nowrap">
               {[
                 { key: 'todos', label: 'Todos' },
                 { key: 'activo', label: 'Activos' },
@@ -513,11 +514,27 @@ const VehiculosList = () => {
           </div>
         </div>
 
-        {/* RESULTS COUNT */}
-        <div className="mb-4">
+        {/* RESULTS COUNT + VIEW TOGGLE */}
+        <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {pagination.total} vehículo{pagination.total !== 1 && 's'} encontrado{pagination.total !== 1 && 's'}
           </p>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-orange-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              title="Vista tabla"
+            >
+              <LayoutList className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 text-orange-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              title="Vista tarjetas"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* TABLE */}
@@ -552,7 +569,7 @@ const VehiculosList = () => {
                 </ProtectedAction>
               )}
             </div>
-          ) : (
+          ) : viewMode === 'table' ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -649,6 +666,52 @@ const VehiculosList = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+              {vehiculos.map((vehiculo) => (
+                <div
+                  key={vehiculo.id}
+                  onClick={() => handleView(vehiculo)}
+                  className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-orange-200 dark:hover:border-orange-800 transition-all cursor-pointer"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                        <Truck className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100 font-mono">{vehiculo.placa}</p>
+                        <p className="text-xs text-slate-400">{formatTipoVehiculo(vehiculo.tipo_vehiculo)}</p>
+                      </div>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <RowActions vehiculo={vehiculo} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Conductor</span>
+                      <span className="text-slate-700 dark:text-slate-200 truncate max-w-[150px]">{vehiculo.conductor?.nombre_completo || '-'}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Capacidad</span>
+                      <span className="text-slate-700 dark:text-slate-200">{vehiculo.capacidad_ton != null ? `${vehiculo.capacidad_ton} Ton` : '-'}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">SOAT</span>
+                      <VencimientoBadge fecha={vehiculo.vencimiento_soat} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Tecnomecanica</span>
+                      <VencimientoBadge fecha={vehiculo.vencimiento_tecnicomecanica} />
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-700 flex justify-between items-center">
+                    <StatusBadge estado={vehiculo.estado} />
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

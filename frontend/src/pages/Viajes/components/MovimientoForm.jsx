@@ -506,11 +506,23 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
               </InputField>
 
               {/* Soporte (archivo) */}
-              <InputField label="Soporte" icon={Upload}>
-                <label
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Soporte
+                </label>
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  ref={fileInputRef}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
                   className={`
                     flex items-center gap-3 cursor-pointer
-                    w-full px-4 py-3 pl-10
+                    w-full px-4 py-3 text-left
                     bg-white dark:bg-slate-800 border border-dashed rounded-xl
                     text-sm text-slate-500 dark:text-slate-400
                     border-slate-200 dark:border-slate-600
@@ -518,17 +530,11 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                     transition-all duration-200
                   `}
                 >
+                  <Upload className="h-5 w-5 text-slate-400 flex-shrink-0" />
                   <span className="truncate">
                     {soporte ? soporte.name : 'Seleccionar archivo (PDF, JPG o PNG)'}
                   </span>
-                  <input
-                    type="file"
-                    onChange={handleFileChange}
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    ref={fileInputRef}
-                    className="hidden"
-                  />
-                </label>
+                </button>
                 {soporte && (
                   <div className="mt-2 flex items-center gap-2">
                     <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -546,7 +552,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                     </button>
                   </div>
                 )}
-              </InputField>
+              </div>
             </div>
           )}
         </>

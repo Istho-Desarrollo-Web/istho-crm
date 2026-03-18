@@ -1196,6 +1196,361 @@ const exportarCajaMenorExcel = async (req, res) => {
   }
 };
 
+// =============================================
+// EXPORTAR VEHICULOS A EXCEL
+// =============================================
+
+const exportarVehiculosExcel = async (req, res) => {
+  try {
+    const where = {};
+    if (req.query.estado && req.query.estado !== 'todos') where.estado = req.query.estado;
+    if (req.query.tipo_vehiculo) where.tipo_vehiculo = req.query.tipo_vehiculo;
+    if (req.query.search) {
+      where[Op.or] = [
+        { placa: { [Op.like]: `%${req.query.search}%` } },
+        { marca: { [Op.like]: `%${req.query.search}%` } },
+      ];
+    }
+
+    const vehiculos = await Vehiculo.findAll({
+      where,
+      include: [
+        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+      ],
+      order: [['placa', 'ASC']],
+    });
+
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Vehiculos');
+
+    sheet.columns = [
+      { header: 'Placa', key: 'placa', width: 12 },
+      { header: 'Tipo', key: 'tipo_vehiculo', width: 15 },
+      { header: 'Marca', key: 'marca', width: 15 },
+      { header: 'Modelo', key: 'modelo', width: 10 },
+      { header: 'Color', key: 'color', width: 12 },
+      { header: 'Capacidad (Ton)', key: 'capacidad_ton', width: 15 },
+      { header: 'Conductor', key: 'conductor', width: 25 },
+      { header: 'SOAT Vence', key: 'vencimiento_soat', width: 14 },
+      { header: 'Tecnomecanica Vence', key: 'vencimiento_tecnicomecanica', width: 20 },
+      { header: 'No. Motor', key: 'numero_motor', width: 18 },
+      { header: 'No. Chasis', key: 'numero_chasis', width: 18 },
+      { header: 'Estado', key: 'estado', width: 14 },
+    ];
+
+    sheet.getRow(1).eachCell(cell => {
+      cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } };
+    });
+
+    vehiculos.forEach(v => {
+      sheet.addRow({
+        placa: v.placa,
+        tipo_vehiculo: v.tipo_vehiculo,
+        marca: v.marca || '',
+        modelo: v.modelo || '',
+        color: v.color || '',
+        capacidad_ton: parseFloat(v.capacidad_ton) || 0,
+        conductor: v.conductor?.nombre_completo || '',
+        vencimiento_soat: v.vencimiento_soat || '',
+        vencimiento_tecnicomecanica: v.vencimiento_tecnicomecanica || '',
+        numero_motor: v.numero_motor || '',
+        numero_chasis: v.numero_chasis || '',
+        estado: v.estado,
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const filename = `vehiculos_${new Date().toISOString().split('T')[0]}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+
+    logger.info('Excel vehiculos generado:', { registros: vehiculos.length });
+  } catch (error) {
+    logger.error('Error al exportar vehiculos Excel:', { message: error.message });
+    return serverError(res, 'Error al generar reporte de vehiculos', error);
+  }
+};
+
+// =============================================
+// EXPORTAR MOVIMIENTOS CAJA MENOR A EXCEL
+// =============================================
+
+const exportarMovimientosExcel = async (req, res) => {
+  try {
+    const where = {};
+    if (req.query.caja_menor_id) where.caja_menor_id = req.query.caja_menor_id;
+    if (req.query.concepto) where.concepto = req.query.concepto;
+    if (req.query.tipo_movimiento) where.tipo_movimiento = req.query.tipo_movimiento;
+    if (req.query.aprobado === 'pendiente') {
+      where.aprobado = false;
+      where.rechazado = false;
+    } else if (req.query.aprobado === 'aprobado' || req.query.aprobado === 'true') {
+      where.aprobado = true;
+    } else if (req.query.aprobado === 'rechazado') {
+      where.rechazado = true;
+    }
+    if (req.query.conductor_id) where.conductor_id = req.query.conductor_id;
+    if (req.user.esConductor) where.conductor_id = req.user.id;
+
+    const movimientos = await MovimientoCajaMenor.findAll({
+      where,
+      include: [
+        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
+        { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
+        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
+      ],
+      order: [['created_at', 'DESC']],
+    });
+
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Movimientos');
+
+    sheet.columns = [
+      { header: '#', key: 'consecutivo', width: 8 },
+      { header: 'Caja Menor', key: 'caja_menor', width: 14 },
+      { header: 'Conductor', key: 'conductor', width: 25 },
+      { header: 'Tipo', key: 'tipo', width: 10 },
+      { header: 'Concepto', key: 'concepto', width: 20 },
+      { header: 'Descripcion', key: 'descripcion', width: 30 },
+      { header: 'Valor', key: 'valor', width: 15 },
+      { header: 'Aprobado', key: 'aprobado', width: 12 },
+      { header: 'Valor Aprobado', key: 'valor_aprobado', width: 15 },
+      { header: 'Aprobador', key: 'aprobador', width: 25 },
+      { header: 'Viaje', key: 'viaje', width: 18 },
+      { header: 'Fecha', key: 'fecha', width: 18 },
+    ];
+
+    sheet.getRow(1).eachCell(cell => {
+      cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } };
+    });
+
+    movimientos.forEach(m => {
+      sheet.addRow({
+        consecutivo: m.consecutivo,
+        caja_menor: m.cajaMenor?.numero || '',
+        conductor: m.conductor?.nombre_completo || '',
+        tipo: m.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso',
+        concepto: m.concepto,
+        descripcion: m.descripcion || '',
+        valor: parseFloat(m.valor) || 0,
+        aprobado: m.aprobado ? 'Aprobado' : m.rechazado ? 'Rechazado' : 'Pendiente',
+        valor_aprobado: parseFloat(m.valor_aprobado) || 0,
+        aprobador: m.aprobador?.nombre_completo || '',
+        viaje: m.viaje ? `#${m.viaje.numero} - ${m.viaje.destino}` : 'Directo',
+        fecha: m.created_at,
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const filename = `movimientos_${new Date().toISOString().split('T')[0]}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+
+    logger.info('Excel movimientos generado:', { registros: movimientos.length });
+  } catch (error) {
+    logger.error('Error al exportar movimientos Excel:', { message: error.message });
+    return serverError(res, 'Error al generar reporte de movimientos', error);
+  }
+};
+
+// =============================================
+// EXPORTAR VEHICULOS A CSV
+// =============================================
+
+const exportarVehiculosCsv = async (req, res) => {
+  try {
+    const where = {};
+    if (req.query.estado && req.query.estado !== 'todos') where.estado = req.query.estado;
+    if (req.query.tipo_vehiculo) where.tipo_vehiculo = req.query.tipo_vehiculo;
+    if (req.query.search) {
+      where[Op.or] = [
+        { placa: { [Op.like]: `%${req.query.search}%` } },
+        { marca: { [Op.like]: `%${req.query.search}%` } },
+      ];
+    }
+
+    const vehiculos = await Vehiculo.findAll({
+      where,
+      include: [
+        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+      ],
+      order: [['placa', 'ASC']],
+    });
+
+    const headers = ['Placa', 'Tipo', 'Marca', 'Modelo', 'Color', 'Capacidad (Ton)', 'Conductor', 'SOAT Vence', 'Tecnomecanica Vence', 'No. Motor', 'No. Chasis', 'Estado'];
+    const rows = vehiculos.map(v => [
+      v.placa,
+      v.tipo_vehiculo,
+      v.marca || '',
+      v.modelo || '',
+      v.color || '',
+      parseFloat(v.capacidad_ton) || 0,
+      v.conductor?.nombre_completo || '',
+      v.vencimiento_soat || '',
+      v.vencimiento_tecnicomecanica || '',
+      v.numero_motor || '',
+      v.numero_chasis || '',
+      v.estado,
+    ]);
+
+    const escapeCsv = (val) => {
+      const str = String(val ?? '');
+      return str.includes(',') || str.includes('"') || str.includes('\n')
+        ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+
+    const csv = [headers.map(escapeCsv).join(','), ...rows.map(r => r.map(escapeCsv).join(','))].join('\n');
+    const filename = `vehiculos_${new Date().toISOString().split('T')[0]}.csv`;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send('\uFEFF' + csv); // BOM for Excel UTF-8
+
+    logger.info('CSV vehiculos generado:', { registros: vehiculos.length });
+  } catch (error) {
+    logger.error('Error al exportar vehiculos CSV:', { message: error.message });
+    return serverError(res, 'Error al generar CSV de vehiculos', error);
+  }
+};
+
+// =============================================
+// EXPORTAR MOVIMIENTOS A CSV
+// =============================================
+
+const exportarMovimientosCsv = async (req, res) => {
+  try {
+    const where = {};
+    if (req.query.caja_menor_id) where.caja_menor_id = req.query.caja_menor_id;
+    if (req.query.concepto) where.concepto = req.query.concepto;
+    if (req.query.tipo_movimiento) where.tipo_movimiento = req.query.tipo_movimiento;
+    if (req.query.aprobado === 'pendiente') {
+      where.aprobado = false;
+      where.rechazado = false;
+    } else if (req.query.aprobado === 'aprobado' || req.query.aprobado === 'true') {
+      where.aprobado = true;
+    } else if (req.query.aprobado === 'rechazado') {
+      where.rechazado = true;
+    }
+    if (req.query.conductor_id) where.conductor_id = req.query.conductor_id;
+    if (req.user.esConductor) where.conductor_id = req.user.id;
+
+    const movimientos = await MovimientoCajaMenor.findAll({
+      where,
+      include: [
+        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
+        { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
+        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
+      ],
+      order: [['created_at', 'DESC']],
+    });
+
+    const headers = ['#', 'Caja Menor', 'Conductor', 'Tipo', 'Concepto', 'Descripcion', 'Valor', 'Aprobado', 'Valor Aprobado', 'Aprobador', 'Viaje', 'Fecha'];
+    const rows = movimientos.map(m => [
+      m.consecutivo,
+      m.cajaMenor?.numero || '',
+      m.conductor?.nombre_completo || '',
+      m.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso',
+      m.concepto,
+      m.descripcion || '',
+      parseFloat(m.valor) || 0,
+      m.aprobado ? 'Aprobado' : m.rechazado ? 'Rechazado' : 'Pendiente',
+      parseFloat(m.valor_aprobado) || 0,
+      m.aprobador?.nombre_completo || '',
+      m.viaje ? `#${m.viaje.numero} - ${m.viaje.destino}` : 'Directo',
+      m.created_at,
+    ]);
+
+    const escapeCsv = (val) => {
+      const str = String(val ?? '');
+      return str.includes(',') || str.includes('"') || str.includes('\n')
+        ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+
+    const csv = [headers.map(escapeCsv).join(','), ...rows.map(r => r.map(escapeCsv).join(','))].join('\n');
+    const filename = `movimientos_${new Date().toISOString().split('T')[0]}.csv`;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send('\uFEFF' + csv);
+
+    logger.info('CSV movimientos generado:', { registros: movimientos.length });
+  } catch (error) {
+    logger.error('Error al exportar movimientos CSV:', { message: error.message });
+    return serverError(res, 'Error al generar CSV de movimientos', error);
+  }
+};
+
+// =============================================
+// EXPORTAR VIAJES A CSV
+// =============================================
+
+const exportarViajesCsv = async (req, res) => {
+  try {
+    const where = {};
+    if (req.query.conductor_id) where.conductor_id = req.query.conductor_id;
+    if (req.query.vehiculo_id) where.vehiculo_id = req.query.vehiculo_id;
+    if (req.query.caja_menor_id) where.caja_menor_id = req.query.caja_menor_id;
+    if (req.query.estado && req.query.estado !== 'todos') where.estado = req.query.estado;
+    if (req.query.fecha_desde || req.query.fecha_hasta) {
+      where.fecha = {};
+      if (req.query.fecha_desde) where.fecha[Op.gte] = req.query.fecha_desde;
+      if (req.query.fecha_hasta) where.fecha[Op.lte] = req.query.fecha_hasta;
+    }
+    if (req.user.esConductor) where.conductor_id = req.user.id;
+
+    const viajes = await Viaje.findAll({
+      where,
+      include: [
+        { model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa', 'tipo_vehiculo'] },
+        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
+      ],
+      order: [['fecha', 'DESC']],
+    });
+
+    const headers = ['Numero', 'Fecha', 'Origen', 'Destino', 'Cliente', 'Doc. Cliente', 'Vehiculo', 'Conductor', 'Peso (kg)', 'Valor Viaje', 'Facturado', 'No. Factura', 'Caja Menor', 'Estado'];
+    const rows = viajes.map(v => [
+      v.numero,
+      v.fecha,
+      v.origen,
+      v.destino,
+      v.cliente_nombre || '',
+      v.documento_cliente || '',
+      v.vehiculo?.placa || '',
+      v.conductor?.nombre_completo || '',
+      parseFloat(v.peso) || 0,
+      parseFloat(v.valor_viaje) || 0,
+      v.facturado ? 'Si' : 'No',
+      v.no_factura || '',
+      v.cajaMenor?.numero || '',
+      v.estado,
+    ]);
+
+    const escapeCsv = (val) => {
+      const str = String(val ?? '');
+      return str.includes(',') || str.includes('"') || str.includes('\n')
+        ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+
+    const csv = [headers.map(escapeCsv).join(','), ...rows.map(r => r.map(escapeCsv).join(','))].join('\n');
+    const filename = `viajes_${new Date().toISOString().split('T')[0]}.csv`;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send('\uFEFF' + csv);
+
+    logger.info('CSV viajes generado:', { registros: viajes.length });
+  } catch (error) {
+    logger.error('Error al exportar viajes CSV:', { message: error.message });
+    return serverError(res, 'Error al generar CSV de viajes', error);
+  }
+};
+
 module.exports = {
   exportarOperacionesExcel,
   exportarOperacionesPDF,
@@ -1209,7 +1564,12 @@ module.exports = {
   enviarReportePorEmail,
   getComparativo,
   exportarViajesExcel,
+  exportarViajesCsv,
   exportarCajaMenorExcel,
+  exportarVehiculosExcel,
+  exportarVehiculosCsv,
+  exportarMovimientosExcel,
+  exportarMovimientosCsv,
   // Reportes programados
   listarProgramados,
   crearProgramado,

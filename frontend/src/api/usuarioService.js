@@ -70,7 +70,7 @@ const PERMISOS_POR_ROL = {
     clientes: ['ver'],
     reportes: ['ver', 'exportar'],
     notificaciones: ['ver'],
-    vehiculos: ['ver'],
+    vehiculos: ['ver', 'crear', 'editar'],
     viajes: ['ver', 'exportar'],
     caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'exportar'],
     movimientos: ['ver', 'crear', 'editar', 'aprobar'],

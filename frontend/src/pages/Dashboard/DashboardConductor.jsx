@@ -275,7 +275,7 @@ const DashboardConductor = () => {
 
           {/* Registrar Gasto */}
           <button
-            onClick={() => navigate('/viajes/movimientos/nuevo')}
+            onClick={() => navigate('/viajes/movimientos?nuevo=1')}
             className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30 active:scale-95 transition-all min-h-[100px]"
           >
             <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center">

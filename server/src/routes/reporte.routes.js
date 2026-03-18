@@ -56,6 +56,26 @@ router.get('/viajes/excel', reporteController.exportarViajesExcel);
 router.get('/cajas-menores/:id/excel', reporteController.exportarCajaMenorExcel);
 
 // =============================================
+// REPORTES DE VEHICULOS
+// =============================================
+
+router.get('/vehiculos/excel', reporteController.exportarVehiculosExcel);
+router.get('/vehiculos/csv', reporteController.exportarVehiculosCsv);
+
+// =============================================
+// REPORTES DE MOVIMIENTOS
+// =============================================
+
+router.get('/movimientos/excel', reporteController.exportarMovimientosExcel);
+router.get('/movimientos/csv', reporteController.exportarMovimientosCsv);
+
+// =============================================
+// REPORTES DE VIAJES (CSV)
+// =============================================
+
+router.get('/viajes/csv', reporteController.exportarViajesCsv);
+
+// =============================================
 // ENVIAR REPORTE POR EMAIL
 // =============================================
 

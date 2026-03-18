@@ -153,6 +153,11 @@ const ViajeForm = () => {
         showError('Error al cargar datos iniciales');
       }
 
+      // Auto-fill conductor_id para rol conductor
+      if (esConductor && user?.id && !id) {
+        setFormData(prev => ({ ...prev, conductor_id: user.id }));
+      }
+
       if (id) {
         try {
           const res = await viajesService.getById(id);
@@ -183,7 +188,7 @@ const ViajeForm = () => {
   // Auto-fill conductor cuando se selecciona un vehículo con conductor asignado
   const handleVehiculoChange = (vehiculoId) => {
     handleChange('vehiculo_id', vehiculoId);
-    if (vehiculoId && !esConductor) {
+    if (vehiculoId) {
       const vehiculo = vehiculos.find(v => String(v.id) === String(vehiculoId));
       if (vehiculo?.conductor_id) {
         handleChange('conductor_id', vehiculo.conductor_id);

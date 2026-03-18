@@ -33,6 +33,10 @@ import {
   XCircle,
   Check,
   X,
+  FileSpreadsheet,
+  Download,
+  LayoutGrid,
+  LayoutList,
 } from 'lucide-react';
 import { Pagination, ConfirmDialog } from '../../components/common';
 
@@ -205,6 +209,7 @@ const ViajesList = () => {
   const [loading, setLoading] = useState(true);
   const [viajes, setViajes] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [viewMode, setViewMode] = useState('table');
   const [error, setError] = useState(null);
 
   // Modales
@@ -276,6 +281,28 @@ const ViajesList = () => {
   };
 
   // ──────────────────────────────────────────────────────────────────────────
+  // EXPORT
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const handleExportExcel = () => {
+    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+    const token = localStorage.getItem('istho_token');
+    const params = new URLSearchParams();
+    if (token) params.set('token', token);
+    if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
+    window.open(`${baseUrl}/reportes/viajes/excel?${params.toString()}`, '_blank');
+  };
+
+  const handleExportCsv = () => {
+    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+    const token = localStorage.getItem('istho_token');
+    const params = new URLSearchParams();
+    if (token) params.set('token', token);
+    if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
+    window.open(`${baseUrl}/reportes/viajes/csv?${params.toString()}`, '_blank');
+  };
+
+  // ──────────────────────────────────────────────────────────────────────────
   // RENDER
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -294,15 +321,35 @@ const ViajesList = () => {
               <p className="text-slate-500 dark:text-slate-400 mt-0.5">Registro y seguimiento de viajes</p>
             </div>
           </div>
-          <ProtectedAction module="viajes" action="crear">
-            <button
-              onClick={() => navigate('/viajes/viajes/nuevo')}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              Nuevo Viaje
-            </button>
-          </ProtectedAction>
+          <div className="flex items-center gap-2">
+            {viajes.length > 0 && (
+              <>
+                <button
+                  onClick={handleExportExcel}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  Excel
+                </button>
+                <button
+                  onClick={handleExportCsv}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  CSV
+                </button>
+              </>
+            )}
+            <ProtectedAction module="viajes" action="crear">
+              <button
+                onClick={() => navigate('/viajes/viajes/nuevo')}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl transition-colors shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                Nuevo Viaje
+              </button>
+            </ProtectedAction>
+          </div>
         </div>
 
         {/* KPI CARDS */}
@@ -351,7 +398,7 @@ const ViajesList = () => {
             </div>
 
             {/* Estado Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl overflow-x-auto flex-nowrap whitespace-nowrap">
               {[
                 { key: 'todos', label: 'Todos' },
                 { key: 'activo', label: 'Activos' },
@@ -399,11 +446,27 @@ const ViajesList = () => {
           </div>
         </div>
 
-        {/* RESULTS COUNT */}
-        <div className="mb-4">
+        {/* RESULTS COUNT + VIEW TOGGLE */}
+        <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {viajes.length} viaje{viajes.length !== 1 && 's'} encontrado{viajes.length !== 1 && 's'}
           </p>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              title="Vista tabla"
+            >
+              <LayoutList className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              title="Vista tarjetas"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* TABLE */}
@@ -425,7 +488,7 @@ const ViajesList = () => {
                 {searchTerm ? 'Intenta ajustar el término de búsqueda' : 'No hay viajes registrados'}
               </p>
             </div>
-          ) : (
+          ) : viewMode === 'table' ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -550,6 +613,77 @@ const ViajesList = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+              {viajes.map((viaje) => (
+                <div
+                  key={viaje.id}
+                  onClick={() => handleView(viaje)}
+                  className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all cursor-pointer"
+                >
+                  {/* Header: número + estado + acciones */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                        <MapPin className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{viaje.numero}</p>
+                        <p className="text-xs text-slate-400">{formatDate(viaje.fecha)}</p>
+                      </div>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <RowActions viaje={viaje} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />
+                    </div>
+                  </div>
+
+                  {/* Card body */}
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Ruta</span>
+                      <span className="text-slate-700 dark:text-slate-200 truncate max-w-[180px] text-right">
+                        {viaje.origen || '-'} → {viaje.destino || '-'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Cliente</span>
+                      <span className="text-slate-700 dark:text-slate-200 truncate max-w-[150px]">
+                        {viaje.cliente_nombre || viaje.Cliente?.razon_social || '-'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Vehículo</span>
+                      <span className="text-slate-700 dark:text-slate-200">
+                        {viaje.vehiculo?.placa || viaje.Vehiculo?.placa || '-'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Conductor</span>
+                      <span className="text-slate-700 dark:text-slate-200 truncate max-w-[150px]">
+                        {viaje.conductor?.nombre_completo || viaje.conductor?.username || '-'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Facturado</span>
+                      {viaje.facturado ? (
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                          <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700">
+                          <X className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Footer: estado */}
+                  <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-700 flex justify-between items-center">
+                    <StatusBadge estado={viaje.estado} />
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

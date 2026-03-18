@@ -346,6 +346,43 @@ PortalPermissionRoute.propTypes = {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
+// PERMISSION ROUTE (verifica permisos para TODOS los roles)
+// ════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Ruta protegida por permisos reales. A diferencia de PortalPermissionRoute,
+ * esta verifica permisos para TODOS los roles (incluyendo internos).
+ * Admin siempre pasa (tiene todos los permisos).
+ */
+export function PermissionRoute(props) {
+  var children = props.children;
+  var module = props.module;
+  var action = props.action;
+
+  var auth = useAuth();
+  var user = auth.user;
+  var hasPermission = auth.hasPermission;
+
+  // Admin siempre pasa
+  if (user && (user.rol === 'admin' || user.rol === 'administrador')) {
+    return children;
+  }
+
+  // Verificar permiso para cualquier rol
+  if (hasPermission && hasPermission(module, action)) {
+    return children;
+  }
+
+  return <Navigate to="/dashboard" replace />;
+}
+
+PermissionRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+  module: PropTypes.string.isRequired,
+  action: PropTypes.string.isRequired,
+};
+
+// ════════════════════════════════════════════════════════════════════════════
 // EXPORTS
 // ════════════════════════════════════════════════════════════════════════════
 

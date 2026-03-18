@@ -32,6 +32,7 @@ import {
   DollarSign,
   Wallet,
   FileSpreadsheet,
+  Download,
   Loader2,
 } from 'lucide-react';
 import { Button, Modal, Pagination, ConfirmDialog } from '../../components/common';
@@ -165,7 +166,7 @@ const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar }) => {
           Ver detalle
         </MenuItem>
 
-        <ProtectedAction module="viajes" action="editar">
+        <ProtectedAction module="movimientos" action="editar">
           <MenuItem onClick={() => { onEdit(movimiento); setAnchorEl(null); }}>
             <Pencil className="w-4 h-4" />
             Editar
@@ -173,7 +174,7 @@ const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar }) => {
         </ProtectedAction>
 
         {isPendiente && (
-          <ProtectedAction module="viajes" action="aprobar">
+          <ProtectedAction module="movimientos" action="aprobar">
             <MenuItem
               onClick={() => { onAprobar(movimiento); setAnchorEl(null); }}
               sx={{ color: isDark ? '#86efac !important' : '#16a34a !important', '&:hover': { backgroundColor: isDark ? '#052e16 !important' : '#f0fdf4 !important' } }}
@@ -184,7 +185,7 @@ const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar }) => {
           </ProtectedAction>
         )}
 
-        <ProtectedAction module="viajes" action="eliminar">
+        <ProtectedAction module="movimientos" action="eliminar">
           <MenuItem
             onClick={() => { onDelete(movimiento); setAnchorEl(null); }}
             sx={{ color: isDark ? '#fca5a5 !important' : '#dc2626 !important', '&:hover': { backgroundColor: isDark ? '#450a0a !important' : '#fef2f2 !important' } }}
@@ -287,7 +288,8 @@ const AprobarMovimientoDialog = ({ isOpen, onClose, movimiento, onAprobar, onRec
 
 const MovimientosList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
+  const canAprobar = hasPermission('movimientos', 'aprobar');
   const { isDark } = useThemeContext();
   const { success, apiError, deleted } = useNotification();
 
@@ -306,8 +308,11 @@ const MovimientosList = () => {
   // Selección masiva
   const [selected, setSelected] = useState([]);
 
-  // Modales
-  const [formModal, setFormModal] = useState({ isOpen: false, movimiento: null });
+  // Modales — abrir automáticamente si viene ?nuevo=1
+  const [formModal, setFormModal] = useState({
+    isOpen: searchParams.get('nuevo') === '1',
+    movimiento: null,
+  });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, movimiento: null });
   const [aprobarModal, setAprobarModal] = useState({ isOpen: false, movimiento: null });
   const [formLoading, setFormLoading] = useState(false);
@@ -479,7 +484,18 @@ const MovimientosList = () => {
     if (tipoFilter !== 'todos') params.set('tipo_movimiento', tipoFilter);
     if (aprobadoFilter !== 'todos') params.set('aprobado', aprobadoFilter);
     if (searchTerm) params.set('search', searchTerm);
-    window.open(`${baseUrl}/viajes/movimientos/excel?${params.toString()}`, '_blank');
+    window.open(`${baseUrl}/reportes/movimientos/excel?${params.toString()}`, '_blank');
+  };
+
+  const handleExportCsv = () => {
+    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+    const token = localStorage.getItem('istho_token');
+    const params = new URLSearchParams();
+    if (token) params.set('token', token);
+    if (tipoFilter !== 'todos') params.set('tipo_movimiento', tipoFilter);
+    if (aprobadoFilter !== 'todos') params.set('aprobado', aprobadoFilter);
+    if (searchTerm) params.set('search', searchTerm);
+    window.open(`${baseUrl}/reportes/movimientos/csv?${params.toString()}`, '_blank');
   };
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -503,15 +519,24 @@ const MovimientosList = () => {
           </div>
           <div className="flex items-center gap-2">
             {movimientos.length > 0 && (
-              <button
-                onClick={handleExportExcel}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                Excel
-              </button>
+              <>
+                <button
+                  onClick={handleExportExcel}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  Excel
+                </button>
+                <button
+                  onClick={handleExportCsv}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  CSV
+                </button>
+              </>
             )}
-            <ProtectedAction module="viajes" action="crear">
+            <ProtectedAction module="movimientos" action="crear">
               <button
                 onClick={handleCreate}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors"
@@ -647,7 +672,7 @@ const MovimientosList = () => {
                   : 'Comienza registrando el primer movimiento'}
               </p>
               {!searchTerm && tipoFilter === 'todos' && aprobadoFilter === 'todos' && (
-                <ProtectedAction module="viajes" action="crear">
+                <ProtectedAction module="movimientos" action="crear">
                   <button
                     onClick={handleCreate}
                     className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors"
@@ -663,19 +688,21 @@ const MovimientosList = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
-                    <th className="py-3 px-4 text-center w-12">
-                      <Checkbox
-                        size="small"
-                        checked={pendientes.length > 0 && selected.length === pendientes.length}
-                        indeterminate={selected.length > 0 && selected.length < pendientes.length}
-                        onChange={handleSelectAll}
-                        sx={{
-                          color: isDark ? '#64748b' : '#94a3b8',
-                          '&.Mui-checked': { color: '#a855f7' },
-                          '&.MuiCheckbox-indeterminate': { color: '#a855f7' },
-                        }}
-                      />
-                    </th>
+                    {canAprobar && (
+                      <th className="py-3 px-4 text-center w-12">
+                        <Checkbox
+                          size="small"
+                          checked={pendientes.length > 0 && selected.length === pendientes.length}
+                          indeterminate={selected.length > 0 && selected.length < pendientes.length}
+                          onChange={handleSelectAll}
+                          sx={{
+                            color: isDark ? '#64748b' : '#94a3b8',
+                            '&.Mui-checked': { color: '#a855f7' },
+                            '&.MuiCheckbox-indeterminate': { color: '#a855f7' },
+                          }}
+                        />
+                      </th>
+                    )}
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Consecutivo
                     </th>
@@ -711,22 +738,24 @@ const MovimientosList = () => {
                       key={mov.id}
                       className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group"
                     >
-                      {/* Checkbox */}
-                      <td className="py-4 px-4 text-center">
-                        {isPendiente(mov) ? (
-                          <Checkbox
-                            size="small"
-                            checked={selected.includes(mov.id)}
-                            onChange={() => handleSelectOne(mov.id)}
-                            sx={{
-                              color: isDark ? '#64748b' : '#94a3b8',
-                              '&.Mui-checked': { color: '#a855f7' },
-                            }}
-                          />
-                        ) : (
-                          <span className="inline-block w-[42px]" />
-                        )}
-                      </td>
+                      {/* Checkbox (solo si puede aprobar) */}
+                      {canAprobar && (
+                        <td className="py-4 px-4 text-center">
+                          {isPendiente(mov) ? (
+                            <Checkbox
+                              size="small"
+                              checked={selected.includes(mov.id)}
+                              onChange={() => handleSelectOne(mov.id)}
+                              sx={{
+                                color: isDark ? '#64748b' : '#94a3b8',
+                                '&.Mui-checked': { color: '#a855f7' },
+                              }}
+                            />
+                          ) : (
+                            <span className="inline-block w-[42px]" />
+                          )}
+                        </td>
+                      )}
 
                       {/* Consecutivo */}
                       <td className="py-4 px-4">
@@ -830,14 +859,16 @@ const MovimientosList = () => {
               <span className="text-sm font-medium">
                 {selected.length} seleccionado{selected.length !== 1 && 's'}
               </span>
-              <button
-                onClick={handleMassApproval}
-                disabled={formLoading}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                Aprobar todos
-              </button>
+              <ProtectedAction module="movimientos" action="aprobar">
+                <button
+                  onClick={handleMassApproval}
+                  disabled={formLoading}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Aprobar todos
+                </button>
+              </ProtectedAction>
               <button
                 onClick={() => setSelected([])}
                 className="px-3 py-2 bg-slate-600 dark:bg-slate-600 hover:bg-slate-500 dark:hover:bg-slate-500 text-white text-sm rounded-xl transition-colors"
