@@ -158,6 +158,10 @@ const LoginPage = () => {
                 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
                 @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
                 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+                .feature-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+                .feature-card:hover { transform: translateY(-4px) scale(1.02); background: rgba(255,255,255,0.25) !important; box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+                .feature-card:hover .feature-icon { transform: scale(1.15) rotate(-5deg); background: rgba(255,255,255,0.35) !important; }
+                .feature-icon { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
             `}</style>
 
             <div className="min-h-screen flex relative bg-white dark:bg-slate-900" style={fadeIn}>
@@ -413,13 +417,13 @@ const LoginPage = () => {
                                 return (
                                     <div
                                         key={index}
-                                        className="flex items-center gap-3 bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 dark:border-slate-700/50 hover:bg-white/15 dark:hover:bg-white/10 transition-all duration-300"
+                                        className="feature-card flex items-center gap-3 bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/20 dark:border-slate-700/50 cursor-pointer"
                                         style={{ animation: `slideUp 0.5s ease-out ${index * 0.1}s both` }}
                                     >
-                                        <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-                                            <IconComponent className="w-5 h-5" />
+                                        <div className="feature-icon w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                                            <IconComponent className="w-5 h-5 text-white" />
                                         </div>
-                                        <span className="text-sm font-medium">{feature.text}</span>
+                                        <span className="text-sm font-medium text-white">{feature.text}</span>
                                     </div>
                                 );
                             })}
