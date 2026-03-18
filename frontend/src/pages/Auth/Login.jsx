@@ -4,10 +4,10 @@
  * ============================================================================
  * Página de inicio de sesión con diseño corporativo ISTHO.
  * Incluye validación de formulario con React Hook Form + Yup.
- * 
+ *
  * @author Coordinación TI ISTHO
- * @version 1.0.0
- * @date Enero 2026
+ * @version 2.0.0
+ * @date Marzo 2026
  */
 
 import { useState, useEffect } from 'react';
@@ -16,50 +16,30 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../../context/AuthContext';
+import { getGreeting } from '../../utils/greeting';
 import logoNegro from '../../assets/logo-negro.png';
 import logoBlanco from '../../assets/logo-blanco.png';
+import {
+    User,
+    Lock,
+    Eye,
+    EyeOff,
+    AlertCircle,
+    Loader2,
+    Truck,
+    Package,
+    BarChart3,
+    Users,
+    Shield,
+    ArrowRight,
+} from 'lucide-react';
 
 // ============================================================================
-// ICONOS SVG (inline para evitar dependencias)
+// ANIMACIONES
 // ============================================================================
 
-const EyeIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-    </svg>
-);
-
-const EyeOffIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-    </svg>
-);
-
-const UserIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-    </svg>
-);
-
-const LockIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-    </svg>
-);
-
-const AlertIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-);
-
-const SpinnerIcon = ({ className }) => (
-    <svg className={`animate-spin ${className}`} fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-    </svg>
-);
+const fadeIn = { animation: 'fadeIn 0.6s ease-out' };
+const slideUp = { animation: 'slideUp 0.5s ease-out' };
 
 // ============================================================================
 // ESQUEMA DE VALIDACIÓN
@@ -74,6 +54,17 @@ const loginSchema = yup.object({
         .required('La contraseña es requerida')
         .min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
+
+// ============================================================================
+// FEATURES DEL PANEL DERECHO
+// ============================================================================
+
+const features = [
+    { icon: Truck, text: 'Gestión de Transporte' },
+    { icon: Package, text: 'Control de Inventario' },
+    { icon: BarChart3, text: 'Reportes en Tiempo Real' },
+    { icon: Shield, text: 'Seguridad Avanzada' },
+];
 
 // ============================================================================
 // COMPONENTE
@@ -156,273 +147,297 @@ const LoginPage = () => {
     if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900">
-                <SpinnerIcon className="w-10 h-10 text-[#E65100]" />
+                <Loader2 className="w-10 h-10 text-[#E65100] animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen flex relative">
-            {/* ════════════════════════════════════════════════════════════════════ */}
-            {/* LADO IZQUIERDO - Formulario */}
-            {/* ════════════════════════════════════════════════════════════════════ */}
-            <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-slate-900">
-                <div className="w-full max-w-md">
-                    {/* Logo y Título */}
-                    <div className="text-center mb-8">
-                        <img
-                            src={logoNegro}
-                            alt="ISTHO"
-                            className="w-16 h-16 rounded-2xl shadow-lg mb-4 mx-auto dark:hidden"
-                        />
-                        <img
-                            src={logoBlanco}
-                            alt="ISTHO"
-                            className="w-16 h-16 rounded-2xl shadow-lg mb-4 mx-auto hidden dark:block"
-                        />
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                            Bienvenido al CRM
-                        </h1>
-                        <p className="text-gray-500 dark:text-slate-400 mt-2">
-                            Ingresa tus credenciales para continuar
-                        </p>
-                    </div>
+        <>
+            <style>{`
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+            `}</style>
 
-                    {/* Mensaje de error */}
-                    {authError && (
-                        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-xl flex items-start gap-3">
-                            <AlertIcon className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="min-h-screen flex relative bg-white dark:bg-slate-900" style={fadeIn}>
+                {/* ════════════════════════════════════════════════════════════════════ */}
+                {/* LADO IZQUIERDO - Formulario */}
+                {/* ════════════════════════════════════════════════════════════════════ */}
+                <div className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-12">
+                    <div className="w-full max-w-md" style={slideUp}>
+                        {/* Logo y Título */}
+                        <div className="text-center mb-10">
+                            <img
+                                src={logoNegro}
+                                alt="ISTHO"
+                                className="w-20 h-20 rounded-2xl shadow-lg mb-6 mx-auto dark:hidden"
+                            />
+                            <img
+                                src={logoBlanco}
+                                alt="ISTHO"
+                                className="w-20 h-20 rounded-2xl shadow-lg mb-6 mx-auto hidden dark:block"
+                            />
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                                {getGreeting()}
+                            </h1>
+                            <p className="text-gray-500 dark:text-slate-400 mt-2 text-base">
+                                Ingresa tus credenciales para continuar
+                            </p>
+                        </div>
+
+                        {/* Mensaje de error */}
+                        {authError && (
+                            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl flex items-start gap-3" style={slideUp}>
+                                <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                                        Error de autenticación
+                                    </p>
+                                    <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                                        {authError}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Formulario */}
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                            {/* Campo Email / Username */}
                             <div>
-                                <p className="text-sm font-medium text-red-800 dark:text-red-300">
-                                    Error de autenticación
-                                </p>
-                                <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                                    {authError}
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Formulario */}
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                        {/* Campo Email / Username */}
-                        <div>
-                            <label
-                                htmlFor="email"
-                                className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2"
-                            >
-                                Usuario o correo electrónico
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <UserIcon className="w-5 h-5 text-gray-400 dark:text-slate-500" />
-                                </div>
-                                <input
-                                    id="email"
-                                    type="text"
-                                    autoComplete="username"
-                                    placeholder="usuario o correo@istho.com.co"
-                                    {...register('email')}
-                                    className={`
-                    w-full pl-12 pr-4 py-3 rounded-xl border bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
-                    focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E65100]/20 focus:border-[#E65100]
-                    transition-all duration-200
-                    ${errors.email
-                                            ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500/20'
-                                            : 'border-gray-200 dark:border-slate-700'
-                                        }
-                  `}
-                                />
-                            </div>
-                            {errors.email && (
-                                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                                    <AlertIcon className="w-4 h-4" />
-                                    {errors.email.message}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Campo Contraseña */}
-                        <div>
-                            <label
-                                htmlFor="password"
-                                className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2"
-                            >
-                                Contraseña
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <LockIcon className="w-5 h-5 text-gray-400 dark:text-slate-500" />
-                                </div>
-                                <input
-                                    id="password"
-                                    type={showPassword ? 'text' : 'password'}
-                                    autoComplete="current-password"
-                                    placeholder="••••••••"
-                                    {...register('password')}
-                                    className={`
-                    w-full pl-12 pr-12 py-3 rounded-xl border bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
-                    focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E65100]/20 focus:border-[#E65100]
-                    transition-all duration-200
-                    ${errors.password
-                                            ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500/20'
-                                            : 'border-gray-200 dark:border-slate-700'
-                                        }
-                  `}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={togglePassword}
-                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
+                                <label
+                                    htmlFor="email"
+                                    className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2"
                                 >
-                                    {showPassword ? (
-                                        <EyeOffIcon className="w-5 h-5" />
-                                    ) : (
-                                        <EyeIcon className="w-5 h-5" />
-                                    )}
-                                </button>
+                                    Usuario o correo electrónico
+                                </label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <User className="w-5 h-5 text-gray-400 dark:text-slate-500" />
+                                    </div>
+                                    <input
+                                        id="email"
+                                        type="text"
+                                        autoComplete="username"
+                                        placeholder="usuario o correo@istho.com.co"
+                                        {...register('email')}
+                                        className={`
+                                            w-full pl-12 pr-4 py-3.5 rounded-2xl border bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
+                                            focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E65100]/20 focus:border-[#E65100]
+                                            transition-all duration-300 ease-in-out
+                                            ${errors.email
+                                                ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500/20'
+                                                : 'border-gray-200 dark:border-slate-700'
+                                            }
+                                        `}
+                                    />
+                                </div>
+                                {errors.email && (
+                                    <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {errors.email.message}
+                                    </p>
+                                )}
                             </div>
-                            {errors.password && (
-                                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                                    <AlertIcon className="w-4 h-4" />
-                                    {errors.password.message}
-                                </p>
-                            )}
+
+                            {/* Campo Contraseña */}
+                            <div>
+                                <label
+                                    htmlFor="password"
+                                    className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2"
+                                >
+                                    Contraseña
+                                </label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <Lock className="w-5 h-5 text-gray-400 dark:text-slate-500" />
+                                    </div>
+                                    <input
+                                        id="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        autoComplete="current-password"
+                                        placeholder="••••••••"
+                                        {...register('password')}
+                                        className={`
+                                            w-full pl-12 pr-12 py-3.5 rounded-2xl border bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
+                                            focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E65100]/20 focus:border-[#E65100]
+                                            transition-all duration-300 ease-in-out
+                                            ${errors.password
+                                                ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500/20'
+                                                : 'border-gray-200 dark:border-slate-700'
+                                            }
+                                        `}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={togglePassword}
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors duration-200"
+                                    >
+                                        {showPassword ? (
+                                            <EyeOff className="w-5 h-5" />
+                                        ) : (
+                                            <Eye className="w-5 h-5" />
+                                        )}
+                                    </button>
+                                </div>
+                                {errors.password && (
+                                    <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {errors.password.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Recordar / Olvidé contraseña */}
+                            <div className="flex items-center justify-between">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-[#E65100] focus:ring-[#E65100] dark:bg-slate-700"
+                                    />
+                                    <span className="text-sm text-gray-600 dark:text-slate-400">Recordarme</span>
+                                </label>
+                                <Link
+                                    to="/forgot-password"
+                                    className="text-sm text-[#E65100] hover:text-[#BF360C] dark:text-orange-400 dark:hover:text-orange-300 font-medium transition-colors duration-200"
+                                >
+                                    ¿Olvidaste tu contraseña?
+                                </Link>
+                            </div>
+
+                            {/* Botón Submit */}
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className={`
+                                    w-full py-3.5 px-4 rounded-2xl font-semibold text-white
+                                    bg-gradient-to-r from-[#E65100] to-[#FF6D00]
+                                    hover:from-[#BF360C] hover:to-[#E65100]
+                                    focus:outline-none focus:ring-2 focus:ring-[#E65100] focus:ring-offset-2 dark:focus:ring-offset-slate-900
+                                    transition-all duration-300 ease-in-out
+                                    disabled:opacity-70 disabled:cursor-not-allowed
+                                    flex items-center justify-center gap-2
+                                    shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30
+                                    transform hover:-translate-y-0.5 active:translate-y-0
+                                `}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        <span>Iniciando sesión...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>Iniciar Sesión</span>
+                                        <ArrowRight className="w-5 h-5" />
+                                    </>
+                                )}
+                            </button>
+                        </form>
+
+                        {/* Soporte */}
+                        <div className="mt-8 text-center">
+                            <p className="text-sm text-gray-500 dark:text-slate-500">
+                                ¿Problemas para acceder?{' '}
+                                <a
+                                    href="mailto:soporte@istho.com.co"
+                                    className="text-[#E65100] hover:text-[#BF360C] dark:text-orange-400 dark:hover:text-orange-300 font-medium transition-colors duration-200"
+                                >
+                                    Contactar soporte
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ════════════════════════════════════════════════════════════════════ */}
+                {/* LADO DERECHO - Branding */}
+                {/* ════════════════════════════════════════════════════════════════════ */}
+                <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-[#E65100] via-[#FF6D00] to-[#FF8F00] dark:from-slate-800 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden">
+                    {/* Formas flotantes decorativas */}
+                    <div
+                        className="absolute top-16 right-16 w-72 h-72 bg-white/10 rounded-full blur-3xl"
+                        style={{ animation: 'float 6s ease-in-out infinite' }}
+                    />
+                    <div
+                        className="absolute bottom-24 left-12 w-96 h-96 bg-white/10 rounded-full blur-3xl"
+                        style={{ animation: 'float 8s ease-in-out infinite 1s' }}
+                    />
+                    <div
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-white/5 rounded-full blur-2xl"
+                        style={{ animation: 'float 7s ease-in-out infinite 0.5s' }}
+                    />
+
+                    {/* Formas geométricas sutiles */}
+                    <div
+                        className="absolute top-32 left-16 w-16 h-16 border-2 border-white/10 rounded-xl rotate-12"
+                        style={{ animation: 'float 5s ease-in-out infinite 0.3s' }}
+                    />
+                    <div
+                        className="absolute bottom-40 right-24 w-12 h-12 border-2 border-white/10 rounded-full"
+                        style={{ animation: 'float 6s ease-in-out infinite 1.5s' }}
+                    />
+                    <div
+                        className="absolute top-1/3 right-12 w-8 h-8 bg-white/10 rounded-lg rotate-45"
+                        style={{ animation: 'float 4s ease-in-out infinite 0.8s' }}
+                    />
+
+                    {/* Contenido */}
+                    <div className="relative z-10 flex flex-col items-center justify-center p-12 text-white w-full" style={fadeIn}>
+                        {/* Logo grande */}
+                        <div className="mb-8" style={{ animation: 'float 6s ease-in-out infinite' }}>
+                            <img
+                                src={logoNegro}
+                                alt="ISTHO"
+                                className="w-28 h-28 rounded-3xl shadow-2xl dark:hidden"
+                            />
+                            <img
+                                src={logoBlanco}
+                                alt="ISTHO"
+                                className="w-28 h-28 rounded-3xl shadow-2xl hidden dark:block dark:ring-1 dark:ring-slate-700"
+                            />
                         </div>
 
-                        {/* Recordar / Olvidé contraseña */}
-                        <div className="flex items-center justify-between">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-[#E65100] focus:ring-[#E65100] dark:bg-slate-700"
-                                />
-                                <span className="text-sm text-gray-600 dark:text-slate-400">Recordarme</span>
-                            </label>
-                            <Link
-                                to="/forgot-password"
-                                className="text-sm text-[#E65100] hover:text-[#BF360C] font-medium transition-colors"
-                            >
-                                ¿Olvidaste tu contraseña?
-                            </Link>
-                        </div>
+                        <h2 className="text-4xl font-bold mb-3 text-center">
+                            Sistema CRM
+                        </h2>
 
-                        {/* Botón Submit */}
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`
-                w-full py-3 px-4 rounded-xl font-semibold text-white
-                bg-gradient-to-r from-[#E65100] to-[#FF6D00]
-                hover:from-[#BF360C] hover:to-[#E65100]
-                focus:outline-none focus:ring-2 focus:ring-[#E65100] focus:ring-offset-2
-                transition-all duration-200
-                disabled:opacity-70 disabled:cursor-not-allowed
-                flex items-center justify-center gap-2
-                shadow-lg shadow-orange-500/25
-              `}
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <SpinnerIcon className="w-5 h-5" />
-                                    <span>Iniciando sesión...</span>
-                                </>
-                            ) : (
-                                <span>Iniciar Sesión</span>
-                            )}
-                        </button>
-                    </form>
-
-                    {/* Footer */}
-                    <div className="mt-8 text-center">
-                        <p className="text-sm text-gray-500 dark:text-slate-500">
-                            ¿Problemas para acceder?{' '}
-                            <a
-                                href="mailto:soporte@istho.com.co"
-                                className="text-[#E65100] hover:text-[#BF360C] dark:text-orange-400 dark:hover:text-orange-300 font-medium"
-                            >
-                                Contactar soporte
-                            </a>
+                        <p className="text-lg text-white/80 text-center max-w-sm mb-10">
+                            Gestión integral de clientes, inventario y operaciones logísticas
                         </p>
+
+                        {/* Features */}
+                        <div className="grid grid-cols-2 gap-4 w-full max-w-md">
+                            {features.map((feature, index) => {
+                                const IconComponent = feature.icon;
+                                return (
+                                    <div
+                                        key={index}
+                                        className="flex items-center gap-3 bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 dark:border-slate-700/50 hover:bg-white/15 dark:hover:bg-white/10 transition-all duration-300"
+                                        style={{ animation: `slideUp 0.5s ease-out ${index * 0.1}s both` }}
+                                    >
+                                        <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+                                            <IconComponent className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-sm font-medium">{feature.text}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* ════════════════════════════════════════════════════════════════════ */}
-            {/* LADO DERECHO - Branding */}
-            {/* ════════════════════════════════════════════════════════════════════ */}
-            <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-[#E65100] via-[#FF6D00] to-[#FF8F00] dark:from-slate-800 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden">
-                {/* Patrón de fondo */}
-                <div className="absolute inset-0 opacity-10">
-                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        <defs>
-                            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" />
-                            </pattern>
-                        </defs>
-                        <rect width="100" height="100" fill="url(#grid)" />
-                    </svg>
-                </div>
-
-                {/* Círculos decorativos */}
-                <div className="absolute top-20 right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-20 left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-
-                {/* Contenido */}
-                <div className="relative z-10 flex flex-col items-center justify-center p-12 text-white">
-                    {/* Logo grande */}
-                    <div className="mb-8">
-                        <img
-                            src={logoNegro}
-                            alt="ISTHO"
-                            className="w-32 h-32 rounded-3xl shadow-2xl dark:hidden"
-                        />
-                        <img
-                            src={logoBlanco}
-                            alt="ISTHO"
-                            className="w-32 h-32 rounded-3xl shadow-2xl hidden dark:block dark:ring-1 dark:ring-slate-700"
-                        />
-                    </div>
-
-                    <h2 className="text-4xl font-bold mb-4 text-center">
-                        Sistema CRM
-                    </h2>
-
-                    <p className="text-xl text-white/80 text-center max-w-md mb-8">
-                        Gestión integral de clientes, inventario y operaciones logísticas
+                {/* Footer */}
+                <div className="absolute bottom-0 left-0 right-0 z-10 text-center py-4 bg-gradient-to-t from-white/80 dark:from-slate-900/80 to-transparent">
+                    <p className="text-gray-600 dark:text-slate-400 text-xs">
+                        ISTHO S.A.S. &copy; {new Date().getFullYear()} - Centro Logístico Industrial del Norte
                     </p>
-
-                    {/* Features */}
-                    <div className="grid grid-cols-2 gap-4 w-full max-w-md ">
-                        {[
-                            { icon: '📊', text: 'Dashboard en tiempo real' },
-                            { icon: '👥', text: 'Gestión de clientes' },
-                            { icon: '📦', text: 'Control de inventario' },
-                            { icon: '🚚', text: 'Trazabilidad de despachos' },
-                        ].map((feature, index) => (
-                            <div
-                                key={index}
-                                className="flex items-center gap-3 bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-xl p-4 dark:border dark:border-slate-700/50"
-                            >
-                                <span className="text-2xl">{feature.icon}</span>
-                                <span className="text-sm font-medium">{feature.text}</span>
-                            </div>
-                        ))}
-                    </div>
-
+                    <p className="text-gray-500 dark:text-slate-500 text-[11px] mt-0.5">
+                        Girardota, Antioquia &bull; ISO 9001:2015
+                    </p>
                 </div>
             </div>
-
-            {/* Footer centrado entre las dos secciones */}
-            <div className="absolute bottom-0 left-0 right-0 z-10 text-center py-4">
-                <p className="text-black-600 dark:text-white text-xs">
-                    ISTHO S.A.S. © 2026 - Centro Logístico Industrial del Norte
-                </p>
-                <p className="text-black-600 dark:text-slate-100 text-[11px] mt-0.5">
-                    Girardota, Antioquia • ISO 9001:2015
-                </p>
-            </div>
-        </div>
+        </>
     );
 };
 
