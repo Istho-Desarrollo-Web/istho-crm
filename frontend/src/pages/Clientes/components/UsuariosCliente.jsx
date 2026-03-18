@@ -44,7 +44,7 @@ import usuarioClienteService from '../../../api/usuarioCliente.service';
 
 // Hooks
 import useNotification from '../../../hooks/useNotification';
-import { formatDate } from '../../../../utils/formatDate';
+import { formatDate } from '../../../utils/formatDate';
 
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTE FILA DE USUARIO
