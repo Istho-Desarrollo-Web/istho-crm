@@ -168,24 +168,24 @@ const LoginPage = () => {
                 {/* ════════════════════════════════════════════════════════════════════ */}
                 {/* LADO IZQUIERDO - Formulario */}
                 {/* ════════════════════════════════════════════════════════════════════ */}
-                <div className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-12 overflow-y-auto">
+                <div className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-10">
                     <div className="w-full max-w-md" style={slideUp}>
                         {/* Logo y Título */}
-                        <div className="text-center mb-10">
+                        <div className="text-center mb-6">
                             <img
                                 src={logoNegro}
                                 alt="ISTHO"
-                                className="w-20 h-20 rounded-2xl shadow-lg mb-6 mx-auto dark:hidden"
+                                className="w-16 h-16 rounded-2xl shadow-lg mb-4 mx-auto dark:hidden"
                             />
                             <img
                                 src={logoBlanco}
                                 alt="ISTHO"
-                                className="w-20 h-20 rounded-2xl shadow-lg mb-6 mx-auto hidden dark:block"
+                                className="w-16 h-16 rounded-2xl shadow-lg mb-4 mx-auto hidden dark:block"
                             />
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                                 {getGreeting()}
                             </h1>
-                            <p className="text-gray-500 dark:text-slate-400 mt-2 text-base">
+                            <p className="text-gray-500 dark:text-slate-400 mt-1 text-sm">
                                 Ingresa tus credenciales para continuar
                             </p>
                         </div>
@@ -206,7 +206,7 @@ const LoginPage = () => {
                         )}
 
                         {/* Formulario */}
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             {/* Campo Email / Username */}
                             <div>
                                 <label
@@ -314,7 +314,7 @@ const LoginPage = () => {
                                 type="submit"
                                 disabled={isSubmitting}
                                 className={`
-                                    w-full py-3.5 px-4 rounded-2xl font-semibold text-white
+                                    w-full py-3 px-4 rounded-2xl font-semibold text-white
                                     bg-gradient-to-r from-[#E65100] to-[#FF6D00]
                                     hover:from-[#BF360C] hover:to-[#E65100]
                                     focus:outline-none focus:ring-2 focus:ring-[#E65100] focus:ring-offset-2 dark:focus:ring-offset-slate-900
@@ -340,7 +340,7 @@ const LoginPage = () => {
                         </form>
 
                         {/* Soporte */}
-                        <div className="mt-8 text-center">
+                        <div className="mt-5 text-center">
                             <p className="text-sm text-gray-500 dark:text-slate-500">
                                 ¿Problemas para acceder?{' '}
                                 <a
@@ -431,12 +431,12 @@ const LoginPage = () => {
                     </div>
                 </div>
 
-                {/* Footer - solo lado izquierdo */}
-                <div className="absolute bottom-0 left-0 lg:right-1/2 right-0 z-10 text-center py-3 bg-gradient-to-t from-white dark:from-slate-900 to-transparent">
-                    <p className="text-gray-500 dark:text-slate-400 text-xs">
+                {/* Footer - posicionado dentro del flujo del lado izquierdo */}
+                <div className="absolute bottom-2 left-0 lg:w-1/2 w-full text-center pointer-events-none">
+                    <p className="text-gray-400 dark:text-slate-500 text-[11px]">
                         ISTHO S.A.S. &copy; {new Date().getFullYear()} - Centro Logístico Industrial del Norte
                     </p>
-                    <p className="text-gray-400 dark:text-slate-500 text-[11px] mt-0.5">
+                    <p className="text-gray-400 dark:text-slate-500 text-[10px]">
                         Girardota, Antioquia &bull; ISO 9001:2015
                     </p>
                 </div>
