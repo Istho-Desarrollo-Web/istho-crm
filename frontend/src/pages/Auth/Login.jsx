@@ -164,11 +164,11 @@ const LoginPage = () => {
                 .feature-icon { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
             `}</style>
 
-            <div className="min-h-screen flex relative bg-white dark:bg-slate-900" style={fadeIn}>
+            <div className="h-screen flex relative bg-white dark:bg-slate-900 overflow-hidden" style={fadeIn}>
                 {/* ════════════════════════════════════════════════════════════════════ */}
                 {/* LADO IZQUIERDO - Formulario */}
                 {/* ════════════════════════════════════════════════════════════════════ */}
-                <div className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-12">
+                <div className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-12 overflow-y-auto">
                     <div className="w-full max-w-md" style={slideUp}>
                         {/* Logo y Título */}
                         <div className="text-center mb-10">
