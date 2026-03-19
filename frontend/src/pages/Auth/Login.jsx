@@ -431,12 +431,12 @@ const LoginPage = () => {
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="absolute bottom-0 left-0 right-0 z-10 text-center py-4 bg-gradient-to-t from-white/80 dark:from-slate-900/80 to-transparent">
-                    <p className="text-gray-600 dark:text-slate-400 text-xs">
+                {/* Footer - solo lado izquierdo */}
+                <div className="absolute bottom-0 left-0 lg:right-1/2 right-0 z-10 text-center py-3 bg-gradient-to-t from-white dark:from-slate-900 to-transparent">
+                    <p className="text-gray-500 dark:text-slate-400 text-xs">
                         ISTHO S.A.S. &copy; {new Date().getFullYear()} - Centro Logístico Industrial del Norte
                     </p>
-                    <p className="text-gray-500 dark:text-slate-500 text-[11px] mt-0.5">
+                    <p className="text-gray-400 dark:text-slate-500 text-[11px] mt-0.5">
                         Girardota, Antioquia &bull; ISO 9001:2015
                     </p>
                 </div>
