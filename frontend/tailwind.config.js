@@ -8,21 +8,45 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Paleta CENTHRIX / ISTHO
+        primary: {
+          DEFAULT: '#1A1A2E',
+          light: '#2A2A4E',
+          dark: '#0F1023',
+        },
+        accent: {
+          DEFAULT: '#E74C3C',
+          light: '#FF6B5A',
+          dark: '#C0392B',
+          hover: '#C0392B',
+        },
+        success: {
+          DEFAULT: '#2ECC71',
+          light: '#3DDB83',
+          dark: '#27AE60',
+        },
+        // Mantener compatibilidad con clases orange-* existentes
         orange: {
-          50: '#fff7ed',
-          100: '#ffedd5',
-          200: '#fed7aa',
-          300: '#fdba74',
-          400: '#fb923c',
-          500: '#f97316',
-          600: '#ea580c',
-          700: '#c2410c',
-          800: '#9a3412',
-          900: '#7c2d12',
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#E74C3C',
+          600: '#E74C3C',
+          700: '#C0392B',
+          800: '#991B1B',
+          900: '#7F1D1D',
+        },
+        // Dark mode backgrounds
+        centhrix: {
+          bg: '#0F1023',
+          card: '#1A1B3A',
+          surface: '#151631',
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Segoe UI"', 'Calibri', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
       },
     },
   },

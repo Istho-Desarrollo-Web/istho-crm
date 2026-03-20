@@ -12,42 +12,42 @@ import { createTheme } from '@mui/material/styles';
 // PALETA DE COLORES CORPORATIVOS ISTHO
 // ============================================
 const isthoColors = {
-  // Colores primarios - Naranja corporativo
+  // Colores primarios - Azul Marino CENTHRIX
   primary: {
-    main: '#E65100',       // Naranja ISTHO principal
-    light: '#FF833A',      // Naranja claro
-    dark: '#AC1900',       // Naranja oscuro
+    main: '#1A1A2E',       // Azul Marino principal
+    light: '#2A2A4E',
+    dark: '#0F1023',
     contrastText: '#FFFFFF'
   },
-  
-  // Colores secundarios - Gris azulado (estilo WMS)
+
+  // Colores secundarios - Rojo Energía (accent)
   secondary: {
-    main: '#455A64',       // Gris azulado principal
-    light: '#718792',
-    dark: '#1C313A',
+    main: '#E74C3C',       // Rojo Energía
+    light: '#FF6B5A',
+    dark: '#C0392B',
     contrastText: '#FFFFFF'
   },
-  
+
   // Colores de estado
   success: {
-    main: '#2E7D32',       // Verde éxito
-    light: '#4CAF50',
-    dark: '#1B5E20'
+    main: '#2ECC71',       // Verde Logístico
+    light: '#3DDB83',
+    dark: '#27AE60'
   },
   warning: {
-    main: '#ED6C02',       // Naranja advertencia
-    light: '#FF9800',
-    dark: '#E65100'
+    main: '#F39C12',       // Ámbar advertencia
+    light: '#F7B731',
+    dark: '#E67E22'
   },
   error: {
-    main: '#D32F2F',       // Rojo error
-    light: '#EF5350',
-    dark: '#C62828'
+    main: '#E74C3C',       // Rojo Energía
+    light: '#FF6B5A',
+    dark: '#C0392B'
   },
   info: {
-    main: '#0288D1',       // Azul información
-    light: '#03A9F4',
-    dark: '#01579B'
+    main: '#3498DB',       // Azul información
+    light: '#5DADE2',
+    dark: '#2980B9'
   }
 };
 
@@ -70,7 +70,7 @@ export const lightTheme = createTheme({
   },
   
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Segoe UI", Calibri, -apple-system, BlinkMacSystemFont, system-ui, sans-serif',
     h1: {
       fontSize: '2.5rem',
       fontWeight: 500
@@ -157,10 +157,10 @@ export const lightTheme = createTheme({
     MuiTableHead: {
       styleOverrides: {
         root: {
-          backgroundColor: '#F5F5F5',
+          backgroundColor: '#F8F9FA',
           '& .MuiTableCell-root': {
             fontWeight: 600,
-            color: '#455A64'
+            color: '#1A1A2E'
           }
         }
       }
@@ -169,7 +169,7 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           '&:hover': {
-            backgroundColor: '#FFF3E0'
+            backgroundColor: '#FDEDEC'
           }
         }
       }
@@ -179,7 +179,7 @@ export const lightTheme = createTheme({
     MuiDrawer: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#263238',
+          backgroundColor: '#1A1A2E',
           color: '#FFFFFF'
         }
       }
@@ -220,14 +220,14 @@ export const darkTheme = createTheme({
     mode: 'dark',
     ...isthoColors,
     background: {
-      default: '#1E1E1E',
-      paper: '#2D2D2D'
+      default: '#0F1023',
+      paper: '#1A1B3A'
     },
     text: {
-      primary: '#FFFFFF',
-      secondary: '#B0B0B0'
+      primary: '#F0F0F5',
+      secondary: '#B0BEC5'
     },
-    divider: '#424242'
+    divider: 'rgba(255,255,255,0.08)'
   },
   
   typography: lightTheme.typography,
@@ -239,9 +239,9 @@ export const darkTheme = createTheme({
     MuiDrawer: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#1A1A1A',
-          color: '#FFFFFF',
-          borderRight: '1px solid #333'
+          backgroundColor: '#0F1023',
+          color: '#F0F0F5',
+          borderRight: '1px solid rgba(255,255,255,0.08)'
         }
       }
     },
@@ -249,10 +249,10 @@ export const darkTheme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: '#2D2D2D',
-          color: '#FFFFFF',
+          backgroundColor: '#151631',
+          color: '#F0F0F5',
           boxShadow: 'none',
-          borderBottom: '1px solid #333'
+          borderBottom: '1px solid rgba(255,255,255,0.08)'
         }
       }
     },
@@ -260,10 +260,10 @@ export const darkTheme = createTheme({
     MuiTableHead: {
       styleOverrides: {
         root: {
-          backgroundColor: '#333',
+          backgroundColor: '#151631',
           '& .MuiTableCell-root': {
             fontWeight: 600,
-            color: '#E65100'
+            color: '#E74C3C'
           }
         }
       }
@@ -273,7 +273,7 @@ export const darkTheme = createTheme({
       styleOverrides: {
         root: {
           '&:hover': {
-            backgroundColor: 'rgba(230, 81, 0, 0.1)'
+            backgroundColor: 'rgba(231, 76, 60, 0.1)'
           }
         }
       }
@@ -282,8 +282,8 @@ export const darkTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: '#2D2D2D',
-          border: '1px solid #333'
+          backgroundColor: '#1A1B3A',
+          border: '1px solid rgba(255,255,255,0.08)'
         }
       }
     }

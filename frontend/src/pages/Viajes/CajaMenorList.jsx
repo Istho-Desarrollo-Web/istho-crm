@@ -132,7 +132,7 @@ const RowActions = ({ caja, onView, onEdit, onClose, onDelete }) => {
             mt: 0.5,
             borderRadius: '0.75rem',
             border: isDark ? '1px solid #334155' : '1px solid #f3f4f6',
-            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+            backgroundColor: isDark ? '#0F1023' : '#ffffff',
             minWidth: '160px',
             '& .MuiMenuItem-root': {
               fontSize: '0.875rem',

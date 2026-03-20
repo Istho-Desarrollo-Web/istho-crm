@@ -147,7 +147,7 @@ const LoginPage = () => {
     if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900">
-                <Loader2 className="w-10 h-10 text-[#E65100] animate-spin" />
+                <Loader2 className="w-10 h-10 text-[#E74C3C] animate-spin" />
             </div>
         );
     }
@@ -227,7 +227,7 @@ const LoginPage = () => {
                                         {...register('email')}
                                         className={`
                                             w-full pl-12 pr-4 py-3.5 rounded-2xl border bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
-                                            focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E65100]/20 focus:border-[#E65100]
+                                            focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]
                                             transition-all duration-300 ease-in-out
                                             ${errors.email
                                                 ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500/20'
@@ -264,7 +264,7 @@ const LoginPage = () => {
                                         {...register('password')}
                                         className={`
                                             w-full pl-12 pr-12 py-3.5 rounded-2xl border bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
-                                            focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E65100]/20 focus:border-[#E65100]
+                                            focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]
                                             transition-all duration-300 ease-in-out
                                             ${errors.password
                                                 ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500/20'
@@ -297,13 +297,13 @@ const LoginPage = () => {
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="checkbox"
-                                        className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-[#E65100] focus:ring-[#E65100] dark:bg-slate-700"
+                                        className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-[#E74C3C] focus:ring-[#E74C3C] dark:bg-slate-700"
                                     />
                                     <span className="text-sm text-gray-600 dark:text-slate-400">Recordarme</span>
                                 </label>
                                 <Link
                                     to="/forgot-password"
-                                    className="text-sm text-[#E65100] hover:text-[#BF360C] dark:text-orange-400 dark:hover:text-orange-300 font-medium transition-colors duration-200"
+                                    className="text-sm text-[#E74C3C] hover:text-[#C0392B] dark:text-red-400 dark:hover:text-red-300 font-medium transition-colors duration-200"
                                 >
                                     ¿Olvidaste tu contraseña?
                                 </Link>
@@ -315,13 +315,13 @@ const LoginPage = () => {
                                 disabled={isSubmitting}
                                 className={`
                                     w-full py-3 px-4 rounded-2xl font-semibold text-white
-                                    bg-gradient-to-r from-[#E65100] to-[#FF6D00]
-                                    hover:from-[#BF360C] hover:to-[#E65100]
-                                    focus:outline-none focus:ring-2 focus:ring-[#E65100] focus:ring-offset-2 dark:focus:ring-offset-slate-900
+                                    bg-gradient-to-r from-[#E74C3C] to-[#C0392B]
+                                    hover:from-[#C0392B] hover:to-[#A93226]
+                                    focus:outline-none focus:ring-2 focus:ring-[#E74C3C] focus:ring-offset-2 dark:focus:ring-offset-slate-900
                                     transition-all duration-300 ease-in-out
                                     disabled:opacity-70 disabled:cursor-not-allowed
                                     flex items-center justify-center gap-2
-                                    shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30
+                                    shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30
                                     transform hover:-translate-y-0.5 active:translate-y-0
                                 `}
                             >
@@ -345,7 +345,7 @@ const LoginPage = () => {
                                 ¿Problemas para acceder?{' '}
                                 <a
                                     href="mailto:soporte@istho.com.co"
-                                    className="text-[#E65100] hover:text-[#BF360C] dark:text-orange-400 dark:hover:text-orange-300 font-medium transition-colors duration-200"
+                                    className="text-[#E74C3C] hover:text-[#C0392B] dark:text-red-400 dark:hover:text-red-300 font-medium transition-colors duration-200"
                                 >
                                     Contactar soporte
                                 </a>
@@ -357,7 +357,7 @@ const LoginPage = () => {
                 {/* ════════════════════════════════════════════════════════════════════ */}
                 {/* LADO DERECHO - Branding */}
                 {/* ════════════════════════════════════════════════════════════════════ */}
-                <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-[#E65100] via-[#FF6D00] to-[#FF8F00] dark:from-slate-800 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden">
+                <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-[#E74C3C] via-[#FF6B5A] to-[#F39C12] dark:from-[#0F1023] dark:via-[#151631] dark:to-[#1A1B3A] relative overflow-hidden">
                     {/* Formas flotantes decorativas */}
                     <div
                         className="absolute top-16 right-16 w-72 h-72 bg-white/10 rounded-full blur-3xl"

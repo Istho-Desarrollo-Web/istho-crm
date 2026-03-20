@@ -476,7 +476,7 @@ const Dashboard = () => {
             subtitle="Distribución actual de operaciones"
             data={barData}
             legend={[
-              { label: 'Cantidad', color: '#E65100' },
+              { label: 'Cantidad', color: '#E74C3C' },
             ]}
             height={300}
             loading={loading}

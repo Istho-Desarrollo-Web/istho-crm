@@ -176,7 +176,7 @@ const BarChart = ({
                       width="98"
                       height="48"
                       rx="8"
-                      fill="#1e293b"
+                      fill="#0F1023"
                       opacity="0.95"
                     />
                     <text

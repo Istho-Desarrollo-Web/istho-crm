@@ -238,7 +238,7 @@ export default function AnalisisAlineacionActualizado() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-[#E65100] to-[#FF6D00] text-white py-6 px-8 shadow-lg">
+      <header className="bg-gradient-to-r from-[#E74C3C] to-[#FF6B5A] text-white py-6 px-8 shadow-lg">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -268,7 +268,7 @@ export default function AnalisisAlineacionActualizado() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                   activeTab === tab.id
-                    ? 'bg-[#E65100] text-white shadow-md'
+                    ? 'bg-[#E74C3C] text-white shadow-md'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -400,7 +400,7 @@ export default function AnalisisAlineacionActualizado() {
             </div>
 
             {/* Siguiente Paso */}
-            <div className="bg-gradient-to-r from-[#E65100] to-[#FF6D00] rounded-2xl p-6 text-white">
+            <div className="bg-gradient-to-r from-[#E74C3C] to-[#FF6B5A] rounded-2xl p-6 text-white">
               <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
                 <span>🎯</span> Siguiente Paso Recomendado
               </h3>
@@ -942,7 +942,7 @@ export default despachosService;`}
       <footer className="bg-gray-800 text-gray-400 py-6 px-8 mt-12">
         <div className="max-w-7xl mx-auto flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
-            <span className="text-[#E65100] font-bold">ISTHO</span>
+            <span className="text-[#E74C3C] font-bold">ISTHO</span>
             <span>S.A.S. - Análisis de Alineación Actualizado</span>
           </div>
           <div>Enero 2026 • v2.0</div>

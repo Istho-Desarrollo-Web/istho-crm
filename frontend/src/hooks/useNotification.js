@@ -32,7 +32,7 @@ const TOAST_STYLES = {
   info: {},
   // Estilo especial para alertas de inventario (naranja ISTHO)
   inventory: {
-    background: 'linear-gradient(135deg, #E65100 0%, #D84315 100%)',
+    background: 'linear-gradient(135deg, #E74C3C 0%, #C0392B 100%)',
     color: '#ffffff',
     border: '1px solid rgba(255, 255, 255, 0.1)',
   },

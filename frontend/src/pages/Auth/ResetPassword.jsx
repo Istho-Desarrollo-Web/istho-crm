@@ -154,7 +154,7 @@ const ResetPassword = () => {
         return (
             <>
                 <style>{styles}</style>
-                <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-gray-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex flex-col items-center justify-center p-4">
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 via-red-50/30 to-gray-100 dark:from-[#0F1023] dark:via-[#151631] dark:to-[#1A1B3A] flex flex-col items-center justify-center p-4">
                     <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/20 border border-gray-100 dark:border-slate-800 p-8 text-center animate-slideUp">
                         {/* Logo */}
                         <div className="mb-6">
@@ -183,7 +183,7 @@ const ResetPassword = () => {
 
                         <Link
                             to="/forgot-password"
-                            className="inline-flex items-center text-[#E65100] dark:text-orange-400 font-medium hover:text-[#BF360C] dark:hover:text-orange-300 transition-colors"
+                            className="inline-flex items-center text-[#E74C3C] dark:text-red-400 font-medium hover:text-[#C0392B] dark:hover:text-red-300 transition-colors"
                         >
                             <ArrowLeft size={18} className="mr-2" />
                             Solicitar nuevo enlace
@@ -209,7 +209,7 @@ const ResetPassword = () => {
         return (
             <>
                 <style>{styles}</style>
-                <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-gray-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex flex-col items-center justify-center p-4">
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 via-red-50/30 to-gray-100 dark:from-[#0F1023] dark:via-[#151631] dark:to-[#1A1B3A] flex flex-col items-center justify-center p-4">
                     <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/20 border border-gray-100 dark:border-slate-800 p-8 text-center animate-slideUp">
                         {/* Logo */}
                         <div className="mb-6">
@@ -242,9 +242,9 @@ const ResetPassword = () => {
                         <Link
                             to="/login"
                             className="inline-flex items-center justify-center w-full py-3 px-4 rounded-xl font-semibold text-white
-                                bg-gradient-to-r from-[#E65100] to-[#FF6D00] hover:from-[#BF360C] hover:to-[#E65100]
-                                focus:outline-none focus:ring-2 focus:ring-[#E65100] focus:ring-offset-2
-                                transition-all duration-200 shadow-lg shadow-orange-500/25"
+                                bg-gradient-to-r from-[#E74C3C] to-[#C0392B] hover:from-[#C0392B] hover:to-[#A93226]
+                                focus:outline-none focus:ring-2 focus:ring-[#E74C3C] focus:ring-offset-2
+                                transition-all duration-200 shadow-lg shadow-red-500/25"
                         >
                             Ir al Inicio de Sesión
                         </Link>
@@ -271,7 +271,7 @@ const ResetPassword = () => {
     return (
         <>
             <style>{styles}</style>
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-gray-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex flex-col items-center justify-center p-4">
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-red-50/30 to-gray-100 dark:from-[#0F1023] dark:via-[#151631] dark:to-[#1A1B3A] flex flex-col items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/20 border border-gray-100 dark:border-slate-800 overflow-hidden animate-slideUp">
                     <div className="p-8">
                         {/* Logo */}
@@ -290,7 +290,7 @@ const ResetPassword = () => {
 
                         {/* Icon + Title */}
                         <div className="text-center mb-8">
-                            <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/30 text-[#E65100] dark:text-orange-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div className="w-14 h-14 bg-red-100 dark:bg-red-900/30 text-[#E74C3C] dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <KeyRound size={28} />
                             </div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -330,7 +330,7 @@ const ResetPassword = () => {
                                         value={formData.password}
                                         onChange={handleChange}
                                         className="w-full pl-12 pr-12 py-3 rounded-xl border bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
-                                            focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E65100]/20 focus:border-[#E65100]
+                                            focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]
                                             transition-all duration-200 border-gray-200 dark:border-slate-700"
                                         placeholder="••••••••"
                                         required
@@ -395,7 +395,7 @@ const ResetPassword = () => {
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
                                         className={`w-full pl-12 pr-12 py-3 rounded-xl border bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
-                                            focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E65100]/20 focus:border-[#E65100]
+                                            focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]
                                             transition-all duration-200
                                             ${formData.confirmPassword.length > 0 && !passwordsMatch
                                                 ? 'border-red-300 dark:border-red-700'
@@ -440,13 +440,13 @@ const ResetPassword = () => {
                                 type="submit"
                                 disabled={loading}
                                 className="w-full py-3 px-4 rounded-xl font-semibold text-white
-                                    bg-gradient-to-r from-[#E65100] to-[#FF6D00]
-                                    hover:from-[#BF360C] hover:to-[#E65100]
-                                    focus:outline-none focus:ring-2 focus:ring-[#E65100] focus:ring-offset-2
+                                    bg-gradient-to-r from-[#E74C3C] to-[#C0392B]
+                                    hover:from-[#C0392B] hover:to-[#A93226]
+                                    focus:outline-none focus:ring-2 focus:ring-[#E74C3C] focus:ring-offset-2
                                     transition-all duration-200
                                     disabled:opacity-70 disabled:cursor-not-allowed
                                     flex items-center justify-center gap-2
-                                    shadow-lg shadow-orange-500/25
+                                    shadow-lg shadow-red-500/25
                                     active:scale-[0.98]"
                             >
                                 {loading ? (
@@ -467,7 +467,7 @@ const ResetPassword = () => {
                         <div className="mt-6 text-center">
                             <Link
                                 to="/login"
-                                className="inline-flex items-center text-sm text-gray-500 dark:text-slate-500 hover:text-[#E65100] dark:hover:text-orange-400 transition-colors"
+                                className="inline-flex items-center text-sm text-gray-500 dark:text-slate-500 hover:text-[#E74C3C] dark:hover:text-red-400 transition-colors"
                             >
                                 <ArrowLeft size={16} className="mr-1" />
                                 Volver al inicio de sesión

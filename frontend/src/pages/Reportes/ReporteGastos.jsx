@@ -96,7 +96,7 @@ const ReporteGastos = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <PieChart title="Estado de Aprobación" subtitle="Distribución de gastos" data={data?.porAprobacion || []} size={180} loading={loading} />
-          <BarChart title="Gastos por Concepto" subtitle="Top 8 conceptos de egreso" data={data?.porConcepto || []} legend={[{ label: 'Valor ($)', color: '#E65100' }]} height={300} loading={loading} />
+          <BarChart title="Gastos por Concepto" subtitle="Top 8 conceptos de egreso" data={data?.porConcepto || []} legend={[{ label: 'Valor ($)', color: '#E74C3C' }]} height={300} loading={loading} />
         </div>
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">

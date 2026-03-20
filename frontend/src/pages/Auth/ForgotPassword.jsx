@@ -91,7 +91,7 @@ const ForgotPassword = () => {
         return (
             <>
                 <style>{animationStyles}</style>
-                <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#E65100] via-[#FF6D00] to-[#FF8F00] dark:from-slate-800 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden">
+                <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#E74C3C] via-[#FF6B5A] to-[#F39C12] dark:from-[#0F1023] dark:via-[#151631] dark:to-[#1A1B3A] relative overflow-hidden">
                     {/* Background decorations */}
                     <div className="absolute inset-0 opacity-10">
                         <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -141,7 +141,7 @@ const ForgotPassword = () => {
                         <div style={{ animation: 'forgotSlideUp 0.4s ease-out 0.5s both' }}>
                             <Link
                                 to="/login"
-                                className="inline-flex items-center gap-2 text-[#E65100] dark:text-orange-400 font-medium hover:text-[#BF360C] dark:hover:text-orange-300 transition-colors"
+                                className="inline-flex items-center gap-2 text-[#E74C3C] dark:text-red-400 font-medium hover:text-[#C0392B] dark:hover:text-red-300 transition-colors"
                             >
                                 <ArrowLeft size={18} />
                                 Volver al inicio de sesion
@@ -170,7 +170,7 @@ const ForgotPassword = () => {
     return (
         <>
             <style>{animationStyles}</style>
-            <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#E65100] via-[#FF6D00] to-[#FF8F00] dark:from-slate-800 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden">
+            <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#E74C3C] via-[#FF6B5A] to-[#F39C12] dark:from-[#0F1023] dark:via-[#151631] dark:to-[#1A1B3A] relative overflow-hidden">
                 {/* Background pattern */}
                 <div className="absolute inset-0 opacity-10">
                     <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -215,8 +215,8 @@ const ForgotPassword = () => {
                             className="text-center mb-8"
                             style={{ animation: 'forgotSlideUp 0.4s ease-out 0.2s both' }}
                         >
-                            <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <KeyRound size={28} className="text-[#E65100] dark:text-orange-400" />
+                            <div className="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <KeyRound size={28} className="text-[#E74C3C] dark:text-red-400" />
                             </div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                                 Recuperar Contrasena
@@ -250,7 +250,7 @@ const ForgotPassword = () => {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
-                                            focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E65100]/20 focus:border-[#E65100]
+                                            focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]
                                             transition-all duration-200"
                                         placeholder="ejemplo@istho.com"
                                         disabled={loading}
@@ -263,13 +263,13 @@ const ForgotPassword = () => {
                                 type="submit"
                                 disabled={loading}
                                 className="w-full py-3 px-4 rounded-xl font-semibold text-white
-                                    bg-gradient-to-r from-[#E65100] to-[#FF6D00]
-                                    hover:from-[#BF360C] hover:to-[#E65100]
-                                    focus:outline-none focus:ring-2 focus:ring-[#E65100] focus:ring-offset-2
+                                    bg-gradient-to-r from-[#E74C3C] to-[#C0392B]
+                                    hover:from-[#C0392B] hover:to-[#A93226]
+                                    focus:outline-none focus:ring-2 focus:ring-[#E74C3C] focus:ring-offset-2
                                     transition-all duration-200
                                     disabled:opacity-70 disabled:cursor-not-allowed
                                     flex items-center justify-center gap-2
-                                    shadow-lg shadow-orange-500/25
+                                    shadow-lg shadow-red-500/25
                                     transform active:scale-[0.98]"
                             >
                                 {loading ? (
@@ -293,7 +293,7 @@ const ForgotPassword = () => {
                         >
                             <Link
                                 to="/login"
-                                className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-slate-400 hover:text-[#E65100] dark:hover:text-orange-400 font-medium transition-colors"
+                                className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-slate-400 hover:text-[#E74C3C] dark:hover:text-red-400 font-medium transition-colors"
                             >
                                 <ArrowLeft size={16} />
                                 Volver al inicio de sesion

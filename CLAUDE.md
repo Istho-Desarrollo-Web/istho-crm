@@ -1,0 +1,102 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+ISTHO CRM is a logistics, transportation, and warehouse management system for ISTHO S.A.S. (Girardota, Antioquia, Colombia). Monorepo with `server/` (backend) and `frontend/` (frontend).
+
+## Commands
+
+### Backend (run from `server/`)
+```bash
+npm run dev          # Dev server with nodemon (port 5000)
+npm start            # Production mode
+npm test             # Jest tests
+npm run test:coverage
+npm run lint         # ESLint
+npm run db:migrate   # Sequelize migrations
+npm run db:seed      # Sequelize seeds
+```
+
+### Frontend (run from `frontend/`)
+```bash
+npm run dev          # Vite dev server (port 5173)
+npm run build        # Production build → dist/
+npm run preview      # Preview production build
+npm run lint
+```
+
+### Database Seeds (first time or after model changes)
+Seeds run automatically on server startup via `server.js → initializeDatabase()`. They are idempotent.
+```bash
+node src/scripts/seedRolesPermisos.js    # Roles, permissions, admin user
+node src/scripts/seedPlantillasEmail.js  # Email templates
+```
+
+## Architecture
+
+### Backend: Express + Sequelize + MySQL
+- **Entry:** `server/server.js` → creates HTTP server, Socket.io, health check, then `app.js` for Express middleware
+- **Pattern:** Routes → Middleware (auth/permissions) → Controllers → Services → Models
+- **Auth:** JWT with refresh tokens. Middleware chain: `verifyToken → cargarCachePermisos → requiereRol/rolTienePermiso`
+- **Permissions:** Role-based with per-module actions (e.g., `inventario: ['ver', 'crear', 'editar']`). Cached 1 min in memory
+- **Real-time:** Socket.io for notifications and live updates
+- **Email:** Resend (API HTTP, production) or Nodemailer SMTP (development fallback). Config in `src/config/email.js`
+- **WMS Integration:** Copérnico sync via `wmsSyncService.js` — products, entries (CO), exits (PK), kardex (CR)
+- **Reports:** ExcelJS for Excel, PDFKit for PDF. Scheduled reports via node-cron
+- **Response helpers:** Always use `success()`, `paginated()`, `error()`, `notFound()` from `src/utils/responses.js`
+- **Error handlers:** Registered via `app.registerErrorHandlers()` — MUST be called AFTER all route definitions
+
+### Frontend: React 19 + Vite + Tailwind 4 + MUI 7
+- **Routing:** React Router with lazy loading. Role-based guards: `PrivateRoute`, `PermissionRoute`, `AdminRoute`, etc.
+- **State:** Context-based (AuthContext, ThemeContext, NotificacionesContext, SocketContext)
+- **API layer:** Axios client with interceptors in `src/api/client.js`. Centralized endpoints in `src/api/endpoints.js`
+- **Forms:** React Hook Form + Yup validation
+- **Charts:** Recharts
+- **Notifications:** Notistack with `useNotification` hook
+- **Dark mode:** Toggle with ThemeContext, stored in user preferences
+
+### Vite Aliases
+`@` → `src/`, `@components`, `@pages`, `@hooks`, `@context`, `@api`, `@utils`, `@styles`, `@assets`
+
+## Roles & Hierarchy
+1. **admin** (nivel 100) — Full access, `*` wildcard permissions
+2. **supervisor** (nivel 75) — Operations & reports
+3. **financiera** (nivel 60) — Vehicles, trips, petty cash, approvals
+4. **operador** (nivel 50) — Warehouse operations
+5. **conductor** (nivel 30) — Trips, expenses, own vehicles
+6. **cliente** (nivel 10) — Portal filtered by `cliente_id`
+
+## Database
+- **ORM:** Sequelize 6 with MySQL. Config in `server/src/config/database.js`
+- **Naming:** Models PascalCase, tables snake_case, columns snake_case. `underscored: true` in Sequelize
+- **Sync:** `sequelize.sync({ alter: true })` in all environments — auto-migrates column changes
+- **Timezone:** All timestamps use `-05:00` (Colombia)
+- **Key models:** Usuario, Rol, Permiso, Inventario, CajaInventario, Operacion, Vehiculo, Viaje, CajaMenor, MovimientoCajaMenor, Auditoria
+
+## Deploy
+- **Backend:** Railway (Nixpacks, Node 20). Config: `server/railway.toml` + `server/nixpacks.toml`. Health check: `/health`
+- **Frontend:** Vercel. Config: `frontend/vercel.json`. Root directory: `frontend` (not `./frontend`)
+- **Database:** Railway MySQL. Use `MYSQL_URL` (internal) for service-to-service, `MYSQL_PUBLIC_URL` for external access
+- **DO NOT** set `PORT` variable in Railway — it assigns one automatically
+- **CORS_ORIGIN** in Railway must match exact Vercel URL (no trailing slash)
+- **Avatars and file uploads** are stored as base64 in the database (MEDIUMTEXT) because Railway has ephemeral filesystem
+
+## Conventions
+- **Language:** All code, comments, commits, and UI in Spanish
+- **Variables/functions:** camelCase in Spanish (`obtenerCliente`, `crearOperacion`)
+- **API endpoints:** kebab-case (`/cambiar-password`, `/cajas-menores`)
+- **Components:** PascalCase.jsx (`VehiculosList.jsx`, `CajaMenorDetail.jsx`)
+- **Controllers:** `moduloController.js` with functions exported
+- **Routes:** `modulo.routes.js`
+- **Services:** `moduloService.js`
+- **Case sensitivity:** Windows is case-insensitive, Linux (Vercel/Railway) is not. Always use exact casing for imports
+
+## Critical Patterns
+- Health check route MUST be registered BEFORE `app.registerErrorHandlers()` in `server.js`
+- Seeds are idempotent — they only create what doesn't exist, safe to run on every deploy
+- The `success()` response helper signature is `success(res, data, message, statusCode)` — don't swap arguments
+- Frontend `uploadClient` interceptor already extracts `response.data` — don't do `response.data.data`
+- Date fields: use `DATEONLY` in Sequelize to avoid timezone shifts. Parse with `new Date(date + 'T00:00:00')` on frontend
+- Price/currency fields: store as integers in DB, format with `Intl.NumberFormat('es-CO')` on frontend
