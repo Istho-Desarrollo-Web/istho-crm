@@ -60,10 +60,10 @@ const loginSchema = yup.object({
 // ============================================================================
 
 const features = [
-    { icon: Truck, text: 'Gestión de Transporte' },
-    { icon: Package, text: 'Control de Inventario' },
-    { icon: BarChart3, text: 'Reportes en Tiempo Real' },
-    { icon: Shield, text: 'Seguridad Avanzada' },
+    { icon: Truck, text: 'Gestión de Transporte', color: '#2ECC71', bgColor: 'rgba(46, 204, 113, 0.2)' },
+    { icon: Package, text: 'Control de Inventario', color: '#3498DB', bgColor: 'rgba(52, 152, 219, 0.2)' },
+    { icon: BarChart3, text: 'Reportes en Tiempo Real', color: '#F39C12', bgColor: 'rgba(243, 156, 18, 0.2)' },
+    { icon: Shield, text: 'Seguridad Avanzada', color: '#E74C3C', bgColor: 'rgba(231, 76, 60, 0.2)' },
 ];
 
 // ============================================================================
@@ -357,33 +357,33 @@ const LoginPage = () => {
                 {/* ════════════════════════════════════════════════════════════════════ */}
                 {/* LADO DERECHO - Branding */}
                 {/* ════════════════════════════════════════════════════════════════════ */}
-                <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-[#E74C3C] via-[#FF6B5A] to-[#F39C12] dark:from-[#0F1023] dark:via-[#151631] dark:to-[#1A1B3A] relative overflow-hidden">
-                    {/* Formas flotantes decorativas */}
+                <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-[#1A1A2E] via-[#2C3E50] to-[#1A1A2E] dark:from-[#0F1023] dark:via-[#151631] dark:to-[#0F1023] relative overflow-hidden">
+                    {/* Formas flotantes decorativas con colores CENTHRIX */}
                     <div
-                        className="absolute top-16 right-16 w-72 h-72 bg-white/10 rounded-full blur-3xl"
-                        style={{ animation: 'float 6s ease-in-out infinite' }}
+                        className="absolute top-16 right-16 w-72 h-72 rounded-full blur-3xl"
+                        style={{ background: 'rgba(46, 204, 113, 0.12)', animation: 'float 6s ease-in-out infinite' }}
                     />
                     <div
-                        className="absolute bottom-24 left-12 w-96 h-96 bg-white/10 rounded-full blur-3xl"
-                        style={{ animation: 'float 8s ease-in-out infinite 1s' }}
+                        className="absolute bottom-24 left-12 w-96 h-96 rounded-full blur-3xl"
+                        style={{ background: 'rgba(231, 76, 60, 0.1)', animation: 'float 8s ease-in-out infinite 1s' }}
                     />
                     <div
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-white/5 rounded-full blur-2xl"
-                        style={{ animation: 'float 7s ease-in-out infinite 0.5s' }}
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-2xl"
+                        style={{ background: 'rgba(52, 152, 219, 0.08)', animation: 'float 7s ease-in-out infinite 0.5s' }}
                     />
 
-                    {/* Formas geométricas sutiles */}
+                    {/* Formas geométricas sutiles con colores */}
                     <div
-                        className="absolute top-32 left-16 w-16 h-16 border-2 border-white/10 rounded-xl rotate-12"
-                        style={{ animation: 'float 5s ease-in-out infinite 0.3s' }}
+                        className="absolute top-32 left-16 w-16 h-16 rounded-xl rotate-12"
+                        style={{ border: '2px solid rgba(46, 204, 113, 0.2)', animation: 'float 5s ease-in-out infinite 0.3s' }}
                     />
                     <div
-                        className="absolute bottom-40 right-24 w-12 h-12 border-2 border-white/10 rounded-full"
-                        style={{ animation: 'float 6s ease-in-out infinite 1.5s' }}
+                        className="absolute bottom-40 right-24 w-12 h-12 rounded-full"
+                        style={{ border: '2px solid rgba(243, 156, 18, 0.2)', animation: 'float 6s ease-in-out infinite 1.5s' }}
                     />
                     <div
-                        className="absolute top-1/3 right-12 w-8 h-8 bg-white/10 rounded-lg rotate-45"
-                        style={{ animation: 'float 4s ease-in-out infinite 0.8s' }}
+                        className="absolute top-1/3 right-12 w-8 h-8 rounded-lg rotate-45"
+                        style={{ background: 'rgba(46, 204, 113, 0.15)', animation: 'float 4s ease-in-out infinite 0.8s' }}
                     />
 
                     {/* Contenido */}
@@ -403,10 +403,10 @@ const LoginPage = () => {
                         </div>
 
                         <h2 className="text-4xl font-bold mb-3 text-center">
-                            Sistema CRM
+                            Sistema <span style={{ color: '#2ECC71' }}>CRM</span>
                         </h2>
 
-                        <p className="text-lg text-white/80 text-center max-w-sm mb-10">
+                        <p className="text-lg text-white/70 text-center max-w-sm mb-10">
                             Gestión integral de clientes, inventario y operaciones logísticas
                         </p>
 
@@ -420,8 +420,11 @@ const LoginPage = () => {
                                         className="feature-card flex items-center gap-3 bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/20 dark:border-slate-700/50 cursor-pointer"
                                         style={{ animation: `slideUp 0.5s ease-out ${index * 0.1}s both` }}
                                     >
-                                        <div className="feature-icon w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                                            <IconComponent className="w-5 h-5 text-white" />
+                                        <div
+                                            className="feature-icon w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                                            style={{ backgroundColor: feature.bgColor }}
+                                        >
+                                            <IconComponent className="w-5 h-5" style={{ color: feature.color }} />
                                         </div>
                                         <span className="text-sm font-medium text-white">{feature.text}</span>
                                     </div>
