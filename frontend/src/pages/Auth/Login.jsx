@@ -19,6 +19,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getGreeting } from '../../utils/greeting';
 import logoNegro from '../../assets/logo-negro.png';
 import logoBlanco from '../../assets/logo-blanco.png';
+import logoCenthrix from '../../assets/Centhrix WMS - ISTHO-03.svg';
 import {
     User,
     Lock,
@@ -408,17 +409,12 @@ const LoginPage = () => {
 
                     {/* Contenido */}
                     <div className="panel-content relative z-10 flex flex-col items-center justify-center p-12 text-white w-full" style={fadeIn}>
-                        {/* Logo grande */}
+                        {/* Logo Centhrix */}
                         <div className="mb-8" style={{ animation: 'float 6s ease-in-out infinite' }}>
                             <img
-                                src={logoNegro}
-                                alt="ISTHO"
-                                className="w-28 h-28 rounded-3xl shadow-2xl dark:hidden"
-                            />
-                            <img
-                                src={logoBlanco}
-                                alt="ISTHO"
-                                className="w-28 h-28 rounded-3xl shadow-2xl hidden dark:block dark:ring-1 dark:ring-slate-700"
+                                src={logoCenthrix}
+                                alt="CenthriX"
+                                className="w-48 h-auto drop-shadow-2xl"
                             />
                         </div>
 
