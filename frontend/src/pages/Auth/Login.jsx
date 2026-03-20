@@ -160,8 +160,22 @@ const LoginPage = () => {
                 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
                 .feature-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
                 .feature-card:hover { transform: translateY(-4px) scale(1.02); background: rgba(255,255,255,0.25) !important; box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
-                .feature-card:hover .feature-icon { transform: scale(1.15) rotate(-5deg); background: rgba(255,255,255,0.35) !important; }
+                .feature-card:hover .feature-icon { transform: scale(1.15) rotate(-5deg); }
                 .feature-icon { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+                /* Panel derecho hover effects */
+                .right-panel { transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+                .right-panel:hover .float-shape { animation-duration: 3s !important; }
+                .right-panel:hover .geo-shape { opacity: 0.5; transform: scale(1.2); }
+                .geo-shape { transition: opacity 0.5s ease, transform 0.5s ease; opacity: 0.3; }
+                .right-panel:hover .panel-content { transform: translateY(-4px); }
+                .panel-content { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+                .right-panel:hover .panel-glow { opacity: 1; }
+                .panel-glow { opacity: 0; transition: opacity 0.6s ease; }
+
+                /* CenthriX title animation */
+                .centhrix-title .letter-x { display: inline-block; transition: all 0.3s ease; }
+                .centhrix-title:hover .letter-x { transform: scale(1.2) rotate(12deg); filter: drop-shadow(0 0 8px rgba(46, 204, 113, 0.6)); }
             `}</style>
 
             <div className="h-screen flex relative bg-white dark:bg-slate-900 overflow-hidden" style={fadeIn}>
@@ -357,37 +371,43 @@ const LoginPage = () => {
                 {/* ════════════════════════════════════════════════════════════════════ */}
                 {/* LADO DERECHO - Branding */}
                 {/* ════════════════════════════════════════════════════════════════════ */}
-                <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-[#1A1A2E] via-[#2C3E50] to-[#1A1A2E] dark:from-[#0F1023] dark:via-[#151631] dark:to-[#0F1023] relative overflow-hidden">
+                <div className="right-panel hidden lg:flex lg:flex-1 bg-gradient-to-br from-[#1A1A2E] via-[#2C3E50] to-[#1A1A2E] dark:from-[#0F1023] dark:via-[#151631] dark:to-[#0F1023] relative overflow-hidden">
+                    {/* Glow effect on hover */}
+                    <div
+                        className="panel-glow absolute inset-0 pointer-events-none"
+                        style={{ background: 'radial-gradient(circle at 50% 50%, rgba(46, 204, 113, 0.08) 0%, transparent 70%)' }}
+                    />
+
                     {/* Formas flotantes decorativas con colores CENTHRIX */}
                     <div
-                        className="absolute top-16 right-16 w-72 h-72 rounded-full blur-3xl"
+                        className="float-shape absolute top-16 right-16 w-72 h-72 rounded-full blur-3xl"
                         style={{ background: 'rgba(46, 204, 113, 0.12)', animation: 'float 6s ease-in-out infinite' }}
                     />
                     <div
-                        className="absolute bottom-24 left-12 w-96 h-96 rounded-full blur-3xl"
+                        className="float-shape absolute bottom-24 left-12 w-96 h-96 rounded-full blur-3xl"
                         style={{ background: 'rgba(231, 76, 60, 0.1)', animation: 'float 8s ease-in-out infinite 1s' }}
                     />
                     <div
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-2xl"
+                        className="float-shape absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-2xl"
                         style={{ background: 'rgba(52, 152, 219, 0.08)', animation: 'float 7s ease-in-out infinite 0.5s' }}
                     />
 
                     {/* Formas geométricas sutiles con colores */}
                     <div
-                        className="absolute top-32 left-16 w-16 h-16 rounded-xl rotate-12"
-                        style={{ border: '2px solid rgba(46, 204, 113, 0.2)', animation: 'float 5s ease-in-out infinite 0.3s' }}
+                        className="geo-shape absolute top-32 left-16 w-16 h-16 rounded-xl rotate-12"
+                        style={{ border: '2px solid rgba(46, 204, 113, 0.3)', animation: 'float 5s ease-in-out infinite 0.3s' }}
                     />
                     <div
-                        className="absolute bottom-40 right-24 w-12 h-12 rounded-full"
-                        style={{ border: '2px solid rgba(243, 156, 18, 0.2)', animation: 'float 6s ease-in-out infinite 1.5s' }}
+                        className="geo-shape absolute bottom-40 right-24 w-12 h-12 rounded-full"
+                        style={{ border: '2px solid rgba(243, 156, 18, 0.3)', animation: 'float 6s ease-in-out infinite 1.5s' }}
                     />
                     <div
-                        className="absolute top-1/3 right-12 w-8 h-8 rounded-lg rotate-45"
+                        className="geo-shape absolute top-1/3 right-12 w-8 h-8 rounded-lg rotate-45"
                         style={{ background: 'rgba(46, 204, 113, 0.15)', animation: 'float 4s ease-in-out infinite 0.8s' }}
                     />
 
                     {/* Contenido */}
-                    <div className="relative z-10 flex flex-col items-center justify-center p-12 text-white w-full" style={fadeIn}>
+                    <div className="panel-content relative z-10 flex flex-col items-center justify-center p-12 text-white w-full" style={fadeIn}>
                         {/* Logo grande */}
                         <div className="mb-8" style={{ animation: 'float 6s ease-in-out infinite' }}>
                             <img
@@ -402,8 +422,8 @@ const LoginPage = () => {
                             />
                         </div>
 
-                        <h2 className="text-4xl font-bold mb-3 text-center">
-                            Sistema <span style={{ color: '#2ECC71' }}>CRM</span>
+                        <h2 className="centhrix-title text-4xl font-bold mb-3 text-center cursor-default select-none">
+                            CRM Centhri<span className="letter-x" style={{ color: '#2ECC71' }}>X</span>
                         </h2>
 
                         <p className="text-lg text-white/70 text-center max-w-sm mb-10">
