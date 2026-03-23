@@ -23,6 +23,7 @@
     "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.7",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.562.0",
