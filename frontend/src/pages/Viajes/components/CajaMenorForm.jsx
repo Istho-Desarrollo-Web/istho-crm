@@ -115,7 +115,8 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
           setUsuarios(usrs);
         }
         if (cajasRes.success || cajasRes.data) {
-          setCajasCerradas(cajasRes.data || []);
+          const cajas = Array.isArray(cajasRes.data) ? cajasRes.data : cajasRes.data?.rows || [];
+          setCajasCerradas(cajas);
         }
       } catch (err) {
         console.error('Error cargando datos:', err);
