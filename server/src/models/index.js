@@ -399,7 +399,7 @@ const db = {
 db.syncModels = async (options = {}) => {
   try {
     const defaultOptions = {
-      alter: process.env.NODE_ENV === 'development',
+      alter: true,
       force: false
     };
 
