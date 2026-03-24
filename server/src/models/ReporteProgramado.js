@@ -24,7 +24,7 @@ module.exports = (sequelize) => {
     },
 
     tipo_reporte: {
-      type: DataTypes.ENUM('operaciones', 'inventario', 'clientes'),
+      type: DataTypes.ENUM('operaciones', 'inventario', 'clientes', 'viajes', 'cajas_menores', 'gastos'),
       allowNull: false
     },
 

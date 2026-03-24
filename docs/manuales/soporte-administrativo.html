@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soporte Administrativo — CRM CenthriX | ISTHO S.A.S.</title>
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       CenthriX Design System
+       ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --primary: #1A1A2E;
+      --accent: #E74C3C;
+      --accent-hover: #C0392B;
+      --success: #2ECC71;
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F8F9FA;
+      --bg-card: #FFFFFF;
+      --text-primary: #1A1A2E;
+      --text-secondary: #455A64;
+      --border: rgba(0,0,0,0.08);
+      --sidebar-width: 280px;
+      --font: 'Segoe UI', Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    /* ─── Print ────────────────────────────────────────────────── */
+    @media print {
+      .sidebar { display: none !important; }
+      .main-content { margin-left: 0 !important; padding: 20px !important; }
+      .no-print { display: none !important; }
+      body { background: white; font-size: 12px; }
+      .section { break-inside: avoid; page-break-inside: avoid; }
+    }
+
+    /* ─── Sidebar ──────────────────────────────────────────────── */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--primary);
+      color: #F0F0F5;
+      overflow-y: auto;
+      z-index: 100;
+      padding: 24px 0;
+    }
+
+    .sidebar-header {
+      padding: 0 24px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 16px;
+    }
+
+    .sidebar-logo {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .sidebar-logo span.red { color: var(--accent); }
+    .sidebar-logo span.green { color: var(--success); }
+
+    .sidebar-subtitle {
+      font-size: 11px;
+      color: #B0BEC5;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .sidebar-section {
+      padding: 8px 24px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #607D8B;
+      margin-top: 12px;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 8px 24px;
+      color: #B0BEC5;
+      text-decoration: none;
+      font-size: 13px;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar a:hover {
+      background: rgba(255,255,255,0.05);
+      color: #F0F0F5;
+      border-left-color: var(--accent);
+    }
+
+    .sidebar a.active {
+      background: rgba(231, 76, 60, 0.1);
+      color: var(--accent);
+      border-left-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ─── Main Content ─────────────────────────────────────────── */
+    .main-content {
+      margin-left: var(--sidebar-width);
+      padding: 40px 60px;
+      max-width: 1000px;
+    }
+
+    /* ─── Header ───────────────────────────────────────────────── */
+    .doc-header {
+      background: linear-gradient(135deg, var(--primary) 0%, #2a2a4e 100%);
+      color: #F0F0F5;
+      padding: 48px 40px;
+      border-radius: 16px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .doc-header::after {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 200px;
+      height: 200px;
+      background: var(--accent);
+      opacity: 0.1;
+      border-radius: 50%;
+    }
+
+    .doc-header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .doc-header h1 span.green { color: var(--success); }
+
+    .doc-header .subtitle {
+      font-size: 16px;
+      color: #B0BEC5;
+    }
+
+    .doc-meta {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .doc-meta-item {
+      font-size: 12px;
+      color: #B0BEC5;
+    }
+
+    .doc-meta-item strong {
+      color: #F0F0F5;
+    }
+
+    /* ─── Sections ─────────────────────────────────────────────── */
+    .section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .section h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section h2 .num {
+      background: var(--accent);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+      margin: 20px 0 10px;
+    }
+
+    .section p {
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+    }
+
+    .section ul, .section ol {
+      margin: 8px 0 16px 24px;
+      color: var(--text-secondary);
+    }
+
+    .section li {
+      margin-bottom: 6px;
+    }
+
+    /* ─── Tables ───────────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: var(--primary);
+      color: #F0F0F5;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    thead th:first-child { border-radius: 8px 0 0 0; }
+    thead th:last-child { border-radius: 0 8px 0 0; }
+
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr:hover { background: rgba(231, 76, 60, 0.03); }
+
+    tbody tr:last-child td:first-child { border-radius: 0 0 0 8px; }
+    tbody tr:last-child td:last-child { border-radius: 0 0 8px 0; }
+
+    /* ─── Role Badges ──────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-admin { background: #E74C3C20; color: #E74C3C; }
+    .badge-supervisor { background: #3498DB20; color: #3498DB; }
+    .badge-financiera { background: #F39C1220; color: #E67E22; }
+    .badge-operador { background: #2ECC7120; color: #27AE60; }
+    .badge-conductor { background: #9B59B620; color: #8E44AD; }
+    .badge-cliente { background: #1ABC9C20; color: #16A085; }
+
+    /* ─── Info boxes ───────────────────────────────────────────── */
+    .info-box {
+      padding: 16px 20px;
+      border-radius: 10px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+
+    .info-box.blue { background: #3498DB10; border-left: 4px solid #3498DB; }
+    .info-box.green { background: #2ECC7110; border-left: 4px solid #2ECC71; }
+    .info-box.red { background: #E74C3C10; border-left: 4px solid #E74C3C; }
+
+    /* ─── Print button ─────────────────────────────────────────── */
+    .print-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(231,76,60,0.3);
+      transition: all 0.2s;
+      z-index: 200;
+      font-family: var(--font);
+    }
+
+    .print-btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
+    /* ─── Footer ───────────────────────────────────────────────── */
+    .doc-footer {
+      text-align: center;
+      padding: 24px;
+      color: #B0BEC5;
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    /* ─── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       SIDEBAR
+       ═══════════════════════════════════════════════════════════════ -->
+  <nav class="sidebar no-print">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <span class="red">Centh</span>ri<span class="green">X</span>
+      </div>
+      <div class="sidebar-subtitle">Soporte Administrativo</div>
+    </div>
+
+    <div class="sidebar-section">Documento</div>
+    <a href="#introduccion">Introducción</a>
+    <a href="#objetivo-general">Objetivo General</a>
+    <a href="#objetivos-especificos">Objetivos Específicos</a>
+    <a href="#alcance">Alcance del Sistema</a>
+    <a href="#roles">Roles y Responsabilidades</a>
+    <a href="#requisitos">Requisitos Técnicos</a>
+    <a href="#contacto">Contacto y Soporte</a>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       MAIN CONTENT
+       ═══════════════════════════════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- Header -->
+    <div class="doc-header">
+      <h1>Soporte Administrativo<br>CRM Centh<span style="color:#E74C3C">ri</span><span class="green">X</span></h1>
+      <p class="subtitle">Sistema integral de gestión logística, transporte y almacenamiento</p>
+      <div class="doc-meta">
+        <div class="doc-meta-item"><strong>Versión:</strong> 1.0.0</div>
+        <div class="doc-meta-item"><strong>Fecha:</strong> Marzo 2026</div>
+        <div class="doc-meta-item"><strong>Empresa:</strong> ISTHO S.A.S.</div>
+        <div class="doc-meta-item"><strong>Clasificación:</strong> Uso interno</div>
+      </div>
+    </div>
+
+    <!-- ═══════ 1. INTRODUCCIÓN ═══════ -->
+    <div class="section" id="introduccion">
+      <h2><span class="num">1</span> Introducción</h2>
+      <p>
+        El presente documento describe el soporte administrativo del sistema <strong>CRM CenthriX</strong>, una plataforma integral de gestión logística, transporte y almacenamiento desarrollada para <strong>ISTHO S.A.S.</strong> (Centro Logístico Industrial del Norte), ubicada en Girardota, Antioquia, Colombia.
+      </p>
+      <p>
+        CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración bidireccional con el sistema WMS Copérnico. El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.
+      </p>
+      <p>
+        El CRM reemplaza procesos manuales y hojas de cálculo, proporcionando trazabilidad completa, auditoría en tiempo real y reportes automatizados para la toma de decisiones.
+      </p>
+      <div class="info-box blue">
+        <strong>Certificación:</strong> ISTHO S.A.S. cuenta con certificación ISO 9001:2015. CenthriX está diseñado para cumplir con los requisitos de trazabilidad y control documental del sistema de gestión de calidad.
+      </div>
+    </div>
+
+    <!-- ═══════ 2. OBJETIVO GENERAL ═══════ -->
+    <div class="section" id="objetivo-general">
+      <h2><span class="num">2</span> Objetivo General</h2>
+      <p>
+        Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de manera integral sus operaciones logísticas, de transporte y almacenamiento, garantizando la trazabilidad de la información, la eficiencia operativa y el cumplimiento de los estándares ISO 9001:2015.
+      </p>
+    </div>
+
+    <!-- ═══════ 3. OBJETIVOS ESPECÍFICOS ═══════ -->
+    <div class="section" id="objetivos-especificos">
+      <h2><span class="num">3</span> Objetivos Específicos</h2>
+
+      <h3>3.1 Gestión de Clientes</h3>
+      <ul>
+        <li>Centralizar la información de clientes corporativos con datos de contacto, documentación tributaria y estado comercial.</li>
+        <li>Proporcionar un portal de consulta para que los clientes accedan a su inventario y operaciones en tiempo real.</li>
+      </ul>
+
+      <h3>3.2 Control de Inventario</h3>
+      <ul>
+        <li>Gestionar el inventario por cliente con trazabilidad a nivel de caja, lote y ubicación.</li>
+        <li>Sincronizar automáticamente entradas, salidas y ajustes desde el WMS Copérnico.</li>
+        <li>Generar alertas automáticas de stock bajo, agotado y próximo a vencer.</li>
+      </ul>
+
+      <h3>3.3 Operaciones de Bodega</h3>
+      <ul>
+        <li>Registrar y auditar todas las operaciones de ingreso (CO), salida/picking (PK) y ajustes de kardex (CR).</li>
+        <li>Implementar un flujo de auditoría con verificación de líneas, registro de averías y evidencia fotográfica.</li>
+        <li>Enviar notificaciones automáticas por email al cerrar auditorías.</li>
+      </ul>
+
+      <h3>3.4 Transporte y Viajes</h3>
+      <ul>
+        <li>Gestionar la flota de vehículos con control de documentos (SOAT, tecnomecánica) y alertas de vencimiento.</li>
+        <li>Registrar viajes con asignación de conductor, vehículo, ruta y caja menor.</li>
+        <li>Controlar gastos de viaje con flujo de aprobación financiera.</li>
+      </ul>
+
+      <h3>3.5 Cajas Menores</h3>
+      <ul>
+        <li>Administrar cajas menores asignables a cualquier usuario del sistema.</li>
+        <li>Implementar flujo de egresos, ingresos, aprobación y cierre contable.</li>
+        <li>Permitir traslado de saldos entre cajas y liquidación al cierre.</li>
+      </ul>
+
+      <h3>3.6 Reportes y Análisis</h3>
+      <ul>
+        <li>Generar reportes operativos y financieros en formato Excel y PDF.</li>
+        <li>Programar envío automático de reportes por email con frecuencia configurable (6 tipos: operaciones, inventario, clientes, viajes, cajas menores, gastos).</li>
+        <li>Proporcionar dashboards con KPIs diferenciados por rol.</li>
+      </ul>
+
+      <h3>3.7 Seguridad y Auditoría</h3>
+      <ul>
+        <li>Implementar autenticación JWT con tokens de refresco y bloqueo por intentos fallidos.</li>
+        <li>Controlar acceso granular por módulo y acción mediante sistema de permisos.</li>
+        <li>Registrar todas las acciones del sistema en log de auditoría.</li>
+      </ul>
+
+      <h3>3.8 Integración WMS</h3>
+      <ul>
+        <li>Mantener sincronización bidireccional con WMS Copérnico via API REST.</li>
+        <li>Validar dinámicamente estados, tipos de orden y motivos de kardex.</li>
+        <li>Proporcionar panel de configuración para gestionar reglas de integración.</li>
+      </ul>
+    </div>
+
+    <!-- ═══════ 4. ALCANCE ═══════ -->
+    <div class="section" id="alcance">
+      <h2><span class="num">4</span> Alcance del Sistema</h2>
+
+      <h3>4.1 Módulos del Sistema</h3>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Módulo</th><th>Descripción</th><th>Roles con acceso</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td><strong>Dashboard</strong></td><td>Panel de control con KPIs por rol</td><td>Todos</td></tr>
+          <tr><td>2</td><td><strong>Clientes</strong></td><td>Gestión de clientes y contactos</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-supervisor">Supervisor</span> <span class="badge badge-operador">Operador</span> <span class="badge badge-financiera">Financiera</span></td></tr>
+          <tr><td>3</td><td><strong>Inventario</strong></td><td>Productos, stock, cajas, lotes</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-supervisor">Supervisor</span> <span class="badge badge-operador">Operador</span> <span class="badge badge-cliente">Cliente</span></td></tr>
+          <tr><td>4</td><td><strong>Entradas (CO)</strong></td><td>Auditoría de recepciones WMS</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-supervisor">Supervisor</span> <span class="badge badge-operador">Operador</span> <span class="badge badge-cliente">Cliente</span></td></tr>
+          <tr><td>5</td><td><strong>Salidas (PK)</strong></td><td>Auditoría de despachos WMS</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-supervisor">Supervisor</span> <span class="badge badge-operador">Operador</span> <span class="badge badge-cliente">Cliente</span></td></tr>
+          <tr><td>6</td><td><strong>Kardex (CR)</strong></td><td>Auditoría de ajustes WMS</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-supervisor">Supervisor</span> <span class="badge badge-operador">Operador</span> <span class="badge badge-cliente">Cliente</span></td></tr>
+          <tr><td>7</td><td><strong>Vehículos</strong></td><td>Flota y documentos</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-supervisor">Supervisor</span> <span class="badge badge-financiera">Financiera</span> <span class="badge badge-conductor">Conductor</span></td></tr>
+          <tr><td>8</td><td><strong>Viajes</strong></td><td>Rutas y asignaciones</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-supervisor">Supervisor</span> <span class="badge badge-financiera">Financiera</span> <span class="badge badge-conductor">Conductor</span></td></tr>
+          <tr><td>9</td><td><strong>Cajas Menores</strong></td><td>Fondos y saldos</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-supervisor">Supervisor</span> <span class="badge badge-financiera">Financiera</span> <span class="badge badge-conductor">Conductor</span> <span class="badge badge-operador">Operador</span></td></tr>
+          <tr><td>10</td><td><strong>Movimientos</strong></td><td>Egresos, ingresos, aprobación</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-supervisor">Supervisor</span> <span class="badge badge-financiera">Financiera</span> <span class="badge badge-conductor">Conductor</span> <span class="badge badge-operador">Operador</span></td></tr>
+          <tr><td>11</td><td><strong>Reportes</strong></td><td>Visualización y exportación</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-supervisor">Supervisor</span> <span class="badge badge-financiera">Financiera</span> <span class="badge badge-cliente">Cliente</span></td></tr>
+          <tr><td>12</td><td><strong>Reportes Programados</strong></td><td>Envío automático por email</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-supervisor">Supervisor</span></td></tr>
+          <tr><td>13</td><td><strong>Plantillas Email</strong></td><td>Diseño de correos</td><td><span class="badge badge-admin">Admin</span> <span class="badge badge-supervisor">Supervisor</span></td></tr>
+          <tr><td>14</td><td><strong>Configuración WMS</strong></td><td>Reglas de integración</td><td><span class="badge badge-admin">Admin</span></td></tr>
+          <tr><td>15</td><td><strong>Administración</strong></td><td>Usuarios, roles, permisos, sesiones</td><td><span class="badge badge-admin">Admin</span></td></tr>
+          <tr><td>16</td><td><strong>Perfil</strong></td><td>Datos personales, avatar, preferencias</td><td>Todos</td></tr>
+          <tr><td>17</td><td><strong>Notificaciones</strong></td><td>Alertas en tiempo real</td><td>Todos</td></tr>
+        </tbody>
+      </table>
+
+      <h3>4.2 Integraciones</h3>
+      <table>
+        <thead>
+          <tr><th>Sistema</th><th>Tipo</th><th>Protocolo</th><th>Descripción</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>WMS Copérnico</td><td>Bidireccional</td><td>API REST + API Key</td><td>Sincronización de productos, entradas, salidas y kardex</td></tr>
+          <tr><td>Resend</td><td>Saliente</td><td>API HTTP</td><td>Envío de emails transaccionales y reportes</td></tr>
+          <tr><td>Socket.io</td><td>Interno</td><td>WebSocket</td><td>Notificaciones en tiempo real</td></tr>
+        </tbody>
+      </table>
+
+      <h3>4.3 Infraestructura</h3>
+      <table>
+        <thead>
+          <tr><th>Componente</th><th>Plataforma</th><th>Tecnología</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Backend</td><td>Railway</td><td>Node.js 20, Express, Sequelize</td></tr>
+          <tr><td>Frontend</td><td>Vercel</td><td>React 19, Vite, Tailwind CSS 4</td></tr>
+          <tr><td>Base de datos</td><td>Railway</td><td>MySQL 9.6</td></tr>
+          <tr><td>Email</td><td>Resend</td><td>API HTTP</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════ 5. ROLES ═══════ -->
+    <div class="section" id="roles">
+      <h2><span class="num">5</span> Roles y Responsabilidades</h2>
+
+      <h3>5.1 Administrador <span class="badge badge-admin">Admin</span></h3>
+      <p><strong>Nivel jerárquico:</strong> 100 (máximo)</p>
+      <ul>
+        <li>Gestión completa de usuarios, roles y permisos</li>
+        <li>Configuración de la integración WMS</li>
+        <li>Supervisión de todas las operaciones</li>
+        <li>Gestión de plantillas de email</li>
+        <li>Monitoreo de sesiones activas</li>
+        <li>Acceso total a todos los módulos</li>
+      </ul>
+
+      <h3>5.2 Supervisor <span class="badge badge-supervisor">Supervisor</span></h3>
+      <p><strong>Nivel jerárquico:</strong> 75</p>
+      <ul>
+        <li>Supervisión de operaciones de bodega</li>
+        <li>Auditoría de entradas, salidas y kardex</li>
+        <li>Generación y programación de reportes</li>
+        <li>Gestión de plantillas de email</li>
+        <li>Aprobación de gastos de caja menor</li>
+        <li>Gestión de vehículos y viajes</li>
+      </ul>
+
+      <h3>5.3 Financiera <span class="badge badge-financiera">Financiera</span></h3>
+      <p><strong>Nivel jerárquico:</strong> 60</p>
+      <ul>
+        <li>Gestión de cajas menores (crear, editar, cerrar)</li>
+        <li>Aprobación y rechazo de gastos</li>
+        <li>Control de vehículos (crear, editar)</li>
+        <li>Consulta de viajes y reportes financieros</li>
+        <li>Exportación de datos para contabilidad</li>
+      </ul>
+
+      <h3>5.4 Operador <span class="badge badge-operador">Operador</span></h3>
+      <p><strong>Nivel jerárquico:</strong> 50</p>
+      <ul>
+        <li>Operaciones de bodega (entradas, salidas, kardex)</li>
+        <li>Verificación y auditoría de líneas</li>
+        <li>Registro de averías y evidencias</li>
+        <li>Gestión de movimientos en cajas menores asignadas</li>
+        <li>Consulta de inventario y clientes</li>
+      </ul>
+
+      <h3>5.5 Conductor <span class="badge badge-conductor">Conductor</span></h3>
+      <p><strong>Nivel jerárquico:</strong> 30</p>
+      <ul>
+        <li>Creación y gestión de viajes</li>
+        <li>Registro de gastos de viaje con soporte</li>
+        <li>Consulta de vehículos asignados</li>
+        <li>Gestión de movimientos en cajas menores asignadas</li>
+      </ul>
+
+      <h3>5.6 Cliente <span class="badge badge-cliente">Cliente (Portal)</span></h3>
+      <p><strong>Nivel jerárquico:</strong> 10</p>
+      <ul>
+        <li>Consulta de inventario propio</li>
+        <li>Consulta de operaciones (entradas, salidas, kardex)</li>
+        <li>Visualización de reportes</li>
+        <li>Consulta de auditorías</li>
+      </ul>
+    </div>
+
+    <!-- ═══════ 6. REQUISITOS ═══════ -->
+    <div class="section" id="requisitos">
+      <h2><span class="num">6</span> Requisitos Técnicos</h2>
+
+      <h3>6.1 Para el Usuario Final</h3>
+      <ul>
+        <li>Navegador web moderno (Chrome 90+, Firefox 90+, Safari 15+, Edge 90+)</li>
+        <li>Conexión a internet</li>
+        <li>Resolución mínima: 360px (móvil) / 1024px (escritorio)</li>
+      </ul>
+
+      <h3>6.2 Para el Administrador del Sistema</h3>
+      <ul>
+        <li>Acceso al dashboard de Railway (backend y base de datos)</li>
+        <li>Acceso al dashboard de Vercel (frontend)</li>
+        <li>Acceso a Resend (configuración de email y dominio)</li>
+        <li>Conocimiento básico de variables de entorno</li>
+      </ul>
+    </div>
+
+    <!-- ═══════ 7. CONTACTO ═══════ -->
+    <div class="section" id="contacto">
+      <h2><span class="num">7</span> Contacto y Soporte</h2>
+      <table>
+        <thead>
+          <tr><th>Concepto</th><th>Detalle</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Empresa</strong></td><td>ISTHO S.A.S. — Centro Logístico Industrial del Norte</td></tr>
+          <tr><td><strong>Ubicación</strong></td><td>Girardota, Antioquia, Colombia</td></tr>
+          <tr><td><strong>Certificación</strong></td><td>ISO 9001:2015</td></tr>
+          <tr><td><strong>Dominio</strong></td><td>istho.com.co</td></tr>
+          <tr><td><strong>Soporte TI</strong></td><td>Coordinación TI — ISTHO S.A.S.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="doc-footer">
+      Documento generado para CRM CenthriX v1.0.0 — ISTHO S.A.S. &copy; 2026<br>
+      Centro Logístico Industrial del Norte — Girardota, Antioquia, Colombia
+    </div>
+
+  </main>
+
+  <!-- Print Button -->
+  <button class="print-btn no-print" onclick="window.print()">
+    🖨 Imprimir / Exportar PDF
+  </button>
+
+  <!-- Active sidebar link -->
+  <script>
+    const links = document.querySelectorAll('.sidebar a');
+    const sections = document.querySelectorAll('.section');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const top = section.offsetTop - 100;
+        if (window.scrollY >= top) current = section.id;
+      });
+      links.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+      });
+    });
+  </script>
+
+</body>
+</html>

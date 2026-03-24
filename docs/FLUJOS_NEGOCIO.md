@@ -649,3 +649,72 @@ Saldo = Saldo Inicial + Saldo Trasladado + Σ Ingresos Aprobados - Σ Egresos Ap
 **Egresos:** cuadre_de_caja, descargues, acpm, administracion, alimentacion, comisiones, desencarpe, encarpe, hospedaje, otros, seguros, repuestos, tecnicomecanica, peajes, ligas, parqueadero, urea, liquidacion
 
 **Ingresos:** ingreso_adicional, recarga, cuadre_de_caja, peajes_ingreso, ligas_ingresos, parqueadero_ingresos, urea_ingresos
+
+---
+
+## 10. Reportes Programados
+
+### 10.1 Tipos de Reporte Disponibles
+
+| Tipo | Datos incluidos | Formatos |
+|------|----------------|----------|
+| **operaciones** | Operaciones WMS + cliente | Excel, PDF |
+| **inventario** | Productos + stock + cliente | Excel, PDF |
+| **clientes** | Clientes + contactos + total productos | Excel, PDF |
+| **viajes** | Viajes + conductor + vehículo + caja menor | Excel, PDF |
+| **cajas_menores** | Cajas menores + usuario asignado + creador | Excel, PDF |
+| **gastos** | Movimientos + caja menor + usuario + viaje | Excel, PDF |
+
+### 10.2 Flujo
+
+```
+1. CREAR REPORTE PROGRAMADO (Admin/Supervisor)
+   ├── Nombre descriptivo
+   ├── Tipo de reporte (6 opciones)
+   ├── Formato: Excel, PDF o ambos
+   ├── Frecuencia: cron expression (presets disponibles)
+   ├── Destinatarios: emails separados por coma
+   └── Filtros opcionales: cliente_id, estado
+
+2. EJECUCIÓN AUTOMÁTICA (node-cron, timezone Bogotá)
+   ├── Consulta datos según tipo
+   ├── Genera archivos en formatos seleccionados
+   ├── Envía por email con adjuntos
+   ├── Actualiza ultima_ejecucion
+   └── Limpia archivos temporales
+
+3. EJECUCIÓN MANUAL
+   └── POST /reportes/programados/:id/ejecutar
+       └── Misma lógica que cron, ejecución inmediata
+```
+
+### 10.3 Frecuencias Predefinidas
+
+| Frecuencia | Cron | Descripción |
+|-----------|------|-------------|
+| Diario | `0 7 * * *` | Todos los días a las 7:00 AM |
+| Semanal | `0 8 * * 1` | Lunes a las 8:00 AM |
+| Bisemanal | `0 8 * * 1,5` | Lunes y Viernes a las 8:00 AM |
+| Mensual | `0 7 1 * *` | Primer día del mes a las 7:00 AM |
+| Quincenal | `0 7 1,15 * *` | Días 1 y 15 a las 7:00 AM |
+
+### 10.4 Filtros para Gastos
+
+El tipo `gastos` soporta filtro por estado en el campo `filtros`:
+
+```json
+{ "estado": "aprobado" }    // Solo movimientos aprobados
+{ "estado": "rechazado" }   // Solo rechazados
+{ "estado": "pendiente" }   // Solo pendientes de aprobación
+```
+
+### 10.5 Permisos
+
+| Acción | Admin | Supervisor | Otros |
+|--------|-------|-----------|-------|
+| Ver reportes programados | ✅ | ✅ | - |
+| Crear reporte programado | ✅ | ✅ | - |
+| Ejecutar manualmente | ✅ | ✅ | - |
+| Editar/Eliminar | ✅ | ✅ | - |
+
+Requiere permiso `reportes.crear` (configurado en seedRolesPermisos).

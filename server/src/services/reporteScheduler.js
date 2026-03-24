@@ -73,7 +73,7 @@ const ejecutarReporte = async (reporte) => {
   const excelService = require('./excelService');
   const pdfService = require('./pdfService');
   const emailService = require('./emailService');
-  const { Operacion, Inventario, Cliente, Contacto, sequelize } = require('../models');
+  const { Operacion, Inventario, Cliente, Contacto, Viaje, Vehiculo, CajaMenor, MovimientoCajaMenor, Usuario, sequelize } = require('../models');
   const path = require('path');
   const fs = require('fs');
 
@@ -105,6 +105,43 @@ const ejecutarReporte = async (reporte) => {
         order: [['razon_social', 'ASC']]
       });
       break;
+    case 'viajes':
+      datos = await Viaje.findAll({
+        where,
+        include: [
+          { model: Usuario, as: 'conductor', attributes: ['nombre', 'apellido', 'nombre_completo'] },
+          { model: Vehiculo, as: 'vehiculo', attributes: ['placa', 'tipo'] },
+          { model: CajaMenor, as: 'cajaMenor', attributes: ['numero', 'estado'] }
+        ],
+        order: [['created_at', 'DESC']]
+      });
+      break;
+    case 'cajas_menores':
+      datos = await CajaMenor.findAll({
+        where,
+        include: [
+          { model: Usuario, as: 'asignado', attributes: ['nombre', 'apellido', 'nombre_completo'] },
+          { model: Usuario, as: 'creador', attributes: ['nombre', 'apellido', 'nombre_completo'] }
+        ],
+        order: [['created_at', 'DESC']]
+      });
+      break;
+    case 'gastos': {
+      const movWhere = {};
+      if (reporte.filtros?.estado === 'aprobado') { movWhere.aprobado = true; movWhere.rechazado = false; }
+      else if (reporte.filtros?.estado === 'rechazado') { movWhere.rechazado = true; }
+      else if (reporte.filtros?.estado === 'pendiente') { movWhere.aprobado = false; movWhere.rechazado = false; }
+      datos = await MovimientoCajaMenor.findAll({
+        where: movWhere,
+        include: [
+          { model: CajaMenor, as: 'cajaMenor', attributes: ['numero', 'estado'] },
+          { model: Usuario, as: 'usuario', attributes: ['nombre', 'apellido', 'nombre_completo'] },
+          { model: Viaje, as: 'viaje', attributes: ['id', 'destino', 'estado'] }
+        ],
+        order: [['created_at', 'DESC']]
+      });
+      break;
+    }
     default:
       logger.warn(`[SCHEDULER] Tipo desconocido: ${reporte.tipo_reporte}`);
       return;
@@ -115,6 +152,9 @@ const ejecutarReporte = async (reporte) => {
     operaciones: { excel: () => excelService.exportarOperaciones(datos), pdf: () => pdfService.generarPDFOperaciones(datos) },
     inventario: { excel: () => excelService.exportarInventario(datos), pdf: () => pdfService.generarPDFInventario(datos) },
     clientes: { excel: () => excelService.exportarClientes(datos), pdf: () => pdfService.generarPDFClientes(datos) },
+    viajes: { excel: () => excelService.exportarViajes(datos), pdf: () => pdfService.generarPDFOperaciones(datos) },
+    cajas_menores: { excel: () => excelService.exportarCajasMenores(datos), pdf: () => pdfService.generarPDFOperaciones(datos) },
+    gastos: { excel: () => excelService.exportarMovimientos(datos), pdf: () => pdfService.generarPDFOperaciones(datos) },
   };
 
   // Generar adjuntos

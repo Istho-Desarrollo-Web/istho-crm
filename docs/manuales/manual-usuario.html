@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manual de Usuario — CRM CenthriX | ISTHO S.A.S.</title>
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       CenthriX Design System
+       ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --primary: #1A1A2E;
+      --accent: #E74C3C;
+      --accent-hover: #C0392B;
+      --success: #2ECC71;
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F8F9FA;
+      --bg-card: #FFFFFF;
+      --text-primary: #1A1A2E;
+      --text-secondary: #455A64;
+      --border: rgba(0,0,0,0.08);
+      --sidebar-width: 280px;
+      --font: 'Segoe UI', Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    /* ─── Print ────────────────────────────────────────────────── */
+    @media print {
+      .sidebar { display: none !important; }
+      .main-content { margin-left: 0 !important; padding: 20px !important; }
+      .no-print { display: none !important; }
+      body { background: white; font-size: 12px; }
+      .section { break-inside: avoid; page-break-inside: avoid; }
+      .screenshot-placeholder { background: white !important; }
+    }
+
+    /* ─── Sidebar ──────────────────────────────────────────────── */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--primary);
+      color: #F0F0F5;
+      overflow-y: auto;
+      z-index: 100;
+      padding: 24px 0;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+
+    .sidebar-header {
+      padding: 0 24px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 16px;
+    }
+
+    .sidebar-logo {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .sidebar-logo span.red { color: var(--accent); }
+    .sidebar-logo span.green { color: var(--success); }
+
+    .sidebar-subtitle {
+      font-size: 11px;
+      color: #B0BEC5;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .sidebar-section {
+      padding: 8px 24px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #607D8B;
+      margin-top: 12px;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 8px 24px;
+      color: #B0BEC5;
+      text-decoration: none;
+      font-size: 13px;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar a:hover {
+      background: rgba(255,255,255,0.05);
+      color: #F0F0F5;
+      border-left-color: var(--accent);
+    }
+
+    .sidebar a.active {
+      background: rgba(231, 76, 60, 0.1);
+      color: var(--accent);
+      border-left-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ─── Main Content ─────────────────────────────────────────── */
+    .main-content {
+      margin-left: var(--sidebar-width);
+      padding: 40px 60px;
+      max-width: 1000px;
+    }
+
+    /* ─── Header ───────────────────────────────────────────────── */
+    .doc-header {
+      background: linear-gradient(135deg, var(--primary) 0%, #2a2a4e 100%);
+      color: #F0F0F5;
+      padding: 48px 40px;
+      border-radius: 16px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .doc-header::after {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 200px;
+      height: 200px;
+      background: var(--accent);
+      opacity: 0.1;
+      border-radius: 50%;
+    }
+
+    .doc-header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .doc-header h1 span.green { color: var(--success); }
+
+    .doc-header .subtitle {
+      font-size: 16px;
+      color: #B0BEC5;
+    }
+
+    .doc-meta {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .doc-meta-item {
+      font-size: 12px;
+      color: #B0BEC5;
+    }
+
+    .doc-meta-item strong {
+      color: #F0F0F5;
+    }
+
+    /* ─── Sections ─────────────────────────────────────────────── */
+    .section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .section h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section h2 .num {
+      background: var(--accent);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+      margin: 20px 0 10px;
+    }
+
+    .section h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin: 16px 0 8px;
+    }
+
+    .section p {
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+    }
+
+    .section ul, .section ol {
+      margin: 8px 0 16px 24px;
+      color: var(--text-secondary);
+    }
+
+    .section li {
+      margin-bottom: 6px;
+    }
+
+    /* ─── Tables ───────────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: var(--primary);
+      color: #F0F0F5;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    thead th:first-child { border-radius: 8px 0 0 0; }
+    thead th:last-child { border-radius: 0 8px 0 0; }
+
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr:hover { background: rgba(231, 76, 60, 0.03); }
+
+    tbody tr:last-child td:first-child { border-radius: 0 0 0 8px; }
+    tbody tr:last-child td:last-child { border-radius: 0 0 8px 0; }
+
+    /* ─── Role Badges ──────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-admin { background: #E74C3C20; color: #E74C3C; }
+    .badge-supervisor { background: #3498DB20; color: #3498DB; }
+    .badge-financiera { background: #F39C1220; color: #E67E22; }
+    .badge-operador { background: #2ECC7120; color: #27AE60; }
+    .badge-conductor { background: #9B59B620; color: #8E44AD; }
+    .badge-cliente { background: #1ABC9C20; color: #16A085; }
+    .badge-todos { background: #78909C20; color: #546E7A; }
+
+    /* ─── Info boxes ───────────────────────────────────────────── */
+    .info-box {
+      padding: 16px 20px;
+      border-radius: 10px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+
+    .info-box.blue { background: #3498DB10; border-left: 4px solid #3498DB; }
+    .info-box.green { background: #2ECC7110; border-left: 4px solid #2ECC71; }
+    .info-box.red { background: #E74C3C10; border-left: 4px solid #E74C3C; }
+
+    .info-box strong { display: block; margin-bottom: 4px; }
+
+    /* ─── Screenshot Placeholders ─────────────────────────────── */
+    .screenshot-placeholder {
+      border: 2px dashed #B0BEC5;
+      border-radius: 12px;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #B0BEC5;
+      font-size: 14px;
+      margin: 16px 0;
+      background: #F8F9FA;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* ─── Code / Keyboard keys ────────────────────────────────── */
+    kbd {
+      background: #ECEFF1;
+      border: 1px solid #CFD8DC;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 12px;
+      font-family: 'Consolas', 'Courier New', monospace;
+    }
+
+    code {
+      background: #ECEFF1;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 13px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      color: var(--accent);
+    }
+
+    /* ─── Print button ─────────────────────────────────────────── */
+    .print-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(231,76,60,0.3);
+      transition: all 0.2s;
+      z-index: 200;
+      font-family: var(--font);
+    }
+
+    .print-btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
+    /* ─── Footer ───────────────────────────────────────────────── */
+    .doc-footer {
+      text-align: center;
+      padding: 24px;
+      color: #B0BEC5;
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    /* ─── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; padding: 20px; }
+    }
+
+    /* ─── Step lists ───────────────────────────────────────────── */
+    .steps {
+      counter-reset: step-counter;
+      list-style: none;
+      margin: 12px 0 16px 0;
+      padding: 0;
+    }
+
+    .steps li {
+      counter-increment: step-counter;
+      padding: 8px 0 8px 40px;
+      position: relative;
+      color: var(--text-secondary);
+    }
+
+    .steps li::before {
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 26px;
+      height: 26px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* ─── Access row ───────────────────────────────────────────── */
+    .access-roles {
+      margin: 8px 0 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .access-roles strong {
+      margin-right: 8px;
+    }
+
+    /* ─── Subsection divider ──────────────────────────────────── */
+    .sub-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       SIDEBAR
+       ═══════════════════════════════════════════════════════════════ -->
+  <nav class="sidebar no-print">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <span class="red">Centh</span>ri<span class="green">X</span>
+      </div>
+      <div class="sidebar-subtitle">Manual de Usuario</div>
+    </div>
+
+    <div class="sidebar-section">Inicio</div>
+    <a href="#introduccion">Introduccion</a>
+    <a href="#requisitos">Requisitos del Sistema</a>
+
+    <div class="sidebar-section">Acceso</div>
+    <a href="#autenticacion">Autenticacion</a>
+    <a href="#dashboard">Dashboard</a>
+
+    <div class="sidebar-section">Operaciones</div>
+    <a href="#clientes">Clientes</a>
+    <a href="#inventario">Inventario</a>
+    <a href="#auditoria-wms">Auditoria WMS</a>
+    <a href="#vehiculos">Vehiculos</a>
+    <a href="#viajes">Viajes</a>
+
+    <div class="sidebar-section">Finanzas</div>
+    <a href="#cajas-menores">Cajas Menores</a>
+    <a href="#movimientos">Movimientos</a>
+    <a href="#reportes">Reportes</a>
+
+    <div class="sidebar-section">Sistema</div>
+    <a href="#config-wms">Configuracion WMS</a>
+    <a href="#administracion">Administracion</a>
+    <a href="#perfil">Perfil y Configuracion</a>
+    <a href="#notificaciones">Notificaciones</a>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       MAIN CONTENT
+       ═══════════════════════════════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- Header -->
+    <div class="doc-header">
+      <h1><span class="red">Centh</span>ri<span class="green">X</span> — Manual de Usuario</h1>
+      <div class="subtitle">Guia completa de uso del sistema CRM de ISTHO S.A.S.</div>
+      <div class="doc-meta">
+        <div class="doc-meta-item"><strong>Version:</strong> 1.0</div>
+        <div class="doc-meta-item"><strong>Fecha:</strong> Marzo 2026</div>
+        <div class="doc-meta-item"><strong>Empresa:</strong> ISTHO S.A.S.</div>
+        <div class="doc-meta-item"><strong>Ubicacion:</strong> Girardota, Antioquia</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 0: INTRODUCCION
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="introduccion">
+      <h2><span class="num">0</span> Introduccion</h2>
+      <p>
+        Bienvenido al manual de usuario de <strong>CenthriX</strong>, el sistema de gestion integral de logistica,
+        transporte y almacenamiento de ISTHO S.A.S. Este documento le guiara paso a paso por cada modulo
+        del sistema, permitiendole aprovechar al maximo todas las funcionalidades disponibles segun su rol.
+      </p>
+      <h3>Roles del Sistema</h3>
+      <p>CenthriX cuenta con seis roles, cada uno con permisos especificos:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Rol</th>
+            <th>Nivel</th>
+            <th>Descripcion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-admin">Admin</span></td>
+            <td>100</td>
+            <td>Acceso total al sistema. Gestion de usuarios, roles, configuracion y todos los modulos.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-supervisor">Supervisor</span></td>
+            <td>75</td>
+            <td>Supervision de operaciones, reportes avanzados y gestion de equipos.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-financiera">Financiera</span></td>
+            <td>60</td>
+            <td>Gestion de vehiculos, viajes, cajas menores y aprobaciones financieras.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-operador">Operador</span></td>
+            <td>50</td>
+            <td>Operaciones de almacen, inventario y auditorias WMS.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-conductor">Conductor</span></td>
+            <td>30</td>
+            <td>Gestion de viajes propios, gastos y vehiculos asignados.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-cliente">Cliente</span></td>
+            <td>10</td>
+            <td>Portal de consulta filtrado por su cuenta de cliente.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="info-box blue">
+        <strong>Nota:</strong> A lo largo de este manual, cada seccion indica los roles con acceso mediante insignias de color.
+        Si no ve la insignia de su rol en una seccion, no tendra acceso a esa funcionalidad.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 0.5: REQUISITOS
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="requisitos">
+      <h2><span class="num">&bull;</span> Requisitos del Sistema</h2>
+      <h3>Navegadores Compatibles</h3>
+      <ul>
+        <li>Google Chrome 90 o superior (recomendado)</li>
+        <li>Mozilla Firefox 88 o superior</li>
+        <li>Microsoft Edge 90 o superior</li>
+        <li>Safari 14 o superior</li>
+      </ul>
+      <h3>Requisitos de Red</h3>
+      <ul>
+        <li>Conexion a internet estable (minimo 2 Mbps)</li>
+        <li>Puerto HTTPS (443) habilitado</li>
+      </ul>
+      <h3>Resolucion de Pantalla</h3>
+      <p>Se recomienda una resolucion minima de 1280x720 pixeles. El sistema es responsive y se adapta a dispositivos moviles.</p>
+      <div class="info-box blue">
+        <strong>Consejo:</strong> Para una mejor experiencia, utilice Google Chrome en su version mas reciente con JavaScript habilitado.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 1: AUTENTICACION
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="autenticacion">
+      <h2><span class="num">1</span> Autenticacion</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-todos">Todos los usuarios</span>
+      </div>
+      <p>
+        El modulo de autenticacion controla el acceso seguro al sistema mediante credenciales,
+        tokens JWT y politicas de seguridad como bloqueo por intentos fallidos.
+      </p>
+
+      <h3>1.1 Inicio de Sesion</h3>
+      <p>Para acceder al sistema CenthriX, siga estos pasos:</p>
+      <ol class="steps">
+        <li>Abra su navegador web e ingrese la URL del sistema proporcionada por el administrador.</li>
+        <li>En la pantalla de login, ingrese su <strong>correo electronico</strong> en el campo correspondiente.</li>
+        <li>Ingrese su <strong>contrasena</strong> en el segundo campo. Puede usar el icono de ojo para visualizarla.</li>
+        <li>Haga clic en el boton <strong>"Iniciar Sesion"</strong>.</li>
+        <li>Si las credenciales son correctas, sera redirigido al Dashboard correspondiente a su rol.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Pantalla de inicio de sesion (Login)</div>
+
+      <div class="info-box red">
+        <strong>Bloqueo de Cuenta:</strong> Despues de 5 intentos fallidos consecutivos, su cuenta sera bloqueada
+        temporalmente durante 15 minutos. Si el problema persiste, contacte al administrador.
+      </div>
+
+      <hr class="sub-divider">
+
+      <h3>1.2 Recuperar Contrasena</h3>
+      <p>Si olvido su contrasena, puede restablecerla siguiendo estos pasos:</p>
+      <ol class="steps">
+        <li>En la pantalla de login, haga clic en el enlace <strong>"Olvidaste tu contrasena?"</strong>.</li>
+        <li>Se abrira un dialogo donde debe ingresar su <strong>correo electronico registrado</strong>.</li>
+        <li>Haga clic en <strong>"Enviar enlace de recuperacion"</strong>.</li>
+        <li>Revise su bandeja de entrada (y carpeta de spam) para encontrar el correo con el enlace.</li>
+        <li>Haga clic en el enlace del correo. Sera redirigido al formulario de nueva contrasena.</li>
+        <li>Ingrese su nueva contrasena (minimo 8 caracteres, al menos una mayuscula, un numero y un caracter especial).</li>
+        <li>Confirme la nueva contrasena y haga clic en <strong>"Restablecer Contrasena"</strong>.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Dialogo de recuperacion de contrasena</div>
+
+      <hr class="sub-divider">
+
+      <h3>1.3 Cambio Obligatorio de Contrasena</h3>
+      <p>
+        En ciertos casos, el sistema le solicitara cambiar su contrasena al iniciar sesion.
+        Esto ocurre cuando:
+      </p>
+      <ul>
+        <li>Es su primer inicio de sesion con una contrasena temporal.</li>
+        <li>El administrador ha marcado su cuenta para cambio obligatorio.</li>
+        <li>Su contrasena ha expirado segun la politica de seguridad.</li>
+      </ul>
+      <ol class="steps">
+        <li>Al iniciar sesion, se mostrara automaticamente el dialogo de cambio de contrasena.</li>
+        <li>Ingrese su <strong>contrasena actual</strong> (la temporal o la vencida).</li>
+        <li>Ingrese la <strong>nueva contrasena</strong> cumpliendo los requisitos de seguridad.</li>
+        <li>Confirme la nueva contrasena.</li>
+        <li>Haga clic en <strong>"Cambiar Contrasena"</strong>.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Dialogo de cambio obligatorio de contrasena</div>
+
+      <div class="info-box green">
+        <strong>Buena practica:</strong> Utilice una contrasena unica que no haya usado en otros servicios.
+        Combine mayusculas, minusculas, numeros y caracteres especiales para mayor seguridad.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 2: DASHBOARD
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="dashboard">
+      <h2><span class="num">2</span> Dashboard</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-supervisor">Supervisor</span>
+        <span class="badge badge-financiera">Financiera</span>
+        <span class="badge badge-operador">Operador</span>
+        <span class="badge badge-conductor">Conductor</span>
+        <span class="badge badge-cliente">Cliente</span>
+      </div>
+      <p>
+        El Dashboard es la pantalla principal del sistema. Se adapta automaticamente segun su rol,
+        mostrando los indicadores, graficos y accesos directos mas relevantes para sus funciones.
+      </p>
+
+      <h3>2.1 Dashboard Administrador</h3>
+      <p>Vista completa con indicadores globales del sistema:</p>
+      <ul>
+        <li><strong>Tarjetas resumen:</strong> Total de clientes activos, operaciones del mes, vehiculos en ruta, cajas menores abiertas.</li>
+        <li><strong>Graficos:</strong> Operaciones por mes (barras), distribucion por tipo de servicio (circular), ingresos vs gastos (lineas).</li>
+        <li><strong>Actividad reciente:</strong> Ultimos movimientos, auditorias y notificaciones del sistema.</li>
+        <li><strong>Accesos directos:</strong> Botones rapidos para crear operaciones, registrar vehiculos y gestionar usuarios.</li>
+      </ul>
+      <div class="screenshot-placeholder">Insertar captura: Dashboard del Administrador</div>
+
+      <hr class="sub-divider">
+
+      <h3>2.2 Dashboard Financiera</h3>
+      <p>Enfocado en indicadores financieros y operativos:</p>
+      <ul>
+        <li><strong>Tarjetas:</strong> Cajas menores pendientes de cierre, movimientos sin aprobar, gastos del periodo.</li>
+        <li><strong>Graficos:</strong> Gastos por categoria, tendencia mensual de aprobaciones.</li>
+        <li><strong>Alertas:</strong> Cajas menores proximas a vencer, movimientos que requieren aprobacion.</li>
+      </ul>
+      <div class="screenshot-placeholder">Insertar captura: Dashboard Financiera</div>
+
+      <hr class="sub-divider">
+
+      <h3>2.3 Dashboard Conductor</h3>
+      <p>Vista simplificada orientada a la operacion diaria:</p>
+      <ul>
+        <li><strong>Mis viajes:</strong> Viajes asignados con estado actual (pendiente, en curso, completado).</li>
+        <li><strong>Mis gastos:</strong> Resumen de gastos registrados y pendientes de aprobacion.</li>
+        <li><strong>Vehiculo asignado:</strong> Informacion del vehiculo actual con alertas de mantenimiento.</li>
+      </ul>
+      <div class="screenshot-placeholder">Insertar captura: Dashboard Conductor</div>
+
+      <hr class="sub-divider">
+
+      <h3>2.4 Dashboard Operador</h3>
+      <p>Centrado en operaciones de almacen:</p>
+      <ul>
+        <li><strong>Inventario:</strong> Productos con stock bajo, ultimas entradas y salidas.</li>
+        <li><strong>Auditorias pendientes:</strong> Entradas y salidas WMS por auditar.</li>
+        <li><strong>Actividad:</strong> Ultimas operaciones realizadas en el almacen.</li>
+      </ul>
+      <div class="screenshot-placeholder">Insertar captura: Dashboard Operador</div>
+
+      <div class="info-box blue">
+        <strong>Consejo:</strong> El dashboard se actualiza automaticamente cada 60 segundos. Tambien puede
+        hacer clic en cualquier tarjeta para navegar directamente al modulo correspondiente.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 3: CLIENTES
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="clientes">
+      <h2><span class="num">3</span> Clientes</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-supervisor">Supervisor</span>
+        <span class="badge badge-financiera">Financiera</span>
+        <span class="badge badge-cliente">Cliente (solo su cuenta)</span>
+      </div>
+      <p>
+        El modulo de Clientes permite gestionar la informacion de los clientes de ISTHO S.A.S.,
+        incluyendo datos de contacto, operaciones asociadas y estado de cuenta.
+      </p>
+
+      <h3>3.1 Listado de Clientes</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Clientes</strong> en el menu lateral.</li>
+        <li>Se mostrara la tabla con todos los clientes registrados.</li>
+        <li>Use la <strong>barra de busqueda</strong> para filtrar por nombre, NIT o correo.</li>
+        <li>Utilice los filtros avanzados para filtrar por estado (activo/inactivo) o tipo de cliente.</li>
+        <li>Haga clic en la fila de un cliente para ver su detalle, o use los botones de accion.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Listado de clientes con filtros y busqueda</div>
+
+      <hr class="sub-divider">
+
+      <h3>3.2 Detalle del Cliente</h3>
+      <p>La vista de detalle del cliente presenta la informacion organizada en pestanas:</p>
+      <ul>
+        <li><strong>Informacion General:</strong> Datos basicos, NIT, direccion, datos de contacto.</li>
+        <li><strong>Operaciones:</strong> Historial de operaciones asociadas al cliente.</li>
+        <li><strong>Inventario:</strong> Productos almacenados pertenecientes al cliente.</li>
+        <li><strong>Facturacion:</strong> Resumen de facturacion y estado de pagos.</li>
+      </ul>
+      <div class="screenshot-placeholder">Insertar captura: Vista de detalle del cliente con pestanas</div>
+
+      <hr class="sub-divider">
+
+      <h3>3.3 Crear / Editar Cliente</h3>
+      <ol class="steps">
+        <li>Para crear un nuevo cliente, haga clic en el boton <strong>"Nuevo Cliente"</strong> en la parte superior de la lista.</li>
+        <li>Complete el formulario con los campos requeridos: <strong>Nombre/Razon Social</strong>, <strong>NIT</strong>, <strong>Tipo de Identificacion</strong>.</li>
+        <li>Ingrese los datos de contacto: <strong>Correo Electronico</strong>, <strong>Telefono</strong>, <strong>Direccion</strong>.</li>
+        <li>Opcionalmente, agregue informacion adicional como persona de contacto, ciudad y observaciones.</li>
+        <li>Haga clic en <strong>"Guardar"</strong> para registrar el cliente.</li>
+        <li>Para editar, acceda al detalle del cliente y haga clic en el boton <strong>"Editar"</strong>.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Formulario de creacion/edicion de cliente</div>
+
+      <div class="info-box blue">
+        <strong>Consejo:</strong> El campo NIT se valida automaticamente para evitar duplicados. Si el NIT ya existe,
+        el sistema le notificara y no permitira crear un registro duplicado.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 4: INVENTARIO
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="inventario">
+      <h2><span class="num">4</span> Inventario</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-supervisor">Supervisor</span>
+        <span class="badge badge-operador">Operador</span>
+        <span class="badge badge-cliente">Cliente (solo sus productos)</span>
+      </div>
+      <p>
+        El modulo de Inventario permite gestionar los productos almacenados en las bodegas de ISTHO S.A.S.,
+        consultar existencias, y recibir alertas de stock bajo.
+      </p>
+
+      <h3>4.1 Listado de Productos</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Inventario</strong> en el menu lateral.</li>
+        <li>Se desplegara la tabla de productos con columnas: Codigo, Nombre, Cliente, Stock, Ubicacion y Estado.</li>
+        <li>Utilice la <strong>barra de busqueda</strong> para filtrar por codigo o nombre del producto.</li>
+        <li>Aplique filtros por <strong>cliente</strong>, <strong>categoria</strong> o <strong>estado</strong> usando los selectores superiores.</li>
+        <li>La columna de stock muestra indicadores de color: verde (suficiente), amarillo (bajo), rojo (critico).</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Listado de productos en inventario</div>
+
+      <hr class="sub-divider">
+
+      <h3>4.2 Detalle del Producto</h3>
+      <ol class="steps">
+        <li>Haga clic en cualquier producto de la lista para ver su detalle completo.</li>
+        <li>Consulte el <strong>kardex</strong>: historial de movimientos de entrada y salida con fechas y cantidades.</li>
+        <li>Vea la <strong>ubicacion fisica</strong> en bodega (pasillo, estante, nivel).</li>
+        <li>Revise las <strong>cajas de inventario</strong> asociadas con sus respectivos estados.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Detalle de producto con kardex y ubicacion</div>
+
+      <hr class="sub-divider">
+
+      <h3>4.3 Alertas de Inventario</h3>
+      <p>El sistema genera alertas automaticas para mantener el inventario bajo control:</p>
+      <ul>
+        <li><strong>Stock bajo:</strong> Cuando un producto esta por debajo del minimo configurado.</li>
+        <li><strong>Stock critico:</strong> Cuando el producto esta a punto de agotarse.</li>
+        <li><strong>Productos sin movimiento:</strong> Productos que no han tenido entradas ni salidas en mas de 30 dias.</li>
+      </ul>
+      <ol class="steps">
+        <li>Acceda a la seccion de <strong>Alertas</strong> dentro del modulo de Inventario.</li>
+        <li>Las alertas se presentan con prioridad: criticas primero, luego bajas.</li>
+        <li>Haga clic en una alerta para navegar directamente al producto afectado.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Pagina de alertas de inventario</div>
+
+      <div class="info-box green">
+        <strong>Sincronizacion WMS:</strong> El inventario se sincroniza automaticamente con el sistema
+        Copernico (WMS) para mantener las existencias actualizadas en tiempo real.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 5: AUDITORIA WMS
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="auditoria-wms">
+      <h2><span class="num">5</span> Auditoria WMS</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-supervisor">Supervisor</span>
+        <span class="badge badge-operador">Operador</span>
+      </div>
+      <p>
+        El modulo de Auditoria WMS permite verificar y auditar las operaciones sincronizadas desde
+        el sistema Copernico: entradas (CO), salidas (PK) y movimientos de kardex (CR).
+      </p>
+
+      <h3>5.1 Entradas CO (Compras / Recepciones)</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Auditoria WMS &gt; Entradas CO</strong> en el menu lateral.</li>
+        <li>Se mostrara la lista de documentos de entrada con: Numero, Fecha, Proveedor, Estado de Auditoria.</li>
+        <li>Filtre por <strong>fecha</strong>, <strong>estado</strong> (pendiente, en proceso, auditado) o <strong>proveedor</strong>.</li>
+        <li>Haga clic en un documento para abrirlo y ver las lineas de detalle.</li>
+        <li>Verifique cada linea comparando la <strong>cantidad esperada</strong> vs. la <strong>cantidad recibida</strong>.</li>
+        <li>Si detecta diferencias, haga clic en <strong>"Reportar Novedad"</strong> e ingrese el motivo y la cantidad afectada.</li>
+        <li>Una vez verificadas todas las lineas, haga clic en <strong>"Cerrar Auditoria"</strong>.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Lista de auditorias de entrada CO</div>
+      <div class="screenshot-placeholder">Insertar captura: Detalle de auditoria con lineas de productos</div>
+
+      <hr class="sub-divider">
+
+      <h3>5.2 Salidas PK (Picking / Despachos)</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Auditoria WMS &gt; Salidas PK</strong>.</li>
+        <li>Revise la lista de documentos de salida pendientes de auditoria.</li>
+        <li>Abra un documento para verificar las lineas de picking.</li>
+        <li>Compare las cantidades despachadas contra las solicitadas.</li>
+        <li>Si hay productos danados, use el formulario de <strong>"Registrar Dano"</strong> con descripcion y evidencia.</li>
+        <li>Confirme cada linea verificada y cierre la auditoria cuando termine.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Formulario de reporte de dano en salida PK</div>
+
+      <hr class="sub-divider">
+
+      <h3>5.3 Kardex CR (Cruces / Movimientos)</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Auditoria WMS &gt; Kardex CR</strong>.</li>
+        <li>Visualice los movimientos cruzados que requieren verificacion.</li>
+        <li>Cada registro muestra producto, cantidad, tipo de movimiento y bodega.</li>
+        <li>Verifique la consistencia de los movimientos y cierre la auditoria.</li>
+      </ol>
+
+      <hr class="sub-divider">
+
+      <h3>5.4 Cerrar Auditoria</h3>
+      <ol class="steps">
+        <li>Dentro del detalle de cualquier auditoria, haga clic en el boton <strong>"Cerrar Auditoria"</strong>.</li>
+        <li>Se abrira un dialogo de confirmacion mostrando el resumen: lineas verificadas, novedades encontradas.</li>
+        <li>Agregue <strong>observaciones generales</strong> si es necesario.</li>
+        <li>Confirme haciendo clic en <strong>"Cerrar y Finalizar"</strong>.</li>
+        <li>La auditoria quedara con estado "Cerrada" y no podra ser modificada.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Dialogo de cierre de auditoria</div>
+
+      <div class="info-box red">
+        <strong>Importante:</strong> Una vez cerrada una auditoria, no puede reabrirse. Asegurese de haber
+        verificado todas las lineas y registrado todas las novedades antes de cerrar.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 6: VEHICULOS
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="vehiculos">
+      <h2><span class="num">6</span> Vehiculos</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-supervisor">Supervisor</span>
+        <span class="badge badge-financiera">Financiera</span>
+        <span class="badge badge-conductor">Conductor (solo asignados)</span>
+      </div>
+      <p>
+        El modulo de Vehiculos administra la flota de transporte de ISTHO S.A.S.,
+        incluyendo datos tecnicos, documentacion, asignacion de conductores y alertas de vencimiento.
+      </p>
+
+      <h3>6.1 Listado de Vehiculos</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Vehiculos</strong> en el menu lateral.</li>
+        <li>Visualice la tabla con: Placa, Marca/Modelo, Tipo, Conductor Asignado, Estado.</li>
+        <li>Filtre por <strong>estado</strong> (activo, en mantenimiento, inactivo), <strong>tipo</strong> de vehiculo o <strong>conductor</strong>.</li>
+        <li>Los vehiculos con alertas activas muestran un icono de advertencia junto a la placa.</li>
+        <li>Haga clic en un vehiculo para ver su detalle completo.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Listado de vehiculos con filtros</div>
+
+      <hr class="sub-divider">
+
+      <h3>6.2 Crear / Editar Vehiculo</h3>
+      <ol class="steps">
+        <li>Haga clic en <strong>"Nuevo Vehiculo"</strong> para crear un registro.</li>
+        <li>Complete los datos del vehiculo: <strong>Placa</strong>, <strong>Marca</strong>, <strong>Modelo</strong>, <strong>Ano</strong>, <strong>Tipo</strong>, <strong>Color</strong>.</li>
+        <li>Ingrese datos tecnicos: <strong>Numero de Motor</strong>, <strong>Numero de Chasis</strong>, <strong>Capacidad de Carga (kg)</strong>.</li>
+        <li>En la seccion de documentacion, registre las fechas de vencimiento de: <strong>SOAT</strong>, <strong>Tecnomecanica</strong>, <strong>Tarjeta de Operacion</strong>, <strong>Poliza</strong>.</li>
+        <li>Asigne un <strong>conductor</strong> seleccionandolo del listado desplegable.</li>
+        <li>Opcionalmente suba la foto del vehiculo (se almacena como imagen en base64).</li>
+        <li>Haga clic en <strong>"Guardar"</strong> para registrar el vehiculo.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Formulario de creacion/edicion de vehiculo</div>
+
+      <hr class="sub-divider">
+
+      <h3>6.3 Alertas de Vehiculos</h3>
+      <p>El sistema genera alertas automaticas para documentos proximos a vencer:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo de Alerta</th>
+            <th>Anticipacion</th>
+            <th>Severidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>SOAT por vencer</td>
+            <td>30 dias antes</td>
+            <td><span class="badge badge-financiera">Advertencia</span></td>
+          </tr>
+          <tr>
+            <td>Tecnomecanica por vencer</td>
+            <td>30 dias antes</td>
+            <td><span class="badge badge-financiera">Advertencia</span></td>
+          </tr>
+          <tr>
+            <td>Documentacion vencida</td>
+            <td>Inmediata</td>
+            <td><span class="badge badge-admin">Critica</span></td>
+          </tr>
+          <tr>
+            <td>Mantenimiento programado</td>
+            <td>7 dias antes</td>
+            <td><span class="badge badge-supervisor">Informativa</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box red">
+        <strong>Alerta:</strong> Los vehiculos con documentacion vencida no podran ser asignados a nuevos viajes
+        hasta que se actualice la documentacion.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 7: VIAJES
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="viajes">
+      <h2><span class="num">7</span> Viajes</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-supervisor">Supervisor</span>
+        <span class="badge badge-financiera">Financiera</span>
+        <span class="badge badge-conductor">Conductor (solo sus viajes)</span>
+      </div>
+      <p>
+        El modulo de Viajes gestiona el ciclo completo de los transportes: desde la programacion
+        hasta la finalizacion, incluyendo gastos asociados y seguimiento en tiempo real.
+      </p>
+
+      <h3>7.1 Listado de Viajes</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Viajes</strong> en el menu lateral.</li>
+        <li>La tabla muestra: Numero, Fecha, Origen, Destino, Conductor, Vehiculo y Estado.</li>
+        <li>Los estados se muestran con colores: <strong>Programado</strong> (azul), <strong>En Transito</strong> (amarillo), <strong>Completado</strong> (verde), <strong>Cancelado</strong> (rojo).</li>
+        <li>Filtre por <strong>rango de fechas</strong>, <strong>conductor</strong>, <strong>vehiculo</strong> o <strong>estado</strong>.</li>
+        <li>Use la busqueda rapida para localizar viajes por numero o destino.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Listado de viajes con filtros y estados</div>
+
+      <hr class="sub-divider">
+
+      <h3>7.2 Crear Viaje</h3>
+      <ol class="steps">
+        <li>Haga clic en el boton <strong>"Nuevo Viaje"</strong>.</li>
+        <li>Seleccione el <strong>cliente</strong> asociado al viaje.</li>
+        <li>Ingrese el <strong>origen</strong> y <strong>destino</strong> del viaje.</li>
+        <li>Establezca la <strong>fecha programada</strong> de salida.</li>
+        <li>Seleccione el <strong>vehiculo</strong> disponible (solo se muestran vehiculos con documentacion vigente).</li>
+        <li>Asigne el <strong>conductor</strong> responsable.</li>
+        <li>Ingrese el <strong>valor del flete</strong> y cualquier observacion relevante.</li>
+        <li>Opcionalmente, asocie una <strong>caja menor</strong> para gastos de ruta.</li>
+        <li>Haga clic en <strong>"Crear Viaje"</strong> para registrarlo.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Formulario de creacion de viaje</div>
+
+      <hr class="sub-divider">
+
+      <h3>7.3 Detalle del Viaje</h3>
+      <ol class="steps">
+        <li>Haga clic en un viaje de la lista para ver su detalle.</li>
+        <li>En la seccion superior vera la informacion general: ruta, fechas, vehiculo, conductor.</li>
+        <li>La seccion de <strong>Gastos</strong> muestra todos los movimientos de caja menor asociados.</li>
+        <li>La seccion de <strong>Documentos</strong> lista los soportes adjuntos (remesas, facturas, etc.).</li>
+        <li>Use los botones de accion para <strong>cambiar estado</strong>: Iniciar Viaje, Completar, Cancelar.</li>
+        <li>Los conductores pueden actualizar el estado desde su dashboard movil.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Vista de detalle del viaje con secciones</div>
+
+      <div class="info-box blue">
+        <strong>Consejo:</strong> Al completar un viaje, el sistema calculara automaticamente la rentabilidad
+        comparando el valor del flete contra los gastos registrados.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 8: CAJAS MENORES
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="cajas-menores">
+      <h2><span class="num">8</span> Cajas Menores</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-supervisor">Supervisor</span>
+        <span class="badge badge-financiera">Financiera</span>
+        <span class="badge badge-conductor">Conductor (solo asignadas)</span>
+      </div>
+      <p>
+        Las Cajas Menores son fondos asignados para gastos operativos de viajes y actividades
+        diarias. El modulo permite crear, controlar y cerrar cajas con trazabilidad completa.
+      </p>
+
+      <h3>8.1 Listado de Cajas Menores</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Cajas Menores</strong> en el menu lateral.</li>
+        <li>Visualice la tabla con: Numero, Responsable, Monto Inicial, Monto Disponible, Estado.</li>
+        <li>Los estados posibles son: <strong>Abierta</strong> (verde), <strong>En Revision</strong> (amarillo), <strong>Cerrada</strong> (gris).</li>
+        <li>Filtre por <strong>estado</strong>, <strong>responsable</strong> o <strong>rango de fechas</strong>.</li>
+        <li>La columna de monto disponible muestra una barra de progreso visual del gasto.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Listado de cajas menores con estados</div>
+
+      <hr class="sub-divider">
+
+      <h3>8.2 Crear Caja Menor</h3>
+      <ol class="steps">
+        <li>Haga clic en <strong>"Nueva Caja Menor"</strong>.</li>
+        <li>Seleccione el <strong>responsable</strong> (conductor o empleado que recibira los fondos).</li>
+        <li>Ingrese el <strong>monto inicial</strong> de la caja.</li>
+        <li>Opcionalmente, asocie un <strong>viaje</strong> especifico.</li>
+        <li>Agregue una <strong>descripcion</strong> del proposito de la caja (ej.: "Gastos de ruta Bogota-Medellin").</li>
+        <li>Establezca la <strong>fecha limite</strong> para el cierre de la caja.</li>
+        <li>Haga clic en <strong>"Crear Caja Menor"</strong>.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Formulario de creacion de caja menor</div>
+
+      <hr class="sub-divider">
+
+      <h3>8.3 Detalle de Caja Menor</h3>
+      <ol class="steps">
+        <li>Haga clic en una caja menor para ver su detalle.</li>
+        <li>En la parte superior vera el <strong>resumen financiero</strong>: monto inicial, total gastado, saldo disponible.</li>
+        <li>La tabla de <strong>movimientos</strong> lista todos los gastos registrados con: fecha, concepto, monto, soporte.</li>
+        <li>Cada movimiento muestra su <strong>estado de aprobacion</strong>: pendiente, aprobado o rechazado.</li>
+        <li>Use el boton <strong>"Nuevo Movimiento"</strong> para agregar un gasto (ver seccion Movimientos).</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Detalle de caja menor con lista de movimientos</div>
+
+      <hr class="sub-divider">
+
+      <h3>8.4 Cerrar Caja Menor</h3>
+      <ol class="steps">
+        <li>Dentro del detalle de la caja, haga clic en <strong>"Cerrar Caja"</strong>.</li>
+        <li>El sistema verificara que todos los movimientos esten aprobados o rechazados.</li>
+        <li>Se mostrara un dialogo con el <strong>resumen de cierre</strong>: monto asignado, total gastado, saldo a devolver.</li>
+        <li>Ingrese el <strong>monto devuelto</strong> por el responsable (si aplica).</li>
+        <li>Agregue <strong>observaciones de cierre</strong>.</li>
+        <li>Confirme haciendo clic en <strong>"Confirmar Cierre"</strong>.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Dialogo de cierre de caja menor</div>
+
+      <div class="info-box red">
+        <strong>Importante:</strong> No se puede cerrar una caja menor si existen movimientos pendientes de aprobacion.
+        Todos los movimientos deben estar aprobados o rechazados antes del cierre.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 9: MOVIMIENTOS
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="movimientos">
+      <h2><span class="num">9</span> Movimientos de Caja Menor</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-supervisor">Supervisor</span>
+        <span class="badge badge-financiera">Financiera</span>
+        <span class="badge badge-conductor">Conductor (crear en sus cajas)</span>
+      </div>
+      <p>
+        Los movimientos son los registros individuales de gastos dentro de una caja menor.
+        Cada movimiento requiere justificacion, soporte y aprobacion por un superior.
+      </p>
+
+      <h3>9.1 Listado de Movimientos</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Movimientos</strong> en el menu lateral, o acceda desde el detalle de una caja menor.</li>
+        <li>La tabla muestra: Numero, Caja Menor, Fecha, Concepto, Monto, Estado de Aprobacion.</li>
+        <li>Filtre por <strong>caja menor</strong>, <strong>estado de aprobacion</strong>, <strong>categoria de gasto</strong> o <strong>rango de fechas</strong>.</li>
+        <li>Los movimientos pendientes de aprobacion se resaltan con un indicador amarillo.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Listado de movimientos con filtros</div>
+
+      <hr class="sub-divider">
+
+      <h3>9.2 Crear Movimiento</h3>
+      <ol class="steps">
+        <li>Haga clic en <strong>"Nuevo Movimiento"</strong> (desde la lista o desde el detalle de una caja menor).</li>
+        <li>Seleccione la <strong>caja menor</strong> a la que pertenece el gasto (si no viene preseleccionada).</li>
+        <li>En la pestana <strong>"Informacion General"</strong>:
+          <ul>
+            <li>Seleccione la <strong>categoria de gasto</strong> (combustible, peajes, alimentacion, hospedaje, otros).</li>
+            <li>Ingrese el <strong>monto</strong> del gasto.</li>
+            <li>Escriba una <strong>descripcion</strong> detallada del concepto.</li>
+            <li>Seleccione la <strong>fecha</strong> en que se realizo el gasto.</li>
+          </ul>
+        </li>
+        <li>En la pestana <strong>"Soporte"</strong>:
+          <ul>
+            <li>Suba la <strong>imagen del recibo o factura</strong> como soporte del gasto.</li>
+            <li>Puede tomar una foto directamente desde el dispositivo movil.</li>
+          </ul>
+        </li>
+        <li>Revise la informacion y haga clic en <strong>"Registrar Movimiento"</strong>.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Formulario de movimiento con pestanas</div>
+
+      <hr class="sub-divider">
+
+      <h3>9.3 Aprobar / Rechazar Movimiento</h3>
+      <p>Los roles <span class="badge badge-admin">Admin</span>, <span class="badge badge-supervisor">Supervisor</span> y <span class="badge badge-financiera">Financiera</span> pueden aprobar o rechazar movimientos.</p>
+      <ol class="steps">
+        <li>En el listado de movimientos, identifique los que estan en estado <strong>"Pendiente"</strong>.</li>
+        <li>Haga clic en el movimiento para ver su detalle completo con el soporte adjunto.</li>
+        <li>Revise la informacion: monto, concepto, categoria, fecha y soporte fotografico.</li>
+        <li>Para <strong>aprobar</strong>: haga clic en el boton verde <strong>"Aprobar"</strong>.</li>
+        <li>Para <strong>rechazar</strong>: haga clic en el boton rojo <strong>"Rechazar"</strong> e ingrese el <strong>motivo del rechazo</strong>.</li>
+        <li>El responsable de la caja recibira una notificacion con el resultado de la revision.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Dialogo de aprobacion/rechazo de movimiento</div>
+
+      <hr class="sub-divider">
+
+      <h3>9.4 Detalle del Movimiento</h3>
+      <ol class="steps">
+        <li>Haga clic en un movimiento para ver toda su informacion.</li>
+        <li>En la seccion superior: datos generales, monto, categoria, caja menor asociada.</li>
+        <li>En la seccion central: imagen del soporte adjunto (ampliable al hacer clic).</li>
+        <li>En la seccion inferior: historial de aprobacion con fecha, usuario y observaciones.</li>
+      </ol>
+
+      <div class="info-box blue">
+        <strong>Consejo:</strong> Los conductores pueden registrar movimientos desde el navegador del celular
+        y adjuntar fotos de los recibos usando la camara del dispositivo.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 10: REPORTES
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="reportes">
+      <h2><span class="num">10</span> Reportes</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-supervisor">Supervisor</span>
+        <span class="badge badge-financiera">Financiera</span>
+      </div>
+      <p>
+        El modulo de Reportes genera informes detallados sobre la operacion del negocio.
+        Los reportes pueden visualizarse en pantalla, exportarse a Excel o PDF, y programarse para envio automatico.
+      </p>
+
+      <h3>10.1 Vista General de Reportes</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Reportes</strong> en el menu lateral.</li>
+        <li>Vera las categorias de reportes disponibles organizadas en tarjetas.</li>
+        <li>Seleccione la categoria deseada para acceder a los reportes especificos.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Vista general del modulo de reportes</div>
+
+      <hr class="sub-divider">
+
+      <h3>10.2 Reporte de Viajes</h3>
+      <ol class="steps">
+        <li>Seleccione <strong>"Reporte de Viajes"</strong>.</li>
+        <li>Configure los filtros: <strong>rango de fechas</strong>, <strong>conductor</strong>, <strong>vehiculo</strong>, <strong>estado</strong>.</li>
+        <li>Haga clic en <strong>"Generar Reporte"</strong>.</li>
+        <li>El reporte muestra: cantidad de viajes, kilometros recorridos, valor total de fletes, gastos asociados.</li>
+        <li>Use los botones <strong>"Exportar Excel"</strong> o <strong>"Exportar PDF"</strong> para descargar el reporte.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Reporte de viajes con graficos y tabla</div>
+
+      <hr class="sub-divider">
+
+      <h3>10.3 Reporte de Cajas Menores</h3>
+      <ol class="steps">
+        <li>Seleccione <strong>"Reporte de Cajas Menores"</strong>.</li>
+        <li>Configure los filtros: <strong>periodo</strong>, <strong>responsable</strong>, <strong>estado</strong>.</li>
+        <li>El reporte incluye: total asignado, total gastado, porcentaje de ejecucion, desglose por categoria.</li>
+        <li>La seccion grafica muestra la distribucion de gastos por categoria (grafico circular).</li>
+        <li>Exporte el reporte en el formato deseado.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Reporte de cajas menores</div>
+
+      <hr class="sub-divider">
+
+      <h3>10.4 Reporte de Gastos</h3>
+      <ol class="steps">
+        <li>Seleccione <strong>"Reporte de Gastos"</strong>.</li>
+        <li>Filtre por <strong>periodo</strong>, <strong>categoria</strong>, <strong>conductor</strong> o <strong>vehiculo</strong>.</li>
+        <li>El reporte detalla cada gasto con: fecha, concepto, monto, caja menor asociada, estado de aprobacion.</li>
+        <li>Incluye totales por categoria y tendencias mensuales en graficos de linea.</li>
+        <li>Exporte a Excel para integracion con sistemas contables.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Reporte de gastos con detalle y graficos</div>
+
+      <hr class="sub-divider">
+
+      <h3>10.5 Reportes Programados</h3>
+      <p>Configure el envio automatico de reportes por correo electronico:</p>
+      <ol class="steps">
+        <li>Navegue a <strong>Reportes &gt; Programados</strong>.</li>
+        <li>Haga clic en <strong>"Programar Nuevo Reporte"</strong>.</li>
+        <li>Seleccione el <strong>tipo de reporte</strong> a programar.</li>
+        <li>Configure la <strong>frecuencia</strong>: diario, semanal, quincenal o mensual.</li>
+        <li>Seleccione el <strong>dia y hora</strong> de envio.</li>
+        <li>Ingrese los <strong>destinatarios</strong> (correos electronicos).</li>
+        <li>Elija el <strong>formato de envio</strong>: Excel, PDF o ambos.</li>
+        <li>Haga clic en <strong>"Guardar Programacion"</strong>.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Pagina de reportes programados</div>
+
+      <div class="info-box green">
+        <strong>Automatizacion:</strong> Los reportes programados se generan y envian automaticamente en el
+        horario configurado. Puede pausar o eliminar una programacion en cualquier momento.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 11: CONFIGURACION WMS
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="config-wms">
+      <h2><span class="num">11</span> Configuracion WMS</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-admin">Admin</span>
+      </div>
+      <p>
+        Este modulo permite configurar los catalogos del sistema de gestion de almacenes (WMS)
+        que se utilizan en las auditorias y operaciones de inventario.
+      </p>
+
+      <h3>11.1 Motivos de Novedad</h3>
+      <p>Los motivos de novedad se usan al reportar diferencias en las auditorias WMS:</p>
+      <ol class="steps">
+        <li>Navegue a <strong>Configuracion WMS &gt; Motivos</strong>.</li>
+        <li>Vera la lista de motivos existentes con su nombre, descripcion y estado.</li>
+        <li>Para agregar un motivo, haga clic en <strong>"Nuevo Motivo"</strong>.</li>
+        <li>Ingrese el <strong>nombre</strong> y la <strong>descripcion</strong> del motivo.</li>
+        <li>Haga clic en <strong>"Guardar"</strong>.</li>
+        <li>Para editar o desactivar un motivo existente, use los botones de accion en la fila.</li>
+      </ol>
+
+      <hr class="sub-divider">
+
+      <h3>11.2 Tipos de Operacion</h3>
+      <p>Define los tipos de operacion disponibles en el sistema:</p>
+      <ol class="steps">
+        <li>Navegue a la seccion <strong>"Tipos"</strong> en la pagina de configuracion WMS.</li>
+        <li>Agregue, edite o desactive tipos de operacion segun las necesidades del negocio.</li>
+        <li>Cada tipo tiene un nombre, codigo y estado (activo/inactivo).</li>
+      </ol>
+
+      <hr class="sub-divider">
+
+      <h3>11.3 Estados de Auditoria</h3>
+      <p>Configure los estados personalizados para el flujo de auditorias:</p>
+      <ol class="steps">
+        <li>Navegue a la seccion <strong>"Estados"</strong> en la pagina de configuracion WMS.</li>
+        <li>Defina los estados del flujo de auditoria (ej.: Pendiente, En Proceso, Auditado, Cerrado).</li>
+        <li>Cada estado tiene un nombre, color identificador y orden en el flujo.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Pagina de configuracion WMS con las tres secciones</div>
+
+      <div class="info-box red">
+        <strong>Precaucion:</strong> Modificar o desactivar motivos, tipos o estados que estan en uso
+        puede afectar auditorias existentes. Consulte con el equipo antes de realizar cambios.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 12: ADMINISTRACION
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="administracion">
+      <h2><span class="num">12</span> Administracion</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-admin">Admin</span>
+      </div>
+      <p>
+        El modulo de Administracion permite gestionar usuarios, roles, permisos y sesiones activas
+        del sistema. Solo los administradores tienen acceso a estas funciones.
+      </p>
+
+      <h3>12.1 Gestion de Usuarios</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Administracion &gt; Usuarios</strong>.</li>
+        <li>La tabla muestra: Avatar, Nombre, Correo, Rol, Estado (activo/inactivo) y Ultima Conexion.</li>
+        <li>Use la busqueda para encontrar usuarios por nombre o correo.</li>
+        <li>Filtre por <strong>rol</strong> o <strong>estado</strong> para segmentar la lista.</li>
+        <li>Haga clic en un usuario para ver y editar su perfil completo.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Listado de usuarios del sistema</div>
+
+      <hr class="sub-divider">
+
+      <h3>12.2 Crear / Editar Usuario</h3>
+      <ol class="steps">
+        <li>Haga clic en <strong>"Nuevo Usuario"</strong> o en el boton de editar de un usuario existente.</li>
+        <li>Complete los datos personales: <strong>Nombre</strong>, <strong>Apellido</strong>, <strong>Correo Electronico</strong>, <strong>Telefono</strong>.</li>
+        <li>Seleccione el <strong>rol</strong> del usuario en el sistema.</li>
+        <li>Si es un conductor, asigne el <strong>vehiculo</strong> correspondiente.</li>
+        <li>Si es un cliente, vincule la <strong>cuenta de cliente</strong>.</li>
+        <li>Opcionalmente, suba una <strong>foto de perfil</strong> (avatar).</li>
+        <li>Marque si el usuario debe <strong>cambiar contrasena en el primer inicio</strong>.</li>
+        <li>Haga clic en <strong>"Guardar"</strong>. El sistema enviara un correo de bienvenida con las credenciales.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Formulario de creacion/edicion de usuario</div>
+
+      <hr class="sub-divider">
+
+      <h3>12.3 Gestion de Roles y Permisos</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Administracion &gt; Roles</strong>.</li>
+        <li>Vera la lista de roles con su nivel jerarquico y cantidad de usuarios asignados.</li>
+        <li>Haga clic en un rol para ver y editar sus <strong>permisos por modulo</strong>.</li>
+        <li>Los permisos se agrupan por modulo (Inventario, Vehiculos, Viajes, etc.).</li>
+        <li>Cada modulo tiene acciones especificas: <strong>Ver</strong>, <strong>Crear</strong>, <strong>Editar</strong>, <strong>Eliminar</strong>, <strong>Exportar</strong>.</li>
+        <li>Active o desactive permisos individuales usando los interruptores (toggle).</li>
+        <li>Haga clic en <strong>"Guardar Permisos"</strong> para aplicar los cambios.</li>
+      </ol>
+
+      <div class="info-box blue">
+        <strong>Nota:</strong> Los cambios en permisos se aplican inmediatamente. Los usuarios afectados
+        veran los cambios en su proxima carga de pagina (la cache de permisos se actualiza cada minuto).
+      </div>
+
+      <hr class="sub-divider">
+
+      <h3>12.4 Sesiones Activas</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>Administracion &gt; Sesiones</strong>.</li>
+        <li>Visualice todas las sesiones activas del sistema con: Usuario, IP, Navegador, Ultima Actividad.</li>
+        <li>Para cerrar la sesion de un usuario, haga clic en <strong>"Cerrar Sesion"</strong> en la fila correspondiente.</li>
+        <li>Use <strong>"Cerrar Todas las Sesiones"</strong> para desconectar a todos los usuarios (excepto el suyo).</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Pagina de sesiones activas</div>
+
+      <div class="info-box red">
+        <strong>Seguridad:</strong> Si detecta sesiones sospechosas (IPs desconocidas, actividad fuera de horario),
+        cierre la sesion inmediatamente y considere cambiar la contrasena del usuario afectado.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 13: PERFIL Y CONFIGURACION
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="perfil">
+      <h2><span class="num">13</span> Perfil y Configuracion</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-todos">Todos los usuarios</span>
+      </div>
+      <p>
+        Cada usuario puede gestionar su informacion personal, cambiar su contrasena
+        y ajustar las preferencias de visualizacion del sistema.
+      </p>
+
+      <h3>13.1 Datos del Perfil</h3>
+      <ol class="steps">
+        <li>Haga clic en su <strong>avatar o nombre</strong> en la esquina superior derecha del sistema.</li>
+        <li>Seleccione <strong>"Mi Perfil"</strong> del menu desplegable.</li>
+        <li>Podra ver y editar su informacion personal: nombre, apellido, telefono.</li>
+        <li>Para cambiar su <strong>foto de perfil</strong>, haga clic sobre el avatar y seleccione una imagen.</li>
+        <li>La imagen se recorta automaticamente a formato circular.</li>
+        <li>Haga clic en <strong>"Guardar Cambios"</strong> para actualizar su perfil.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Pagina de perfil del usuario</div>
+
+      <div class="info-box blue">
+        <strong>Nota:</strong> El correo electronico no puede ser modificado por el usuario.
+        Si necesita cambiar su correo, contacte al administrador del sistema.
+      </div>
+
+      <hr class="sub-divider">
+
+      <h3>13.2 Cambiar Contrasena</h3>
+      <ol class="steps">
+        <li>En la pagina de perfil, navegue a la seccion <strong>"Seguridad"</strong> o <strong>"Cambiar Contrasena"</strong>.</li>
+        <li>Ingrese su <strong>contrasena actual</strong> para verificar su identidad.</li>
+        <li>Ingrese la <strong>nueva contrasena</strong> cumpliendo los requisitos:
+          <ul>
+            <li>Minimo 8 caracteres</li>
+            <li>Al menos una letra mayuscula</li>
+            <li>Al menos un numero</li>
+            <li>Al menos un caracter especial (@, #, $, etc.)</li>
+          </ul>
+        </li>
+        <li>Confirme la nueva contrasena.</li>
+        <li>Haga clic en <strong>"Actualizar Contrasena"</strong>.</li>
+      </ol>
+
+      <hr class="sub-divider">
+
+      <h3>13.3 Preferencias de Visualizacion</h3>
+      <ol class="steps">
+        <li>Navegue a <strong>"Configuracion"</strong> desde el menu de usuario.</li>
+        <li><strong>Modo Oscuro:</strong> Active o desactive el tema oscuro usando el interruptor. La preferencia se guarda automaticamente.</li>
+        <li><strong>Notificaciones:</strong> Configure cuales notificaciones desea recibir:
+          <ul>
+            <li>Notificaciones push en el navegador</li>
+            <li>Notificaciones por correo electronico</li>
+            <li>Sonidos de notificacion</li>
+          </ul>
+        </li>
+        <li><strong>Idioma y formato:</strong> El sistema esta configurado para Colombia (formato de fecha DD/MM/AAAA, moneda COP).</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Pagina de configuracion y preferencias</div>
+
+      <div class="info-box green">
+        <strong>Modo Oscuro:</strong> El modo oscuro reduce la fatiga visual en ambientes con poca luz
+        y esta optimizado para todas las pantallas del sistema.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECCION 14: NOTIFICACIONES
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="section" id="notificaciones">
+      <h2><span class="num">14</span> Notificaciones</h2>
+      <div class="access-roles">
+        <strong>Acceso:</strong>
+        <span class="badge badge-todos">Todos los usuarios</span>
+      </div>
+      <p>
+        El sistema de notificaciones mantiene informado a cada usuario sobre eventos relevantes
+        para su rol, utilizando notificaciones en tiempo real via Socket.io.
+      </p>
+
+      <h3>14.1 Panel de Notificaciones</h3>
+      <ol class="steps">
+        <li>Haga clic en el <strong>icono de campana</strong> en la barra superior del sistema.</li>
+        <li>Se desplegara el panel con las notificaciones mas recientes.</li>
+        <li>Las notificaciones <strong>no leidas</strong> aparecen con un fondo resaltado y un punto indicador.</li>
+        <li>El icono de campana muestra un <strong>contador</strong> con el numero de notificaciones sin leer.</li>
+        <li>Haga clic en una notificacion para navegar directamente al elemento relacionado.</li>
+        <li>Use el boton <strong>"Marcar todas como leidas"</strong> para limpiar el contador.</li>
+        <li>Para ver el historial completo, haga clic en <strong>"Ver todas las notificaciones"</strong>.</li>
+      </ol>
+      <div class="screenshot-placeholder">Insertar captura: Panel desplegable de notificaciones</div>
+
+      <hr class="sub-divider">
+
+      <h3>14.2 Tipos de Notificaciones</h3>
+      <p>El sistema genera notificaciones automaticas para los siguientes eventos:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Evento</th>
+            <th>Destinatario</th>
+            <th>Descripcion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Movimiento pendiente de aprobacion</td>
+            <td><span class="badge badge-financiera">Financiera</span> <span class="badge badge-supervisor">Supervisor</span></td>
+            <td>Se registra un nuevo gasto que requiere aprobacion.</td>
+          </tr>
+          <tr>
+            <td>Movimiento aprobado/rechazado</td>
+            <td><span class="badge badge-conductor">Conductor</span></td>
+            <td>Un gasto fue revisado por el area financiera.</td>
+          </tr>
+          <tr>
+            <td>Viaje asignado</td>
+            <td><span class="badge badge-conductor">Conductor</span></td>
+            <td>Se ha programado un nuevo viaje para el conductor.</td>
+          </tr>
+          <tr>
+            <td>Documentacion por vencer</td>
+            <td><span class="badge badge-admin">Admin</span> <span class="badge badge-financiera">Financiera</span></td>
+            <td>Un vehiculo tiene documentos proximos a vencerse.</td>
+          </tr>
+          <tr>
+            <td>Stock bajo</td>
+            <td><span class="badge badge-operador">Operador</span> <span class="badge badge-supervisor">Supervisor</span></td>
+            <td>Un producto esta por debajo del stock minimo.</td>
+          </tr>
+          <tr>
+            <td>Auditoria pendiente</td>
+            <td><span class="badge badge-operador">Operador</span></td>
+            <td>Hay documentos WMS que requieren auditoria.</td>
+          </tr>
+          <tr>
+            <td>Caja menor proxima a vencer</td>
+            <td><span class="badge badge-financiera">Financiera</span> <span class="badge badge-conductor">Conductor</span></td>
+            <td>Una caja menor se acerca a su fecha limite de cierre.</td>
+          </tr>
+          <tr>
+            <td>Nuevo usuario creado</td>
+            <td><span class="badge badge-admin">Admin</span></td>
+            <td>Se ha registrado un nuevo usuario en el sistema.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box blue">
+        <strong>Tiempo real:</strong> Las notificaciones se entregan en tiempo real gracias a la conexion
+        WebSocket. No necesita recargar la pagina para recibir nuevas notificaciones.
+      </div>
+
+      <div class="info-box green">
+        <strong>Correo electronico:</strong> Ademas de las notificaciones en el sistema, los eventos criticos
+        (como documentacion vencida o stock agotado) tambien se envian por correo electronico
+        a los destinatarios configurados.
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         FOOTER
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="doc-footer">
+      <p>
+        <strong><span style="color: var(--accent);">Centh</span>ri<span style="color: var(--success);">X</span></strong>
+        &mdash; Sistema de Gestion Integral &mdash; ISTHO S.A.S.
+      </p>
+      <p>Girardota, Antioquia, Colombia &mdash; Version 1.0 &mdash; Marzo 2026</p>
+      <p style="margin-top: 8px; font-size: 11px; color: #CFD8DC;">
+        Este documento es propiedad de ISTHO S.A.S. Su distribucion no autorizada esta prohibida.
+      </p>
+    </div>
+  </main>
+
+  <!-- Print Button -->
+  <button class="print-btn no-print" onclick="window.print()">Imprimir Manual</button>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       SCROLL SPY - Active sidebar link tracking
+       ═══════════════════════════════════════════════════════════════ -->
+  <script>
+    (function() {
+      const sidebar = document.querySelector('.sidebar');
+      const links = sidebar.querySelectorAll('a[href^="#"]');
+      const sections = [];
+
+      links.forEach(function(link) {
+        const id = link.getAttribute('href').substring(1);
+        const el = document.getElementById(id);
+        if (el) {
+          sections.push({ id: id, el: el, link: link });
+        }
+      });
+
+      function onScroll() {
+        const scrollPos = window.scrollY + 120;
+        let current = sections[0];
+
+        for (let i = 0; i < sections.length; i++) {
+          if (sections[i].el.offsetTop <= scrollPos) {
+            current = sections[i];
+          }
+        }
+
+        links.forEach(function(link) {
+          link.classList.remove('active');
+        });
+
+        if (current) {
+          current.link.classList.add('active');
+
+          // Scroll sidebar to keep active link visible
+          var linkTop = current.link.offsetTop;
+          var sidebarHeight = sidebar.clientHeight;
+          if (linkTop > sidebarHeight * 0.7 || linkTop < sidebar.scrollTop) {
+            sidebar.scrollTop = linkTop - sidebarHeight / 3;
+          }
+        }
+      }
+
+      var ticking = false;
+      window.addEventListener('scroll', function() {
+        if (!ticking) {
+          window.requestAnimationFrame(function() {
+            onScroll();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      });
+
+      // Initial call
+      onScroll();
+    })();
+  </script>
+</body>
+</html>

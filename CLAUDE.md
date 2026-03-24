@@ -51,7 +51,7 @@ set CRM_API_URL=https://backend.up.railway.app/api/v1&& set WMS_API_KEY=key&& no
 - **Real-time:** Socket.io for notifications and live updates
 - **Email:** Resend (API HTTP, production) or Nodemailer SMTP (development fallback). Config in `src/config/email.js`
 - **WMS Integration:** Copérnico sync via `wmsSyncService.js` — products, entries (CO), exits (PK), kardex (CR). Dynamic validation via `ConfiguracionWms` model. See `docs/WMS_API_SPEC.md`
-- **Reports:** ExcelJS for Excel, PDFKit for PDF. Scheduled reports via node-cron
+- **Reports:** ExcelJS for Excel, PDFKit for PDF. Scheduled reports via node-cron. 6 types: operaciones, inventario, clientes, viajes, cajas_menores, gastos. See `docs/FLUJOS_NEGOCIO.md` §10
 - **Response helpers:** Always use `success()`, `paginated()`, `error()`, `notFound()` from `src/utils/responses.js`
 - **Error handlers:** Registered via `app.registerErrorHandlers()` — MUST be called AFTER all route definitions
 
