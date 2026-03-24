@@ -24,10 +24,10 @@ module.exports = (sequelize) => {
       comment: 'Número de caja menor (CM-XXXX)'
     },
 
-    conductor_id: {
+    asignado_a: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      comment: 'Conductor asignado a la caja'
+      comment: 'Usuario asignado a la caja'
     },
 
     creado_por: {
@@ -116,7 +116,7 @@ module.exports = (sequelize) => {
     paranoid: true,
     indexes: [
       { fields: ['numero'], unique: true },
-      { fields: ['conductor_id'] },
+      { fields: ['asignado_a'] },
       { fields: ['estado'] },
       { fields: ['creado_por'] },
       { fields: ['fecha_apertura'] },

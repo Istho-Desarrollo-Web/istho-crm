@@ -91,6 +91,11 @@ async function initializeDatabase() {
     const seedPlantillasEmail = require('./src/scripts/seedPlantillasEmail');
     await seedPlantillasEmail({ standalone: false });
 
+    // Seed de configuración WMS (idempotente)
+    logger.info('Verificando configuración WMS...');
+    const seedConfiguracionWms = require('./src/scripts/seedConfiguracionWms');
+    await seedConfiguracionWms({ standalone: false });
+
     // Crear usuarios por defecto
     await crearAdminPorDefecto();
     await crearSupervisorPorDefecto();

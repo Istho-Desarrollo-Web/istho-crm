@@ -73,7 +73,7 @@ const ReporteCajasMenores = () => {
               <thead>
                 <tr className="bg-slate-50/50 dark:bg-slate-900/30">
                   <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Número</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Conductor</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Asignado a</th>
                   <th className="text-right py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Saldo Inicial</th>
                   <th className="text-right py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Ingresos</th>
                   <th className="text-right py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Egresos</th>
@@ -85,7 +85,7 @@ const ReporteCajasMenores = () => {
                 {(data?.ultimas || []).map((c) => (
                   <tr key={c.id} onClick={() => navigate(`/viajes/cajas-menores/${c.id}`)} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/20 cursor-pointer transition-colors">
                     <td className="py-3 px-4 font-medium text-amber-600 dark:text-amber-400">{c.numero}</td>
-                    <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{c.conductor}</td>
+                    <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{c.asignado}</td>
                     <td className="py-3 px-4 text-right text-slate-600 dark:text-slate-300">{formatCOP(c.saldo_inicial)}</td>
                     <td className="py-3 px-4 text-right text-emerald-600 dark:text-emerald-400">+{formatCOP(c.total_ingresos)}</td>
                     <td className="py-3 px-4 text-right text-red-600 dark:text-red-400">-{formatCOP(c.total_egresos)}</td>

@@ -469,7 +469,7 @@ const DashboardFinanciera = () => {
                         #
                       </th>
                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                        Conductor
+                        Usuario
                       </th>
                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Concepto
@@ -509,7 +509,7 @@ const DashboardFinanciera = () => {
                           <div className="flex items-center gap-2">
                             <Users className="h-4 w-4 text-slate-400" />
                             <span className="text-sm text-slate-700 dark:text-slate-200 font-medium truncate max-w-[140px]">
-                              {mov.conductor?.nombre_completo || mov.CajaMenor?.conductor_nombre || mov.conductor_nombre || '-'}
+                              {mov.usuario?.nombre_completo || mov.CajaMenor?.asignado_nombre || mov.usuario_nombre || '-'}
                             </span>
                           </div>
                         </td>
@@ -597,7 +597,7 @@ const DashboardFinanciera = () => {
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
                           <Users className="h-3 w-3" />
-                          {caja.conductor_nombre || caja.conductor?.nombre_completo || caja.Conductor?.nombre_completo || '-'}
+                          {caja.asignado_nombre || caja.asignado?.nombre_completo || caja.Asignado?.nombre_completo || '-'}
                         </p>
                         <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
                           {formatFecha(caja.fecha_apertura || caja.createdAt)}

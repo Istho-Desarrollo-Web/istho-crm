@@ -13,7 +13,7 @@
  * @version 1.0.0
  */
 
-const { sequelize, Cliente, Inventario, Operacion, OperacionDetalle, MovimientoInventario, CajaInventario } = require('../models');
+const { sequelize, Cliente, Inventario, Operacion, OperacionDetalle, MovimientoInventario, CajaInventario, ConfiguracionWms } = require('../models');
 const { Op } = require('sequelize');
 const logger = require('../utils/logger');
 const notificacionService = require('./notificacionService');
@@ -172,11 +172,27 @@ const syncProductos = async (data) => {
  * @returns {Object} operación creada
  */
 const syncEntrada = async (data) => {
-  const { nit, documento_origen, fecha_ingreso, tipo_documento, detalles, observaciones } = data;
+  const { nit, documento_origen, fecha_ingreso, tipo_documento, tipo_orden, estado, detalles, observaciones } = data;
 
   if (!documento_origen) throw new Error('documento_origen es requerido');
   if (!detalles || !Array.isArray(detalles) || detalles.length === 0) {
     throw new Error('Se requiere al menos una línea de detalle');
+  }
+
+  // Validar estado de la orden (si se envía)
+  if (estado) {
+    const estadoValido = await ConfiguracionWms.esEstadoValido(estado);
+    if (!estadoValido) {
+      throw new Error(`Estado "${estado}" no es válido para procesar. Solo se procesan órdenes con estado finalizado.`);
+    }
+  }
+
+  // Validar tipo de documento con fallback a tipo_orden
+  if (tipo_orden && !tipo_documento) {
+    const tipoResuelto = await ConfiguracionWms.resolverTipoDocumento(null, tipo_orden);
+    if (tipoResuelto && tipoResuelto !== 'CO') {
+      throw new Error(`Tipo de orden "${tipo_orden}" no corresponde a una entrada (CO). Se resolvió como "${tipoResuelto}".`);
+    }
   }
 
   const cliente = await findClienteByNit(nit);
@@ -369,10 +385,26 @@ const syncEntrada = async (data) => {
  * @returns {Object} operación creada
  */
 const syncSalida = async (data) => {
-  const { nit, numero_picking, documento_wms, sucursal_entrega, ciudad_destino, detalles, observaciones } = data;
+  const { nit, numero_picking, documento_wms, tipo_orden, estado, sucursal_entrega, ciudad_destino, detalles, observaciones } = data;
 
   if (!detalles || !Array.isArray(detalles) || detalles.length === 0) {
     throw new Error('Se requiere al menos una línea de detalle');
+  }
+
+  // Validar estado de la orden (si se envía)
+  if (estado) {
+    const estadoValido = await ConfiguracionWms.esEstadoValido(estado);
+    if (!estadoValido) {
+      throw new Error(`Estado "${estado}" no es válido para procesar. Solo se procesan órdenes con estado finalizado.`);
+    }
+  }
+
+  // Validar tipo de orden con fallback
+  if (tipo_orden && !documento_wms) {
+    const tipoResuelto = await ConfiguracionWms.resolverTipoDocumento(null, tipo_orden);
+    if (tipoResuelto && tipoResuelto !== 'PK') {
+      throw new Error(`Tipo de orden "${tipo_orden}" no corresponde a una salida (PK). Se resolvió como "${tipoResuelto}".`);
+    }
   }
 
   const cliente = await findClienteByNit(nit);
@@ -583,12 +615,31 @@ const syncSalida = async (data) => {
  * @returns {Object} operación creada
  */
 const syncKardex = async (data) => {
-  const { nit, documento_origen, fecha_ingreso, motivo, detalles, observaciones } = data;
+  const { nit, documento_origen, fecha_ingreso, motivo, detalle_motivo, estado, detalles, observaciones } = data;
 
   if (!motivo) throw new Error('motivo es requerido para Kardex');
   if (!detalles || !Array.isArray(detalles) || detalles.length === 0) {
     throw new Error('Se requiere al menos una línea de detalle');
   }
+
+  // Validar estado de la orden (si se envía)
+  if (estado) {
+    const estadoValido = await ConfiguracionWms.esEstadoValido(estado);
+    if (!estadoValido) {
+      throw new Error(`Estado "${estado}" no es válido para procesar. Solo se procesan órdenes con estado finalizado.`);
+    }
+  }
+
+  // Validar motivo contra lista blanca de configuración
+  const motivoConfig = await ConfiguracionWms.verificarMotivoKardex(motivo);
+  if (!motivoConfig.permitido) {
+    throw new Error(`Motivo de Kardex "${motivo}" no está permitido. Motivos válidos: consultar configuración WMS.`);
+  }
+
+  // Si el motivo requiere detalle y no viene, usar el motivo como detalle
+  const motivoFinal = motivoConfig.requiereDetalle && detalle_motivo
+    ? `${motivoConfig.valorCrm}: ${detalle_motivo}`
+    : motivoConfig.valorCrm;
 
   const cliente = await findClienteByNit(nit);
 
@@ -625,11 +676,11 @@ const syncKardex = async (data) => {
       fecha_documento: fecha_ingreso || new Date(),
       fecha_operacion: new Date(),
       tipo_documento_wms: 'CR',
-      motivo_kardex: motivo,
+      motivo_kardex: motivoFinal,
       total_referencias: skusUnicos,
       total_unidades: totalUnidades,
       estado: 'pendiente',
-      observaciones: observaciones || `Kardex WMS - ${motivo}`,
+      observaciones: observaciones || `Kardex WMS - ${motivoFinal}`,
     }, { transaction });
 
     // Procesar cada línea de ajuste

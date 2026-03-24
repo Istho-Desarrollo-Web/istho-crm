@@ -404,7 +404,7 @@ const CajaMenorList = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Buscar por número o conductor..."
+                placeholder="Buscar por número o usuario asignado..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
@@ -486,7 +486,7 @@ const CajaMenorList = () => {
                       Número
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Conductor
+                      Asignado a
                     </th>
                     <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Saldo Inicial
@@ -526,12 +526,12 @@ const CajaMenorList = () => {
                         </div>
                       </td>
 
-                      {/* Conductor */}
+                      {/* Asignado a */}
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
                           <User className="w-4 h-4 text-slate-400 flex-shrink-0" />
                           <span className="text-sm text-slate-700 dark:text-slate-200 truncate max-w-[200px]">
-                            {caja.conductor?.nombre_completo || caja.conductor?.username || '-'}
+                            {caja.asignado?.nombre_completo || caja.asignado?.username || '-'}
                           </span>
                         </div>
                       </td>
@@ -596,9 +596,9 @@ const CajaMenorList = () => {
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Conductor</span>
+                      <span className="text-slate-500 dark:text-slate-400">Asignado a</span>
                       <span className="text-slate-700 dark:text-slate-200 truncate max-w-[150px]">
-                        {caja.conductor?.nombre_completo || caja.conductor?.username || '-'}
+                        {caja.asignado?.nombre_completo || caja.asignado?.username || '-'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">

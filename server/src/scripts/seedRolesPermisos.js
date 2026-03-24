@@ -50,6 +50,7 @@ const PERMISOS_CATALOGO = [
   { modulo: 'inventario', accion: 'eliminar', descripcion: 'Eliminar productos', grupo: 'Operaciones' },
   { modulo: 'inventario', accion: 'ajustar', descripcion: 'Ajustar cantidades de stock', grupo: 'Operaciones' },
   { modulo: 'inventario', accion: 'exportar', descripcion: 'Exportar inventario Excel/PDF', grupo: 'Operaciones' },
+  { modulo: 'inventario', accion: 'alertas', descripcion: 'Ver alertas de inventario (stock bajo, vencimientos)', grupo: 'Operaciones' },
 
   // Operaciones
   { modulo: 'operaciones', accion: 'ver', descripcion: 'Ver operaciones de ingreso/salida', grupo: 'Operaciones' },
@@ -61,7 +62,14 @@ const PERMISOS_CATALOGO = [
 
   // Reportes
   { modulo: 'reportes', accion: 'ver', descripcion: 'Ver módulo de reportes', grupo: 'General' },
+  { modulo: 'reportes', accion: 'crear', descripcion: 'Crear y programar reportes', grupo: 'General' },
   { modulo: 'reportes', accion: 'exportar', descripcion: 'Descargar reportes Excel/PDF', grupo: 'General' },
+
+  // Plantillas de email
+  { modulo: 'plantillas_email', accion: 'ver', descripcion: 'Ver plantillas de email', grupo: 'Sistema' },
+  { modulo: 'plantillas_email', accion: 'crear', descripcion: 'Crear plantillas de email', grupo: 'Sistema' },
+  { modulo: 'plantillas_email', accion: 'editar', descripcion: 'Editar plantillas de email', grupo: 'Sistema' },
+  { modulo: 'plantillas_email', accion: 'eliminar', descripcion: 'Eliminar plantillas de email', grupo: 'Sistema' },
 
   // Usuarios
   { modulo: 'usuarios', accion: 'ver', descripcion: 'Ver listado de usuarios', grupo: 'Sistema' },
@@ -87,6 +95,12 @@ const PERMISOS_CATALOGO = [
   // Configuración
   { modulo: 'configuracion', accion: 'ver', descripcion: 'Ver configuración del sistema', grupo: 'Sistema' },
   { modulo: 'configuracion', accion: 'editar', descripcion: 'Modificar configuración', grupo: 'Sistema' },
+
+  // Configuración WMS
+  { modulo: 'configuracion_wms', accion: 'ver', descripcion: 'Ver configuración de integración WMS', grupo: 'Sistema' },
+  { modulo: 'configuracion_wms', accion: 'crear', descripcion: 'Crear reglas de mapeo WMS', grupo: 'Sistema' },
+  { modulo: 'configuracion_wms', accion: 'editar', descripcion: 'Editar configuración WMS', grupo: 'Sistema' },
+  { modulo: 'configuracion_wms', accion: 'eliminar', descripcion: 'Eliminar reglas de mapeo WMS', grupo: 'Sistema' },
 
   // Notificaciones
   { modulo: 'notificaciones', accion: 'ver', descripcion: 'Ver notificaciones y alertas', grupo: 'General' },
@@ -146,14 +160,16 @@ const PERMISOS_POR_ROL = {
   supervisor: {
     dashboard: ['ver', 'exportar'],
     clientes: ['ver', 'crear', 'editar', 'exportar'],
-    inventario: ['ver', 'crear', 'editar', 'ajustar', 'exportar'],
+    inventario: ['ver', 'crear', 'editar', 'ajustar', 'exportar', 'alertas'],
     operaciones: ['ver', 'crear', 'editar', 'cerrar', 'exportar'],
     despachos: ['ver', 'crear', 'editar', 'exportar'],
-    reportes: ['ver', 'exportar'],
+    reportes: ['ver', 'crear', 'exportar'],
+    plantillas_email: ['ver', 'crear', 'editar', 'eliminar'],
     usuarios: ['ver'],
     auditoria: ['ver', 'exportar', 'reenviar_correo'],
     kardex: ['ver', 'exportar'],
     configuracion: ['ver'],
+    configuracion_wms: ['ver'],
     notificaciones: ['ver', 'editar'],
     vehiculos: ['ver', 'crear', 'editar', 'eliminar'],
     viajes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
@@ -177,12 +193,14 @@ const PERMISOS_POR_ROL = {
   operador: {
     dashboard: ['ver'],
     clientes: ['ver'],
-    inventario: ['ver', 'ajustar'],
+    inventario: ['ver', 'ajustar', 'alertas'],
     operaciones: ['ver', 'crear', 'editar'],
     despachos: ['ver', 'crear', 'editar'],
     reportes: ['ver'],
     auditoria: ['ver'],
     kardex: ['ver'],
+    caja_menor: ['ver'],
+    movimientos: ['ver', 'crear', 'editar'],
     notificaciones: ['ver'],
     perfil: ['ver', 'cambiar_password'],
   },
@@ -199,7 +217,7 @@ const PERMISOS_POR_ROL = {
 
   cliente: {
     dashboard: ['ver'],
-    inventario: ['ver'],
+    inventario: ['ver', 'alertas'],
     operaciones: ['ver'],
     despachos: ['ver'],
     reportes: ['ver', 'exportar'],

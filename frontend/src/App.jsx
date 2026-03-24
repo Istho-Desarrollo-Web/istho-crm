@@ -108,6 +108,7 @@ const PlantillaEmailEditor = lazy(() => import('./pages/PlantillasEmail/Plantill
 // Perfil y Configuración
 const PerfilUsuario = lazy(() => import('./pages/Perfil/PerfilUsuario'));
 const Configuracion = lazy(() => import('./pages/Perfil/Configuracion'));
+const ConfiguracionWms = lazy(() => import('./pages/Configuracion/ConfiguracionWms'));
 const Notificaciones = lazy(() => import('./pages/Perfil/Notificaciones'));
 
 // Administración
@@ -259,22 +260,22 @@ function App() {
                 <Route path="/reportes" element={<PortalPermissionRoute module="reportes" action="ver"><ReportesList /></PortalPermissionRoute>} />
                 <Route path="/reportes/despachos" element={<PortalPermissionRoute module="reportes" action="ver"><ReporteDespachos /></PortalPermissionRoute>} />
                 <Route path="/reportes/inventario" element={<PortalPermissionRoute module="reportes" action="ver"><ReporteInventario /></PortalPermissionRoute>} />
-                <Route path="/reportes/clientes" element={<OperadorRoute><ReporteClientes /></OperadorRoute>} />
+                <Route path="/reportes/clientes" element={<PermissionRoute module="reportes" action="ver"><ReporteClientes /></PermissionRoute>} />
                 <Route path="/reportes/viajes" element={<PermissionRoute module="reportes" action="ver"><ReporteViajes /></PermissionRoute>} />
                 <Route path="/reportes/cajas-menores" element={<PermissionRoute module="reportes" action="ver"><ReporteCajasMenores /></PermissionRoute>} />
                 <Route path="/reportes/gastos" element={<PermissionRoute module="reportes" action="ver"><ReporteGastos /></PermissionRoute>} />
-                <Route path="/reportes/programados" element={<SupervisorRoute><ReportesProgramados /></SupervisorRoute>} />
-                <Route path="/reportes/operativo" element={<ReporteDespachos />} />
-                <Route path="/reportes/kpis" element={<OperadorRoute><ReporteDespachos /></OperadorRoute>} />
-                <Route path="/reportes/financiero" element={<OperadorRoute><ReporteClientes /></OperadorRoute>} />
-                <Route path="/reportes/crear" element={<OperadorRoute><ReportesList /></OperadorRoute>} />
+                <Route path="/reportes/programados" element={<PermissionRoute module="reportes" action="crear"><ReportesProgramados /></PermissionRoute>} />
+                <Route path="/reportes/operativo" element={<PermissionRoute module="reportes" action="ver"><ReporteDespachos /></PermissionRoute>} />
+                <Route path="/reportes/kpis" element={<PermissionRoute module="reportes" action="ver"><ReporteDespachos /></PermissionRoute>} />
+                <Route path="/reportes/financiero" element={<PermissionRoute module="reportes" action="ver"><ReporteClientes /></PermissionRoute>} />
+                <Route path="/reportes/crear" element={<PermissionRoute module="reportes" action="crear"><ReportesList /></PermissionRoute>} />
 
                 {/* ────────────────────────────────────────────────────────── */}
                 {/* PLANTILLAS DE EMAIL */}
                 {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/plantillas-email" element={<SupervisorRoute><PlantillasEmailList /></SupervisorRoute>} />
-                <Route path="/plantillas-email/nueva" element={<SupervisorRoute><PlantillaEmailEditor /></SupervisorRoute>} />
-                <Route path="/plantillas-email/:id" element={<SupervisorRoute><PlantillaEmailEditor /></SupervisorRoute>} />
+                <Route path="/plantillas-email" element={<PermissionRoute module="plantillas_email" action="ver"><PlantillasEmailList /></PermissionRoute>} />
+                <Route path="/plantillas-email/nueva" element={<PermissionRoute module="plantillas_email" action="crear"><PlantillaEmailEditor /></PermissionRoute>} />
+                <Route path="/plantillas-email/:id" element={<PermissionRoute module="plantillas_email" action="editar"><PlantillaEmailEditor /></PermissionRoute>} />
 
                 {/* ────────────────────────────────────────────────────────── */}
                 {/* ADMINISTRACIÓN - Solo admin */}
@@ -298,9 +299,10 @@ function App() {
                 {/* PERFIL Y CONFIGURACIÓN */}
                 {/* ────────────────────────────────────────────────────────── */}
                 <Route path="/perfil" element={<PerfilUsuario />} />
-                <Route path="/configuracion" element={<Configuracion />} />
-                <Route path="/notificaciones" element={<Notificaciones />} />
-                <Route path="/alertas" element={<Notificaciones />} />
+                <Route path="/configuracion" element={<PermissionRoute module="configuracion" action="ver"><Configuracion /></PermissionRoute>} />
+                <Route path="/configuracion-wms" element={<AdminRoute><ConfiguracionWms /></AdminRoute>} />
+                <Route path="/notificaciones" element={<PermissionRoute module="notificaciones" action="ver"><Notificaciones /></PermissionRoute>} />
+                <Route path="/alertas" element={<PermissionRoute module="notificaciones" action="ver"><Notificaciones /></PermissionRoute>} />
               </Route>
 
               {/* ══════════════════════════════════════════════════════════ */}

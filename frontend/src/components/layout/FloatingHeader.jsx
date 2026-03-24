@@ -135,6 +135,7 @@ const allMenuConfig = [
     items: [
       { icon: Settings, label: 'Usuarios y Roles', href: '/administracion' },
       { icon: Activity, label: 'Auditoría de Acciones', href: '/auditoria-acciones' },
+      { icon: Truck, label: 'Configuración WMS', href: '/configuracion-wms' },
     ],
   },
 ];
@@ -144,58 +145,62 @@ const allMenuConfig = [
  * @param {string} rol - Rol del usuario
  * @param {Function} hasPermission - Función para verificar permisos de portal
  */
+/**
+ * Mapeo de menú → módulo de permisos
+ * Cada menú requiere al menos un permiso para mostrarse
+ */
+const MENU_PERMISSION_MAP = {
+  dashboard: ['dashboard.ver'],
+  clientes: ['clientes.ver'],
+  inventario: ['inventario.ver'],
+  viajes: ['vehiculos.ver', 'viajes.ver', 'caja_menor.ver', 'movimientos.ver'],
+  admin: ['usuarios.ver', 'roles.ver', 'configuracion_wms.ver'],
+};
+
 const getMenuForRole = (rol, hasPermission) => {
-  if (rol === 'cliente') {
-    return allMenuConfig
-      .filter(menu => !menu.soloInternos && !menu.soloAdmin)
-      .filter(menu => {
-        // Verificar permisos de portal por módulo
-        if (menu.id === 'inventario') return hasPermission('inventario', 'ver');
-        if (menu.id === 'dashboard') return true;
-        return true;
-      })
-      .map(menu => {
-        if (menu.id === 'inventario') {
-          // Filtrar sub-items de inventario según permisos
-          const filteredItems = menu.items.filter(item => {
-            if (item.href === '/inventario/alertas') return hasPermission('inventario', 'alertas');
-            return true;
-          });
-          return { ...menu, items: filteredItems };
-        }
-        if (menu.id === 'dashboard') {
-          // Filtrar Reportes del dashboard si no tiene permiso
-          const filteredItems = menu.items.filter(item => {
-            if (item.href === '/reportes') return hasPermission('reportes', 'ver');
-            return true;
-          });
-          return { ...menu, items: filteredItems };
-        }
-        return menu;
-      });
-  }
-  if (rol === 'admin') {
-    return allMenuConfig;
-  }
-  // Conductor: solo Dashboard + Viajes
-  if (rol === 'conductor') {
-    return allMenuConfig.filter(menu =>
-      menu.id === 'dashboard' || menu.id === 'viajes'
-    ).map(menu => {
-      if (menu.id === 'dashboard') {
-        return { ...menu, items: menu.items.filter(item => item.href === '/dashboard') };
+  // Admin ve todo
+  if (rol === 'admin') return allMenuConfig;
+
+  return allMenuConfig
+    .filter(menu => {
+      // Ocultar menús soloAdmin para no-admins
+      if (menu.soloAdmin) return false;
+      // Ocultar menús soloInternos para clientes
+      if (menu.soloInternos && rol === 'cliente') return false;
+
+      // Verificar si el usuario tiene al menos UN permiso del menú
+      const permisos = MENU_PERMISSION_MAP[menu.id];
+      if (permisos) {
+        return permisos.some(p => {
+          const [modulo, accion] = p.split('.');
+          return hasPermission(modulo, accion);
+        });
       }
-      return menu;
-    });
-  }
-  // Financiera: Dashboard + Viajes + Reportes
-  if (rol === 'financiera') {
-    return allMenuConfig.filter(menu =>
-      menu.id === 'dashboard' || menu.id === 'viajes'
-    );
-  }
-  // Internos no-admin: ocultar menús soloAdmin
-  return allMenuConfig.filter(menu => !menu.soloAdmin);
+      return true;
+    })
+    .map(menu => {
+      // Filtrar sub-items según permisos específicos
+      const filteredItems = menu.items.filter(item => {
+        // Alertas de inventario requiere permiso especial
+        if (item.href === '/inventario/alertas') return hasPermission('inventario', 'alertas');
+        // Reportes requiere permiso
+        if (item.href === '/reportes') return hasPermission('reportes', 'ver');
+        // Configuración WMS requiere permiso
+        if (item.href === '/configuracion-wms') return hasPermission('configuracion_wms', 'ver');
+        // Sub-items de viajes por módulo
+        if (item.href === '/viajes/vehiculos') return hasPermission('vehiculos', 'ver');
+        if (item.href === '/viajes/viajes') return hasPermission('viajes', 'ver');
+        if (item.href === '/viajes/cajas-menores') return hasPermission('caja_menor', 'ver');
+        if (item.href === '/viajes/movimientos') return hasPermission('movimientos', 'ver');
+        return true;
+      });
+
+      // Si no quedan sub-items visibles, ocultar el menú
+      if (filteredItems.length === 0) return null;
+
+      return { ...menu, items: filteredItems };
+    })
+    .filter(Boolean);
 };
 
 // ════════════════════════════════════════════════════════════════════════════

@@ -147,7 +147,7 @@ const CajaMenorDetail = () => {
       });
       success(
         accionSobrante === 'entregar'
-          ? 'Caja cerrada. Saldo entregado al conductor.'
+          ? 'Caja cerrada. Saldo entregado al usuario asignado.'
           : saldoActual > 0
             ? 'Caja cerrada. Saldo guardado para la siguiente caja.'
             : 'Caja menor cerrada exitosamente'
@@ -256,7 +256,7 @@ const CajaMenorDetail = () => {
                   <StatusChip status={caja.estado} />
                 </div>
                 <div className="flex items-center gap-2 text-slate-500 text-sm mt-0.5">
-                  <span>{caja.conductor?.nombre_completo || caja.conductor?.username || 'Sin conductor'}</span>
+                  <span>{caja.asignado?.nombre_completo || caja.asignado?.username || 'Sin asignar'}</span>
                   <span>-</span>
                   <span>{formatFecha(caja.fecha_apertura)}</span>
                 </div>
@@ -692,7 +692,7 @@ const CajaMenorDetail = () => {
                   />
                   <div>
                     <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-                      Entregar saldo al conductor
+                      Entregar saldo al usuario asignado
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       Se registrará un egreso de liquidación por {formatCOP(saldoActual)} y la caja cerrará en $0

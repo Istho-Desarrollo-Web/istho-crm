@@ -1041,12 +1041,12 @@ const exportarCajaMenorExcel = async (req, res) => {
     const { id } = req.params;
     const caja = await CajaMenor.findByPk(id, {
       include: [
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre_completo'] },
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] },
         {
           model: MovimientoCajaMenor, as: 'movimientos',
           include: [
-            { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+            { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
             { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] }
           ],
           order: [['consecutivo', 'ASC']]
@@ -1069,7 +1069,7 @@ const exportarCajaMenorExcel = async (req, res) => {
     resumen.getRow(1).eachCell(c => { c.font = { bold: true, color: { argb: 'FFFFFF' } }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } }; });
     [
       ['Número', caja.numero],
-      ['Conductor', caja.conductor?.nombre_completo || ''],
+      ['Conductor', caja.asignado?.nombre_completo || ''],
       ['Estado', caja.estado],
       ['Fecha Apertura', caja.fecha_apertura],
       ['Fecha Cierre', caja.fecha_cierre || 'N/A'],
@@ -1158,13 +1158,13 @@ const exportarCajasMenoresExcel = async (req, res) => {
   try {
     const where = {};
     if (req.query.estado && req.query.estado !== 'todos') where.estado = req.query.estado;
-    if (req.query.conductor_id) where.conductor_id = req.query.conductor_id;
-    if (req.user.esConductor) where.conductor_id = req.user.id;
+    if (req.query.asignado_a) where.asignado_a = req.query.asignado_a;
+    if (req.user.esConductor) where.asignado_a = req.user.id;
 
     const cajas = await CajaMenor.findAll({
       where,
       include: [
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre_completo'] },
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] },
       ],
       order: [['created_at', 'DESC']],
@@ -1238,15 +1238,15 @@ const exportarMovimientosExcel = async (req, res) => {
     } else if (req.query.aprobado === 'rechazado') {
       where.rechazado = true;
     }
-    if (req.query.conductor_id) where.conductor_id = req.query.conductor_id;
-    if (req.user.esConductor) where.conductor_id = req.user.id;
+    if (req.query.usuario_id) where.usuario_id = req.query.usuario_id;
+    if (req.user.esConductor) where.usuario_id = req.user.id;
 
     const movimientos = await MovimientoCajaMenor.findAll({
       where,
       include: [
         { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
         { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
         { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
       ],
       order: [['created_at', 'DESC']],
@@ -1342,25 +1342,25 @@ const exportarMovimientosCsv = async (req, res) => {
     } else if (req.query.aprobado === 'rechazado') {
       where.rechazado = true;
     }
-    if (req.query.conductor_id) where.conductor_id = req.query.conductor_id;
-    if (req.user.esConductor) where.conductor_id = req.user.id;
+    if (req.query.usuario_id) where.usuario_id = req.query.usuario_id;
+    if (req.user.esConductor) where.usuario_id = req.user.id;
 
     const movimientos = await MovimientoCajaMenor.findAll({
       where,
       include: [
         { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
         { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
         { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
       ],
       order: [['created_at', 'DESC']],
     });
 
-    const headers = ['#', 'Caja Menor', 'Conductor', 'Tipo', 'Concepto', 'Descripcion', 'Valor', 'Aprobado', 'Valor Aprobado', 'Aprobador', 'Viaje', 'Fecha'];
+    const headers = ['#', 'Caja Menor', 'Usuario', 'Tipo', 'Concepto', 'Descripcion', 'Valor', 'Aprobado', 'Valor Aprobado', 'Aprobador', 'Viaje', 'Fecha'];
     const rows = movimientos.map(m => [
       m.consecutivo,
       m.cajaMenor?.numero || '',
-      m.conductor?.nombre_completo || '',
+      m.usuario?.nombre_completo || '',
       m.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso',
       m.concepto,
       m.descripcion || '',
@@ -1550,12 +1550,12 @@ const getReporteViajes = async (req, res) => {
 const getReporteCajasMenores = async (req, res) => {
   try {
     const where = {};
-    if (req.user.esConductor) where.conductor_id = req.user.id;
+    if (req.user.esConductor) where.asignado_a = req.user.id;
 
     const cajas = await CajaMenor.findAll({
       where,
       include: [
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre_completo'] },
       ],
       order: [['created_at', 'DESC']],
     });
@@ -1582,7 +1582,7 @@ const getReporteCajasMenores = async (req, res) => {
 
     const ultimas = cajas.slice(0, 10).map(c => ({
       id: c.id, numero: c.numero, estado: c.estado,
-      conductor: c.conductor?.nombre_completo || '-',
+      conductor: c.asignado?.nombre_completo || '-',
       saldo_inicial: c.saldo_inicial, saldo_actual: c.saldo_actual,
       total_egresos: c.total_egresos, total_ingresos: c.total_ingresos,
       fecha_apertura: c.fecha_apertura, fecha_cierre: c.fecha_cierre,
@@ -1610,13 +1610,13 @@ const getReporteGastos = async (req, res) => {
     const where = {};
     if (req.query.fecha_desde) where.created_at = { ...(where.created_at || {}), [Op.gte]: req.query.fecha_desde };
     if (req.query.fecha_hasta) where.created_at = { ...(where.created_at || {}), [Op.lte]: req.query.fecha_hasta };
-    if (req.user.esConductor) where.conductor_id = req.user.id;
+    if (req.user.esConductor) where.usuario_id = req.user.id;
 
     const movimientos = await MovimientoCajaMenor.findAll({
       where,
       include: [
         { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
       ],
       order: [['created_at', 'DESC']],
     });
@@ -1663,7 +1663,7 @@ const getReporteGastos = async (req, res) => {
       tipo_movimiento: m.tipo_movimiento, concepto: m.concepto,
       valor: m.valor, aprobado: m.aprobado, rechazado: m.rechazado,
       valor_aprobado: m.valor_aprobado,
-      conductor: m.conductor?.nombre_completo || '-',
+      conductor: m.usuario?.nombre_completo || '-',
       caja_menor: m.cajaMenor?.numero || '-',
       fecha: m.created_at,
     }));

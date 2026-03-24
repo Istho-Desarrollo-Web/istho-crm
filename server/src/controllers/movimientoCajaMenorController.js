@@ -53,13 +53,13 @@ const listar = async (req, res) => {
       }
     }
 
-    if (req.query.conductor_id) {
-      where.conductor_id = req.query.conductor_id;
+    if (req.query.usuario_id) {
+      where.usuario_id = req.query.usuario_id;
     }
 
-    // Conductor solo ve sus movimientos
+    // Usuario solo ve sus movimientos
     if (req.user.esConductor) {
-      where.conductor_id = req.user.id;
+      where.usuario_id = req.user.id;
     }
 
     if (req.query.search) {
@@ -79,7 +79,7 @@ const listar = async (req, res) => {
       include: [
         { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero', 'estado'] },
         { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
         { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] }
       ]
     });
@@ -98,16 +98,16 @@ const obtenerPorId = async (req, res) => {
   try {
     const movimiento = await MovimientoCajaMenor.findByPk(req.params.id, {
       include: [
-        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero', 'estado', 'conductor_id'] },
+        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero', 'estado', 'asignado_a'] },
         { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino', 'fecha'] },
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
+        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
         { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] }
       ]
     });
 
     if (!movimiento) return notFound(res, 'Movimiento no encontrado');
 
-    if (req.user.esConductor && movimiento.conductor_id !== req.user.id) {
+    if (req.user.esConductor && movimiento.usuario_id !== req.user.id) {
       return notFound(res, 'Movimiento no encontrado');
     }
 
@@ -138,11 +138,11 @@ const crear = async (req, res) => {
       return errorResponse(res, 'La caja menor está cerrada, no se pueden agregar movimientos', 400);
     }
 
-    // Asignar conductor: si es conductor se asigna a sí mismo, sino usar el de la caja
+    // Asignar usuario: si es conductor se asigna a sí mismo, sino usar el de la caja
     if (req.user.esConductor) {
-      datos.conductor_id = req.user.id;
-    } else if (!datos.conductor_id) {
-      datos.conductor_id = caja.conductor_id;
+      datos.usuario_id = req.user.id;
+    } else if (!datos.usuario_id) {
+      datos.usuario_id = caja.asignado_a;
     }
 
     // Verificar viaje si se especifica
@@ -209,7 +209,7 @@ const crear = async (req, res) => {
       include: [
         { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
         { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] }
+        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] }
       ]
     });
 
@@ -240,12 +240,12 @@ const actualizar = async (req, res) => {
       return notFound(res, 'Movimiento no encontrado');
     }
 
-    if (req.user.esConductor && movimiento.conductor_id !== req.user.id) {
+    if (req.user.esConductor && movimiento.usuario_id !== req.user.id) {
       try { await transaction.rollback(); } catch (_) {}
       return notFound(res, 'Movimiento no encontrado');
     }
 
-    // Conductor no puede editar movimientos ya aprobados
+    // Usuario asignado no puede editar movimientos ya aprobados
     if (req.user.esConductor && movimiento.aprobado) {
       try { await transaction.rollback(); } catch (_) {}
       return errorResponse(res, 'No puedes modificar un movimiento ya aprobado', 400);
@@ -344,9 +344,9 @@ const aprobar = async (req, res) => {
 
     await transaction.commit();
 
-    // Notificar al conductor
+    // Notificar al usuario
     notificacionService.notificar({
-      usuario_id: movimiento.conductor_id,
+      usuario_id: movimiento.usuario_id,
       titulo: aprobado ? 'Gasto aprobado' : 'Gasto rechazado',
       cuerpo: aprobado
         ? `Tu gasto #${movimiento.consecutivo} (${movimiento.concepto}) fue aprobado por $${Number(valor_aprobado || movimiento.valor).toLocaleString('es-CO')}`

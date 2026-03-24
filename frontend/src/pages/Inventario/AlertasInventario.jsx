@@ -88,15 +88,7 @@ const FILTER_OPTIONS = {
   ],
 };
 
-const checkPermission = (userRole, action) => {
-  const permissions = {
-    admin: ['ver', 'crear', 'editar', 'eliminar', 'atender'],
-    supervisor: ['ver', 'crear', 'editar', 'atender'],
-    operador: ['ver', 'atender'],
-    cliente: ['ver'],
-  };
-  return permissions[userRole]?.includes(action) || false;
-};
+// checkPermission ahora usa el sistema real de AuthContext (ver línea 242)
 
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTES INTERNOS
@@ -274,7 +266,7 @@ const AlertasInventario = () => {
   const [descartarModal, setDescartarModal] = useState({ isOpen: false, alerta: null });
   const [formLoading, setFormLoading] = useState(false);
 
-  const canAtender = checkPermission(user?.rol, 'atender');
+  const canAtender = authHasPermission ? authHasPermission('inventario', 'ajustar') : user?.rol === 'admin';
 
   const filteredAlertas = useMemo(() => {
     let result = [...alertas];

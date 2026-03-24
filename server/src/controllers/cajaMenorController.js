@@ -30,13 +30,13 @@ const listar = async (req, res) => {
       where.estado = req.query.estado;
     }
 
-    if (req.query.conductor_id) {
-      where.conductor_id = req.query.conductor_id;
+    if (req.query.asignado_a) {
+      where.asignado_a = req.query.asignado_a;
     }
 
-    // Conductor solo ve sus cajas
+    // Usuario solo ve sus cajas a menos que tenga permisos de caja_menor más allá de 'ver'
     if (req.user.esConductor) {
-      where.conductor_id = req.user.id;
+      where.asignado_a = req.user.id;
     }
 
     if (req.query.search) {
@@ -53,7 +53,7 @@ const listar = async (req, res) => {
       limit,
       offset,
       include: [
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
+        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] },
         { model: CajaMenor, as: 'cajaAnterior', attributes: ['id', 'numero'] }
       ]
@@ -73,7 +73,7 @@ const obtenerPorId = async (req, res) => {
   try {
     const caja = await CajaMenor.findByPk(req.params.id, {
       include: [
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
+        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] },
         { model: Usuario, as: 'cerrador', attributes: ['id', 'nombre_completo'] },
         { model: CajaMenor, as: 'cajaAnterior', attributes: ['id', 'numero', 'saldo_actual'] },
@@ -87,7 +87,7 @@ const obtenerPorId = async (req, res) => {
           model: MovimientoCajaMenor, as: 'movimientos',
           order: [['consecutivo', 'DESC']],
           include: [
-            { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+            { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
             { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
             { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] }
           ]
@@ -97,8 +97,8 @@ const obtenerPorId = async (req, res) => {
 
     if (!caja) return notFound(res, 'Caja menor no encontrada');
 
-    // Conductor solo ve sus cajas
-    if (req.user.esConductor && caja.conductor_id !== req.user.id) {
+    // Usuario solo ve sus cajas
+    if (req.user.esConductor && caja.asignado_a !== req.user.id) {
       return notFound(res, 'Caja menor no encontrada');
     }
 
@@ -117,11 +117,11 @@ const crear = async (req, res) => {
   try {
     const datos = limpiarObjeto(req.body);
 
-    // Verificar que el conductor existe
-    const conductor = await Usuario.findByPk(datos.conductor_id);
-    if (!conductor) {
+    // Verificar que el usuario asignado existe
+    const asignado = await Usuario.findByPk(datos.asignado_a);
+    if (!asignado) {
       try { await transaction.rollback(); } catch (_) {}
-      return notFound(res, 'Conductor no encontrado');
+      return notFound(res, 'Usuario asignado no encontrado');
     }
 
     // Generar número
@@ -150,14 +150,14 @@ const crear = async (req, res) => {
       datos_nuevos: datos,
       ip_address: getClientIP(req),
       user_agent: req.get('user-agent'),
-      descripcion: `Caja menor ${caja.numero} creada para ${conductor.nombre_completo}`
+      descripcion: `Caja menor ${caja.numero} creada para ${asignado.nombre_completo}`
     });
 
     await transaction.commit();
 
-    // Notificar al conductor
+    // Notificar al usuario asignado
     notificacionService.notificar({
-      usuario_id: datos.conductor_id,
+      usuario_id: datos.asignado_a,
       titulo: 'Nueva caja menor asignada',
       cuerpo: `Se te ha asignado la caja menor ${caja.numero} con saldo de $${Number(caja.saldo_actual).toLocaleString('es-CO')}`,
       tipo: 'sistema',
@@ -171,14 +171,14 @@ const crear = async (req, res) => {
       numero: caja.numero,
       saldo_inicial: caja.saldo_inicial,
       saldo_actual: caja.saldo_actual,
-      conductor_nombre: conductor.nombre_completo,
+      conductor_nombre: asignado.nombre_completo,
     }).catch(() => {});
 
     logger.info('Caja menor creada:', { id: caja.id, numero: caja.numero });
 
     const resultado = await CajaMenor.findByPk(caja.id, {
       include: [
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
+        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] }
       ]
     });
@@ -273,7 +273,7 @@ const cerrar = async (req, res) => {
       const consecutivo = await MovimientoCajaMenor.generarConsecutivo();
       await MovimientoCajaMenor.create({
         caja_menor_id: caja.id,
-        conductor_id: caja.conductor_id,
+        usuario_id: caja.asignado_a,
         tipo_movimiento: 'egreso',
         concepto: 'liquidacion',
         descripcion: `Liquidación de saldo al cerrar caja ${caja.numero}. Saldo entregado al conductor.`,
@@ -318,9 +318,9 @@ const cerrar = async (req, res) => {
 
     await transaction.commit();
 
-    // Notificar al conductor
+    // Notificar al usuario asignado
     notificacionService.notificar({
-      usuario_id: caja.conductor_id,
+      usuario_id: caja.asignado_a,
       titulo: 'Caja menor cerrada',
       cuerpo: `La caja ${caja.numero} ha sido cerrada. Saldo final: $${saldoFinal.toLocaleString('es-CO')}. ${accionDesc}`,
       tipo: 'sistema',
@@ -387,7 +387,7 @@ const estadisticas = async (req, res) => {
   try {
     const where = {};
     if (req.user.esConductor) {
-      where.conductor_id = req.user.id;
+      where.asignado_a = req.user.id;
     }
 
     const [abiertas, enRevision, cerradas, totalEgresos, totalIngresos] = await Promise.all([

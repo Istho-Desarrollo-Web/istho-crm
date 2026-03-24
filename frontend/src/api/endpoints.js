@@ -247,6 +247,11 @@ export const ADMIN_ENDPOINTS = {
   // Sesiones
   SESIONES: '/admin/sesiones',
   SESION_CERRAR: (id) => `/admin/sesiones/${id}/cerrar`,
+
+  // Configuración WMS
+  CONFIGURACION_WMS: '/admin/configuracion-wms',
+  CONFIGURACION_WMS_BY_ID: (id) => `/admin/configuracion-wms/${id}`,
+  CONFIGURACION_WMS_TOGGLE: (id) => `/admin/configuracion-wms/${id}/toggle`,
 };
 
 // ════════════════════════════════════════════════════════════════════════════

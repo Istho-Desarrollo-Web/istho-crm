@@ -399,7 +399,7 @@ const ViajeForm = () => {
                 <option value="">Sin caja menor</option>
                 {cajasMenores.map(c => (
                   <option key={c.id} value={c.id}>
-                    {c.numero} - {c.conductor?.nombre_completo || c.conductor?.username || ''}
+                    {c.numero} - {c.asignado?.nombre_completo || c.asignado?.username || ''}
                   </option>
                 ))}
               </select>

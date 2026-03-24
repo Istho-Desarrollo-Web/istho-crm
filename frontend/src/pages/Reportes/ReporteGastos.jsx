@@ -61,7 +61,7 @@ const ReporteGastos = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Reporte de Gastos</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Detalle de egresos e ingresos por conductor y concepto</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Detalle de egresos e ingresos por usuario y concepto</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => handleExport('excel')} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
@@ -113,7 +113,7 @@ const ReporteGastos = () => {
                   <th className="text-center py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Tipo</th>
                   <th className="text-right py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Valor</th>
                   <th className="text-center py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Estado</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Conductor</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Usuario</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Caja</th>
                 </tr>
               </thead>
@@ -135,7 +135,7 @@ const ReporteGastos = () => {
                         : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                       }`}>{m.aprobado ? 'Aprobado' : m.rechazado ? 'Rechazado' : 'Pendiente'}</span>
                     </td>
-                    <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{m.conductor}</td>
+                    <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{m.usuario}</td>
                     <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{m.caja_menor}</td>
                   </tr>
                 ))}

@@ -11,6 +11,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
+const configuracionWmsController = require('../controllers/configuracionWmsController');
 const { verificarToken } = require('../middleware/auth');
 const { requiereRol } = require('../middleware/roles');
 
@@ -54,5 +55,16 @@ router.get('/permisos', adminController.listarPermisos);
 
 router.get('/sesiones', adminController.listarSesionesActivas);
 router.post('/sesiones/:id/cerrar', adminController.cerrarSesion);
+
+// =============================================
+// CONFIGURACIÓN WMS
+// =============================================
+
+router.get('/configuracion-wms', configuracionWmsController.listar);
+router.get('/configuracion-wms/:id', configuracionWmsController.obtener);
+router.post('/configuracion-wms', configuracionWmsController.crear);
+router.put('/configuracion-wms/:id', configuracionWmsController.actualizar);
+router.delete('/configuracion-wms/:id', configuracionWmsController.eliminar);
+router.patch('/configuracion-wms/:id/toggle', configuracionWmsController.toggleActivo);
 
 module.exports = router;

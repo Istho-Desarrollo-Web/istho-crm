@@ -15,7 +15,8 @@ import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Wallet, User, DollarSign, FileText, ArrowLeftRight, Info } from 'lucide-react';
 import { Button, Modal } from '../../../components/common/index';
-import { cajasMenoresService, vehiculosService } from '../../../api/viajes.service';
+import { cajasMenoresService } from '../../../api/viajes.service';
+import adminService from '../../../api/admin.service';
 import useNotification from '../../../hooks/useNotification';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -77,7 +78,7 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
   const { success: notifySuccess, error: notifyError, apiError } = useNotification();
 
   const [formData, setFormData] = useState({
-    conductor_id: '',
+    asignado_a: '',
     saldo_inicial: '',
     caja_anterior_id: '',
     observaciones: '',
@@ -87,7 +88,7 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
   const [loadingData, setLoadingData] = useState(false);
 
   // Datos para selects
-  const [conductores, setConductores] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [cajasCerradas, setCajasCerradas] = useState([]);
 
   const isEditing = !!cajaId;
@@ -104,13 +105,14 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
 
     const fetchData = async () => {
       try {
-        const [conductoresRes, cajasRes] = await Promise.all([
-          vehiculosService.getConductores(),
+        const [usuariosRes, cajasRes] = await Promise.all([
+          adminService.getUsuarios({ estado: 'activo', limit: 200 }),
           cajasMenoresService.getAll({ estado: 'cerrada' }),
         ]);
 
-        if (conductoresRes.success || conductoresRes.data) {
-          setConductores(conductoresRes.data || []);
+        if (usuariosRes.success || usuariosRes.data) {
+          const usrs = usuariosRes.data?.rows || usuariosRes.data || [];
+          setUsuarios(usrs);
         }
         if (cajasRes.success || cajasRes.data) {
           setCajasCerradas(cajasRes.data || []);
@@ -127,7 +129,7 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
           if (response.success || response.data) {
             const caja = response.data;
             setFormData({
-              conductor_id: caja.conductor_id || '',
+              asignado_a: caja.asignado_a || '',
               saldo_inicial: caja.saldo_inicial || '',
               caja_anterior_id: caja.caja_anterior_id || '',
               observaciones: caja.observaciones || '',
@@ -139,7 +141,7 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
         }
       } else {
         setFormData({
-          conductor_id: '',
+          asignado_a: '',
           saldo_inicial: '',
           caja_anterior_id: '',
           observaciones: '',
@@ -189,8 +191,8 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.conductor_id) {
-      newErrors.conductor_id = 'El conductor es requerido';
+    if (!formData.asignado_a) {
+      newErrors.asignado_a = 'El usuario asignado es requerido';
     }
 
     if (!formData.saldo_inicial && formData.saldo_inicial !== 0) {
@@ -214,12 +216,12 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
     try {
       const payload = isEditing
         ? {
-            conductor_id: formData.conductor_id ? Number(formData.conductor_id) : null,
+            asignado_a: formData.asignado_a ? Number(formData.asignado_a) : null,
             saldo_inicial: parseFloat(formData.saldo_inicial) || 0,
             observaciones: formData.observaciones || null,
           }
         : {
-            conductor_id: formData.conductor_id ? Number(formData.conductor_id) : null,
+            asignado_a: formData.asignado_a ? Number(formData.asignado_a) : null,
             saldo_inicial: parseFloat(formData.saldo_inicial) || 0,
             caja_anterior_id: formData.caja_anterior_id ? Number(formData.caja_anterior_id) : null,
             observaciones: formData.observaciones || null,
@@ -292,24 +294,24 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Conductor */}
+          {/* Usuario Asignado */}
           <InputField
-            label="Conductor"
+            label="Usuario Asignado"
             icon={User}
             required
-            error={errors.conductor_id}
+            error={errors.asignado_a}
           >
             <select
-              name="conductor_id"
-              value={formData.conductor_id}
-              onChange={(e) => handleChange('conductor_id', e.target.value)}
-              className={baseInputClasses(true, errors.conductor_id)}
+              name="asignado_a"
+              value={formData.asignado_a}
+              onChange={(e) => handleChange('asignado_a', e.target.value)}
+              className={baseInputClasses(true, errors.asignado_a)}
               disabled={loadingData}
             >
-              <option value="">Seleccionar conductor...</option>
-              {conductores.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre_completo || `${c.nombre || ''} ${c.apellido || ''}`.trim() || c.username}
+              <option value="">Seleccionar usuario...</option>
+              {usuarios.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.nombre_completo || `${u.nombre || ''} ${u.apellido || ''}`.trim() || u.username}
                 </option>
               ))}
             </select>
@@ -352,7 +354,7 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
                   .filter((c) => parseFloat(c.saldo_actual) > 0)
                   .map((c) => (
                     <option key={c.id} value={c.id}>
-                      Caja #{c.numero || c.id} - {c.conductor_nombre || c.conductor?.nombre_completo || 'Sin conductor'} - {formatMoney(c.saldo_actual)}
+                      Caja #{c.numero || c.id} - {c.asignado_nombre || c.asignado?.nombre_completo || 'Sin asignar'} - {formatMoney(c.saldo_actual)}
                     </option>
                   ))}
               </select>
@@ -391,8 +393,8 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
                 </p>
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
                   De la caja #{cajaAnteriorSeleccionada.id}
-                  {cajaAnteriorSeleccionada.conductor_nombre
-                    ? ` (${cajaAnteriorSeleccionada.conductor_nombre})`
+                  {cajaAnteriorSeleccionada.asignado_nombre
+                    ? ` (${cajaAnteriorSeleccionada.asignado_nombre})`
                     : ''}
                 </p>
               </div>

@@ -114,6 +114,12 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
   const isEditing = !!movimientoId;
   const isConductor = user?.rol === 'conductor';
 
+  // Determinar si el usuario asignado a la caja seleccionada es conductor
+  const cajaSeleccionada = cajas.find((c) => String(c.id) === String(formData.caja_menor_id));
+  const asignadoEsConductor = cajaSeleccionada?.asignado?.rol?.nombre === 'conductor'
+    || cajaSeleccionada?.asignado?.Rol?.nombre === 'conductor'
+    || isConductor;
+
   const conceptosDisponibles = formData.tipo_movimiento === 'ingreso'
     ? CONCEPTOS_INGRESO
     : formData.tipo_movimiento === 'egreso'
@@ -143,7 +149,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
     const fetchCajas = async () => {
       try {
         const params = { estado: 'abierta' };
-        if (isConductor) params.conductor_id = user.id;
+        if (isConductor) params.asignado_a = user.id;
         const response = await cajasMenoresService.getAll(params);
         if (response.success) {
           setCajas(response.data?.rows || response.data || []);
@@ -432,23 +438,25 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                 </select>
               </InputField>
 
-              {/* Viaje (Opcional) */}
-              <InputField label="Viaje (Opcional)" icon={MapPin}>
-                <select
-                  name="viaje_id"
-                  value={formData.viaje_id}
-                  onChange={handleChange}
-                  disabled={!formData.caja_menor_id}
-                  className={inputClasses(true)}
-                >
-                  <option value="">Sin viaje asociado</option>
-                  {viajes.map((viaje) => (
-                    <option key={viaje.id} value={viaje.id}>
-                      {viaje.numero || `Viaje #${viaje.id}`}{viaje.destino ? ` - ${viaje.destino}` : ''}
-                    </option>
-                  ))}
-                </select>
-              </InputField>
+              {/* Viaje (Opcional) - solo visible si el asignado es conductor */}
+              {asignadoEsConductor && (
+                <InputField label="Viaje (Opcional)" icon={MapPin}>
+                  <select
+                    name="viaje_id"
+                    value={formData.viaje_id}
+                    onChange={handleChange}
+                    disabled={!formData.caja_menor_id}
+                    className={inputClasses(true)}
+                  >
+                    <option value="">Sin viaje asociado</option>
+                    {viajes.map((viaje) => (
+                      <option key={viaje.id} value={viaje.id}>
+                        {viaje.numero || `Viaje #${viaje.id}`}{viaje.destino ? ` - ${viaje.destino}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </InputField>
+              )}
 
               {/* Tipo de Movimiento */}
               <InputField label="Tipo de Movimiento" icon={ArrowUpDown} required>

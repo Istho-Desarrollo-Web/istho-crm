@@ -640,7 +640,7 @@ const MovimientosList = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Buscar por consecutivo, concepto o conductor..."
+                placeholder="Buscar por consecutivo, concepto o usuario..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
@@ -789,7 +789,7 @@ const MovimientosList = () => {
                       Caja Menor
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Conductor
+                      Usuario
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">
                       {/* Acciones */}
@@ -894,9 +894,9 @@ const MovimientosList = () => {
                         )}
                       </td>
 
-                      {/* Conductor */}
+                      {/* Usuario */}
                       <td className="py-4 px-4 text-sm text-slate-600 dark:text-slate-300">
-                        {mov.conductor?.nombre_completo || mov.conductor?.username || '-'}
+                        {mov.usuario?.nombre_completo || mov.usuario?.username || '-'}
                       </td>
 
                       {/* Acciones */}
@@ -970,9 +970,9 @@ const MovimientosList = () => {
                       <span className="text-slate-800 dark:text-slate-100 font-semibold font-mono">{formatMoney(mov.valor)}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Conductor</span>
+                      <span className="text-slate-500 dark:text-slate-400">Usuario</span>
                       <span className="text-slate-700 dark:text-slate-200 truncate max-w-[150px]">
-                        {mov.conductor?.nombre_completo || mov.conductor?.username || '-'}
+                        {mov.usuario?.nombre_completo || mov.usuario?.username || '-'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">

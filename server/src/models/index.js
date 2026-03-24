@@ -28,6 +28,7 @@ const RolModel = require('./Rol');
 const PermisoModel = require('./Permiso');
 const RolPermisoModel = require('./RolPermiso');
 const ReporteProgramadoModel = require('./ReporteProgramado');
+const ConfiguracionWmsModel = require('./ConfiguracionWms');
 const VehiculoModel = require('./Vehiculo');
 const CajaMenorModel = require('./CajaMenor');
 const ViajeModel = require('./Viaje');
@@ -52,6 +53,7 @@ const Rol = RolModel(sequelize);
 const Permiso = PermisoModel(sequelize);
 const RolPermiso = RolPermisoModel(sequelize);
 const ReporteProgramado = ReporteProgramadoModel(sequelize);
+const ConfiguracionWms = ConfiguracionWmsModel(sequelize);
 const Vehiculo = VehiculoModel(sequelize);
 const CajaMenor = CajaMenorModel(sequelize);
 const Viaje = ViajeModel(sequelize);
@@ -318,9 +320,9 @@ ReporteProgramado.belongsTo(Cliente, { foreignKey: 'cliente_id', as: 'cliente' }
 Vehiculo.belongsTo(Usuario, { foreignKey: 'conductor_id', as: 'conductor' });
 Usuario.hasMany(Vehiculo, { foreignKey: 'conductor_id', as: 'vehiculos' });
 
-// CajaMenor <-> Usuario (conductor)
-CajaMenor.belongsTo(Usuario, { foreignKey: 'conductor_id', as: 'conductor' });
-Usuario.hasMany(CajaMenor, { foreignKey: 'conductor_id', as: 'cajas_menores' });
+// CajaMenor <-> Usuario (asignado)
+CajaMenor.belongsTo(Usuario, { foreignKey: 'asignado_a', as: 'asignado' });
+Usuario.hasMany(CajaMenor, { foreignKey: 'asignado_a', as: 'cajas_menores' });
 
 // CajaMenor <-> Usuario (creador)
 CajaMenor.belongsTo(Usuario, { foreignKey: 'creado_por', as: 'creador' });
@@ -351,8 +353,8 @@ MovimientoCajaMenor.belongsTo(CajaMenor, { foreignKey: 'caja_menor_id', as: 'caj
 Viaje.hasMany(MovimientoCajaMenor, { foreignKey: 'viaje_id', as: 'gastos', onDelete: 'SET NULL' });
 MovimientoCajaMenor.belongsTo(Viaje, { foreignKey: 'viaje_id', as: 'viaje' });
 
-// MovimientoCajaMenor <-> Usuario (conductor que registró)
-MovimientoCajaMenor.belongsTo(Usuario, { foreignKey: 'conductor_id', as: 'conductor' });
+// MovimientoCajaMenor <-> Usuario (usuario que registró)
+MovimientoCajaMenor.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
 
 // MovimientoCajaMenor <-> Usuario (aprobado por)
 MovimientoCajaMenor.belongsTo(Usuario, { foreignKey: 'aprobado_por', as: 'aprobador' });
@@ -384,6 +386,7 @@ const db = {
   Permiso,
   RolPermiso,
   ReporteProgramado,
+  ConfiguracionWms,
   Vehiculo,
   CajaMenor,
   Viaje,

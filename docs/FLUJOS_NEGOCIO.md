@@ -1,8 +1,10 @@
 # Flujos de Negocio - ISTHO CRM
 
+> **Nota:** Para la especificación técnica completa con todos los campos, schemas request/response y reglas de validación, ver [WMS_API_SPEC.md](WMS_API_SPEC.md).
+
 ## 1. Sincronización WMS (Copérnico)
 
-El sistema WMS Copérnico envía datos a ISTHO CRM mediante una API REST autenticada con API Key.
+El sistema WMS Copérnico envía datos a ISTHO CRM mediante una API REST autenticada con API Key (`X-WMS-API-Key`).
 
 ### 1.1 Flujo de Sincronización de Productos
 
@@ -30,7 +32,7 @@ WMS Copérnico                              ISTHO CRM
 ### 1.2 Flujo de Entrada (CO - Recepción)
 
 ```
-WMS Copérnico                              ISTHO CRM
+WMS Centhrix                               ISTHO CRM
      │                                         │
      │  POST /wms/sync/entradas                │
      │  Body: { nit, documento_origen,         │
@@ -157,6 +159,15 @@ WMS Copérnico                              ISTHO CRM
 2. Cada movimiento registra: delta (+/-), motivo, usuario WMS
 3. Los contadores `lineas_procesadas` y `lineas_error` son reales (no estimados)
 4. La ubicación de reactivación es la zona de recepción configurada
+5. El SKU **debe existir** previamente en inventario (no se auto-crea). Líneas con SKU no encontrado se omiten
+
+**Reglas transversales (todas las operaciones):**
+1. **Descripción fallback:** Catálogo maestro > descripción enviada > SKU > "Producto S/D"
+2. **tipo_documento_wms** es fijo por tipo: CO (entradas), PK (salidas), CR (kardex)
+3. **Número de caja auto-generado:** Si no se envía `caja`, se genera `CJ-NNNNNN` (6 dígitos aleatorios)
+4. **Campos opcionales por línea:** `lote_externo`, `ubicacion`, `peso`, `pedido` (solo salidas)
+5. **Stock mínimo 0:** El stock nunca puede ser negativo (`Math.max(0, resultado)`)
+6. **alertas_silenciadas** se limpia a NULL en cada cambio de stock
 
 ---
 
@@ -569,3 +580,72 @@ El script `scripts/wms-test.js` simula un día típico de operaciones WMS:
 cd server
 node scripts/wms-test.js
 ```
+
+---
+
+## 9. Flujo de Caja Menor
+
+### 9.1 Modelo de datos
+
+- **CajaMenor.asignado_a** — FK a Usuario. Cualquier usuario activo del CRM puede ser asignado
+- **MovimientoCajaMenor.usuario_id** — FK a Usuario. Quien registra el movimiento
+- **MovimientoCajaMenor.viaje_id** — FK a Viaje. Solo aplica si el usuario asignado tiene rol `conductor`
+
+### 9.2 Flujo General
+
+```
+1. CREAR CAJA MENOR (Financiera/Admin/Supervisor)
+   └── Seleccionar usuario asignado (cualquier usuario activo)
+   └── Definir saldo inicial
+   └── Estado: "abierta"
+   └── Notificación al usuario asignado
+
+2. REGISTRAR MOVIMIENTOS (usuario asignado)
+   ├── Tipo: Egreso o Ingreso
+   ├── Concepto: lista predefinida (ACPM, Peajes, Alimentación, etc.)
+   ├── Valor
+   ├── Soporte: archivo adjunto (base64 en BD)
+   ├── Viaje: solo visible si asignado es conductor
+   └── Estado: pendiente (aprobado=false, rechazado=false)
+
+3. APROBAR/RECHAZAR (Financiera/Admin/Supervisor)
+   ├── Aprobar: valor_aprobado puede diferir del solicitado
+   ├── Rechazar: valor_aprobado=0, con observaciones
+   └── Saldo se recalcula con solo movimientos aprobados
+
+4. RECARGAR SALDO (Financiera)
+   └── Crear movimiento tipo "ingreso", concepto "recarga"
+
+5. CERRAR CAJA (Financiera/Admin/Supervisor)
+   ├── Opción A: "Guardar saldo" → saldo se traslada a próxima caja
+   └── Opción B: "Entregar al usuario" → egreso de liquidación, saldo=$0
+```
+
+### 9.3 Cálculo de Saldo
+
+```
+Saldo = Saldo Inicial + Saldo Trasladado + Σ Ingresos Aprobados - Σ Egresos Aprobados
+
+- Solo cuentan movimientos con aprobado=true
+- Se usa valor_aprobado (no el valor original)
+- Saldo trasladado viene de caja anterior (campo caja_anterior_id)
+```
+
+### 9.4 Permisos
+
+| Acción | Admin | Supervisor | Financiera | Conductor | Operador |
+|--------|-------|-----------|------------|-----------|----------|
+| Crear caja | ✅ | ✅ | ✅ | - | - |
+| Ver cajas | Todas | Todas | Todas | Solo suyas | Solo suyas |
+| Editar caja | ✅ | ✅ | ✅ | - | - |
+| Cerrar caja | ✅ | ✅ | ✅ | - | - |
+| Crear movimiento | ✅ | ✅ | ✅ | Solo en sus cajas | Solo en sus cajas |
+| Asociar viaje | ✅ | ✅ | ✅ | ✅ | - (no visible) |
+| Editar movimiento | ✅ | ✅ | ✅ | Solo pendientes | Solo pendientes |
+| Aprobar/Rechazar | ✅ | ✅ | ✅ | - | - |
+
+### 9.5 Conceptos de Movimiento
+
+**Egresos:** cuadre_de_caja, descargues, acpm, administracion, alimentacion, comisiones, desencarpe, encarpe, hospedaje, otros, seguros, repuestos, tecnicomecanica, peajes, ligas, parqueadero, urea, liquidacion
+
+**Ingresos:** ingreso_adicional, recarga, cuadre_de_caja, peajes_ingreso, ligas_ingresos, parqueadero_ingresos, urea_ingresos

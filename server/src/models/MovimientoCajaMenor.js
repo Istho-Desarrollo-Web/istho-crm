@@ -127,10 +127,10 @@ module.exports = (sequelize) => {
       comment: 'Nombre original del archivo de soporte'
     },
 
-    conductor_id: {
+    usuario_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      comment: 'Conductor que registró el movimiento'
+      comment: 'Usuario asociado al movimiento'
     }
   }, {
     tableName: 'movimientos_caja_menor',
@@ -144,7 +144,7 @@ module.exports = (sequelize) => {
       { fields: ['tipo_movimiento'] },
       { fields: ['concepto'] },
       { fields: ['aprobado'] },
-      { fields: ['conductor_id'] },
+      { fields: ['usuario_id'] },
       { fields: ['caja_menor_id', 'tipo_movimiento'] }
     ]
   });
