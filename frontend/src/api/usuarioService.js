@@ -214,11 +214,21 @@ const usuarioService = {
       const response = await apiClient.get(AUTH_ENDPOINTS.ME);
       if (response.success && response.data) {
         const user = response.data;
-        const permisos = user.permisos?.permisos || user.permisos || {};
+
+        // Admin tiene { esAdmin: true, modulos: ['*'], acciones: ['*'] } sin .permisos
+        // Para mostrar en el tab de permisos, usamos el fallback local
+        let permisos;
+        if (user.permisos?.esAdmin) {
+          permisos = PERMISOS_POR_ROL.admin || {};
+        } else {
+          permisos = user.permisos?.permisos || user.permisos || {};
+        }
+
         return {
           success: true,
           data: {
             rol: user.rol,
+            esAdmin: user.permisos?.esAdmin || false,
             permisos: permisos,
             permisosArray: Object.entries(permisos).flatMap(([modulo, acciones]) =>
               Array.isArray(acciones)
