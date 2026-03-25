@@ -76,9 +76,24 @@ server.listen(PORT, () => {
 // ══════════════════════════════════════════════════════════════════════════
 async function initializeDatabase() {
   try {
-    logger.info('Conectando a la base de datos...');
-    await db.sequelize.authenticate();
-    logger.info('✅ Conexión a MySQL establecida correctamente');
+    // Retry de conexión con backoff (MySQL puede tardar en arrancar)
+    const MAX_RETRIES = 10;
+    const BASE_DELAY = 3000; // 3 segundos
+    for (let intento = 1; intento <= MAX_RETRIES; intento++) {
+      try {
+        logger.info(`Conectando a la base de datos... (intento ${intento}/${MAX_RETRIES})`);
+        await db.sequelize.authenticate();
+        logger.info('✅ Conexión a MySQL establecida correctamente');
+        break;
+      } catch (connError) {
+        if (intento === MAX_RETRIES) {
+          throw connError;
+        }
+        const delay = BASE_DELAY * intento;
+        logger.warn(`⏳ MySQL no disponible, reintentando en ${delay / 1000}s...`);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
 
     // Sincronizar modelos
     logger.info('Sincronizando modelos...');
