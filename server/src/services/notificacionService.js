@@ -341,7 +341,7 @@ const notificarGastoPendiente = async (movimiento) => {
   return notificarFinancieros({
     tipo: 'sistema',
     titulo: `Nuevo gasto pendiente #${movimiento.consecutivo}`,
-    mensaje: `${movimiento.conductor_nombre || 'Un conductor'} registró un gasto de $${Number(movimiento.valor).toLocaleString('es-CO')} (${movimiento.concepto}). Requiere aprobación.`,
+    mensaje: `${movimiento.usuario_nombre || movimiento.conductor_nombre || 'Un usuario'} registró un gasto de $${Number(movimiento.valor).toLocaleString('es-CO')} (${movimiento.concepto}). Requiere aprobación.`,
     prioridad: 'alta',
     accion_url: '/viajes/movimientos',
     accion_label: 'Ver movimientos',
@@ -356,7 +356,7 @@ const notificarCajaMenorAbierta = async (caja) => {
   return notificarFinancieros({
     tipo: 'sistema',
     titulo: `Nueva caja menor: ${caja.numero}`,
-    mensaje: `Se abrió la caja menor ${caja.numero} para ${caja.conductor_nombre || 'un conductor'} con saldo de $${Number(caja.saldo_actual || caja.saldo_inicial || 0).toLocaleString('es-CO')}.`,
+    mensaje: `Se abrió la caja menor ${caja.numero} para ${caja.usuario_nombre || caja.conductor_nombre || 'un usuario'} con saldo de $${Number(caja.saldo_actual || caja.saldo_inicial || 0).toLocaleString('es-CO')}.`,
     prioridad: 'normal',
     accion_url: `/viajes/cajas-menores/${caja.id}`,
     accion_label: 'Ver caja',

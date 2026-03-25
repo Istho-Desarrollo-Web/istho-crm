@@ -201,7 +201,7 @@ const crear = async (req, res) => {
         concepto: movimiento.concepto,
         valor: movimiento.valor,
         caja_menor_id: movimiento.caja_menor_id,
-        conductor_nombre: req.user.nombre_completo,
+        usuario_nombre: req.user.nombre_completo,
       }).catch(() => {});
     }
 

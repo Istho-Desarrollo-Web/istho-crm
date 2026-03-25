@@ -64,6 +64,25 @@ const generarToken = (usuario) => {
 };
 
 /**
+ * Genera un refresh token con TTL más largo (7 días por defecto)
+ */
+const generarRefreshToken = (usuario) => {
+  return jwt.sign(
+    {
+      id: usuario.id,
+      tipo: 'refresh'
+    },
+    jwtConfig.secret,
+    {
+      expiresIn: jwtConfig.refreshExpiresIn,
+      issuer: jwtConfig.issuer,
+      audience: jwtConfig.audience,
+      algorithm: jwtConfig.algorithm
+    }
+  );
+};
+
+/**
  * Registrar acción en auditoría (helper interno)
  */
 const registrarAuditoria = async (data) => {
@@ -178,10 +197,14 @@ const login = async (req, res) => {
       }
     }
 
+    const refreshTokenJwt = generarRefreshToken(usuario);
+
     return successMessage(res, 'Inicio de sesión exitoso', {
       user: userData,
       token,
-      expiresIn: jwtConfig.expiresIn
+      refreshToken: refreshTokenJwt,
+      expiresIn: jwtConfig.expiresIn,
+      refreshExpiresIn: jwtConfig.refreshExpiresIn
     });
 
   } catch (error) {
@@ -495,21 +518,57 @@ const resetPassword = async (req, res) => {
 
 /**
  * POST /auth/refresh
- * Refrescar token
+ * Refrescar token usando refresh token (NO requiere verificarToken middleware)
+ * Acepta refreshToken en body o en header Authorization
  */
 const refreshToken = async (req, res) => {
   try {
-    const usuario = await Usuario.findByPk(req.user.id);
+    // Obtener refresh token del body o del header
+    const token = req.body.refreshToken
+      || (req.headers.authorization && req.headers.authorization.replace('Bearer ', ''));
 
-    if (!usuario || !usuario.activo) {
-      return unauthorized(res, 'Usuario no válido');
+    if (!token) {
+      return unauthorized(res, 'Refresh token no proporcionado');
     }
 
-    const token = generarToken(usuario);
+    // Verificar el refresh token manualmente (sin middleware)
+    let decoded;
+    try {
+      decoded = jwt.verify(token, jwtConfig.secret, {
+        issuer: jwtConfig.issuer,
+        audience: jwtConfig.audience,
+        algorithms: [jwtConfig.algorithm]
+      });
+    } catch (jwtError) {
+      if (jwtError.name === 'TokenExpiredError') {
+        return unauthorized(res, 'Refresh token expirado. Inicie sesión nuevamente.');
+      }
+      return unauthorized(res, 'Refresh token inválido');
+    }
 
-    logger.debug('Token refrescado:', { userId: usuario.id });
+    // Verificar que es un refresh token (no un access token)
+    if (decoded.tipo !== 'refresh') {
+      return unauthorized(res, 'Token proporcionado no es un refresh token');
+    }
 
-    return success(res, { token, expiresIn: jwtConfig.expiresIn });
+    // Buscar usuario
+    const usuario = await Usuario.findByPk(decoded.id);
+    if (!usuario || !usuario.activo) {
+      return unauthorized(res, 'Usuario no válido o desactivado');
+    }
+
+    // Generar nuevo access token + nuevo refresh token
+    const nuevoToken = generarToken(usuario);
+    const nuevoRefreshToken = generarRefreshToken(usuario);
+
+    logger.info('Token refrescado:', { userId: usuario.id });
+
+    return success(res, {
+      token: nuevoToken,
+      refreshToken: nuevoRefreshToken,
+      expiresIn: jwtConfig.expiresIn,
+      refreshExpiresIn: jwtConfig.refreshExpiresIn
+    });
 
   } catch (error) {
     logger.error('Error en refreshToken:', { message: error.message });

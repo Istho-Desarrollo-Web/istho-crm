@@ -98,7 +98,7 @@ const obtenerPorId = async (req, res) => {
         {
           model: MovimientoCajaMenor, as: 'gastos',
           include: [
-            { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+            { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
             { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] }
           ]
         }

@@ -57,12 +57,15 @@ server.listen(PORT, () => {
   console.log('╚══════════════════════════════════════════════════════════╝');
   console.log('\n');
 
+  const baseUrl = process.env.CORS_ORIGIN || `http://localhost:${PORT}`;
+  const apiPrefix = process.env.API_PREFIX || '/api/v1';
   logger.info(`🚀 Servidor HTTP iniciado`);
   logger.info(`   📍 Puerto: ${PORT}`);
-  logger.info(`   🌍 Ambiente: ${process.env.NODE_ENV}`);
-  logger.info(`   📡 API URL: http://localhost:${PORT}${process.env.API_PREFIX || '/api/v1'}`);
-  logger.info(`   🔌 WebSocket: ws://localhost:${PORT}`);
-  logger.info(`   ❤️  Health: http://localhost:${PORT}/health`);
+  logger.info(`   🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`   📡 API: ${baseUrl}${apiPrefix}`);
+  logger.info(`   🔌 WebSocket: ${baseUrl.replace('http', 'ws')}`);
+  logger.info(`   ❤️  Health: ${baseUrl}/health`);
+  logger.info(`   🌐 Frontend: ${process.env.CORS_ORIGIN || 'http://localhost:5173'}`);
 
   // Inicializar DB en background
   initializeDatabase();

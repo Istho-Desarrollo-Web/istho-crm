@@ -101,10 +101,10 @@ router.delete('/me/avatar', verificarToken, authController.eliminarAvatar);
 
 /**
  * @route   POST /auth/refresh
- * @desc    Refrescar token de acceso
- * @access  Privado
+ * @desc    Refrescar token usando refresh token (no requiere access token válido)
+ * @access  Público (requiere refresh token en body)
  */
-router.post('/refresh', verificarToken, authController.refreshToken);
+router.post('/refresh', authController.refreshToken);
 
 // =============================================
 // RUTAS DE ADMINISTRACIÓN

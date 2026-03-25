@@ -46,15 +46,15 @@ const authService = {
       const response = await apiClient.post(AUTH_ENDPOINTS.LOGIN, credentials);
 
       if (response.success) {
-        const { token, user } = response.data;
+        const { token, refreshToken, user } = response.data;
 
-        // Guardar token usando función del client.js
-        setAuthToken(token);
+        // Guardar tokens usando función del client.js
+        setAuthToken(token, refreshToken);
 
         // Guardar usuario en localStorage
         localStorage.setItem(USER_KEY, JSON.stringify(user));
 
-        console.log('✅ Login exitoso, token guardado');
+        console.log('✅ Login exitoso, tokens guardados');
 
         return {
           success: true,
@@ -256,11 +256,14 @@ const authService = {
    */
   refreshToken: async () => {
     try {
-      const response = await apiClient.post(AUTH_ENDPOINTS.REFRESH);
+      const currentRefresh = localStorage.getItem('istho_refresh_token');
+      const response = await apiClient.post(AUTH_ENDPOINTS.REFRESH, {
+        refreshToken: currentRefresh
+      });
 
       if (response.success) {
-        const { token } = response.data;
-        setAuthToken(token);
+        const { token, refreshToken: newRefresh } = response.data;
+        setAuthToken(token, newRefresh);
         return response;
       }
 
