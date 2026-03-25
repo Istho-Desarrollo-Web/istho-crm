@@ -36,7 +36,7 @@ import {
   LayoutGrid,
   LayoutList,
 } from 'lucide-react';
-import { Pagination, ConfirmDialog } from '../../components/common';
+import { Pagination, ConfirmDialog, Modal, Button } from '../../components/common';
 import CajaMenorForm from './components/CajaMenorForm';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -224,6 +224,8 @@ const CajaMenorList = () => {
   const [formModal, setFormModal] = useState({ isOpen: false, caja: null });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, caja: null });
   const [closeModal, setCloseModal] = useState({ isOpen: false, caja: null });
+  const [accionSobrante, setAccionSobrante] = useState('guardar');
+  const [observacionesCierre, setObservacionesCierre] = useState('');
   const [formLoading, setFormLoading] = useState(false);
   const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
 
@@ -311,12 +313,24 @@ const CajaMenorList = () => {
 
   const handleConfirmClose = async () => {
     setFormLoading(true);
+    const saldo = parseFloat(closeModal.caja?.saldo_actual) || 0;
     try {
-      await cajasMenoresService.cerrar(closeModal.caja.id, { accion_sobrante: 'guardar' });
-      success('Caja menor cerrada exitosamente');
+      await cajasMenoresService.cerrar(closeModal.caja.id, {
+        observaciones_cierre: observacionesCierre,
+        accion_sobrante: saldo > 0 ? accionSobrante : 'sin_saldo',
+      });
       setCloseModal({ isOpen: false, caja: null });
+      setObservacionesCierre('');
+      setAccionSobrante('guardar');
       fetchCajas(pagination.page);
       fetchStats();
+      success(
+        accionSobrante === 'entregar'
+          ? 'Caja cerrada. Saldo entregado al usuario asignado.'
+          : saldo > 0
+            ? 'Caja cerrada. Saldo guardado para la siguiente caja.'
+            : 'Caja menor cerrada exitosamente'
+      );
     } catch (err) {
       apiError(err);
     } finally {
@@ -657,16 +671,101 @@ const CajaMenorList = () => {
         loading={formLoading}
       />
 
-      <ConfirmDialog
+      <Modal
         isOpen={closeModal.isOpen}
-        onClose={() => setCloseModal({ isOpen: false, caja: null })}
-        onConfirm={handleConfirmClose}
+        onClose={() => { setCloseModal({ isOpen: false, caja: null }); setObservacionesCierre(''); setAccionSobrante('guardar'); }}
         title="Cerrar Caja Menor"
-        message={`¿Estás seguro de cerrar la caja menor "${closeModal.caja?.numero || ''}"? Una vez cerrada no se podrán registrar más gastos.`}
-        confirmText="Cerrar Caja"
-        type="warning"
-        loading={formLoading}
-      />
+        subtitle={`Caja ${closeModal.caja?.numero || ''}`}
+        size="md"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => { setCloseModal({ isOpen: false, caja: null }); setObservacionesCierre(''); setAccionSobrante('guardar'); }}>
+              Cancelar
+            </Button>
+            <Button variant="danger" icon={Lock} onClick={handleConfirmClose} loading={formLoading}>
+              Cerrar Caja
+            </Button>
+          </>
+        }
+      >
+        {(() => {
+          const saldo = parseFloat(closeModal.caja?.saldo_actual) || 0;
+          const formatMoney = (v) => `$ ${Number(v || 0).toLocaleString('es-CO')}`;
+          return (
+            <div className="space-y-4">
+              <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+                <p className="text-sm text-amber-700 dark:text-amber-400">
+                  <strong>Importante:</strong> Al cerrar la caja menor no se podrán registrar más movimientos ni viajes asociados.
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-500 dark:text-slate-400">Saldo Inicial</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{formatMoney(closeModal.caja?.saldo_inicial)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-500 dark:text-slate-400">Total Ingresos</span>
+                  <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">+{formatMoney(closeModal.caja?.total_ingresos)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-500 dark:text-slate-400">Total Egresos</span>
+                  <span className="text-sm font-medium text-red-600 dark:text-red-400">-{formatMoney(closeModal.caja?.total_egresos)}</span>
+                </div>
+                <div className="border-t border-slate-200 dark:border-slate-600 pt-2 flex justify-between items-center">
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Saldo Final</span>
+                  <span className={`text-xl font-bold ${saldo >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {formatMoney(saldo)}
+                  </span>
+                </div>
+              </div>
+
+              {saldo > 0 && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    ¿Qué hacer con el saldo restante?
+                  </label>
+                  <div className="space-y-2">
+                    <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                      accionSobrante === 'guardar'
+                        ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-700'
+                        : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
+                    }`}>
+                      <input type="radio" name="accion_sobrante_list" value="guardar" checked={accionSobrante === 'guardar'} onChange={() => setAccionSobrante('guardar')} className="mt-0.5 text-emerald-600 focus:ring-emerald-500" />
+                      <div>
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Guardar saldo para siguiente caja</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">El saldo de {formatMoney(saldo)} quedará disponible para trasladar</p>
+                      </div>
+                    </label>
+                    <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                      accionSobrante === 'entregar'
+                        ? 'border-red-400 bg-red-50 dark:bg-red-900/20 dark:border-red-700'
+                        : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
+                    }`}>
+                      <input type="radio" name="accion_sobrante_list" value="entregar" checked={accionSobrante === 'entregar'} onChange={() => setAccionSobrante('entregar')} className="mt-0.5 text-red-600 focus:ring-red-500" />
+                      <div>
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Entregar saldo al usuario asignado</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Se registrará un egreso de liquidación por {formatMoney(saldo)} y cerrará en $0</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Observaciones de cierre</label>
+                <textarea
+                  placeholder="Agregar notas sobre el cierre..."
+                  rows={3}
+                  value={observacionesCierre}
+                  onChange={(e) => setObservacionesCierre(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                />
+              </div>
+            </div>
+          );
+        })()}
+      </Modal>
     </div>
   );
 };
