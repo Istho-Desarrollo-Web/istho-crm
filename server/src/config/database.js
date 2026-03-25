@@ -1,15 +1,17 @@
 /**
  * ISTHO CRM - Configuración de Base de Datos
- * 
+ *
  * Este archivo configura la conexión a MySQL usando Sequelize ORM.
  * Soporta conexión local (XAMPP) y Railway (producción).
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Opciones comunes de Sequelize
 const commonOptions = {
@@ -20,32 +22,35 @@ const commonOptions = {
     ? (msg) => console.log(`[DB] ${msg}`)
     : false,
 
-  // Pool de conexiones (optimizado para Railway)
+  // Pool de conexiones (optimizado para Railway proxy que cierra conexiones idle)
   pool: {
     max: parseInt(process.env.DB_POOL_MAX) || 5,
-    min: parseInt(process.env.DB_POOL_MIN) || 1,
-    acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
-    idle: parseInt(process.env.DB_POOL_IDLE) || 5000,
-    evict: 3000,  // Verificar conexiones muertas cada 3s
-    validate: (connection) => {
-      // Validar que la conexión sigue viva antes de usarla
-      return connection && !connection._closing;
-    }
+    min: 0,              // No mantener conexiones idle (Railway las mata)
+    acquire: 30000,      // 30s para adquirir conexión
+    idle: 1000,          // Liberar conexiones idle después de 1s
+    evict: 1000,         // Verificar conexiones muertas cada 1s
   },
 
-  // Reintentar conexión automáticamente
+  // Reintentar queries fallidas automáticamente
   retry: {
     max: 3,
-    backoffBase: 1000,
-    backoffExponent: 1.5,
+    match: [
+      /PROTOCOL_CONNECTION_LOST/,
+      /Connection lost/,
+      /ECONNREFUSED/,
+      /ECONNRESET/,
+      /ETIMEDOUT/,
+      /SequelizeConnectionError/,
+      /SequelizeConnectionRefusedError/,
+    ],
   },
 
   // Timezone Colombia
   timezone: '-05:00',
 
-  // Opciones de dialecto
+  // Opciones de dialecto MySQL
   dialectOptions: {
-    // SSL solo si se usa URL pública (Railway interno no necesita SSL)
+    // SSL solo si explícitamente habilitado
     ...(process.env.DB_SSL === 'true' && {
       ssl: {
         require: true,
@@ -55,20 +60,22 @@ const commonOptions = {
     // Formato de fechas
     dateStrings: true,
     typeCast: true,
-    // Timeout de conexión más corto para detectar conexiones muertas rápido
+    // Timeouts para detectar conexiones muertas rápido
     connectTimeout: 10000,
+    // Keepalive para mantener la conexión viva a través del proxy de Railway
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 10000,  // Ping cada 10s
   },
 
-  // Definiciones globales
+  // Definiciones globales de modelos
   define: {
     timestamps: true,
-    underscored: true,  // snake_case en BD
+    underscored: true,  // camelCase → snake_case en BD
     freezeTableName: true
   }
 };
 
 // Railway provee MYSQL_URL automáticamente al vincular un servicio MySQL
-// Formato: mysql://user:password@host:port/database
 const sequelize = process.env.MYSQL_URL
   ? new Sequelize(process.env.MYSQL_URL, commonOptions)
   : new Sequelize(
@@ -90,8 +97,6 @@ const testConnection = async () => {
   try {
     await sequelize.authenticate();
     console.log('✅ Conexión a MySQL establecida correctamente.');
-    console.log(`   📍 Host: ${process.env.DB_HOST}:${process.env.DB_PORT}`);
-    console.log(`   📁 Base de datos: ${process.env.DB_NAME}`);
     return true;
   } catch (error) {
     console.error('❌ Error al conectar con MySQL:', error.message);

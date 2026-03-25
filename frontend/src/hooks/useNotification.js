@@ -89,29 +89,29 @@ const useNotification = () => {
   const error = useCallback((message, options = {}) => {
     return notify(message, {
       variant: 'error',
-      autoHideDuration: 5000,
+      autoHideDuration: 4000,
       ...options,
     });
   }, [notify]);
-  
+
   /**
    * Notificación de advertencia (amarillo/naranja)
    */
   const warning = useCallback((message, options = {}) => {
     return notify(message, {
       variant: 'warning',
-      autoHideDuration: 4000,
+      autoHideDuration: 3000,
       ...options,
     });
   }, [notify]);
-  
+
   /**
    * Notificación informativa (azul)
    */
   const info = useCallback((message, options = {}) => {
     return notify(message, {
       variant: 'info',
-      autoHideDuration: 3000,
+      autoHideDuration: 2500,
       ...options,
     });
   }, [notify]);
@@ -159,11 +159,11 @@ const useNotification = () => {
       });
     }
 
-    // Persistir errores 500
-    const shouldPersist = status === 500;
+    // Errores 500 duran más pero NO se persisten
+    const duration = status === 500 ? 6000 : 5000;
 
     return error(`✕ ${message}`, {
-      persist: shouldPersist,
+      autoHideDuration: duration,
     });
   }, [error, warning]);
   

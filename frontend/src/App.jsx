@@ -165,7 +165,7 @@ const ProtectedLayout = () => (
 // ════════════════════════════════════════════════════════════════════════════
 const snackbarConfig = {
   maxSnack: 3,
-  autoHideDuration: 4000,
+  autoHideDuration: 3000,
   anchorOrigin: {
     vertical: 'bottom',
     horizontal: 'center',
