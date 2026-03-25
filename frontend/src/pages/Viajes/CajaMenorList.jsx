@@ -312,7 +312,7 @@ const CajaMenorList = () => {
   const handleConfirmClose = async () => {
     setFormLoading(true);
     try {
-      await cajasMenoresService.close(closeModal.caja.id);
+      await cajasMenoresService.cerrar(closeModal.caja.id, { accion_sobrante: 'guardar' });
       success('Caja menor cerrada exitosamente');
       setCloseModal({ isOpen: false, caja: null });
       fetchCajas(pagination.page);
