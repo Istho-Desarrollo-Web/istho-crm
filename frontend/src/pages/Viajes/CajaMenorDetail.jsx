@@ -630,7 +630,12 @@ const CajaMenorDetail = () => {
           {/* Resumen de saldos */}
           <div className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-slate-500 dark:text-slate-400">Saldo Inicial</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                Saldo Inicial
+                {parseFloat(caja?.saldo_trasladado) > 0 && (
+                  <span className="text-xs text-amber-500 ml-1">(incluye heredado)</span>
+                )}
+              </span>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{formatCOP(caja?.saldo_inicial)}</span>
             </div>
             <div className="flex justify-between items-center">
