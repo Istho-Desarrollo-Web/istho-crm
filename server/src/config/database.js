@@ -20,12 +20,24 @@ const commonOptions = {
     ? (msg) => console.log(`[DB] ${msg}`)
     : false,
 
-  // Pool de conexiones
+  // Pool de conexiones (optimizado para Railway)
   pool: {
-    max: parseInt(process.env.DB_POOL_MAX) || 10,
-    min: parseInt(process.env.DB_POOL_MIN) || 0,
+    max: parseInt(process.env.DB_POOL_MAX) || 5,
+    min: parseInt(process.env.DB_POOL_MIN) || 1,
     acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
-    idle: parseInt(process.env.DB_POOL_IDLE) || 10000
+    idle: parseInt(process.env.DB_POOL_IDLE) || 5000,
+    evict: 3000,  // Verificar conexiones muertas cada 3s
+    validate: (connection) => {
+      // Validar que la conexión sigue viva antes de usarla
+      return connection && !connection._closing;
+    }
+  },
+
+  // Reintentar conexión automáticamente
+  retry: {
+    max: 3,
+    backoffBase: 1000,
+    backoffExponent: 1.5,
   },
 
   // Timezone Colombia
@@ -33,8 +45,8 @@ const commonOptions = {
 
   // Opciones de dialecto
   dialectOptions: {
-    // SSL para producción (Railway)
-    ...(process.env.NODE_ENV === 'production' && {
+    // SSL solo si se usa URL pública (Railway interno no necesita SSL)
+    ...(process.env.DB_SSL === 'true' && {
       ssl: {
         require: true,
         rejectUnauthorized: false
@@ -42,7 +54,9 @@ const commonOptions = {
     }),
     // Formato de fechas
     dateStrings: true,
-    typeCast: true
+    typeCast: true,
+    // Timeout de conexión más corto para detectar conexiones muertas rápido
+    connectTimeout: 10000,
   },
 
   // Definiciones globales
