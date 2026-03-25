@@ -401,6 +401,20 @@ const cambiarPassword = async (req, res) => {
       return errorResponse(res, 'La contraseña actual es incorrecta', 400);
     }
 
+    // Validar requisitos de contraseña
+    if (!password_nuevo || password_nuevo.length < 8) {
+      return errorResponse(res, 'La contraseña debe tener al menos 8 caracteres', 400);
+    }
+    if (!/[A-Z]/.test(password_nuevo)) {
+      return errorResponse(res, 'La contraseña debe contener al menos una mayúscula', 400);
+    }
+    if (!/[0-9]/.test(password_nuevo)) {
+      return errorResponse(res, 'La contraseña debe contener al menos un número', 400);
+    }
+    if (!/[^A-Za-z0-9]/.test(password_nuevo)) {
+      return errorResponse(res, 'La contraseña debe contener al menos un carácter especial', 400);
+    }
+
     usuario.password_hash = password_nuevo;
     usuario.requiere_cambio_password = false;
     usuario.changed('requiere_cambio_password', true);
@@ -487,6 +501,20 @@ const resetPassword = async (req, res) => {
 
     if (!usuario) {
       return errorResponse(res, 'Token inválido o expirado', 400, null, 'INVALID_TOKEN');
+    }
+
+    // Validar requisitos de contraseña
+    if (!password || password.length < 8) {
+      return errorResponse(res, 'La contraseña debe tener al menos 8 caracteres', 400);
+    }
+    if (!/[A-Z]/.test(password)) {
+      return errorResponse(res, 'La contraseña debe contener al menos una mayúscula', 400);
+    }
+    if (!/[0-9]/.test(password)) {
+      return errorResponse(res, 'La contraseña debe contener al menos un número', 400);
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+      return errorResponse(res, 'La contraseña debe contener al menos un carácter especial', 400);
     }
 
     usuario.password_hash = password;

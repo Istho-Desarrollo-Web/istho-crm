@@ -11,6 +11,10 @@ const { requierePermiso } = require('../middleware/roles');
 
 router.use(verificarToken);
 
+// Acciones especiales ANTES de :id genérico
+router.put('/:id/completar', requierePermiso('viajes', 'editar'), viajeController.completar);
+router.put('/:id/anular', requierePermiso('viajes', 'editar'), viajeController.anular);
+
 // CRUD
 router.get('/', requierePermiso('viajes', 'ver'), viajeController.listar);
 router.get('/:id', requierePermiso('viajes', 'ver'), viajeController.obtenerPorId);

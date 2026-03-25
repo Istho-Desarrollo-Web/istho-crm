@@ -62,8 +62,8 @@ const getPasswordStrength = (password) => {
     if (!password) return { score: 0, label: '', color: '' };
 
     let score = 0;
-    if (password.length >= 6) score++;
     if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
     if (/[A-Z]/.test(password)) score++;
     if (/[0-9]/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
@@ -121,8 +121,20 @@ const ResetPassword = () => {
             return;
         }
 
-        if (formData.password.length < 6) {
-            enqueueSnackbar('La contraseña debe tener al menos 6 caracteres', { variant: 'warning' });
+        if (formData.password.length < 8) {
+            enqueueSnackbar('La contraseña debe tener al menos 8 caracteres', { variant: 'warning' });
+            return;
+        }
+        if (!/[A-Z]/.test(formData.password)) {
+            enqueueSnackbar('La contraseña debe contener al menos una mayúscula', { variant: 'warning' });
+            return;
+        }
+        if (!/[0-9]/.test(formData.password)) {
+            enqueueSnackbar('La contraseña debe contener al menos un número', { variant: 'warning' });
+            return;
+        }
+        if (!/[^A-Za-z0-9]/.test(formData.password)) {
+            enqueueSnackbar('La contraseña debe contener al menos un carácter especial (!@#$%)', { variant: 'warning' });
             return;
         }
 

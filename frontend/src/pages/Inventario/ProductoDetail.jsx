@@ -38,6 +38,7 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   Lock,
+  MapPin,
 } from 'lucide-react';
 
 // Layout
@@ -681,6 +682,19 @@ const ProductoDetail = () => {
             )}
           </div>
         </div>
+
+        {/* Ubicación en bodega */}
+        {(producto.ubicacion || producto.zona) && (
+          <div className="flex items-center gap-3 mb-4 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+            <MapPin className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            <div>
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Ubicación en bodega: </span>
+              <span className="text-sm text-blue-600 dark:text-blue-400">
+                {[producto.ubicacion, producto.zona].filter(Boolean).join(' — ')}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

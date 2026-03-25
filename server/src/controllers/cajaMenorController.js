@@ -47,7 +47,10 @@ const listar = async (req, res) => {
       ];
     }
 
-    const { count, rows } = await CajaMenor.findAndCountAll({
+    // Count separado (sin JOINs, más rápido)
+    const count = await CajaMenor.count({ where });
+
+    const rows = await CajaMenor.findAll({
       where,
       order,
       limit,
@@ -325,10 +328,10 @@ const cerrar = async (req, res) => {
     notificacionService.notificar({
       usuario_id: caja.asignado_a,
       titulo: 'Caja menor cerrada',
-      cuerpo: `La caja ${caja.numero} ha sido cerrada. Saldo final: $${saldoFinal.toLocaleString('es-CO')}. ${accionDesc}`,
+      mensaje: `La caja ${caja.numero} ha sido cerrada. Saldo final: $${saldoFinal.toLocaleString('es-CO')}. ${accionDesc}`,
       tipo: 'sistema',
       prioridad: 'alta',
-      datos: { caja_menor_id: caja.id }
+      metadata: { caja_menor_id: caja.id }
     }).catch(() => {});
 
     logger.info('Caja menor cerrada:', { id: caja.id, numero: caja.numero, saldo: saldoFinal, accion_sobrante });

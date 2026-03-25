@@ -110,14 +110,11 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
           cajasMenoresService.getAll({ estado: 'cerrada' }),
         ]);
 
-        if (usuariosRes.success || usuariosRes.data) {
-          const usrs = usuariosRes.data?.rows || usuariosRes.data || [];
-          setUsuarios(usrs);
-        }
-        if (cajasRes.success || cajasRes.data) {
-          const cajas = Array.isArray(cajasRes.data) ? cajasRes.data : cajasRes.data?.rows || [];
-          setCajasCerradas(cajas);
-        }
+        const usrs = usuariosRes?.data?.rows || usuariosRes?.data || [];
+        setUsuarios(Array.isArray(usrs) ? usrs : []);
+
+        const cajas = cajasRes?.data?.rows || cajasRes?.data || [];
+        setCajasCerradas(Array.isArray(cajas) ? cajas : []);
       } catch (err) {
         console.error('Error cargando datos:', err);
         notifyError('No se pudieron cargar los datos del formulario');

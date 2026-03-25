@@ -387,6 +387,21 @@ const auditoriasService = {
     }
   },
 
+  /**
+   * Eliminar una avería
+   */
+  eliminarAveria: async (operacionId, averiaId) => {
+    try {
+      const response = await apiClient.delete(`/operaciones/${operacionId}/averias/${averiaId}`);
+      return response;
+    } catch (error) {
+      throw {
+        success: false,
+        message: error.message || 'Error al eliminar avería',
+      };
+    }
+  },
+
   // ══════════════════════════════════════════════════════════════════════════
   // CIERRE
   // ══════════════════════════════════════════════════════════════════════════

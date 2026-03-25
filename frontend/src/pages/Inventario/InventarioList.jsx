@@ -671,6 +671,9 @@ const InventarioList = () => {
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Stock
                     </th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell">
+                      Ubicación
+                    </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Estado
                     </th>
@@ -718,6 +721,9 @@ const InventarioList = () => {
                             actual={stockActual}
                             minimo={stockMinimo}
                           />
+                        </td>
+                        <td className="py-4 px-4 text-sm text-slate-600 dark:text-slate-300 hidden lg:table-cell">
+                          {producto.ubicacion || producto.zona || '-'}
                         </td>
                         <td className="py-4 px-4 text-center">
                           <StatusChip status={producto.estado} />

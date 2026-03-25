@@ -537,7 +537,7 @@ const EntradaAuditoria = () => {
 
   // Averías
   const [averias, setAverias] = useState([]);
-  const [averiaForm, setAveriaForm] = useState({ detalle_id: '', tipo_averia: '', descripcion_custom: '' });
+  const [averiaForm, setAveriaForm] = useState({ detalle_id: '', tipo_averia: '', descripcion_custom: '', cantidad_afectada: '' });
   const [savingAveria, setSavingAveria] = useState(false);
 
   // Control de guardado intermedio
@@ -735,7 +735,7 @@ const EntradaAuditoria = () => {
   ];
 
   const handleRegistrarAveria = async () => {
-    const { detalle_id, tipo_averia, descripcion_custom } = averiaForm;
+    const { detalle_id, tipo_averia, descripcion_custom, cantidad_afectada } = averiaForm;
     if (!detalle_id || !tipo_averia) {
       showAlert({ type: 'warning', title: 'Campos requeridos', message: 'Seleccione el producto y el tipo de avería.' });
       return;
@@ -756,10 +756,11 @@ const EntradaAuditoria = () => {
         sku: linea?.sku || '',
         cantidad: 1,
         tipo_averia: tipoFinal,
+        cantidad_afectada: cantidad_afectada ? parseInt(cantidad_afectada) : null,
       });
       if (res?.success) {
         setAverias(prev => [res.data, ...prev]);
-        setAveriaForm({ detalle_id: '', tipo_averia: '', descripcion_custom: '' });
+        setAveriaForm({ detalle_id: '', tipo_averia: '', descripcion_custom: '', cantidad_afectada: '' });
         showAlert({ type: 'success', title: 'Avería registrada', message: 'La avería fue registrada correctamente.' });
         if (estado === 'pendiente') setEstado('en_proceso');
       }
@@ -767,6 +768,18 @@ const EntradaAuditoria = () => {
       showAlert({ type: 'error', title: 'Error', message: err.message || 'No se pudo registrar la avería.' });
     } finally {
       setSavingAveria(false);
+    }
+  };
+
+  const handleEliminarAveria = async (averiaId) => {
+    try {
+      const res = await auditoriasService.eliminarAveria(id, averiaId);
+      if (res?.success) {
+        setAverias(prev => prev.filter(a => a.id !== averiaId));
+        showAlert({ type: 'success', title: 'Avería eliminada', message: 'La avería fue eliminada correctamente.' });
+      }
+    } catch (err) {
+      showAlert({ type: 'error', title: 'Error', message: err.message || 'No se pudo eliminar la avería.' });
     }
   };
 
@@ -1286,6 +1299,26 @@ const EntradaAuditoria = () => {
                   </div>
                 )}
 
+                {/* Cantidad afectada (opcional) */}
+                {averiaForm.tipo_averia && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <Package className="w-3.5 h-3.5 text-amber-500" />
+                        Unidades afectadas <span className="text-slate-400 text-xs">(opcional)</span>
+                      </div>
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={averiaForm.cantidad_afectada}
+                      onChange={(e) => setAveriaForm(prev => ({ ...prev, cantidad_afectada: e.target.value }))}
+                      placeholder="Ej: 5"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all hover:border-amber-400 dark:hover:border-amber-500/50"
+                    />
+                  </div>
+                )}
+
                 <button
                   onClick={handleRegistrarAveria}
                   disabled={savingAveria || !averiaForm.detalle_id || !averiaForm.tipo_averia}
@@ -1312,11 +1345,21 @@ const EntradaAuditoria = () => {
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {av.tipo_averia}{av.descripcion ? ` — ${av.descripcion}` : ''}
+                          {av.cantidad_afectada ? ` (${av.cantidad_afectada} uds afectadas)` : ''}
                         </p>
                       </div>
                       <span className="text-xs text-slate-400 flex-shrink-0">
                         Cant: {av.cantidad}
                       </span>
+                      {!isCerrado && (
+                        <button
+                          onClick={() => handleEliminarAveria(av.id)}
+                          className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
+                          title="Eliminar avería"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   );
                 })}

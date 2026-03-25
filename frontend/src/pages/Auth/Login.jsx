@@ -74,13 +74,24 @@ const features = [
 const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { login, isAuthenticated, isLoading: authLoading, error: authError, clearError } = useAuth();
+    const { login, isAuthenticated, isLoading: authLoading, error: authError, clearError, user } = useAuth();
 
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Obtener la ruta de origen (si viene de una redirección)
-    const from = location.state?.from || '/dashboard';
+    const getDefaultRoute = (rol) => {
+        switch (rol) {
+            case 'admin': return '/dashboard';
+            case 'supervisor': return '/dashboard';
+            case 'financiera': return '/dashboard';
+            case 'conductor': return '/dashboard';
+            case 'operador': return '/dashboard';
+            case 'cliente': return '/dashboard';
+            default: return '/dashboard';
+        }
+    };
+    const from = location.state?.from || null;
 
     // React Hook Form
     const {
@@ -103,9 +114,10 @@ const LoginPage = () => {
     // Redirigir si ya está autenticado
     useEffect(() => {
         if (isAuthenticated && !authLoading) {
-            navigate(from, { replace: true });
+            const destino = from || getDefaultRoute(user?.rol);
+            navigate(destino, { replace: true });
         }
-    }, [isAuthenticated, authLoading, navigate, from]);
+    }, [isAuthenticated, authLoading, navigate, from, user]);
 
     // Focus en email al montar
     useEffect(() => {
@@ -128,8 +140,9 @@ const LoginPage = () => {
             const result = await login(data.email, data.password);
 
             if (result.success) {
-                // Redirigir a la página original o dashboard
-                navigate(from, { replace: true });
+                // Redirigir a la página original o dashboard del rol
+                const destino = from || getDefaultRoute(result.data?.user?.rol);
+                navigate(destino, { replace: true });
             }
         } catch (error) {
             console.error('Error en login:', error);

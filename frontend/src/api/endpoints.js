@@ -293,6 +293,8 @@ export const CAJAS_MENORES_ENDPOINTS = {
 export const VIAJES_ENDPOINTS = {
   BASE: '/viajes',
   BY_ID: (id) => `/viajes/${id}`,
+  COMPLETAR: (id) => `/viajes/${id}/completar`,
+  ANULAR: (id) => `/viajes/${id}/anular`,
 };
 
 // ════════════════════════════════════════════════════════════════════════════

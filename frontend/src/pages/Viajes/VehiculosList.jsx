@@ -737,9 +737,12 @@ const VehiculosList = () => {
       <VehiculoForm
         open={formModal.isOpen}
         onClose={() => setFormModal({ isOpen: false, vehiculo: null })}
-        onSuccess={() => {
+        onSuccess={async () => {
           setFormModal({ isOpen: false, vehiculo: null });
+          // Pequeño delay para asegurar que la BD procesó el cambio
+          await new Promise(r => setTimeout(r, 300));
           fetchVehiculos(pagination.page);
+          fetchStats?.();
         }}
         vehiculoId={formModal.vehiculo?.id}
         readOnly={user?.rol === 'conductor'}

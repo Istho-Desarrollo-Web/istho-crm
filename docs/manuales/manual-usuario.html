@@ -621,7 +621,6 @@
       <ul>
         <li>Es su primer inicio de sesion con una contrasena temporal.</li>
         <li>El administrador ha marcado su cuenta para cambio obligatorio.</li>
-        <li>Su contrasena ha expirado segun la politica de seguridad.</li>
       </ul>
       <ol class="steps">
         <li>Al iniciar sesion, se mostrara automaticamente el dialogo de cambio de contrasena.</li>
@@ -783,11 +782,11 @@
 
       <h3>4.1 Listado de Productos</h3>
       <ol class="steps">
-        <li>Navegue a <strong>Inventario</strong> en el menu lateral.</li>
-        <li>Se desplegara la tabla de productos con columnas: Codigo, Nombre, Cliente, Stock, Ubicacion y Estado.</li>
-        <li>Utilice la <strong>barra de busqueda</strong> para filtrar por codigo o nombre del producto.</li>
-        <li>Aplique filtros por <strong>cliente</strong>, <strong>categoria</strong> o <strong>estado</strong> usando los selectores superiores.</li>
-        <li>La columna de stock muestra indicadores de color: verde (suficiente), amarillo (bajo), rojo (critico).</li>
+        <li>Navegue a <strong>Inventario &gt; Maestro de Productos</strong> en el menu.</li>
+        <li>Se desplegara la tabla de productos con columnas: Producto (nombre + SKU), Cliente, Stock, Ubicacion, Estado y Valor.</li>
+        <li>Utilice la <strong>barra de busqueda</strong> para filtrar por nombre, SKU o cliente.</li>
+        <li>Aplique filtros por <strong>cliente</strong> o <strong>estado</strong> usando los selectores superiores.</li>
+        <li>La columna de stock muestra indicadores de color: verde (suficiente), amarillo (bajo), rojo (agotado).</li>
       </ol>
       <div class="screenshot-placeholder">Insertar captura: Listado de productos en inventario</div>
 
@@ -796,9 +795,11 @@
       <h3>4.2 Detalle del Producto</h3>
       <ol class="steps">
         <li>Haga clic en cualquier producto de la lista para ver su detalle completo.</li>
-        <li>Consulte el <strong>kardex</strong>: historial de movimientos de entrada y salida con fechas y cantidades.</li>
-        <li>Vea la <strong>ubicacion fisica</strong> en bodega (pasillo, estante, nivel).</li>
-        <li>Revise las <strong>cajas de inventario</strong> asociadas con sus respectivos estados.</li>
+        <li>El detalle se organiza en 4 pestanas: <strong>Info</strong>, <strong>Cajas</strong>, <strong>Movimientos</strong> y <strong>Estadisticas</strong>.</li>
+        <li>En <strong>Info</strong>: datos basicos del producto, ubicacion en bodega y zona.</li>
+        <li>En <strong>Movimientos</strong>: historial completo de entradas, salidas y ajustes con fechas y cantidades.</li>
+        <li>En <strong>Cajas</strong>: cajas de inventario asociadas con lote, ubicacion y estado.</li>
+        <li>En <strong>Estadisticas</strong>: graficos de movimientos mensuales y tendencias de stock.</li>
       </ol>
       <div class="screenshot-placeholder">Insertar captura: Detalle de producto con kardex y ubicacion</div>
 
@@ -807,20 +808,21 @@
       <h3>4.3 Alertas de Inventario</h3>
       <p>El sistema genera alertas automaticas para mantener el inventario bajo control:</p>
       <ul>
-        <li><strong>Stock bajo:</strong> Cuando un producto esta por debajo del minimo configurado.</li>
-        <li><strong>Stock critico:</strong> Cuando el producto esta a punto de agotarse.</li>
-        <li><strong>Productos sin movimiento:</strong> Productos que no han tenido entradas ni salidas en mas de 30 dias.</li>
+        <li><strong>Agotado (prioridad alta):</strong> Cuando el stock de un producto llega a 0 unidades.</li>
+        <li><strong>Stock bajo (prioridad media):</strong> Cuando un producto esta por debajo del minimo configurado.</li>
+        <li><strong>Por vencer (prioridad baja):</strong> Cuando un producto tiene fecha de vencimiento proxima.</li>
       </ul>
       <ol class="steps">
-        <li>Acceda a la seccion de <strong>Alertas</strong> dentro del modulo de Inventario.</li>
-        <li>Las alertas se presentan con prioridad: criticas primero, luego bajas.</li>
+        <li>Acceda a <strong>Inventario &gt; Alertas</strong> en el menu.</li>
+        <li>Las alertas se ordenan por prioridad: agotados primero, luego stock bajo, luego por vencer.</li>
+        <li>Cada alerta muestra acciones: <strong>Atender</strong>, <strong>Descartar</strong> o <strong>Silenciar</strong>.</li>
         <li>Haga clic en una alerta para navegar directamente al producto afectado.</li>
       </ol>
       <div class="screenshot-placeholder">Insertar captura: Pagina de alertas de inventario</div>
 
       <div class="info-box green">
         <strong>Sincronizacion WMS:</strong> El inventario se sincroniza automaticamente con el sistema
-        Copernico (WMS) para mantener las existencias actualizadas en tiempo real.
+        CenthriX (WMS) para mantener las existencias actualizadas en tiempo real.
       </div>
     </div>
 
@@ -837,56 +839,59 @@
       </div>
       <p>
         El modulo de Auditoria WMS permite verificar y auditar las operaciones sincronizadas desde
-        el sistema Copernico: entradas (CO), salidas (PK) y movimientos de kardex (CR).
+        el sistema CenthriX: entradas (CO), salidas (PK) y movimientos de kardex (CR).
       </p>
 
-      <h3>5.1 Entradas CO (Compras / Recepciones)</h3>
+      <h3>5.1 Entradas (Recepciones)</h3>
       <ol class="steps">
-        <li>Navegue a <strong>Auditoria WMS &gt; Entradas CO</strong> en el menu lateral.</li>
-        <li>Se mostrara la lista de documentos de entrada con: Numero, Fecha, Proveedor, Estado de Auditoria.</li>
-        <li>Filtre por <strong>fecha</strong>, <strong>estado</strong> (pendiente, en proceso, auditado) o <strong>proveedor</strong>.</li>
-        <li>Haga clic en un documento para abrirlo y ver las lineas de detalle.</li>
-        <li>Verifique cada linea comparando la <strong>cantidad esperada</strong> vs. la <strong>cantidad recibida</strong>.</li>
-        <li>Si detecta diferencias, haga clic en <strong>"Reportar Novedad"</strong> e ingrese el motivo y la cantidad afectada.</li>
-        <li>Una vez verificadas todas las lineas, haga clic en <strong>"Cerrar Auditoria"</strong>.</li>
+        <li>Navegue a <strong>Inventario &gt; Entradas</strong> en el menu.</li>
+        <li>Se mostrara la lista de documentos de entrada con: Documento, Cliente, Tipo Doc., Fecha Ingreso, Lineas (barra de progreso) y Estado.</li>
+        <li>Filtre por <strong>estado</strong> usando las pestanas (Todos, Pendiente, En Proceso, Cerrado) o use la barra de busqueda.</li>
+        <li>Haga clic en un documento para abrirlo y ver el detalle completo.</li>
+        <li>El detalle se organiza en secciones: <strong>Documento</strong>, <strong>Lineas</strong>, <strong>Evidencias</strong>, <strong>Datos Logisticos</strong> y <strong>Averias</strong>.</li>
+        <li>Verifique cada linea comparando la <strong>cantidad esperada</strong> vs. la <strong>cantidad recibida</strong>. Haga clic en cada linea para marcarla como verificada.</li>
+        <li>Si detecta diferencias, use el boton <strong>"Registrar Averia"</strong> seleccionando el tipo (Rotura, Faltante, Mojado, Otra) y una descripcion.</li>
+        <li>Suba evidencias fotograficas en la seccion de <strong>Evidencias</strong>.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Lista de auditorias de entrada CO</div>
-      <div class="screenshot-placeholder">Insertar captura: Detalle de auditoria con lineas de productos</div>
+      <div class="screenshot-placeholder">Insertar captura: Lista de auditorias de entrada</div>
+      <div class="screenshot-placeholder">Insertar captura: Detalle de auditoria con lineas y averias</div>
 
       <hr class="sub-divider">
 
-      <h3>5.2 Salidas PK (Picking / Despachos)</h3>
+      <h3>5.2 Salidas (Picking / Despachos)</h3>
       <ol class="steps">
-        <li>Navegue a <strong>Auditoria WMS &gt; Salidas PK</strong>.</li>
-        <li>Revise la lista de documentos de salida pendientes de auditoria.</li>
+        <li>Navegue a <strong>Inventario &gt; Salidas</strong>.</li>
+        <li>Revise la lista de documentos de salida con la misma estructura que entradas.</li>
         <li>Abra un documento para verificar las lineas de picking.</li>
-        <li>Compare las cantidades despachadas contra las solicitadas.</li>
-        <li>Si hay productos danados, use el formulario de <strong>"Registrar Dano"</strong> con descripcion y evidencia.</li>
-        <li>Confirme cada linea verificada y cierre la auditoria cuando termine.</li>
+        <li>Compare las cantidades despachadas contra las solicitadas y marque cada linea como verificada.</li>
+        <li>Si hay productos danados, use <strong>"Registrar Averia"</strong> con tipo, descripcion y evidencia fotografica.</li>
+        <li>Complete los datos de despacho: numero de picking, sucursal de entrega y ciudad destino.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Formulario de reporte de dano en salida PK</div>
+      <div class="screenshot-placeholder">Insertar captura: Detalle de auditoria de salida con datos de despacho</div>
 
       <hr class="sub-divider">
 
-      <h3>5.3 Kardex CR (Cruces / Movimientos)</h3>
+      <h3>5.3 Kardex (Ajustes de Inventario)</h3>
       <ol class="steps">
-        <li>Navegue a <strong>Auditoria WMS &gt; Kardex CR</strong>.</li>
-        <li>Visualice los movimientos cruzados que requieren verificacion.</li>
-        <li>Cada registro muestra producto, cantidad, tipo de movimiento y bodega.</li>
-        <li>Verifique la consistencia de los movimientos y cierre la auditoria.</li>
+        <li>Navegue a <strong>Inventario &gt; Kardex</strong>.</li>
+        <li>Visualice los movimientos de ajuste sincronizados desde el WMS.</li>
+        <li>Cada registro muestra producto, cantidad, motivo del ajuste y datos logisticos.</li>
+        <li>El flujo de verificacion es identico al de entradas y salidas: verificar lineas, registrar averias si aplica, y cerrar.</li>
       </ol>
 
       <hr class="sub-divider">
 
       <h3>5.4 Cerrar Auditoria</h3>
+      <p>El flujo de cierre es comun para los tres tipos de auditoria (Entradas, Salidas, Kardex):</p>
       <ol class="steps">
-        <li>Dentro del detalle de cualquier auditoria, haga clic en el boton <strong>"Cerrar Auditoria"</strong>.</li>
-        <li>Se abrira un dialogo de confirmacion mostrando el resumen: lineas verificadas, novedades encontradas.</li>
-        <li>Agregue <strong>observaciones generales</strong> si es necesario.</li>
-        <li>Confirme haciendo clic en <strong>"Cerrar y Finalizar"</strong>.</li>
-        <li>La auditoria quedara con estado "Cerrada" y no podra ser modificada.</li>
+        <li>Dentro del detalle, el stepper visual muestra el progreso: <strong>Pendiente → En Proceso → Cerrado</strong>.</li>
+        <li>Una vez verificadas las lineas, haga clic en el boton <strong>"Cerrar Auditoria"</strong>.</li>
+        <li>Se abrira un dialogo donde puede seleccionar una <strong>plantilla de email</strong> para notificar al cliente.</li>
+        <li>Confirme haciendo clic en <strong>"Si, cerrar ahora"</strong>.</li>
+        <li>La auditoria quedara con estado "Cerrada" y se enviara un correo electronico al cliente automaticamente.</li>
+        <li>Una vez cerrada, la auditoria no puede reabrirse ni modificarse.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Dialogo de cierre de auditoria</div>
+      <div class="screenshot-placeholder">Insertar captura: Dialogo de cierre con seleccion de plantilla de email</div>
 
       <div class="info-box red">
         <strong>Importante:</strong> Una vez cerrada una auditoria, no puede reabrirse. Asegurese de haber
@@ -928,9 +933,9 @@
         <li>Haga clic en <strong>"Nuevo Vehiculo"</strong> para crear un registro.</li>
         <li>Complete los datos del vehiculo: <strong>Placa</strong>, <strong>Marca</strong>, <strong>Modelo</strong>, <strong>Ano</strong>, <strong>Tipo</strong>, <strong>Color</strong>.</li>
         <li>Ingrese datos tecnicos: <strong>Numero de Motor</strong>, <strong>Numero de Chasis</strong>, <strong>Capacidad de Carga (kg)</strong>.</li>
-        <li>En la seccion de documentacion, registre las fechas de vencimiento de: <strong>SOAT</strong>, <strong>Tecnomecanica</strong>, <strong>Tarjeta de Operacion</strong>, <strong>Poliza</strong>.</li>
+        <li>En la seccion de documentacion, registre las fechas de vencimiento de: <strong>SOAT</strong>, <strong>Tecnomecanica</strong> y <strong>Poliza de Responsabilidad</strong>.</li>
         <li>Asigne un <strong>conductor</strong> seleccionandolo del listado desplegable.</li>
-        <li>Opcionalmente suba la foto del vehiculo (se almacena como imagen en base64).</li>
+        <li>Agregue observaciones si es necesario.</li>
         <li>Haga clic en <strong>"Guardar"</strong> para registrar el vehiculo.</li>
       </ol>
       <div class="screenshot-placeholder">Insertar captura: Formulario de creacion/edicion de vehiculo</div>
@@ -1287,35 +1292,36 @@
         que se utilizan en las auditorias y operaciones de inventario.
       </p>
 
-      <h3>11.1 Motivos de Novedad</h3>
-      <p>Los motivos de novedad se usan al reportar diferencias en las auditorias WMS:</p>
+      <h3>11.1 Motivos de Kardex Permitidos</h3>
+      <p>Solo los kardex con estos motivos seran procesados por el CRM cuando el WMS los envie:</p>
       <ol class="steps">
-        <li>Navegue a <strong>Configuracion WMS &gt; Motivos</strong>.</li>
-        <li>Vera la lista de motivos existentes con su nombre, descripcion y estado.</li>
-        <li>Para agregar un motivo, haga clic en <strong>"Nuevo Motivo"</strong>.</li>
-        <li>Ingrese el <strong>nombre</strong> y la <strong>descripcion</strong> del motivo.</li>
+        <li>Navegue a <strong>Administracion &gt; Configuracion WMS</strong>.</li>
+        <li>En la seccion <strong>"Motivos de Kardex Permitidos"</strong>, vera la lista de motivos activos.</li>
+        <li>Para agregar un motivo, haga clic en <strong>"+ Agregar"</strong>.</li>
+        <li>Ingrese el <strong>valor WMS</strong> (nombre exacto que envia el WMS), el <strong>nombre CRM</strong> (como se mostrara en el sistema) y una descripcion opcional.</li>
         <li>Haga clic en <strong>"Guardar"</strong>.</li>
         <li>Para editar o desactivar un motivo existente, use los botones de accion en la fila.</li>
+        <li>Solo las configuraciones <strong>activas</strong> se usan para validar.</li>
       </ol>
 
       <hr class="sub-divider">
 
-      <h3>11.2 Tipos de Operacion</h3>
-      <p>Define los tipos de operacion disponibles en el sistema:</p>
+      <h3>11.2 Mapeo de Tipos de Orden</h3>
+      <p>Fallback cuando el WMS no envia el tipo de documento (CO/PK/CR) directamente:</p>
       <ol class="steps">
-        <li>Navegue a la seccion <strong>"Tipos"</strong> en la pagina de configuracion WMS.</li>
-        <li>Agregue, edite o desactive tipos de operacion segun las necesidades del negocio.</li>
-        <li>Cada tipo tiene un nombre, codigo y estado (activo/inactivo).</li>
+        <li>En la seccion <strong>"Mapeo de Tipos de Orden"</strong>, defina como se traduce el campo "Tipo de Orden" del WMS al tipo de documento del CRM.</li>
+        <li>Ejemplo: si el WMS envia <code>Tipo de Orden: "Recepcion"</code> y no incluye <code>tipo_documento: "CO"</code>, el CRM usara este mapeo para asignar automaticamente el tipo CO (Entrada).</li>
+        <li>Cada mapeo tiene: valor WMS, nombre CRM, tipo CRM (CO, PK o CR) y estado activo/inactivo.</li>
       </ol>
 
       <hr class="sub-divider">
 
-      <h3>11.3 Estados de Auditoria</h3>
-      <p>Configure los estados personalizados para el flujo de auditorias:</p>
+      <h3>11.3 Estados Validos para Procesar</h3>
+      <p>Define que estados de orden del WMS son aceptados por el CRM:</p>
       <ol class="steps">
-        <li>Navegue a la seccion <strong>"Estados"</strong> en la pagina de configuracion WMS.</li>
-        <li>Defina los estados del flujo de auditoria (ej.: Pendiente, En Proceso, Auditado, Cerrado).</li>
-        <li>Cada estado tiene un nombre, color identificador y orden en el flujo.</li>
+        <li>En la seccion <strong>"Estados Validos para Procesar"</strong>, configure los estados que el CRM acepta.</li>
+        <li>Por defecto, solo las ordenes con estado <strong>"Finalizada"</strong> son procesadas.</li>
+        <li>Si el WMS envia una orden con un estado que no esta en esta lista, sera rechazada automaticamente.</li>
       </ol>
       <div class="screenshot-placeholder">Insertar captura: Pagina de configuracion WMS con las tres secciones</div>
 

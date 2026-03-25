@@ -102,8 +102,8 @@ const listarEntradas = async (req, res) => {
       tipo_documento_wms: op.tipo_documento_wms || 'CO',
       fecha_ingreso: op.fecha_operacion || op.created_at,
       estado: op.estado,
-      lineas: op.total_referencias || op.detalles?.length || 0,
-      lineas_verificadas: (op.detalles || []).filter(d => d.verificado).length,
+      lineas: op.detalles?.length || op.total_referencias || 0,
+      lineas_verificadas: Math.min((op.detalles || []).filter(d => d.verificado).length, op.detalles?.length || 0),
     }));
 
     return paginated(res, entradas, { total: count, page, limit });
@@ -261,8 +261,8 @@ const listarSalidas = async (req, res) => {
       tipo_documento_wms: op.tipo_documento_wms || 'PK',
       fecha_salida: op.fecha_operacion || op.created_at,
       estado: op.estado,
-      lineas: op.total_referencias || op.detalles?.length || 0,
-      lineas_verificadas: (op.detalles || []).filter(d => d.verificado).length,
+      lineas: op.detalles?.length || op.total_referencias || 0,
+      lineas_verificadas: Math.min((op.detalles || []).filter(d => d.verificado).length, op.detalles?.length || 0),
     }));
 
     return paginated(res, salidas, { total: count, page, limit });
@@ -419,8 +419,8 @@ const listarKardex = async (req, res) => {
       motivo: op.motivo_kardex || '',
       fecha_ingreso: op.fecha_operacion || op.created_at,
       estado: op.estado,
-      lineas: op.total_referencias || op.detalles?.length || 0,
-      lineas_verificadas: (op.detalles || []).filter(d => d.verificado).length,
+      lineas: op.detalles?.length || op.total_referencias || 0,
+      lineas_verificadas: Math.min((op.detalles || []).filter(d => d.verificado).length, op.detalles?.length || 0),
     }));
 
     return paginated(res, kardex, { total: count, page, limit });
@@ -706,28 +706,48 @@ const subirEvidencias = async (req, res) => {
       return notFound(res, 'Operación no encontrada');
     }
 
-    // Los archivos ya fueron procesados por multer
     const archivos = req.files || [];
-
     if (archivos.length === 0) {
       return errorResponse(res, 'No se recibieron archivos', 400);
     }
 
-    // Guardar evidencias en la base de datos
-    const promesasDocumentos = archivos.map(file => {
-      return OperacionDocumento.create({
-        operacion_id: id,
-        tipo_documento: 'cumplido',
-        nombre: `Evidencia - ${file.originalname}`,
-        archivo_nombre: file.originalname,
-        archivo_url: `/uploads/${file.fieldname === 'evidencias' ? 'cumplidos' : 'temp'}/${file.filename}`,
-        archivo_tipo: file.mimetype,
-        archivo_tamanio: file.size,
-        subido_por: req.user?.id
-      });
-    });
+    // Validar límites: max 10 fotos/ZIP + 5 PDFs
+    const imagenes = archivos.filter(f => f.mimetype.startsWith('image/') || /\.(zip|rar)$/i.test(f.originalname));
+    const pdfs = archivos.filter(f => f.mimetype === 'application/pdf');
+    if (imagenes.length > 10) {
+      return errorResponse(res, 'Máximo 10 fotos/archivos comprimidos permitidos', 400);
+    }
+    if (pdfs.length > 5) {
+      return errorResponse(res, 'Máximo 5 archivos PDF permitidos', 400);
+    }
 
-    await Promise.all(promesasDocumentos);
+    // Subir a Cloudinary
+    const cloudinaryService = require('../services/cloudinaryService');
+    const folder = `istho-crm/evidencias/${id}`;
+    const resultados = await cloudinaryService.subirMultiples(archivos, folder);
+
+    // Guardar en BD
+    const documentos = [];
+    for (const resultado of resultados) {
+      if (resultado.url) {
+        const doc = await OperacionDocumento.create({
+          operacion_id: id,
+          tipo_documento: 'cumplido',
+          nombre: `Evidencia - ${resultado.originalname}`,
+          archivo_nombre: resultado.originalname,
+          archivo_url: resultado.url,
+          archivo_tipo: resultado.mimetype,
+          archivo_tamanio: resultado.size || resultado.bytes,
+          cloudinary_public_id: resultado.public_id,
+          subido_por: req.user?.id
+        });
+        documentos.push(doc);
+      }
+    }
+
+    // Limpiar archivos temporales de multer
+    const fs = require('fs');
+    archivos.forEach(f => { try { fs.unlinkSync(f.path); } catch (_) {} });
 
     await Auditoria.registrar({
       tabla: 'operaciones',
@@ -735,12 +755,12 @@ const subirEvidencias = async (req, res) => {
       accion: 'actualizar',
       usuario_id: req.user?.id,
       usuario_nombre: req.user?.nombre_completo,
-      descripcion: `${archivos.length} evidencia(s) subida(s) para ${operacion.numero_operacion}`,
+      descripcion: `${documentos.length} evidencia(s) subida(s) para ${operacion.numero_operacion}`,
       ip_address: getClientIP(req)
     });
 
-    return successMessage(res, `${archivos.length} evidencia(s) subida(s) correctamente`, {
-      archivos: archivos.map(f => ({ nombre: f.originalname, tamaño: f.size, tipo: f.mimetype }))
+    return successMessage(res, `${documentos.length} evidencia(s) subida(s) correctamente`, {
+      archivos: documentos.map(d => ({ id: d.id, nombre: d.archivo_nombre, url: d.archivo_url, tipo: d.archivo_tipo }))
     });
   } catch (err) {
     logger.error('[AUDITORIAS] Error al subir evidencias:', err);
@@ -764,13 +784,20 @@ const eliminarEvidencia = async (req, res) => {
       return notFound(res, 'Evidencia no encontrada');
     }
 
-    // Eliminar archivo físico si existe
-    const fs = require('fs');
-    const path = require('path');
-    if (documento.archivo_url) {
-      const filePath = path.join(__dirname, '../..', documento.archivo_url);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+    // Eliminar de Cloudinary si tiene public_id
+    if (documento.cloudinary_public_id) {
+      const cloudinaryService = require('../services/cloudinaryService');
+      const esImagen = documento.archivo_tipo?.startsWith('image/');
+      await cloudinaryService.eliminar(documento.cloudinary_public_id, esImagen ? 'image' : 'raw');
+    } else {
+      // Fallback: eliminar archivo local si existe
+      const fs = require('fs');
+      const path = require('path');
+      if (documento.archivo_url && !documento.archivo_url.startsWith('http')) {
+        const filePath = path.join(__dirname, '../..', documento.archivo_url);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
       }
     }
 

@@ -82,7 +82,22 @@ module.exports = (sequelize) => {
       allowNull: true,
       comment: 'Tamaño en bytes'
     },
-    
+
+    // Cloudinary
+    cloudinary_public_id: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      comment: 'Public ID en Cloudinary para eliminación'
+    },
+
+    // Cantidad afectada (unidades de la caja con avería)
+    cantidad_afectada: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null,
+      comment: 'Número de unidades afectadas por la avería'
+    },
+
     // Usuario que registró
     registrado_por: {
       type: DataTypes.INTEGER,

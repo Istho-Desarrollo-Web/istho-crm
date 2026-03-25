@@ -80,16 +80,26 @@ const documentFilter = (req, file, cb) => {
     'application/pdf',
     'image/jpeg',
     'image/png',
+    'image/gif',
+    'image/webp',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/zip',
+    'application/x-zip-compressed',
+    'application/x-rar-compressed',
+    'application/vnd.rar',
   ];
-  
-  if (allowedTypes.includes(file.mimetype)) {
+
+  // También aceptar por extensión (algunos navegadores no detectan bien el MIME)
+  const ext = file.originalname?.toLowerCase()?.split('.').pop();
+  const allowedExts = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'rar', 'doc', 'docx', 'xls', 'xlsx'];
+
+  if (allowedTypes.includes(file.mimetype) || allowedExts.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Tipo de archivo no permitido'), false);
+    cb(new Error('Tipo de archivo no permitido. Formatos aceptados: imágenes, PDF, ZIP, RAR'), false);
   }
 };
 

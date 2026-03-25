@@ -72,7 +72,14 @@ module.exports = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    
+
+    // Cloudinary
+    cloudinary_public_id: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      comment: 'Public ID en Cloudinary para eliminación'
+    },
+
     // Usuario que subió
     subido_por: {
       type: DataTypes.INTEGER,

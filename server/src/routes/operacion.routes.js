@@ -47,6 +47,7 @@ router.put('/:id/transporte', noClientes, requiereRolMinimo('operador'), actuali
 // Averías
 router.get('/:id/averias', requiereRolMinimo('operador'), operacionController.listarAverias);
 router.post('/:id/averias', noClientes, requiereRolMinimo('operador'), uploadAveria.single('foto'), registrarAveriaValidator, operacionController.registrarAveria);
+router.delete('/:id/averias/:averiaId', noClientes, requiereRolMinimo('operador'), operacionController.eliminarAveria);
 
 // Documentos/Cumplidos (con upload de archivo)
 router.post('/:id/documentos', noClientes, requiereRolMinimo('operador'), uploadCumplido.single('archivo'), operacionController.subirDocumento);

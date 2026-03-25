@@ -71,7 +71,11 @@ const listar = async (req, res) => {
       ];
     }
 
-    const { count, rows } = await MovimientoCajaMenor.findAndCountAll({
+    // Count separado (sin JOINs, mucho más rápido)
+    const count = await MovimientoCajaMenor.count({ where });
+
+    // Datos con includes
+    const rows = await MovimientoCajaMenor.findAll({
       where,
       order,
       limit,

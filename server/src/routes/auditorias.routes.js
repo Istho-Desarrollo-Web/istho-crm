@@ -68,7 +68,7 @@ router.put('/:id/logistica', requiereRolMinimo('operador'), auditoriaWmsControll
 // EVIDENCIAS
 // =============================================
 
-router.post('/:id/evidencias', requiereRolMinimo('operador'), uploadCumplido.array('evidencias', 6), auditoriaWmsController.subirEvidencias);
+router.post('/:id/evidencias', requiereRolMinimo('operador'), uploadCumplido.array('evidencias', 15), auditoriaWmsController.subirEvidencias);
 router.delete('/:id/evidencias/:evidenciaId', requiereRolMinimo('operador'), auditoriaWmsController.eliminarEvidencia);
 
 // =============================================

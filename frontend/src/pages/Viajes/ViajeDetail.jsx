@@ -33,6 +33,8 @@ import {
   Users,
   Package,
   Clock,
+  Ban,
+  CheckCircle2,
 } from 'lucide-react';
 
 import { Button, Modal, StatusChip } from '../../components/common';
@@ -160,6 +162,10 @@ const ViajeDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [gastoFormOpen, setGastoFormOpen] = useState(false);
+  const [completarModal, setCompletarModal] = useState(false);
+  const [anularModal, setAnularModal] = useState(false);
+  const [motivoAnulacion, setMotivoAnulacion] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
 
   // ──────────────────────────────────────────────────────────────────────────
   // FETCH DATA
@@ -182,6 +188,35 @@ const ViajeDetail = () => {
   useEffect(() => {
     fetchViaje();
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleCompletar = async () => {
+    setActionLoading(true);
+    try {
+      await viajesService.completar(id);
+      setCompletarModal(false);
+      await fetchViaje();
+      success('Viaje completado exitosamente');
+    } catch (err) {
+      apiError(err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleAnular = async () => {
+    setActionLoading(true);
+    try {
+      await viajesService.anular(id, { motivo: motivoAnulacion });
+      setAnularModal(false);
+      setMotivoAnulacion('');
+      await fetchViaje();
+      success('Viaje anulado');
+    } catch (err) {
+      apiError(err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // ──────────────────────────────────────────────────────────────────────────
   // LOADING STATE
@@ -278,16 +313,38 @@ const ViajeDetail = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <ProtectedAction module="viajes" action="editar">
-              <Button
-                variant="outline"
-                icon={Pencil}
-                onClick={() => navigate(`/viajes/viajes/${id}/editar`)}
-              >
-                Editar
-              </Button>
-            </ProtectedAction>
+          <div className="flex items-center gap-2 flex-wrap">
+            {viaje.estado === 'activo' && (
+              <>
+                <ProtectedAction module="viajes" action="editar">
+                  <Button
+                    variant="outline"
+                    icon={Pencil}
+                    onClick={() => navigate(`/viajes/viajes/${id}/editar`)}
+                  >
+                    Editar
+                  </Button>
+                </ProtectedAction>
+                <ProtectedAction module="viajes" action="editar">
+                  <Button
+                    variant="primary"
+                    icon={CheckCircle2}
+                    onClick={() => setCompletarModal(true)}
+                  >
+                    Completar
+                  </Button>
+                </ProtectedAction>
+                <ProtectedAction module="viajes" action="editar">
+                  <Button
+                    variant="danger"
+                    icon={Ban}
+                    onClick={() => setAnularModal(true)}
+                  >
+                    Anular
+                  </Button>
+                </ProtectedAction>
+              </>
+            )}
           </div>
         </div>
 
@@ -564,6 +621,78 @@ const ViajeDetail = () => {
         defaultViajeId={viaje.id}
         defaultCajaId={viaje.caja_menor_id || viaje.caja_menor?.id || ''}
       />
+
+      {/* Modal Completar Viaje */}
+      <Modal
+        isOpen={completarModal}
+        onClose={() => setCompletarModal(false)}
+        title="Completar Viaje"
+        subtitle={`Viaje #${viaje?.numero || ''}`}
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setCompletarModal(false)}>Cancelar</Button>
+            <Button variant="primary" icon={CheckCircle2} onClick={handleCompletar} loading={actionLoading}>
+              Completar Viaje
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+            <p className="text-sm text-emerald-700 dark:text-emerald-400">
+              Al completar el viaje se marcará como finalizado. Esta acción no se puede deshacer.
+            </p>
+          </div>
+          <div className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-500 dark:text-slate-400">Ruta</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{viaje?.origen} → {viaje?.destino}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-500 dark:text-slate-400">Valor</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">$ {Number(viaje?.valor_viaje || 0).toLocaleString('es-CO')}</span>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal Anular Viaje */}
+      <Modal
+        isOpen={anularModal}
+        onClose={() => { setAnularModal(false); setMotivoAnulacion(''); }}
+        title="Anular Viaje"
+        subtitle={`Viaje #${viaje?.numero || ''}`}
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => { setAnularModal(false); setMotivoAnulacion(''); }}>Cancelar</Button>
+            <Button variant="danger" icon={Ban} onClick={handleAnular} loading={actionLoading} disabled={!motivoAnulacion.trim()}>
+              Anular Viaje
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <p className="text-sm text-red-700 dark:text-red-400">
+              <strong>Advertencia:</strong> Al anular el viaje no se podrá reactivar. Los gastos asociados permanecerán registrados.
+            </p>
+          </div>
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Motivo de anulación <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              placeholder="Ingrese el motivo de la anulación..."
+              rows={3}
+              value={motivoAnulacion}
+              onChange={(e) => setMotivoAnulacion(e.target.value)}
+              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -101,7 +101,15 @@ export const viajesService = {
   delete: async (id) => {
     const response = await apiClient.delete(VIAJES_ENDPOINTS.BY_ID(id));
     return response;
-  }
+  },
+  completar: async (id, data = {}) => {
+    const response = await apiClient.put(VIAJES_ENDPOINTS.COMPLETAR(id), data);
+    return response;
+  },
+  anular: async (id, data = {}) => {
+    const response = await apiClient.put(VIAJES_ENDPOINTS.ANULAR(id), data);
+    return response;
+  },
 };
 
 // ════════════════════════════════════════════════════════════════════════════

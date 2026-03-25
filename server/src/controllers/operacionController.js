@@ -948,19 +948,35 @@ const registrarAveria = async (req, res) => {
     
     let fotoData = {};
     if (req.file) {
-      fotoData = {
-        foto_url: `/uploads/averias/${req.file.filename}`,
-        foto_nombre: req.file.originalname,
-        foto_tipo: req.file.mimetype,
-        foto_tamanio: req.file.size
-      };
+      const cloudinaryService = require('../services/cloudinaryService');
+      if (cloudinaryService.isConfigured()) {
+        const resultado = await cloudinaryService.subir(req.file, `istho-crm/averias/${id}`);
+        fotoData = {
+          foto_url: resultado.url,
+          foto_nombre: req.file.originalname,
+          foto_tipo: req.file.mimetype,
+          foto_tamanio: resultado.bytes || req.file.size,
+          cloudinary_public_id: resultado.public_id,
+        };
+        // Limpiar archivo temporal
+        const fs = require('fs');
+        try { fs.unlinkSync(req.file.path); } catch (_) {}
+      } else {
+        fotoData = {
+          foto_url: `/uploads/averias/${req.file.filename}`,
+          foto_nombre: req.file.originalname,
+          foto_tipo: req.file.mimetype,
+          foto_tamanio: req.file.size,
+        };
+      }
     }
-    
+
     const averia = await OperacionAveria.create({
       operacion_id: id,
       detalle_id: datos.detalle_id,
       sku: datos.sku,
       cantidad: datos.cantidad,
+      cantidad_afectada: datos.cantidad_afectada || null,
       tipo_averia: datos.tipo_averia,
       descripcion: datos.descripcion,
       ...fotoData,
@@ -1390,6 +1406,77 @@ const reenviarCorreo = async (req, res) => {
   }
 };
 
+/**
+ * DELETE /operaciones/:id/averias/:averiaId
+ * Eliminar una avería registrada
+ */
+const eliminarAveria = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { id, averiaId } = req.params;
+
+    const averia = await OperacionAveria.findOne({
+      where: { id: averiaId, operacion_id: id }
+    });
+
+    if (!averia) {
+      await transaction.rollback();
+      return notFound(res, 'Avería no encontrada');
+    }
+
+    const operacion = await Operacion.findByPk(id);
+    if (operacion && !operacion.esEditable()) {
+      await transaction.rollback();
+      return errorResponse(res, 'Esta operación ya no se puede modificar', 400);
+    }
+
+    // Eliminar foto de Cloudinary si existe
+    if (averia.cloudinary_public_id) {
+      const cloudinaryService = require('../services/cloudinaryService');
+      await cloudinaryService.eliminar(averia.cloudinary_public_id, 'image');
+    }
+
+    // Restar cantidad del detalle
+    if (averia.detalle_id) {
+      const detalle = await OperacionDetalle.findByPk(averia.detalle_id);
+      if (detalle) {
+        const nuevaCantidad = Math.max(0, parseFloat(detalle.cantidad_averia) - parseFloat(averia.cantidad));
+        await detalle.update({ cantidad_averia: nuevaCantidad }, { transaction });
+      }
+    }
+
+    await averia.destroy({ transaction });
+
+    // Recalcular total averías
+    const totalAverias = await OperacionAveria.sum('cantidad', {
+      where: { operacion_id: id },
+      transaction
+    });
+    if (operacion) {
+      await operacion.update({ total_averias: totalAverias || 0 }, { transaction });
+    }
+
+    await Auditoria.registrar({
+      tabla: 'operacion_averias',
+      registro_id: parseInt(averiaId),
+      accion: 'eliminar',
+      usuario_id: req.user?.id,
+      usuario_nombre: req.user?.nombre_completo,
+      descripcion: `Avería eliminada: ${averia.tipo_averia} - SKU ${averia.sku}`,
+      ip_address: getClientIP(req)
+    });
+
+    await transaction.commit();
+
+    logger.info('Avería eliminada:', { operacionId: id, averiaId });
+    return success(res, { id: averiaId }, 'Avería eliminada exitosamente');
+  } catch (error) {
+    try { await transaction.rollback(); } catch (_) {}
+    logger.error('Error al eliminar avería:', { message: error.message });
+    return serverError(res, 'Error al eliminar la avería', error);
+  }
+};
+
 module.exports = {
   listarDocumentosWMS,
   buscarDocumentoWMS,
@@ -1399,6 +1486,7 @@ module.exports = {
   crear,
   actualizarTransporte,
   registrarAveria,
+  eliminarAveria,
   listarAverias,
   subirDocumento,
   cerrar,

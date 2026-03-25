@@ -66,7 +66,10 @@ const listar = async (req, res) => {
       ];
     }
 
-    const { count, rows } = await Viaje.findAndCountAll({
+    // Count separado (sin JOINs, más rápido)
+    const count = await Viaje.count({ where });
+
+    const rows = await Viaje.findAll({
       where,
       order,
       limit,
@@ -290,4 +293,117 @@ const eliminar = async (req, res) => {
   }
 };
 
-module.exports = { listar, obtenerPorId, crear, actualizar, eliminar };
+/**
+ * PUT /viajes/:id/completar
+ * Marcar viaje como completado
+ */
+const completar = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const viaje = await Viaje.findByPk(req.params.id, { transaction });
+    if (!viaje) {
+      try { await transaction.rollback(); } catch (_) {}
+      return notFound(res, 'Viaje no encontrado');
+    }
+
+    if (viaje.estado !== 'activo') {
+      try { await transaction.rollback(); } catch (_) {}
+      return errorResponse(res, `No se puede completar un viaje en estado "${viaje.estado}"`, 400);
+    }
+
+    // Conductor solo puede completar sus propios viajes
+    if (req.user.esConductor && viaje.conductor_id !== req.user.id) {
+      try { await transaction.rollback(); } catch (_) {}
+      return errorResponse(res, 'No tienes permiso para completar este viaje', 403);
+    }
+
+    const datosAnteriores = viaje.toJSON();
+
+    await viaje.update({
+      estado: 'completado',
+      ...(req.body.observaciones && { observaciones: req.body.observaciones }),
+    }, { transaction });
+
+    await Auditoria.registrar({
+      tabla: 'viajes',
+      registro_id: viaje.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_anteriores: datosAnteriores,
+      datos_nuevos: { estado: 'completado' },
+      ip_address: getClientIP(req),
+      descripcion: `Viaje #${viaje.numero} completado`
+    });
+
+    await transaction.commit();
+
+    // Notificar
+    notificacionService.notificarViajeCompletado?.({
+      id: viaje.id,
+      numero: viaje.numero,
+      origen: viaje.origen,
+      destino: viaje.destino,
+      conductor_nombre: req.user.nombre_completo,
+      valor_viaje: viaje.valor_viaje,
+    }).catch(() => {});
+
+    logger.info('Viaje completado:', { id: viaje.id, numero: viaje.numero });
+    return success(res, viaje, 'Viaje completado exitosamente');
+  } catch (error) {
+    try { await transaction.rollback(); } catch (_) {}
+    logger.error('Error al completar viaje:', { message: error.message });
+    return serverError(res, 'Error al completar viaje', error);
+  }
+};
+
+/**
+ * PUT /viajes/:id/anular
+ * Anular un viaje
+ */
+const anular = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const viaje = await Viaje.findByPk(req.params.id, { transaction });
+    if (!viaje) {
+      try { await transaction.rollback(); } catch (_) {}
+      return notFound(res, 'Viaje no encontrado');
+    }
+
+    if (viaje.estado === 'anulado') {
+      try { await transaction.rollback(); } catch (_) {}
+      return errorResponse(res, 'El viaje ya está anulado', 400);
+    }
+
+    const datosAnteriores = viaje.toJSON();
+    const motivo = req.body.motivo || req.body.observaciones || 'Sin motivo especificado';
+
+    await viaje.update({
+      estado: 'anulado',
+      observaciones: `${viaje.observaciones ? viaje.observaciones + ' | ' : ''}ANULADO: ${motivo}`,
+    }, { transaction });
+
+    await Auditoria.registrar({
+      tabla: 'viajes',
+      registro_id: viaje.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_anteriores: datosAnteriores,
+      datos_nuevos: { estado: 'anulado', motivo },
+      ip_address: getClientIP(req),
+      descripcion: `Viaje #${viaje.numero} anulado. Motivo: ${motivo}`
+    });
+
+    await transaction.commit();
+
+    logger.info('Viaje anulado:', { id: viaje.id, numero: viaje.numero, motivo });
+    return success(res, viaje, 'Viaje anulado exitosamente');
+  } catch (error) {
+    try { await transaction.rollback(); } catch (_) {}
+    logger.error('Error al anular viaje:', { message: error.message });
+    return serverError(res, 'Error al anular viaje', error);
+  }
+};
+
+module.exports = { listar, obtenerPorId, crear, actualizar, eliminar, completar, anular };

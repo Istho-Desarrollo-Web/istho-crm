@@ -49,6 +49,7 @@ const ForceChangePasswordModal = () => {
     if (!/[A-Z]/.test(form.password_nuevo)) return 'Debe contener al menos una mayúscula';
     if (!/[a-z]/.test(form.password_nuevo)) return 'Debe contener al menos una minúscula';
     if (!/[0-9]/.test(form.password_nuevo)) return 'Debe contener al menos un número';
+    if (!/[^A-Za-z0-9]/.test(form.password_nuevo)) return 'Debe contener al menos un carácter especial (!@#$%)';
     if (form.password_nuevo !== form.password_confirmar) return 'Las contraseñas no coinciden';
     if (form.password_actual === form.password_nuevo) return 'La nueva contraseña debe ser diferente a la actual';
     return null;
@@ -254,6 +255,7 @@ const ForceChangePasswordModal = () => {
               { ok: /[A-Z]/.test(form.password_nuevo), text: 'Al menos una mayúscula' },
               { ok: /[a-z]/.test(form.password_nuevo), text: 'Al menos una minúscula' },
               { ok: /[0-9]/.test(form.password_nuevo), text: 'Al menos un número' },
+              { ok: /[^A-Za-z0-9]/.test(form.password_nuevo), text: 'Al menos un carácter especial (!@#$%)' },
             ].map((req, i) => (
               <div key={i} className="flex items-center gap-1.5 text-[11px]">
                 <div className={`w-3 h-3 rounded-full flex items-center justify-center ${
