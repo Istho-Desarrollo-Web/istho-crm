@@ -99,6 +99,10 @@ async function initializeDatabase() {
     logger.info('Sincronizando modelos...');
     await db.syncModels({ alter: true });
 
+    // Re-verificar conexión después del sync (puede tardar minutos y el pool pierde conexiones)
+    await db.sequelize.authenticate();
+    logger.info('✅ Conexión verificada post-sync');
+
     // Seed de roles y permisos (idempotente)
     logger.info('Verificando roles y permisos...');
     const seedRolesPermisos = require('./src/scripts/seedRolesPermisos');
