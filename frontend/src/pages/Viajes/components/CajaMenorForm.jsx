@@ -169,6 +169,13 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
     return parseFloat(cajaAnteriorSeleccionada.saldo_actual) || 0;
   }, [cajaAnteriorSeleccionada]);
 
+  // Auto-rellenar saldo inicial cuando se selecciona caja anterior con saldo
+  useEffect(() => {
+    if (!isEditing && saldoTrasladado > 0 && !formData.saldo_inicial) {
+      setFormData(prev => ({ ...prev, saldo_inicial: saldoTrasladado.toString() }));
+    }
+  }, [saldoTrasladado, isEditing]);
+
   const saldoTotal = useMemo(() => {
     const inicial = parseFloat(formData.saldo_inicial) || 0;
     return inicial + saldoTrasladado;
@@ -320,7 +327,7 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
 
           {/* Saldo Inicial */}
           <InputField
-            label="Saldo Inicial"
+            label={saldoTrasladado > 0 && !isEditing ? 'Saldo Inicial (Heredado)' : 'Saldo Inicial'}
             icon={DollarSign}
             required
             error={errors.saldo_inicial}
@@ -334,6 +341,12 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
               disabled={loadingData}
               className={baseInputClasses(true, errors.saldo_inicial)}
             />
+            {saldoTrasladado > 0 && !isEditing && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                <ArrowLeftRight className="w-3 h-3" />
+                Saldo heredado de caja anterior: {formatMoney(saldoTrasladado)}
+              </p>
+            )}
           </InputField>
 
           {/* Caja Anterior (traslado de saldo) - solo en creación */}

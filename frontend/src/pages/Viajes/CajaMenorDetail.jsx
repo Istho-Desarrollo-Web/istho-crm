@@ -328,21 +328,27 @@ const CajaMenorDetail = () => {
         {/* TABS                                                          */}
         {/* ════════════════════════════════════════════════════════════════ */}
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
             sx={{
               px: 2,
-              borderBottom: '1px solid #f1f5f9',
-              '& .MuiTab-root': { textTransform: 'none', fontWeight: 600 },
-              '& .Mui-selected': { color: '#ea580c' },
-              '& .MuiTabs-indicator': { backgroundColor: '#ea580c' },
+              borderBottom: '1px solid',
+              borderColor: 'rgba(148, 163, 184, 0.2)',
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontWeight: 600,
+                color: 'rgb(148, 163, 184)',
+                '&:hover': { color: 'rgb(226, 232, 240)' },
+              },
+              '& .Mui-selected': { color: '#E74C3C !important' },
+              '& .MuiTabs-indicator': { backgroundColor: '#E74C3C' },
             }}
           >
             <Tab label={`Viajes (${viajes.length})`} />
             <Tab label={`Movimientos (${movimientos.length})`} />
-            <Tab label="Informacion" />
+            <Tab label="Información" />
           </Tabs>
 
           <div className="p-6">

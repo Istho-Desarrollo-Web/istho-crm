@@ -73,24 +73,27 @@ const obtenerPorId = async (req, res) => {
   try {
     const caja = await CajaMenor.findByPk(req.params.id, {
       include: [
-        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
+        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre', 'apellido', 'nombre_completo', 'rol'] },
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] },
         { model: Usuario, as: 'cerrador', attributes: ['id', 'nombre_completo'] },
         { model: CajaMenor, as: 'cajaAnterior', attributes: ['id', 'numero', 'saldo_actual'] },
         { model: CajaMenor, as: 'cajaSiguiente', attributes: ['id', 'numero'] },
         {
           model: Viaje, as: 'viajes',
-          attributes: ['id', 'numero', 'fecha', 'destino', 'cliente_nombre', 'valor_viaje', 'estado'],
-          include: [{ model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa', 'tipo_vehiculo'] }]
+          attributes: ['id', 'numero', 'fecha', 'destino', 'valor_viaje', 'estado'],
+          include: [{ model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa'] }],
+          separate: true,  // Query separada (no JOIN, más rápido)
+          order: [['fecha', 'DESC']],
         },
         {
           model: MovimientoCajaMenor, as: 'movimientos',
-          order: [['consecutivo', 'DESC']],
           include: [
             { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
             { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
             { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] }
-          ]
+          ],
+          separate: true,  // Query separada (no JOIN, más rápido)
+          order: [['consecutivo', 'DESC']],
         }
       ]
     });
