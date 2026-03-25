@@ -20,6 +20,10 @@ const logger = require('../utils/logger');
 const APP_URL = process.env.APP_URL
   || (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',')[0].trim();
 
+// Logo para emails — Cloudinary URL (liviano, persistente, no base64)
+const LOGO_EMAIL_URL = process.env.LOGO_EMAIL_URL
+  || 'https://res.cloudinary.com/dut7n03xd/image/upload/v1774472303/istho-crm/branding/logo-email.png';
+
 // Cache de plantillas compiladas (deshabilitado en desarrollo para recargar cambios)
 const templateCache = {};
 
@@ -58,10 +62,9 @@ const loadTemplate = (templateName) => {
 const renderEmail = (templateName, data) => {
   const { contentTemplate, baseTemplate } = loadTemplate(templateName);
 
-  // Logo en base64 para máxima compatibilidad con clientes de email
-  const { PlantillaEmail } = require('../models');
-  const logoUrl = PlantillaEmail.getLogoFirmaDataUri() || '';
-  const logoFirmaDataUri = logoUrl;
+  // Logo via URL (Cloudinary) — liviano, no base64
+  const logoUrl = LOGO_EMAIL_URL;
+  const logoFirmaDataUri = LOGO_EMAIL_URL;
 
   // Renderizar contenido
   const contenido = contentTemplate({ ...data, logoUrl, logoFirmaDataUri });
@@ -225,20 +228,36 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
       }),
     };
 
-    // Preparar adjuntos (documentos de cumplido)
+    // Preparar enlaces a evidencias (Cloudinary URLs o locales)
     const adjuntos = [];
+    const evidenciasLinks = [];
     if (operacion.documentos && operacion.documentos.length > 0) {
       for (const doc of operacion.documentos) {
-        const filePath = path.join(__dirname, '../../', doc.archivo_url);
-        if (fs.existsSync(filePath)) {
-          adjuntos.push({
+        if (doc.archivo_url?.startsWith('http')) {
+          // Archivo en Cloudinary — incluir como enlace en el email
+          evidenciasLinks.push({
             nombre: doc.archivo_nombre,
-            path: filePath,
-            tipo: doc.archivo_tipo
+            url: doc.archivo_url,
+            tipo: doc.archivo_tipo,
+            tamanio: doc.archivo_tamanio,
           });
+        } else {
+          // Archivo local (legacy) — intentar adjuntar si existe
+          const filePath = path.join(__dirname, '../../', doc.archivo_url);
+          if (fs.existsSync(filePath)) {
+            adjuntos.push({
+              nombre: doc.archivo_nombre,
+              path: filePath,
+              tipo: doc.archivo_tipo
+            });
+          }
         }
       }
     }
+
+    // Agregar enlaces a los datos de la plantilla
+    datos.evidenciasLinks = evidenciasLinks;
+    datos.tieneEvidencias = evidenciasLinks.length > 0;
 
     // Parsear correos
     const correos = correosDestino.split(',').map(c => c.trim()).filter(c => c);
@@ -295,12 +314,12 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
         if (plantillaCustom.firma_habilitada) {
           const firmaSource = plantillaCustom.firma_html || PlantillaEmail.FIRMA_DEFAULT;
           const firmaCompiled = Handlebars.compile(firmaSource);
-          cuerpoHtml += firmaCompiled({ logoFirmaDataUri: PlantillaEmail.getLogoFirmaDataUri() });
+          cuerpoHtml += firmaCompiled({ logoFirmaDataUri: LOGO_EMAIL_URL });
         }
 
         // Usar base template del filesystem
         const { baseTemplate } = loadTemplate('operacion-cierre');
-        const logoUrl = PlantillaEmail.getLogoFirmaDataUri() || '';
+        const logoUrl = LOGO_EMAIL_URL;
         const htmlFinal = baseTemplate({
           asunto: asuntoCompiled(datos),
           contenido: cuerpoHtml,

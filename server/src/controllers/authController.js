@@ -659,15 +659,29 @@ const subirAvatar = async (req, res) => {
       return notFound(res, 'Usuario no encontrado');
     }
 
-    // Convertir archivo a data URI base64 (persiste en BD, no en filesystem)
+    const cloudinaryService = require('../services/cloudinaryService');
     const fs = require('fs');
-    const fileBuffer = fs.readFileSync(req.file.path);
-    const base64 = fileBuffer.toString('base64');
-    const mimeType = req.file.mimetype || 'image/png';
-    const avatar_url = `data:${mimeType};base64,${base64}`;
+    let avatar_url;
 
-    // Eliminar archivo temporal del disco (ya no lo necesitamos)
-    try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+    if (cloudinaryService.isConfigured()) {
+      // Subir a Cloudinary con compresión automática
+      const resultado = await cloudinaryService.subirImagen(req.file.path, {
+        folder: 'istho-crm/avatares',
+        publicId: `usuario_${usuario.id}`,
+      });
+      avatar_url = resultado.url;
+      // Limpiar temp
+      try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+      logger.info('Avatar subido a Cloudinary:', { userId: usuario.id, url: avatar_url });
+    } else {
+      // Fallback: base64 en BD
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const base64 = fileBuffer.toString('base64');
+      const mimeType = req.file.mimetype || 'image/png';
+      avatar_url = `data:${mimeType};base64,${base64}`;
+      try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+      logger.info('Avatar actualizado (base64 fallback):', { userId: usuario.id });
+    }
 
     usuario.avatar_url = avatar_url;
     await usuario.save();
@@ -681,8 +695,6 @@ const subirAvatar = async (req, res) => {
       ip_address: getClientIP(req),
       descripcion: 'Foto de perfil actualizada'
     });
-
-    logger.info('Avatar actualizado (base64):', { userId: usuario.id });
 
     return successMessage(res, 'Foto de perfil actualizada', { avatar_url });
 
@@ -701,6 +713,12 @@ const eliminarAvatar = async (req, res) => {
     const usuario = await Usuario.findByPk(req.user.id);
     if (!usuario) {
       return notFound(res, 'Usuario no encontrado');
+    }
+
+    // Eliminar de Cloudinary si es URL de Cloudinary
+    if (usuario.avatar_url?.includes('cloudinary.com')) {
+      const cloudinaryService = require('../services/cloudinaryService');
+      await cloudinaryService.eliminar(`istho-crm/avatares/usuario_${usuario.id}`, 'image');
     }
 
     usuario.avatar_url = null;

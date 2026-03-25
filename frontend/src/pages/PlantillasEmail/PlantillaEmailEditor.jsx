@@ -608,9 +608,10 @@ const PlantillaEmailEditor = () => {
                 ✕
               </button>
             </div>
-            <div className="flex-1 overflow-auto p-4">
+            <div className="flex-1 overflow-auto p-4 bg-slate-100 dark:bg-slate-900">
               <div
-                className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6"
+                className="bg-white rounded-xl shadow-sm mx-auto max-w-2xl"
+                style={{ colorScheme: 'light' }}
                 dangerouslySetInnerHTML={{ __html: previewHtml }}
               />
             </div>

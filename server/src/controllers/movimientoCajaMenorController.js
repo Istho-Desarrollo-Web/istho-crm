@@ -158,15 +158,25 @@ const crear = async (req, res) => {
       }
     }
 
-    // Manejar archivo de soporte (guardar como base64 en BD)
+    // Manejar archivo de soporte
     if (req.file) {
+      const cloudinaryService = require('../services/cloudinaryService');
       const fs = require('fs');
-      const fileBuffer = fs.readFileSync(req.file.path);
-      const base64 = fileBuffer.toString('base64');
-      const mimeType = req.file.mimetype || 'application/octet-stream';
-      datos.soporte_url = `data:${mimeType};base64,${base64}`;
-      datos.soporte_nombre = req.file.originalname;
-      try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+
+      if (cloudinaryService.isConfigured()) {
+        const resultado = await cloudinaryService.subir(req.file, 'istho-crm/soportes');
+        datos.soporte_url = resultado.url;
+        datos.soporte_nombre = req.file.originalname;
+        try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+      } else {
+        // Fallback: base64 en BD
+        const fileBuffer = fs.readFileSync(req.file.path);
+        const base64 = fileBuffer.toString('base64');
+        const mimeType = req.file.mimetype || 'application/octet-stream';
+        datos.soporte_url = `data:${mimeType};base64,${base64}`;
+        datos.soporte_nombre = req.file.originalname;
+        try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+      }
     }
 
     datos.consecutivo = await MovimientoCajaMenor.generarConsecutivo();
@@ -256,13 +266,22 @@ const actualizar = async (req, res) => {
     }
 
     if (req.file) {
+      const cloudinaryService = require('../services/cloudinaryService');
       const fs = require('fs');
-      const fileBuffer = fs.readFileSync(req.file.path);
-      const base64 = fileBuffer.toString('base64');
-      const mimeType = req.file.mimetype || 'application/octet-stream';
-      datos.soporte_url = `data:${mimeType};base64,${base64}`;
-      datos.soporte_nombre = req.file.originalname;
-      try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+
+      if (cloudinaryService.isConfigured()) {
+        const resultado = await cloudinaryService.subir(req.file, 'istho-crm/soportes');
+        datos.soporte_url = resultado.url;
+        datos.soporte_nombre = req.file.originalname;
+        try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+      } else {
+        const fileBuffer = fs.readFileSync(req.file.path);
+        const base64 = fileBuffer.toString('base64');
+        const mimeType = req.file.mimetype || 'application/octet-stream';
+        datos.soporte_url = `data:${mimeType};base64,${base64}`;
+        datos.soporte_nombre = req.file.originalname;
+        try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+      }
     }
 
     const datosAnteriores = movimiento.toJSON();

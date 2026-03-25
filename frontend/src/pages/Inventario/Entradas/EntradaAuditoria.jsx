@@ -41,6 +41,7 @@ import {
   Plus,
   Shield,
   Mail,
+  Camera,
 } from 'lucide-react';
 
 import auditoriasService from '../../../api/auditorias.service';
@@ -350,13 +351,13 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
 // DROPZONE COMPONENT (Improved with type separation)
 // ════════════════════════════════════════════════════════════════════════════
 
-const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) => {
+const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 10, maxPdfs = 5 }) => {
   const [dragActive, setDragActive] = useState({ pdf: false, photos: false });
   const pdfInputRef = useRef(null);
   const photoInputRef = useRef(null);
 
-  const pdfFiles = files.filter((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
-  const imageFiles = files.filter((f) => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name));
+  const pdfFiles = files.filter((f) => f.type === 'application/pdf' || f.name?.toLowerCase().endsWith('.pdf'));
+  const imageFiles = files.filter((f) => f.type?.startsWith('image/') || /\.(jpg|jpeg|png|webp|zip|rar)$/i.test(f.name));
 
   const onDrag = (type) => (e) => {
     e.preventDefault();
@@ -380,14 +381,15 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
   const handleFiles = (type, newFiles) => {
     const validFiles = [];
     if (type === 'pdf') {
-      const pdf = newFiles.find(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
-      if (pdf && pdfFiles.length === 0) validFiles.push(pdf);
+      const pdfs = newFiles.filter(f => f.type === 'application/pdf' || f.name?.toLowerCase().endsWith('.pdf'));
+      const remainingPdf = maxPdfs - pdfFiles.length;
+      validFiles.push(...pdfs.slice(0, remainingPdf));
     } else {
-      const photos = newFiles.filter(f => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name));
+      const photos = newFiles.filter(f => f.type?.startsWith('image/') || /\.(jpg|jpeg|png|webp|zip|rar)$/i.test(f.name));
       const remaining = maxPhotos - imageFiles.length;
       validFiles.push(...photos.slice(0, remaining));
     }
-    
+
     if (validFiles.length > 0) onAddFiles(validFiles);
   };
 
@@ -397,15 +399,15 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
       <div className="space-y-3">
         <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <FileText className="w-4 h-4 text-emerald-500" />
-          Documento Supporte (PDF)
+          Documentos PDF ({pdfFiles.length}/{maxPdfs})
         </label>
-        
+
         <div
           onDragEnter={onDrag('pdf')}
           onDragLeave={onDrag('pdf')}
           onDragOver={onDrag('pdf')}
           onDrop={onDrop('pdf')}
-          onClick={() => pdfFiles.length === 0 && pdfInputRef.current?.click()}
+          onClick={() => pdfFiles.length < maxPdfs && pdfInputRef.current?.click()}
           className={`relative h-40 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center transition-all duration-300 ${
             pdfFiles.length > 0
               ? 'border-emerald-500 bg-emerald-50/30 dark:bg-emerald-900/10'
@@ -418,6 +420,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             ref={pdfInputRef}
             type="file"
             accept=".pdf"
+            multiple
             onChange={(e) => handleFiles('pdf', [...e.target.files])}
             className="hidden"
           />
@@ -441,7 +444,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             <>
               <Upload className="w-8 h-8 text-slate-400 mb-2" />
               <p className="text-xs text-slate-500 dark:text-slate-400 text-center px-4">
-                Sube el cumplido o planilla (1 archivo)
+                Sube documentos PDF (máx. {maxPdfs})
               </p>
             </>
           )}
@@ -452,7 +455,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
       <div className="space-y-3">
         <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <Image className="w-4 h-4 text-blue-500" />
-          Fotos de la Carga ({imageFiles.length}/{maxPhotos})
+          Fotos y Comprimidos ({imageFiles.length}/{maxPhotos})
         </label>
         
         <div
@@ -473,7 +476,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             ref={photoInputRef}
             type="file"
             multiple
-            accept="image/*"
+            accept="image/*,.zip,.rar"
             onChange={(e) => handleFiles('photos', [...e.target.files])}
             className="hidden"
           />
@@ -482,7 +485,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
           <p className="text-xs text-slate-500 dark:text-slate-400 text-center px-4">
             {imageFiles.length >= maxPhotos 
               ? 'Límite de fotos alcanzado' 
-              : 'Sube fotos del sellado, placa y carga'}
+              : 'Sube fotos del sellado, placa y carga (JPG, PNG, ZIP, RAR)'}
           </p>
           {imageFiles.length > 0 && imageFiles.length < maxPhotos && (
             <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-1 font-medium">
@@ -538,6 +541,9 @@ const EntradaAuditoria = () => {
   // Averías
   const [averias, setAverias] = useState([]);
   const [averiaForm, setAveriaForm] = useState({ detalle_id: '', tipo_averia: '', descripcion_custom: '', cantidad_afectada: '' });
+  const [averiaFoto, setAveriaFoto] = useState(null);
+  const [averiaFotoPreview, setAveriaFotoPreview] = useState(null);
+  const averiaFotoRef = useRef(null);
   const [savingAveria, setSavingAveria] = useState(false);
 
   // Control de guardado intermedio
@@ -751,16 +757,21 @@ const EntradaAuditoria = () => {
 
     setSavingAveria(true);
     try {
-      const res = await auditoriasService.registrarAveria(id, {
+      const cantAfectada = cantidad_afectada ? parseInt(cantidad_afectada) : 1;
+      const payload = {
         detalle_id,
         sku: linea?.sku || '',
-        cantidad: 1,
+        cantidad: cantAfectada,
         tipo_averia: tipoFinal,
-        cantidad_afectada: cantidad_afectada ? parseInt(cantidad_afectada) : null,
-      });
+        cantidad_afectada: cantAfectada,
+      };
+      if (averiaFoto) payload.foto = averiaFoto;
+      const res = await auditoriasService.registrarAveria(id, payload);
       if (res?.success) {
         setAverias(prev => [res.data, ...prev]);
         setAveriaForm({ detalle_id: '', tipo_averia: '', descripcion_custom: '', cantidad_afectada: '' });
+        setAveriaFoto(null);
+        setAveriaFotoPreview(null);
         showAlert({ type: 'success', title: 'Avería registrada', message: 'La avería fue registrada correctamente.' });
         if (estado === 'pendiente') setEstado('en_proceso');
       }
@@ -1319,6 +1330,57 @@ const EntradaAuditoria = () => {
                   </div>
                 )}
 
+                {/* Foto de evidencia de avería (opcional) */}
+                {averiaForm.tipo_averia && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-amber-500" />
+                        Foto de evidencia <span className="text-slate-400 text-xs">(opcional)</span>
+                      </div>
+                    </label>
+                    <input
+                      ref={averiaFotoRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setAveriaFoto(file);
+                          setAveriaFotoPreview(URL.createObjectURL(file));
+                        }
+                        e.target.value = '';
+                      }}
+                    />
+                    {averiaFotoPreview ? (
+                      <div className="relative inline-block">
+                        <img
+                          src={averiaFotoPreview}
+                          alt="Vista previa"
+                          className="w-32 h-32 object-cover rounded-xl border-2 border-amber-300 dark:border-amber-700"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => { setAveriaFoto(null); setAveriaFotoPreview(null); }}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-sm"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => averiaFotoRef.current?.click()}
+                        className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:border-amber-400 hover:text-amber-600 dark:hover:border-amber-500 dark:hover:text-amber-400 transition-all"
+                      >
+                        <Camera className="w-4 h-4" />
+                        Adjuntar foto
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 <button
                   onClick={handleRegistrarAveria}
                   disabled={savingAveria || !averiaForm.detalle_id || !averiaForm.tipo_averia}
@@ -1338,7 +1400,13 @@ const EntradaAuditoria = () => {
                   const lineaRef = lineas.find(l => String(l.id) === String(av.detalle_id));
                   return (
                     <div key={av.id || idx} className="flex items-center gap-3 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl">
-                      <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                      {av.foto_url ? (
+                        <a href={av.foto_url.startsWith('http') ? av.foto_url : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '')}${av.foto_url}`} target="_blank" rel="noopener noreferrer">
+                          <img src={av.foto_url.startsWith('http') ? av.foto_url : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '')}${av.foto_url}`} alt="Evidencia" className="w-10 h-10 object-cover rounded-lg border border-amber-300 dark:border-amber-700 flex-shrink-0 hover:opacity-80 transition-opacity" />
+                        </a>
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                      )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
                           {lineaRef ? `${lineaRef.sku} — ${lineaRef.producto}` : av.sku || 'Producto'}
@@ -1406,7 +1474,8 @@ const EntradaAuditoria = () => {
                 files={files}
                 onAddFiles={handleAddFiles}
                 onRemoveFile={handleRemoveFile}
-                maxPhotos={5}
+                maxPhotos={10}
+                maxPdfs={5}
               />
             )}
           </Section>

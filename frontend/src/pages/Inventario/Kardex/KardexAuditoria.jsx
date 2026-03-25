@@ -41,6 +41,7 @@ import {
   Plus,
   Shield,
   Mail,
+  Camera,
 } from 'lucide-react';
 
 import auditoriasService from '../../../api/auditorias.service';
@@ -529,6 +530,9 @@ const KardexAuditoria = () => {
   // Averias
   const [averias, setAverias] = useState([]);
   const [averiaForm, setAveriaForm] = useState({ detalle_id: '', tipo_averia: '', descripcion_custom: '', cantidad_afectada: '' });
+  const [averiaFoto, setAveriaFoto] = useState(null);
+  const [averiaFotoPreview, setAveriaFotoPreview] = useState(null);
+  const averiaFotoRef = useRef(null);
   const [savingAveria, setSavingAveria] = useState(false);
 
   // Control de guardado intermedio
@@ -734,16 +738,21 @@ const KardexAuditoria = () => {
 
     setSavingAveria(true);
     try {
-      const res = await auditoriasService.registrarAveria(id, {
+      const cantAfectada = cantidad_afectada ? parseInt(cantidad_afectada) : 1;
+      const payload = {
         detalle_id,
         sku: linea?.sku || '',
-        cantidad: 1,
+        cantidad: cantAfectada,
         tipo_averia: tipoFinal,
-        cantidad_afectada: cantidad_afectada ? parseInt(cantidad_afectada) : null,
-      });
+        cantidad_afectada: cantAfectada,
+      };
+      if (averiaFoto) payload.foto = averiaFoto;
+      const res = await auditoriasService.registrarAveria(id, payload);
       if (res?.success) {
         setAverias(prev => [res.data, ...prev]);
         setAveriaForm({ detalle_id: '', tipo_averia: '', descripcion_custom: '', cantidad_afectada: '' });
+        setAveriaFoto(null);
+        setAveriaFotoPreview(null);
         showAlert({ type: 'success', title: 'Averia registrada', message: 'La averia fue registrada correctamente.' });
         if (estado === 'pendiente') setEstado('en_proceso');
       }
@@ -1320,6 +1329,29 @@ const KardexAuditoria = () => {
                   </div>
                 )}
 
+                {averiaForm.tipo_averia && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-amber-500" />
+                        Foto de evidencia <span className="text-slate-400 text-xs">(opcional)</span>
+                      </div>
+                    </label>
+                    <input ref={averiaFotoRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) { setAveriaFoto(file); setAveriaFotoPreview(URL.createObjectURL(file)); } e.target.value = ''; }} />
+                    {averiaFotoPreview ? (
+                      <div className="relative inline-block">
+                        <img src={averiaFotoPreview} alt="Vista previa" className="w-32 h-32 object-cover rounded-xl border-2 border-amber-300 dark:border-amber-700" />
+                        <button type="button" onClick={() => { setAveriaFoto(null); setAveriaFotoPreview(null); }} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-sm">✕</button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => averiaFotoRef.current?.click()} className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:border-amber-400 hover:text-amber-600 dark:hover:border-amber-500 dark:hover:text-amber-400 transition-all">
+                        <Camera className="w-4 h-4" />
+                        Adjuntar foto
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 <button
                   onClick={handleRegistrarAveria}
                   disabled={savingAveria || !averiaForm.detalle_id || !averiaForm.tipo_averia}
@@ -1339,7 +1371,13 @@ const KardexAuditoria = () => {
                   const lineaRef = lineas.find(l => String(l.id) === String(av.detalle_id));
                   return (
                     <div key={av.id || idx} className="flex items-center gap-3 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl">
-                      <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                      {av.foto_url ? (
+                        <a href={av.foto_url.startsWith('http') ? av.foto_url : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '')}${av.foto_url}`} target="_blank" rel="noopener noreferrer">
+                          <img src={av.foto_url.startsWith('http') ? av.foto_url : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '')}${av.foto_url}`} alt="Evidencia" className="w-10 h-10 object-cover rounded-lg border border-amber-300 dark:border-amber-700 flex-shrink-0 hover:opacity-80 transition-opacity" />
+                        </a>
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                      )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
                           {lineaRef ? `${lineaRef.sku} — ${lineaRef.producto}` : av.sku || 'Producto'}

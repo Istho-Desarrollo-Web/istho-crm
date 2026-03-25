@@ -90,7 +90,7 @@
 
   {{#if tieneAverias}}
   <div class="info-box warning">
-    <strong>Nota:</strong> Se registraron {{totalAverias}} unidades con averia. Las evidencias fotograficas estan disponibles en el sistema.
+    <strong>Nota:</strong> Se registraron {{totalAverias}} unidades con averia.{{#if tieneEvidencias}} Consulte las evidencias fotograficas en la seccion de archivos adjuntos.{{else}} Las evidencias fotograficas estan disponibles en el sistema.{{/if}}
   </div>
   {{/if}}
 
@@ -138,9 +138,32 @@
   </div>
   {{/if}}
 
+  {{#if tieneEvidencias}}
+  <h3 style="color: #1e293b; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600;">📎 Evidencias Adjuntas ({{evidenciasLinks.length}} archivos)</h3>
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin: 10px 0;">
+    {{#each evidenciasLinks}}
+    <tr>
+      <td style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+          <tr>
+            <td style="vertical-align: middle;">
+              <p style="margin: 0; color: #1e293b; font-size: 13px; font-weight: 500;">{{this.nombre}}</p>
+              <p style="margin: 2px 0 0 0; color: #94a3b8; font-size: 11px;">{{this.tipo}}</p>
+            </td>
+            <td style="text-align: right; vertical-align: middle;">
+              <a href="{{this.url}}" target="_blank" style="display: inline-block; padding: 6px 14px; background-color: #E74C3C; color: #ffffff; font-size: 12px; font-weight: 600; text-decoration: none; border-radius: 6px;">Ver archivo</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    {{/each}}
+  </table>
+  {{else}}
   <p style="color: #475569; font-size: 14px; margin: 25px 0 0 0;">
-    Los documentos de cumplido se encuentran adjuntos a este correo o disponibles en el sistema CRM.
+    Los documentos de soporte estan disponibles en el sistema CRM.
   </p>
+  {{/if}}
 
   <p style="color: #475569; font-size: 14px; margin: 20px 0 0 0;">
     Atentamente,<br>
