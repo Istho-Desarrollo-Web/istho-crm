@@ -284,6 +284,7 @@ export const CAJAS_MENORES_ENDPOINTS = {
   BY_ID: (id) => `/cajas-menores/${id}`,
   STATS: '/cajas-menores/stats',
   CERRAR: (id) => `/cajas-menores/${id}/cerrar`,
+  USUARIOS_ASIGNABLES: '/cajas-menores/usuarios-asignables',
 };
 
 // ════════════════════════════════════════════════════════════════════════════

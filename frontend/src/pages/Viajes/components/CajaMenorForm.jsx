@@ -16,7 +16,7 @@ import PropTypes from 'prop-types';
 import { Wallet, User, DollarSign, FileText, ArrowLeftRight, Info } from 'lucide-react';
 import { Button, Modal } from '../../../components/common/index';
 import { cajasMenoresService } from '../../../api/viajes.service';
-import adminService from '../../../api/admin.service';
+// adminService removido — usar cajasMenoresService.getUsuariosAsignables() (no requiere admin)
 import useNotification from '../../../hooks/useNotification';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -106,7 +106,7 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
     const fetchData = async () => {
       try {
         const [usuariosRes, cajasRes] = await Promise.all([
-          adminService.getUsuarios({ estado: 'activo', limit: 200 }),
+          cajasMenoresService.getUsuariosAsignables(),
           cajasMenoresService.getAll({ estado: 'cerrada' }),
         ]);
 

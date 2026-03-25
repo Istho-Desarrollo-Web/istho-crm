@@ -319,6 +319,66 @@
       padding: 20px;
     }
 
+    /* ─── Screenshots (capturas reales) ──────────────────────── */
+    .screenshot {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin: 16px 0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: zoom-in;
+    }
+    .screenshot:hover {
+      transform: scale(1.01);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    /* Ocultar imagen sin src, mostrar caption como placeholder */
+    .screenshot[src=""] {
+      display: none;
+    }
+    .screenshot[src=""] + .screenshot-caption {
+      display: block;
+      border: 2px dashed #B0BEC5;
+      border-radius: 12px;
+      padding: 40px 20px;
+      background: #F8F9FA;
+      color: #B0BEC5;
+      font-style: normal;
+      text-align: center;
+      margin: 16px 0;
+    }
+    .screenshot-caption {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin: -8px 0 16px 0;
+      font-style: italic;
+    }
+    /* Lightbox para ver captura en grande */
+    .screenshot-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.85);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      cursor: zoom-out;
+    }
+    .screenshot-lightbox.active {
+      display: flex;
+    }
+    .screenshot-lightbox img {
+      max-width: 95%;
+      max-height: 95vh;
+      border-radius: 8px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+
     /* ─── Code / Keyboard keys ────────────────────────────────── */
     kbd {
       background: #ECEFF1;
@@ -589,7 +649,8 @@
         <li>Haga clic en el boton <strong>"Iniciar Sesion"</strong>.</li>
         <li>Si las credenciales son correctas, sera redirigido al Dashboard correspondiente a su rol.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Pantalla de inicio de sesion (Login)</div>
+      <img src="https://res.cloudinary.com/dut7n03xd/image/upload/v1774474514/Pantalla_Login_vjszyo.png" alt="Pantalla de inicio de sesión" class="screenshot" data-caption="Fig. 1 — Pantalla de inicio de sesión" />
+      <p class="screenshot-caption">Fig. 1 — Pantalla de inicio de sesión</p>
 
       <div class="info-box red">
         <strong>Bloqueo de Cuenta:</strong> Despues de 5 intentos fallidos consecutivos, su cuenta sera bloqueada
@@ -609,7 +670,8 @@
         <li>Ingrese su nueva contrasena (minimo 8 caracteres, al menos una mayuscula, un numero y un caracter especial).</li>
         <li>Confirme la nueva contrasena y haga clic en <strong>"Restablecer Contrasena"</strong>.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Dialogo de recuperacion de contrasena</div>
+      <img src="https://res.cloudinary.com/dut7n03xd/image/upload/v1774474631/Recuperar_Contrase%C3%B1a_gn9bpm.png" alt="Dialogo de recuperacion de contrasena" class="screenshot" />
+      <p class="screenshot-caption">Fig. 2 — Dialogo de recuperacion de contrasena</p>
 
       <hr class="sub-divider">
 
@@ -624,12 +686,13 @@
       </ul>
       <ol class="steps">
         <li>Al iniciar sesion, se mostrara automaticamente el dialogo de cambio de contrasena.</li>
-        <li>Ingrese su <strong>contrasena actual</strong> (la temporal o la vencida).</li>
+        <li>Ingrese su <strong>contrasena actual</strong> (la temporal asignada por el administrador).</li>
         <li>Ingrese la <strong>nueva contrasena</strong> cumpliendo los requisitos de seguridad.</li>
         <li>Confirme la nueva contrasena.</li>
         <li>Haga clic en <strong>"Cambiar Contrasena"</strong>.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Dialogo de cambio obligatorio de contrasena</div>
+      <img src="https://res.cloudinary.com/dut7n03xd/image/upload/v1774474816/Cambio_Contrase%C3%B1a_exbthx.png" alt="Dialogo de cambio obligatorio de contrasena" class="screenshot" />
+      <p class="screenshot-caption">Fig. 3 — Dialogo de cambio obligatorio de contrasena</p>
 
       <div class="info-box green">
         <strong>Buena practica:</strong> Utilice una contrasena unica que no haya usado en otros servicios.
@@ -664,7 +727,8 @@
         <li><strong>Actividad reciente:</strong> Ultimos movimientos, auditorias y notificaciones del sistema.</li>
         <li><strong>Accesos directos:</strong> Botones rapidos para crear operaciones, registrar vehiculos y gestionar usuarios.</li>
       </ul>
-      <div class="screenshot-placeholder">Insertar captura: Dashboard del Administrador</div>
+      <img src="https://res.cloudinary.com/dut7n03xd/image/upload/v1774474936/Dashboard_Admin_coyrsp.png" alt="Dashboard del Administrador" class="screenshot" />
+      <p class="screenshot-caption">Fig. 4 — Dashboard del Administrador</p>
 
       <hr class="sub-divider">
 
@@ -675,7 +739,8 @@
         <li><strong>Graficos:</strong> Gastos por categoria, tendencia mensual de aprobaciones.</li>
         <li><strong>Alertas:</strong> Cajas menores proximas a vencer, movimientos que requieren aprobacion.</li>
       </ul>
-      <div class="screenshot-placeholder">Insertar captura: Dashboard Financiera</div>
+      <img src="" alt="Dashboard Financiera" class="screenshot" />
+      <p class="screenshot-caption">Fig. 5 — Dashboard Financiera</p>
 
       <hr class="sub-divider">
 
@@ -686,7 +751,8 @@
         <li><strong>Mis gastos:</strong> Resumen de gastos registrados y pendientes de aprobacion.</li>
         <li><strong>Vehiculo asignado:</strong> Informacion del vehiculo actual con alertas de mantenimiento.</li>
       </ul>
-      <div class="screenshot-placeholder">Insertar captura: Dashboard Conductor</div>
+      <img src="" alt="Dashboard Conductor" class="screenshot" />
+      <p class="screenshot-caption">Fig. 6 — Dashboard Conductor</p>
 
       <hr class="sub-divider">
 
@@ -697,7 +763,8 @@
         <li><strong>Auditorias pendientes:</strong> Entradas y salidas WMS por auditar.</li>
         <li><strong>Actividad:</strong> Ultimas operaciones realizadas en el almacen.</li>
       </ul>
-      <div class="screenshot-placeholder">Insertar captura: Dashboard Operador</div>
+      <img src="" alt="Dashboard Operador" class="screenshot" />
+      <p class="screenshot-caption">Fig. 7 — Dashboard Operador</p>
 
       <div class="info-box blue">
         <strong>Consejo:</strong> El dashboard se actualiza automaticamente cada 60 segundos. Tambien puede
@@ -730,7 +797,8 @@
         <li>Utilice los filtros avanzados para filtrar por estado (activo/inactivo) o tipo de cliente.</li>
         <li>Haga clic en la fila de un cliente para ver su detalle, o use los botones de accion.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Listado de clientes con filtros y busqueda</div>
+      <img src="" alt="Listado de clientes con filtros y busqueda" class="screenshot" />
+      <p class="screenshot-caption">Fig. 8 — Listado de clientes con filtros y busqueda</p>
 
       <hr class="sub-divider">
 
@@ -742,7 +810,8 @@
         <li><strong>Inventario:</strong> Productos almacenados pertenecientes al cliente.</li>
         <li><strong>Facturacion:</strong> Resumen de facturacion y estado de pagos.</li>
       </ul>
-      <div class="screenshot-placeholder">Insertar captura: Vista de detalle del cliente con pestanas</div>
+      <img src="" alt="Vista de detalle del cliente con pestanas" class="screenshot" />
+      <p class="screenshot-caption">Fig. 9 — Vista de detalle del cliente con pestanas</p>
 
       <hr class="sub-divider">
 
@@ -755,7 +824,8 @@
         <li>Haga clic en <strong>"Guardar"</strong> para registrar el cliente.</li>
         <li>Para editar, acceda al detalle del cliente y haga clic en el boton <strong>"Editar"</strong>.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Formulario de creacion/edicion de cliente</div>
+      <img src="" alt="Formulario de creacion/edicion de cliente" class="screenshot" />
+      <p class="screenshot-caption">Fig. 10 — Formulario de creacion/edicion de cliente</p>
 
       <div class="info-box blue">
         <strong>Consejo:</strong> El campo NIT se valida automaticamente para evitar duplicados. Si el NIT ya existe,
@@ -788,7 +858,8 @@
         <li>Aplique filtros por <strong>cliente</strong> o <strong>estado</strong> usando los selectores superiores.</li>
         <li>La columna de stock muestra indicadores de color: verde (suficiente), amarillo (bajo), rojo (agotado).</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Listado de productos en inventario</div>
+      <img src="" alt="Listado de productos en inventario" class="screenshot" />
+      <p class="screenshot-caption">Fig. 11 — Listado de productos en inventario</p>
 
       <hr class="sub-divider">
 
@@ -801,7 +872,8 @@
         <li>En <strong>Cajas</strong>: cajas de inventario asociadas con lote, ubicacion y estado.</li>
         <li>En <strong>Estadisticas</strong>: graficos de movimientos mensuales y tendencias de stock.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Detalle de producto con kardex y ubicacion</div>
+      <img src="" alt="Detalle de producto con kardex y ubicacion" class="screenshot" />
+      <p class="screenshot-caption">Fig. 12 — Detalle de producto con kardex y ubicacion</p>
 
       <hr class="sub-divider">
 
@@ -818,7 +890,8 @@
         <li>Cada alerta muestra acciones: <strong>Atender</strong>, <strong>Descartar</strong> o <strong>Silenciar</strong>.</li>
         <li>Haga clic en una alerta para navegar directamente al producto afectado.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Pagina de alertas de inventario</div>
+      <img src="" alt="Pagina de alertas de inventario" class="screenshot" />
+      <p class="screenshot-caption">Fig. 13 — Pagina de alertas de inventario</p>
 
       <div class="info-box green">
         <strong>Sincronizacion WMS:</strong> El inventario se sincroniza automaticamente con el sistema
@@ -850,11 +923,13 @@
         <li>Haga clic en un documento para abrirlo y ver el detalle completo.</li>
         <li>El detalle se organiza en secciones: <strong>Documento</strong>, <strong>Lineas</strong>, <strong>Evidencias</strong>, <strong>Datos Logisticos</strong> y <strong>Averias</strong>.</li>
         <li>Verifique cada linea comparando la <strong>cantidad esperada</strong> vs. la <strong>cantidad recibida</strong>. Haga clic en cada linea para marcarla como verificada.</li>
-        <li>Si detecta diferencias, use el boton <strong>"Registrar Averia"</strong> seleccionando el tipo (Rotura, Faltante, Mojado, Otra) y una descripcion.</li>
-        <li>Suba evidencias fotograficas en la seccion de <strong>Evidencias</strong>.</li>
+        <li>Si detecta diferencias, use el boton <strong>"Registrar Averia"</strong> seleccionando el tipo (Rotura, Faltante, Mojado, Otra), una descripcion, y opcionalmente el campo <strong>"Unidades afectadas"</strong>. Puede adjuntar una foto de evidencia con vista previa antes de guardar. Tambien puede eliminar una averia registrada usando el boton correspondiente.</li>
+        <li>Suba evidencias en la seccion de <strong>Evidencias</strong>: puede adjuntar hasta <strong>5 archivos PDF</strong> y <strong>10 fotos o archivos comprimidos (ZIP, RAR)</strong>. Los archivos se almacenan en la nube y persisten entre reinicios del servidor.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Lista de auditorias de entrada</div>
-      <div class="screenshot-placeholder">Insertar captura: Detalle de auditoria con lineas y averias</div>
+      <img src="" alt="Lista de auditorias de entrada" class="screenshot" />
+      <p class="screenshot-caption">Fig. 14 — Lista de auditorias de entrada</p>
+      <img src="" alt="Detalle de auditoria con lineas y averias" class="screenshot" />
+      <p class="screenshot-caption">Fig. 15 — Detalle de auditoria con lineas y averias</p>
 
       <hr class="sub-divider">
 
@@ -864,10 +939,11 @@
         <li>Revise la lista de documentos de salida con la misma estructura que entradas.</li>
         <li>Abra un documento para verificar las lineas de picking.</li>
         <li>Compare las cantidades despachadas contra las solicitadas y marque cada linea como verificada.</li>
-        <li>Si hay productos danados, use <strong>"Registrar Averia"</strong> con tipo, descripcion y evidencia fotografica.</li>
+        <li>Si hay productos danados, use <strong>"Registrar Averia"</strong> con tipo, descripcion, campo opcional de <strong>"Unidades afectadas"</strong> y foto de evidencia con vista previa. Puede eliminar averias registradas si es necesario.</li>
         <li>Complete los datos de despacho: numero de picking, sucursal de entrega y ciudad destino.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Detalle de auditoria de salida con datos de despacho</div>
+      <img src="" alt="Detalle de auditoria de salida con datos de despacho" class="screenshot" />
+      <p class="screenshot-caption">Fig. 16 — Detalle de auditoria de salida con datos de despacho</p>
 
       <hr class="sub-divider">
 
@@ -891,7 +967,8 @@
         <li>La auditoria quedara con estado "Cerrada" y se enviara un correo electronico al cliente automaticamente.</li>
         <li>Una vez cerrada, la auditoria no puede reabrirse ni modificarse.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Dialogo de cierre con seleccion de plantilla de email</div>
+      <img src="" alt="Dialogo de cierre con seleccion de plantilla de email" class="screenshot" />
+      <p class="screenshot-caption">Fig. 17 — Dialogo de cierre con seleccion de plantilla de email</p>
 
       <div class="info-box red">
         <strong>Importante:</strong> Una vez cerrada una auditoria, no puede reabrirse. Asegurese de haber
@@ -924,7 +1001,8 @@
         <li>Los vehiculos con alertas activas muestran un icono de advertencia junto a la placa.</li>
         <li>Haga clic en un vehiculo para ver su detalle completo.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Listado de vehiculos con filtros</div>
+      <img src="" alt="Listado de vehiculos con filtros" class="screenshot" />
+      <p class="screenshot-caption">Fig. 18 — Listado de vehiculos con filtros</p>
 
       <hr class="sub-divider">
 
@@ -938,7 +1016,8 @@
         <li>Agregue observaciones si es necesario.</li>
         <li>Haga clic en <strong>"Guardar"</strong> para registrar el vehiculo.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Formulario de creacion/edicion de vehiculo</div>
+      <img src="" alt="Formulario de creacion/edicion de vehiculo" class="screenshot" />
+      <p class="screenshot-caption">Fig. 19 — Formulario de creacion/edicion de vehiculo</p>
 
       <hr class="sub-divider">
 
@@ -1007,7 +1086,8 @@
         <li>Filtre por <strong>rango de fechas</strong>, <strong>conductor</strong>, <strong>vehiculo</strong> o <strong>estado</strong>.</li>
         <li>Use la busqueda rapida para localizar viajes por numero o destino.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Listado de viajes con filtros y estados</div>
+      <img src="" alt="Listado de viajes con filtros y estados" class="screenshot" />
+      <p class="screenshot-caption">Fig. 20 — Listado de viajes con filtros y estados</p>
 
       <hr class="sub-divider">
 
@@ -1023,7 +1103,8 @@
         <li>Opcionalmente, asocie una <strong>caja menor</strong> para gastos de ruta.</li>
         <li>Haga clic en <strong>"Crear Viaje"</strong> para registrarlo.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Formulario de creacion de viaje</div>
+      <img src="" alt="Formulario de creacion de viaje" class="screenshot" />
+      <p class="screenshot-caption">Fig. 21 — Formulario de creacion de viaje</p>
 
       <hr class="sub-divider">
 
@@ -1034,9 +1115,16 @@
         <li>La seccion de <strong>Gastos</strong> muestra todos los movimientos de caja menor asociados.</li>
         <li>La seccion de <strong>Documentos</strong> lista los soportes adjuntos (remesas, facturas, etc.).</li>
         <li>Use los botones de accion para <strong>cambiar estado</strong>: Iniciar Viaje, Completar, Cancelar.</li>
+        <li>Desde el detalle de un viaje activo, puede cambiar su estado:
+          <ul>
+            <li><strong>Completar:</strong> Marca el viaje como finalizado. Se muestra un dialogo de confirmacion con resumen de ruta y valor.</li>
+            <li><strong>Anular:</strong> Cancela el viaje. Requiere ingresar un motivo obligatorio. Los gastos asociados permanecen registrados.</li>
+          </ul>
+        </li>
         <li>Los conductores pueden actualizar el estado desde su dashboard movil.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Vista de detalle del viaje con secciones</div>
+      <img src="" alt="Vista de detalle del viaje con secciones" class="screenshot" />
+      <p class="screenshot-caption">Fig. 22 — Vista de detalle del viaje con secciones</p>
 
       <div class="info-box blue">
         <strong>Consejo:</strong> Al completar un viaje, el sistema calculara automaticamente la rentabilidad
@@ -1069,7 +1157,8 @@
         <li>Filtre por <strong>estado</strong>, <strong>responsable</strong> o <strong>rango de fechas</strong>.</li>
         <li>La columna de monto disponible muestra una barra de progreso visual del gasto.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Listado de cajas menores con estados</div>
+      <img src="" alt="Listado de cajas menores con estados" class="screenshot" />
+      <p class="screenshot-caption">Fig. 23 — Listado de cajas menores con estados</p>
 
       <hr class="sub-divider">
 
@@ -1083,7 +1172,15 @@
         <li>Establezca la <strong>fecha limite</strong> para el cierre de la caja.</li>
         <li>Haga clic en <strong>"Crear Caja Menor"</strong>.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Formulario de creacion de caja menor</div>
+
+      <div class="info-box blue">
+        <strong>Traslado de saldo:</strong> Al seleccionar una caja anterior para traslado de saldo, el campo
+        <strong>"Saldo Inicial"</strong> se auto-rellena con el saldo de la caja anterior y muestra un indicador
+        <em>"Saldo heredado de caja anterior"</em>.
+      </div>
+
+      <img src="" alt="Formulario de creacion de caja menor" class="screenshot" />
+      <p class="screenshot-caption">Fig. 24 — Formulario de creacion de caja menor</p>
 
       <hr class="sub-divider">
 
@@ -1095,7 +1192,8 @@
         <li>Cada movimiento muestra su <strong>estado de aprobacion</strong>: pendiente, aprobado o rechazado.</li>
         <li>Use el boton <strong>"Nuevo Movimiento"</strong> para agregar un gasto (ver seccion Movimientos).</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Detalle de caja menor con lista de movimientos</div>
+      <img src="" alt="Detalle de caja menor con lista de movimientos" class="screenshot" />
+      <p class="screenshot-caption">Fig. 25 — Detalle de caja menor con lista de movimientos</p>
 
       <hr class="sub-divider">
 
@@ -1103,12 +1201,18 @@
       <ol class="steps">
         <li>Dentro del detalle de la caja, haga clic en <strong>"Cerrar Caja"</strong>.</li>
         <li>El sistema verificara que todos los movimientos esten aprobados o rechazados.</li>
-        <li>Se mostrara un dialogo con el <strong>resumen de cierre</strong>: monto asignado, total gastado, saldo a devolver.</li>
+        <li>Se mostrara un modal de cierre con:
+          <ul>
+            <li><strong>Resumen financiero:</strong> saldo inicial, total ingresos, total egresos y saldo final calculado.</li>
+            <li><strong>Opciones para saldo sobrante:</strong> guardar el excedente para una proxima caja o entregar el saldo.</li>
+            <li><strong>Campo de observaciones:</strong> para registrar notas adicionales sobre el cierre.</li>
+          </ul>
+        </li>
         <li>Ingrese el <strong>monto devuelto</strong> por el responsable (si aplica).</li>
-        <li>Agregue <strong>observaciones de cierre</strong>.</li>
         <li>Confirme haciendo clic en <strong>"Confirmar Cierre"</strong>.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Dialogo de cierre de caja menor</div>
+      <img src="" alt="Dialogo de cierre de caja menor" class="screenshot" />
+      <p class="screenshot-caption">Fig. 26 — Dialogo de cierre de caja menor</p>
 
       <div class="info-box red">
         <strong>Importante:</strong> No se puede cerrar una caja menor si existen movimientos pendientes de aprobacion.
@@ -1140,7 +1244,8 @@
         <li>Filtre por <strong>caja menor</strong>, <strong>estado de aprobacion</strong>, <strong>categoria de gasto</strong> o <strong>rango de fechas</strong>.</li>
         <li>Los movimientos pendientes de aprobacion se resaltan con un indicador amarillo.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Listado de movimientos con filtros</div>
+      <img src="" alt="Listado de movimientos con filtros" class="screenshot" />
+      <p class="screenshot-caption">Fig. 27 — Listado de movimientos con filtros</p>
 
       <hr class="sub-divider">
 
@@ -1164,7 +1269,8 @@
         </li>
         <li>Revise la informacion y haga clic en <strong>"Registrar Movimiento"</strong>.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Formulario de movimiento con pestanas</div>
+      <img src="" alt="Formulario de movimiento con pestanas" class="screenshot" />
+      <p class="screenshot-caption">Fig. 28 — Formulario de movimiento con pestanas</p>
 
       <hr class="sub-divider">
 
@@ -1178,7 +1284,8 @@
         <li>Para <strong>rechazar</strong>: haga clic en el boton rojo <strong>"Rechazar"</strong> e ingrese el <strong>motivo del rechazo</strong>.</li>
         <li>El responsable de la caja recibira una notificacion con el resultado de la revision.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Dialogo de aprobacion/rechazo de movimiento</div>
+      <img src="" alt="Dialogo de aprobacion/rechazo de movimiento" class="screenshot" />
+      <p class="screenshot-caption">Fig. 29 — Dialogo de aprobacion/rechazo de movimiento</p>
 
       <hr class="sub-divider">
 
@@ -1218,7 +1325,8 @@
         <li>Vera las categorias de reportes disponibles organizadas en tarjetas.</li>
         <li>Seleccione la categoria deseada para acceder a los reportes especificos.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Vista general del modulo de reportes</div>
+      <img src="" alt="Vista general del modulo de reportes" class="screenshot" />
+      <p class="screenshot-caption">Fig. 30 — Vista general del modulo de reportes</p>
 
       <hr class="sub-divider">
 
@@ -1230,7 +1338,8 @@
         <li>El reporte muestra: cantidad de viajes, kilometros recorridos, valor total de fletes, gastos asociados.</li>
         <li>Use los botones <strong>"Exportar Excel"</strong> o <strong>"Exportar PDF"</strong> para descargar el reporte.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Reporte de viajes con graficos y tabla</div>
+      <img src="" alt="Reporte de viajes con graficos y tabla" class="screenshot" />
+      <p class="screenshot-caption">Fig. 31 — Reporte de viajes con graficos y tabla</p>
 
       <hr class="sub-divider">
 
@@ -1242,7 +1351,8 @@
         <li>La seccion grafica muestra la distribucion de gastos por categoria (grafico circular).</li>
         <li>Exporte el reporte en el formato deseado.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Reporte de cajas menores</div>
+      <img src="" alt="Reporte de cajas menores" class="screenshot" />
+      <p class="screenshot-caption">Fig. 32 — Reporte de cajas menores</p>
 
       <hr class="sub-divider">
 
@@ -1254,7 +1364,8 @@
         <li>Incluye totales por categoria y tendencias mensuales en graficos de linea.</li>
         <li>Exporte a Excel para integracion con sistemas contables.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Reporte de gastos con detalle y graficos</div>
+      <img src="" alt="Reporte de gastos con detalle y graficos" class="screenshot" />
+      <p class="screenshot-caption">Fig. 33 — Reporte de gastos con detalle y graficos</p>
 
       <hr class="sub-divider">
 
@@ -1270,7 +1381,8 @@
         <li>Elija el <strong>formato de envio</strong>: Excel, PDF o ambos.</li>
         <li>Haga clic en <strong>"Guardar Programacion"</strong>.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Pagina de reportes programados</div>
+      <img src="" alt="Pagina de reportes programados" class="screenshot" />
+      <p class="screenshot-caption">Fig. 34 — Pagina de reportes programados</p>
 
       <div class="info-box green">
         <strong>Automatizacion:</strong> Los reportes programados se generan y envian automaticamente en el
@@ -1323,7 +1435,8 @@
         <li>Por defecto, solo las ordenes con estado <strong>"Finalizada"</strong> son procesadas.</li>
         <li>Si el WMS envia una orden con un estado que no esta en esta lista, sera rechazada automaticamente.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Pagina de configuracion WMS con las tres secciones</div>
+      <img src="" alt="Pagina de configuracion WMS con las tres secciones" class="screenshot" />
+      <p class="screenshot-caption">Fig. 35 — Pagina de configuracion WMS con las tres secciones</p>
 
       <div class="info-box red">
         <strong>Precaucion:</strong> Modificar o desactivar motivos, tipos o estados que estan en uso
@@ -1353,7 +1466,8 @@
         <li>Filtre por <strong>rol</strong> o <strong>estado</strong> para segmentar la lista.</li>
         <li>Haga clic en un usuario para ver y editar su perfil completo.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Listado de usuarios del sistema</div>
+      <img src="" alt="Listado de usuarios del sistema" class="screenshot" />
+      <p class="screenshot-caption">Fig. 36 — Listado de usuarios del sistema</p>
 
       <hr class="sub-divider">
 
@@ -1368,7 +1482,8 @@
         <li>Marque si el usuario debe <strong>cambiar contrasena en el primer inicio</strong>.</li>
         <li>Haga clic en <strong>"Guardar"</strong>. El sistema enviara un correo de bienvenida con las credenciales.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Formulario de creacion/edicion de usuario</div>
+      <img src="" alt="Formulario de creacion/edicion de usuario" class="screenshot" />
+      <p class="screenshot-caption">Fig. 37 — Formulario de creacion/edicion de usuario</p>
 
       <hr class="sub-divider">
 
@@ -1397,7 +1512,8 @@
         <li>Para cerrar la sesion de un usuario, haga clic en <strong>"Cerrar Sesion"</strong> en la fila correspondiente.</li>
         <li>Use <strong>"Cerrar Todas las Sesiones"</strong> para desconectar a todos los usuarios (excepto el suyo).</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Pagina de sesiones activas</div>
+      <img src="" alt="Pagina de sesiones activas" class="screenshot" />
+      <p class="screenshot-caption">Fig. 38 — Pagina de sesiones activas</p>
 
       <div class="info-box red">
         <strong>Seguridad:</strong> Si detecta sesiones sospechosas (IPs desconocidas, actividad fuera de horario),
@@ -1428,7 +1544,8 @@
         <li>La imagen se recorta automaticamente a formato circular.</li>
         <li>Haga clic en <strong>"Guardar Cambios"</strong> para actualizar su perfil.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Pagina de perfil del usuario</div>
+      <img src="" alt="Pagina de perfil del usuario" class="screenshot" />
+      <p class="screenshot-caption">Fig. 39 — Pagina de perfil del usuario</p>
 
       <div class="info-box blue">
         <strong>Nota:</strong> El correo electronico no puede ser modificado por el usuario.
@@ -1468,7 +1585,8 @@
         </li>
         <li><strong>Idioma y formato:</strong> El sistema esta configurado para Colombia (formato de fecha DD/MM/AAAA, moneda COP).</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Pagina de configuracion y preferencias</div>
+      <img src="" alt="Pagina de configuracion y preferencias" class="screenshot" />
+      <p class="screenshot-caption">Fig. 40 — Pagina de configuracion y preferencias</p>
 
       <div class="info-box green">
         <strong>Modo Oscuro:</strong> El modo oscuro reduce la fatiga visual en ambientes con poca luz
@@ -1500,7 +1618,8 @@
         <li>Use el boton <strong>"Marcar todas como leidas"</strong> para limpiar el contador.</li>
         <li>Para ver el historial completo, haga clic en <strong>"Ver todas las notificaciones"</strong>.</li>
       </ol>
-      <div class="screenshot-placeholder">Insertar captura: Panel desplegable de notificaciones</div>
+      <img src="" alt="Panel desplegable de notificaciones" class="screenshot" />
+      <p class="screenshot-caption">Fig. 41 — Panel desplegable de notificaciones</p>
 
       <hr class="sub-divider">
 
@@ -1583,6 +1702,13 @@
         Este documento es propiedad de ISTHO S.A.S. Su distribucion no autorizada esta prohibida.
       </p>
     </div>
+    <div class="info-box green">
+      <strong>Almacenamiento en la nube:</strong> Todos los archivos subidos al sistema (fotos, PDFs, documentos de soporte)
+      se almacenan en Cloudinary, un servicio de almacenamiento en la nube. Esto garantiza que los archivos persisten
+      entre actualizaciones del servidor y se cargan rapidamente gracias a la red de distribucion de contenido (CDN).
+      Las imagenes se comprimen automaticamente para optimizar el almacenamiento sin perder calidad visual.
+    </div>
+
   </main>
 
   <!-- Print Button -->
@@ -1644,6 +1770,36 @@
 
       // Initial call
       onScroll();
+    })();
+  </script>
+
+  <!-- Lightbox para capturas -->
+  <div class="screenshot-lightbox" id="lightbox">
+    <img src="" alt="Captura ampliada" id="lightbox-img" />
+  </div>
+  <script>
+    (() => {
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightbox-img');
+
+      // Click en cualquier screenshot abre lightbox
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('screenshot')) {
+          lightboxImg.src = e.target.src;
+          lightboxImg.alt = e.target.alt;
+          lightbox.classList.add('active');
+        }
+      });
+
+      // Click en lightbox lo cierra
+      lightbox.addEventListener('click', () => {
+        lightbox.classList.remove('active');
+      });
+
+      // Escape cierra lightbox
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') lightbox.classList.remove('active');
+      });
     })();
   </script>
 </body>

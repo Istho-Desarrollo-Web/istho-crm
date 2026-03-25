@@ -51,6 +51,10 @@ export const cajasMenoresService = {
     const response = await apiClient.get(CAJAS_MENORES_ENDPOINTS.BASE, { params });
     return response;
   },
+  getUsuariosAsignables: async () => {
+    const response = await apiClient.get(CAJAS_MENORES_ENDPOINTS.USUARIOS_ASIGNABLES);
+    return response;
+  },
   getById: async (id) => {
     const response = await apiClient.get(CAJAS_MENORES_ENDPOINTS.BY_ID(id));
     return response;

@@ -417,4 +417,23 @@ const estadisticas = async (req, res) => {
   }
 };
 
-module.exports = { listar, obtenerPorId, crear, actualizar, cerrar, eliminar, estadisticas };
+/**
+ * GET /cajas-menores/usuarios-asignables
+ * Lista usuarios activos (básico: id + nombre) para asignar a cajas menores.
+ * No requiere rol admin — cualquier rol con permiso caja_menor.crear puede usarlo.
+ */
+const listarUsuariosAsignables = async (req, res) => {
+  try {
+    const usuarios = await Usuario.findAll({
+      where: { activo: true },
+      attributes: ['id', 'nombre', 'apellido', 'nombre_completo', 'username', 'rol'],
+      order: [['nombre', 'ASC']],
+    });
+    return success(res, usuarios);
+  } catch (error) {
+    logger.error('Error al listar usuarios asignables:', { message: error.message });
+    return serverError(res, 'Error al obtener usuarios', error);
+  }
+};
+
+module.exports = { listar, obtenerPorId, crear, actualizar, cerrar, eliminar, estadisticas, listarUsuariosAsignables };

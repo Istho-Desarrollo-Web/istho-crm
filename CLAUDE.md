@@ -46,7 +46,8 @@ set CRM_API_URL=https://backend.up.railway.app/api/v1&& set WMS_API_KEY=key&& no
 ### Backend: Express + Sequelize + MySQL
 - **Entry:** `server/server.js` → creates HTTP server, Socket.io, health check, then `app.js` for Express middleware
 - **Pattern:** Routes → Middleware (auth/permissions) → Controllers → Services → Models
-- **Auth:** JWT with refresh tokens. Middleware chain: `verifyToken → cargarCachePermisos → requiereRol/rolTienePermiso`
+- **Auth:** Dual-token JWT (access 24h + refresh 7d). `/auth/refresh` NO requires auth middleware. Middleware chain: `verifyToken → cargarCachePermisos → requierePermiso`
+- **File Storage:** Cloudinary (production) with base64 fallback. Service: `src/services/cloudinaryService.js`. Folders: avatares/, soportes/, evidencias/, averias/, branding/
 - **Permissions:** Role-based with per-module actions (e.g., `inventario: ['ver', 'crear', 'editar']`). Cached 1 min in memory. ALL routes use `PermissionRoute` (not role-based guards)
 - **Real-time:** Socket.io for notifications and live updates
 - **Email:** Resend (API HTTP, production) or Nodemailer SMTP (development fallback). Config in `src/config/email.js`
@@ -103,7 +104,9 @@ set CRM_API_URL=https://backend.up.railway.app/api/v1&& set WMS_API_KEY=key&& no
 - **Database:** Railway MySQL. Use `MYSQL_URL` (internal) for service-to-service, `MYSQL_PUBLIC_URL` for external access
 - **DO NOT** set `PORT` variable in Railway — it assigns one automatically
 - **CORS_ORIGIN** in Railway must match exact Vercel URL (no trailing slash)
-- **Avatars and file uploads** are stored as base64 in the database (MEDIUMTEXT) because Railway has ephemeral filesystem
+- **File uploads** use Cloudinary (cloud storage, persistent). Avatars, soportes, evidencias, averías all go to Cloudinary. Fallback to base64 in DB if Cloudinary not configured. Variables: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- **DB schema changes**: Set `DB_SYNC_ALTER=true` temporarily in Railway, deploy, then remove. Default is `alter: false` (fast startup)
+- **Email logo**: Cloudinary URL (not base64) to keep email under Gmail's 102KB limit
 - **Seeds run automatically** on every deploy via `initializeDatabase()` in server.js
 
 ## Conventions

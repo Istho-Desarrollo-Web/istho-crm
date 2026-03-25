@@ -13,6 +13,7 @@ router.use(verificarToken);
 
 // Rutas especiales
 router.get('/stats', requierePermiso('caja_menor', 'ver'), cajaMenorController.estadisticas);
+router.get('/usuarios-asignables', requierePermiso('caja_menor', 'crear'), cajaMenorController.listarUsuariosAsignables);
 
 // CRUD
 router.get('/', requierePermiso('caja_menor', 'ver'), cajaMenorController.listar);

@@ -718,3 +718,50 @@ El tipo `gastos` soporta filtro por estado en el campo `filtros`:
 | Editar/Eliminar | ✅ | ✅ | - |
 
 Requiere permiso `reportes.crear` (configurado en seedRolesPermisos).
+
+## 12. Almacenamiento de Archivos (Cloudinary)
+
+### Flujo de upload
+```
+Usuario sube archivo → Multer guarda en /uploads/temp/ → cloudinaryService.subir()
+  → Si es imagen: compresión automática (1920px, quality auto)
+  → Si es PDF/ZIP/RAR: upload raw sin transformación
+  → URL de Cloudinary se guarda en BD → Archivo temporal se elimina
+```
+
+### Tipos de archivos
+| Tipo | Carpeta Cloudinary | Límites |
+|---|---|---|
+| Avatares de usuario | `istho-crm/avatares/` | 1 imagen por usuario, se sobreescribe |
+| Soportes de caja menor | `istho-crm/soportes/` | 1 por movimiento |
+| Evidencias de auditoría | `istho-crm/evidencias/{operacion_id}/` | 10 fotos+ZIP + 5 PDFs |
+| Fotos de averías | `istho-crm/averias/{operacion_id}/` | 1 por avería |
+| Logo de emails | `istho-crm/branding/logo-email` | Fijo, subido una vez |
+
+### Email de cierre de auditoría
+- El email incluye **enlaces** a las evidencias en Cloudinary (no adjuntos)
+- Logo del email via URL de Cloudinary (no base64) para mantener el email bajo 102KB (límite Gmail)
+- Sección "Evidencias Adjuntas" con botones "Ver archivo" que abren URLs de Cloudinary
+
+### Fallback
+Si `CLOUDINARY_CLOUD_NAME` no está configurado, el sistema vuelve al comportamiento anterior (base64 en BD para avatares/soportes, rutas locales para evidencias).
+
+## 13. Autenticación — Dual Token
+
+### Flujo
+```
+Login → access_token (24h) + refresh_token (7d)
+  │
+  ├── Token válido → Usa normalmente
+  │
+  └── Token expira (401) → Interceptor envía refreshToken en body a /auth/refresh
+        ├── Refresh válido → Nuevo par de tokens → Retry transparente
+        └── Refresh expirado → Logout → Login
+```
+
+### Reglas
+- Access token: payload `{ id, username, email, rol }`, TTL `JWT_EXPIRES_IN` (24h)
+- Refresh token: payload `{ id, tipo: 'refresh' }`, TTL `JWT_REFRESH_EXPIRES_IN` (7d)
+- Endpoint `/auth/refresh` NO usa `verificarToken` middleware (acepta refresh token expirado en access)
+- Cada refresh genera par nuevo (token rotation)
+- Validación de contraseña: 8 chars + mayúscula + número + carácter especial (frontend + backend)

@@ -15,6 +15,7 @@
    - 1.2 Recuperar Contrasena
    - 1.3 Cambio de Contrasena Obligatorio
    - 1.4 Bloqueo de Cuenta
+   - 1.5 Gestion de Sesion
 2. [Dashboard](#2-dashboard)
    - 2.1 Dashboard Administrador / Operador
    - 2.2 Dashboard Financiera
@@ -71,6 +72,7 @@
 14. [Notificaciones](#14-notificaciones)
     - 14.1 Panel de Notificaciones
     - 14.2 Tipos de Notificaciones
+15. [Almacenamiento de Archivos (Cloudinary)](#15-almacenamiento-de-archivos-cloudinary)
 
 ---
 
@@ -113,7 +115,7 @@ Si olvido su contrasena, puede restablecerla siguiendo estos pasos:
 11. Haga clic en **"Restablecer Contrasena"**.
 12. Vera el mensaje **"Contrasena Actualizada"** y sera redirigido al inicio de sesion en unos segundos.
 
-> **Nota:** La contrasena debe tener al menos 6 caracteres. Se recomienda usar mayusculas, numeros y caracteres especiales.
+> **Nota:** La contrasena debe tener **minimo 8 caracteres**, e incluir al menos **una letra mayuscula**, **un numero** y **un caracter especial** (ejemplo: `@`, `#`, `$`, `!`).
 
 > **Nota:** El enlace de recuperacion tiene un tiempo de expiracion. Si el enlace ya no es valido, vera el mensaje "Enlace Invalido" y debera solicitar uno nuevo.
 
@@ -136,6 +138,15 @@ El sistema implementa medidas de seguridad contra intentos no autorizados:
 - Durante el bloqueo, vera un mensaje indicando que la cuenta esta temporalmente bloqueada.
 - Despues de transcurridos los 15 minutos, podra intentar iniciar sesion nuevamente.
 - Si continua teniendo problemas, contacte al administrador del sistema o a soporte@istho.com.co.
+
+### 1.5 Gestion de Sesion
+
+El sistema utiliza un esquema de **doble token** para una gestion de sesion fluida:
+
+- **Token de acceso:** Tiene una duracion de **24 horas**. Se utiliza para autenticar cada solicitud al servidor.
+- **Token de refresco:** Tiene una duracion de **7 dias**. Permite renovar el token de acceso automaticamente sin necesidad de volver a iniciar sesion.
+- Mientras el token de refresco sea valido, el sistema renovara el acceso de forma transparente. El usuario no percibira interrupciones.
+- Si ambos tokens expiran (por ejemplo, tras 7 dias sin ingresar al sistema), se le solicitara iniciar sesion nuevamente.
 
 ---
 
@@ -427,8 +438,19 @@ Las entradas corresponden a documentos de **recepcion** (tipo CO) del WMS.
 **c) Evidencias:**
 - Suba fotografias o documentos como soporte de la recepcion.
 - Haga clic en **"Subir Evidencia"** o arrastre archivos a la zona de carga.
-- Formatos aceptados: JPG, PNG, PDF.
+- **Limites por tipo de archivo:**
+  - **Fotos e imagenes:** Maximo **10 archivos** (JPG, PNG). Tambien se aceptan archivos comprimidos (ZIP, RAR).
+  - **Documentos PDF:** Maximo **5 archivos**.
+- Las imagenes se comprimen automaticamente al subirlas para optimizar el almacenamiento.
+- Los archivos se almacenan en la **nube (Cloudinary)**, por lo que son **persistentes entre deploys** y no se pierden al reiniciar el servidor.
 - Puede ver las evidencias ya cargadas y eliminar las que no correspondan.
+
+**c.1) Averias:**
+- Al registrar averias en las lineas del documento, se dispone de los siguientes campos:
+  - **Descripcion del dano** — Campo de texto para detallar la averia.
+  - **Cantidad afectada** (opcional) — Numero de unidades afectadas por el dano.
+  - **Foto de evidencia** — Permite adjuntar una imagen de la averia con **vista previa** antes de guardar.
+- Cada averia registrada cuenta con un **boton eliminar** para removerla si fue ingresada por error.
 
 **d) Datos Logisticos:**
 - Campos adicionales para registrar informacion del transporte:
@@ -607,6 +629,13 @@ Al hacer clic en un viaje desde el listado:
 4. **Caja Menor:** Si el viaje esta asociado a una caja menor, se muestra un enlace directo a su detalle.
 5. Desde el detalle puede **editar** el viaje o cambiar su estado.
 
+**Acciones de estado (solo visibles si el viaje esta en estado Activo):**
+
+- **Boton "Completar":** Marca el viaje como finalizado exitosamente. El estado cambia a **Completado**.
+- **Boton "Anular":** Cancela el viaje. Al hacer clic se abrira un dialogo que requiere ingresar un **motivo de anulacion obligatorio**. Sin motivo, la anulacion no se puede confirmar. El estado cambia a **Anulado**.
+
+> **Nota:** Los botones de Completar y Anular solo aparecen cuando el viaje tiene estado **Activo**. Una vez completado o anulado, no se pueden revertir estas acciones.
+
 ---
 
 ## 8. Cajas Menores
@@ -641,8 +670,14 @@ Para crear una nueva caja menor:
 | Campo | Tipo | Obligatorio | Descripcion |
 |-------|------|-------------|-------------|
 | Usuario Asignado | Seleccion | Si | Cualquier usuario activo del sistema (conductor, operador, etc.) |
+| Caja Anterior | Seleccion | No | Si el usuario tuvo una caja menor previa, puede seleccionarla para heredar el saldo sobrante |
 | Saldo Inicial | Moneda | Si | Monto en pesos colombianos para abrir la caja |
 | Observaciones | Texto largo | No | Notas sobre el proposito de la caja |
+
+**Saldo heredado:**
+- Al seleccionar una **caja anterior**, el campo **Saldo Inicial** se auto-rellena con el saldo sobrante de dicha caja.
+- Se muestra un indicador visual **"Saldo heredado"** junto al campo para informar que el valor proviene de una caja previa.
+- El usuario puede ajustar manualmente el saldo inicial si lo desea.
 
 3. Haga clic en **"Guardar"**.
 4. El sistema generara automaticamente un numero de caja consecutivo.
@@ -682,9 +717,11 @@ Saldo Actual = Saldo Inicial + Total Ingresos - Total Egresos
 Para cerrar una caja menor:
 
 1. Desde el detalle de la caja, haga clic en el boton **"Cerrar Caja"** (icono de candado).
-2. Se mostrara un dialogo de confirmacion con dos opciones:
-   - **Guardar saldo:** El saldo restante se conserva como referencia historica.
-   - **Entregar al usuario:** Se registra la devolucion del saldo al usuario asignado.
+2. Se mostrara un **modal de cierre** con la siguiente informacion:
+   - **Resumen financiero:** Saldo inicial, total ingresos, total egresos y saldo actual calculado.
+   - **Opciones para el saldo sobrante:**
+     - **Transferir a nueva caja:** El saldo sobrante se conserva y se puede utilizar como saldo inicial al crear la proxima caja menor del usuario (ver seccion 8.2, saldo heredado).
+     - **Liquidar a $0:** Se registra la devolucion total del saldo restante. La caja queda con saldo cero.
 3. Confirme la accion.
 4. La caja cambiara a estado **Cerrada** y no se podran agregar mas movimientos.
 
@@ -1180,6 +1217,29 @@ El sistema genera notificaciones automaticas en los siguientes eventos:
 - Bienvenida al nuevo usuario.
 - Contrasena restablecida.
 - Sesion forzada a cerrar por un administrador.
+
+---
+
+## 15. Almacenamiento de Archivos (Cloudinary)
+
+El sistema CRM CenthriX utiliza **Cloudinary** como servicio de almacenamiento en la nube para todos los archivos subidos por los usuarios.
+
+**Caracteristicas principales:**
+
+- **Almacenamiento en la nube:** Todos los archivos (fotos, PDFs, documentos, evidencias) se almacenan en Cloudinary, no en el servidor local.
+- **Compresion automatica de imagenes:** Las imagenes se optimizan automaticamente al momento de subirlas, reduciendo el tamano sin perder calidad visual significativa.
+- **Persistencia entre redesploys:** Los archivos **no se pierden** cuando el servidor se reinicia o se realiza un nuevo despliegue (deploy). A diferencia del almacenamiento local, los archivos en Cloudinary son permanentes.
+- **Disponibilidad continua:** No se pierden archivos al reiniciar el sistema. Los enlaces a los archivos siguen funcionando en todo momento.
+
+**Tipos de archivos soportados:**
+
+| Tipo | Formatos | Uso tipico |
+|------|----------|------------|
+| Imagenes | JPG, PNG | Evidencias de auditoria, fotos de averias, avatares de usuario |
+| Documentos | PDF | Soportes documentales, facturas, remisiones |
+| Comprimidos | ZIP, RAR | Paquetes de evidencias multiples |
+
+> **Nota:** Los limites de archivos por seccion se indican en cada modulo. Por ejemplo, en Auditoria WMS se permiten maximo 10 fotos y 5 PDFs por documento.
 
 ---
 
