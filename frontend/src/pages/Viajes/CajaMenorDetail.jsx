@@ -145,6 +145,10 @@ const CajaMenorDetail = () => {
         observaciones_cierre: observacionesCierre,
         accion_sobrante: saldoActual > 0 ? accionSobrante : 'sin_saldo',
       });
+      setCerrarDialogOpen(false);
+      setObservacionesCierre('');
+      setAccionSobrante('guardar');
+      await fetchCaja();
       success(
         accionSobrante === 'entregar'
           ? 'Caja cerrada. Saldo entregado al usuario asignado.'
@@ -152,10 +156,6 @@ const CajaMenorDetail = () => {
             ? 'Caja cerrada. Saldo guardado para la siguiente caja.'
             : 'Caja menor cerrada exitosamente'
       );
-      setCerrarDialogOpen(false);
-      setObservacionesCierre('');
-      setAccionSobrante('guardar');
-      fetchCaja();
     } catch (err) {
       apiError(err);
     } finally {
