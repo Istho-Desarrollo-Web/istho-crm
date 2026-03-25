@@ -96,12 +96,12 @@ async function initializeDatabase() {
     }
 
     // Sincronizar modelos
-    logger.info('Sincronizando modelos...');
-    await db.syncModels({ alter: true });
-
-    // Re-verificar conexión después del sync (puede tardar minutos y el pool pierde conexiones)
-    await db.sequelize.authenticate();
-    logger.info('✅ Conexión verificada post-sync');
+    // alter: true solo si DB_SYNC_ALTER=true (para cambios de esquema)
+    // En deploys normales usar alter: false (solo crea tablas que no existen)
+    const shouldAlter = process.env.DB_SYNC_ALTER === 'true';
+    logger.info(`Sincronizando modelos... (alter: ${shouldAlter})`);
+    await db.syncModels({ alter: shouldAlter });
+    logger.info('✅ Modelos sincronizados');
 
     // Seed de roles y permisos (idempotente)
     logger.info('Verificando roles y permisos...');
