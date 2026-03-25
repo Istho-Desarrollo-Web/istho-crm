@@ -128,6 +128,8 @@ set CRM_API_URL=https://backend.up.railway.app/api/v1&& set WMS_API_KEY=key&& no
 - Date fields: use `DATEONLY` in Sequelize to avoid timezone shifts. Parse with `new Date(date + 'T00:00:00')` on frontend
 - Price/currency fields: store as integers in DB, format with `Intl.NumberFormat('es-CO')` on frontend
 - Route protection: ALWAYS use `PermissionRoute` with module+action, NOT role-based guards like `OperadorRoute`
+- **PERMISOS_POR_ROL** in `AuthContext.jsx` MUST include ALL 6 roles (admin, supervisor, financiera, operador, conductor, cliente). Missing roles fall back to `cliente` which causes permission leaks. Keep synced with `seedRolesPermisos.js`
+- Admin endpoints (`/admin/*`) require admin role. For forms accessible by other roles, create specific endpoints (e.g., `/cajas-menores/usuarios-asignables`)
 - WMS validation: Estado, tipo de orden y motivos se validan dinámicamente contra tabla `configuracion_wms`
 
 ## Documentation
