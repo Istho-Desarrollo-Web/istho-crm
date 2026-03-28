@@ -208,8 +208,10 @@ Las auditorías son el proceso de verificación humana de las operaciones sincro
    └── Registrar averías:
        ├── Seleccionar línea afectada
        ├── Indicar cantidad dañada
+       ├── Campo cantidad_afectada (opcional)
        ├── Tipo de avería
-       └── Subir foto de evidencia
+       ├── Subir foto de evidencia (almacenada en Cloudinary)
+       └── Botón eliminar avería
 
 4. DATOS LOGÍSTICOS
    ├── Entradas/Salidas (OBLIGATORIO):
@@ -225,8 +227,11 @@ Las auditorías son el proceso de verificación humana de las operaciones sincro
        └── Mismos campos pero no requeridos
 
 5. EVIDENCIAS
-   ├── Subir al menos 1 PDF (cumplido/remisión)
-   └── Subir al menos 1 foto (evidencia fotográfica)
+   ├── Fotos + comprimidos (ZIP/RAR): máximo 10 archivos
+   ├── PDFs (cumplido/remisión): máximo 5 archivos
+   ├── Todos los archivos se almacenan en Cloudinary
+   ├── URLs persistentes entre deploys
+   └── Compresión automática de imágenes
 
 6. CIERRE
    ├── Verificar requisitos:
@@ -450,7 +455,13 @@ Usuario                    Frontend                   Backend
   │<──────────────────────────┤                          │
 ```
 
-### 5.2 Refresh Token
+### 5.2 Refresh Token (Dual-Token)
+
+El sistema implementa autenticación dual-token con token rotation:
+
+- **Access token:** payload `{ id, username, email, rol }`, TTL 24h (`JWT_EXPIRES_IN`)
+- **Refresh token:** payload `{ id, tipo: 'refresh' }`, TTL 7d (`JWT_REFRESH_EXPIRES_IN`)
+- **Token rotation:** cada refresh genera un par nuevo de tokens (access + refresh), invalidando el anterior
 
 ```
 Request con token expirado
@@ -462,10 +473,14 @@ Response 401 (interceptor Axios)
 POST /auth/refresh
 Body: { refreshToken }
      │
-     ├── Válido → Nuevo token → Reintentar request original
+     ├── Válido → Nuevo par de tokens (rotation) → Retry transparente
      │
-     └── Inválido → Logout → Redirigir a /login
+     └── Inválido/Expirado → Logout → Redirigir a /login
 ```
+
+**Reglas:**
+- Endpoint `/auth/refresh` NO usa `verificarToken` middleware (acepta refresh token expirado en access)
+- Validación de contraseña: 8 chars + mayúscula + número + carácter especial (frontend + backend)
 
 ### 5.3 Bloqueo de Cuenta
 
@@ -604,7 +619,7 @@ node scripts/wms-test.js
    ├── Tipo: Egreso o Ingreso
    ├── Concepto: lista predefinida (ACPM, Peajes, Alimentación, etc.)
    ├── Valor
-   ├── Soporte: archivo adjunto (base64 en BD)
+   ├── Soporte: archivo adjunto (almacenado en Cloudinary)
    ├── Viaje: solo visible si asignado es conductor
    └── Estado: pendiente (aprobado=false, rechazado=false)
 
@@ -621,7 +636,13 @@ node scripts/wms-test.js
    └── Opción B: "Entregar al usuario" → egreso de liquidación, saldo=$0
 ```
 
-### 9.3 Cálculo de Saldo
+### 9.3 Almacenamiento de Archivos
+
+- **Avatares** de usuarios se almacenan en Cloudinary (carpeta `avatares/`)
+- **Soportes** de movimientos se almacenan en Cloudinary (carpeta `soportes/`)
+- URLs persistentes entre deploys (no se pierden al reiniciar el servidor)
+
+### 9.4 Cálculo de Saldo
 
 ```
 Saldo = Saldo Inicial + Saldo Trasladado + Σ Ingresos Aprobados - Σ Egresos Aprobados
@@ -631,7 +652,7 @@ Saldo = Saldo Inicial + Saldo Trasladado + Σ Ingresos Aprobados - Σ Egresos Ap
 - Saldo trasladado viene de caja anterior (campo caja_anterior_id)
 ```
 
-### 9.4 Permisos
+### 9.5 Permisos
 
 | Acción | Admin | Supervisor | Financiera | Conductor | Operador |
 |--------|-------|-----------|------------|-----------|----------|
@@ -644,7 +665,7 @@ Saldo = Saldo Inicial + Saldo Trasladado + Σ Ingresos Aprobados - Σ Egresos Ap
 | Editar movimiento | ✅ | ✅ | ✅ | Solo pendientes | Solo pendientes |
 | Aprobar/Rechazar | ✅ | ✅ | ✅ | - | - |
 
-### 9.5 Conceptos de Movimiento
+### 9.6 Conceptos de Movimiento
 
 **Egresos:** cuadre_de_caja, descargues, acpm, administracion, alimentacion, comisiones, desencarpe, encarpe, hospedaje, otros, seguros, repuestos, tecnicomecanica, peajes, ligas, parqueadero, urea, liquidacion
 
@@ -719,43 +740,86 @@ El tipo `gastos` soporta filtro por estado en el campo `filtros`:
 
 Requiere permiso `reportes.crear` (configurado en seedRolesPermisos).
 
-## 12. Almacenamiento de Archivos (Cloudinary)
+---
 
-### Flujo de upload
+## 11. Almacenamiento de Archivos (Cloudinary)
+
+### 11.1 Descripcion General
+
+Todos los archivos del sistema (evidencias, fotos de averias, avatares, soportes de caja menor, logo de emails) se almacenan en Cloudinary, un servicio de almacenamiento en la nube. Esto garantiza URLs persistentes entre deploys y elimina la dependencia del sistema de archivos local del servidor.
+
+### 11.2 Flujo de Upload
+
 ```
 Usuario sube archivo → Multer guarda en /uploads/temp/ → cloudinaryService.subir()
-  → Si es imagen: compresión automática (1920px, quality auto)
-  → Si es PDF/ZIP/RAR: upload raw sin transformación
+  → Si es imagen: compresion automatica (1920px max, quality auto)
+  → Si es PDF/ZIP/RAR: upload raw sin transformacion
   → URL de Cloudinary se guarda en BD → Archivo temporal se elimina
 ```
 
-### Tipos de archivos
-| Tipo | Carpeta Cloudinary | Límites |
-|---|---|---|
-| Avatares de usuario | `istho-crm/avatares/` | 1 imagen por usuario, se sobreescribe |
-| Soportes de caja menor | `istho-crm/soportes/` | 1 por movimiento |
-| Evidencias de auditoría | `istho-crm/evidencias/{operacion_id}/` | 10 fotos+ZIP + 5 PDFs |
-| Fotos de averías | `istho-crm/averias/{operacion_id}/` | 1 por avería |
-| Logo de emails | `istho-crm/branding/logo-email` | Fijo, subido una vez |
+### 11.3 Estructura de Carpetas en Cloudinary
 
-### Email de cierre de auditoría
+| Carpeta | Contenido | Limites |
+|---------|-----------|---------|
+| `istho-crm/avatares/` | Fotos de perfil de usuarios | 1 imagen por usuario, se sobreescribe |
+| `istho-crm/soportes/` | Soportes de movimientos de caja menor | 1 por movimiento |
+| `istho-crm/evidencias/{operacion_id}/` | Evidencias de auditorias (fotos, PDFs, ZIP) | 10 fotos+ZIP/RAR + 5 PDFs |
+| `istho-crm/averias/{operacion_id}/` | Fotos de averias registradas en auditorias | 1 por averia |
+| `istho-crm/branding/logo-email` | Logo para emails de cierre de auditoria | Fijo, subido una vez |
+
+### 11.4 Tipos de Archivos Soportados
+
+- **Imagenes** (JPG, PNG, WEBP): compresion automatica a 1920px de ancho maximo, calidad automatica
+- **PDFs**: upload sin transformacion (tipo raw)
+- **Comprimidos** (ZIP, RAR): upload sin transformacion (tipo raw)
+
+### 11.5 Limites de Evidencias por Auditoria
+
+| Tipo | Limite |
+|------|--------|
+| Fotos + comprimidos (ZIP/RAR) | Maximo 10 archivos |
+| PDFs (cumplido/remision) | Maximo 5 archivos |
+
+### 11.6 Email de Cierre de Auditoria
+
 - El email incluye **enlaces** a las evidencias en Cloudinary (no adjuntos)
-- Logo del email via URL de Cloudinary (no base64) para mantener el email bajo 102KB (límite Gmail)
-- Sección "Evidencias Adjuntas" con botones "Ver archivo" que abren URLs de Cloudinary
+- Logo del email via URL de Cloudinary (no base64) para mantener el email bajo 102KB (limite Gmail)
+- Seccion "Evidencias Adjuntas" con botones "Ver archivo" que abren URLs de Cloudinary
 
-### Fallback
-Si `CLOUDINARY_CLOUD_NAME` no está configurado, el sistema vuelve al comportamiento anterior (base64 en BD para avatares/soportes, rutas locales para evidencias).
+### 11.7 Fallback
 
-## 13. Autenticación — Dual Token
+Si `CLOUDINARY_CLOUD_NAME` no esta configurado, el sistema vuelve al comportamiento anterior:
+- Avatares y soportes: base64 en BD
+- Evidencias y averias: rutas locales en el servidor
+
+### 11.8 Variables de Entorno
+
+```
+CLOUDINARY_CLOUD_NAME   # Nombre del cloud en Cloudinary
+CLOUDINARY_API_KEY      # API Key de Cloudinary
+CLOUDINARY_API_SECRET   # API Secret de Cloudinary
+```
+
+Las tres variables son necesarias para habilitar Cloudinary. Si alguna falta, el sistema usa el fallback a base64/local.
+
+### Rendimiento
+- Las operaciones de inventario (reservar stock, confirmar movimiento) usan batch queries para evitar N+1
+- Las estadísticas de auditoría se calculan en una sola consulta con GROUP BY
+- Los archivos se suben a Cloudinary usando bulkCreate para múltiples evidencias
+- Índices compuestos en operaciones (tipo+estado, tipo+cliente_id) y movimientos (aprobado+rechazado)
+
+---
+
+## 12. Autenticacion — Dual Token
 
 ### Flujo
 ```
 Login → access_token (24h) + refresh_token (7d)
   │
-  ├── Token válido → Usa normalmente
+  ├── Token valido → Usa normalmente
   │
-  └── Token expira (401) → Interceptor envía refreshToken en body a /auth/refresh
-        ├── Refresh válido → Nuevo par de tokens → Retry transparente
+  └── Token expira (401) → Interceptor envia refreshToken en body a /auth/refresh
+        ├── Refresh valido → Nuevo par de tokens → Retry transparente
         └── Refresh expirado → Logout → Login
 ```
 
@@ -764,4 +828,4 @@ Login → access_token (24h) + refresh_token (7d)
 - Refresh token: payload `{ id, tipo: 'refresh' }`, TTL `JWT_REFRESH_EXPIRES_IN` (7d)
 - Endpoint `/auth/refresh` NO usa `verificarToken` middleware (acepta refresh token expirado en access)
 - Cada refresh genera par nuevo (token rotation)
-- Validación de contraseña: 8 chars + mayúscula + número + carácter especial (frontend + backend)
+- Validacion de contraseña: 8 chars + mayuscula + numero + caracter especial (frontend + backend)

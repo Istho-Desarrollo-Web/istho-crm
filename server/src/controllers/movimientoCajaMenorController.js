@@ -424,9 +424,14 @@ const aprobarMasivo = async (req, res) => {
       aprobados++;
     }
 
+    // Pre-cargar todas las cajas afectadas en una sola consulta
+    const cajaIds = [...cajasAfectadas];
+    const cajasPreloaded = await CajaMenor.findAll({ where: { id: { [Op.in]: cajaIds } }, transaction });
+    const cajasMap = new Map(cajasPreloaded.map(c => [c.id, c]));
+
     // Recalcular saldo de todas las cajas afectadas
     for (const cajaId of cajasAfectadas) {
-      const caja = await CajaMenor.findByPk(cajaId, { transaction });
+      const caja = cajasMap.get(cajaId);
       if (caja) await caja.recalcularSaldo(transaction);
     }
 

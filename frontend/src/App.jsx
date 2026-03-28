@@ -43,19 +43,8 @@ import * as allEndpoints from './api/endpoints';
 // ════════════════════════════════════════════════════════════════════════════
 // LOADING COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
-const PageLoader = () => (
-  <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-    <div className="text-center">
-      {/* Logo animado */}
-      <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg animate-pulse">
-        <span className="text-white font-bold text-2xl">IS</span>
-      </div>
-      {/* Spinner */}
-      <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-      <p className="text-slate-500">Cargando...</p>
-    </div>
-  </div>
-);
+import LoadingScreen from './components/common/LoadingScreen';
+const PageLoader = () => <LoadingScreen tipo="pagina" />;
 
 // ════════════════════════════════════════════════════════════════════════════
 // LAZY LOAD PAGES

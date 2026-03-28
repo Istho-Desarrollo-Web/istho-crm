@@ -145,7 +145,9 @@ module.exports = (sequelize) => {
       { fields: ['concepto'] },
       { fields: ['aprobado'] },
       { fields: ['usuario_id'] },
-      { fields: ['caja_menor_id', 'tipo_movimiento'] }
+      { fields: ['caja_menor_id', 'tipo_movimiento'] },
+      { fields: ['aprobado', 'rechazado'] },
+      { fields: ['caja_menor_id', 'aprobado'] }
     ]
   });
 

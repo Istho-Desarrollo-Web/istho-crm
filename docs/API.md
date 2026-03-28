@@ -20,10 +20,16 @@ Authorization: Bearer <token>
 
 **Configuración JWT:**
 - Algoritmo: HS256
-- Expiración token de acceso: 1 hora (configurable)
-- Expiración refresh token: 30 días
+- Expiración token de acceso: 24 horas
+- Expiración refresh token: 7 días
 - Issuer: `istho-crm`
 - Audience: `web`
+
+**Flujo de autenticación dual-token:**
+- `POST /auth/login` retorna `{ accessToken, refreshToken, user }` en el campo `data`
+- `POST /auth/refresh` acepta `{ refreshToken }` en el body — **no requiere header Authorization**
+- Rotación de tokens: cada refresh genera un nuevo par (accessToken + refreshToken)
+- El accessToken anterior queda invalidado tras la rotación
 
 ### API Key WMS
 
@@ -194,7 +200,7 @@ Acepta email o nombre de usuario en el campo `email`.
 ### POST `/auth/me/avatar`
 **Acceso:** Autenticado (multipart/form-data)
 
-Sube foto de perfil del usuario. Máximo 2MB (JPEG, PNG, WEBP).
+Sube foto de perfil del usuario. Máximo 2MB (JPEG, PNG, WEBP). Almacenado en Cloudinary (carpeta `avatares/`) con auto-compresión.
 
 **Body:** `avatar` (file)
 
@@ -203,7 +209,10 @@ Sube foto de perfil del usuario. Máximo 2MB (JPEG, PNG, WEBP).
 {
   "success": true,
   "message": "Foto de perfil actualizada",
-  "data": { "avatar_url": "/uploads/avatars/avatar_1_1234567890.png" }
+  "data": {
+    "avatar_url": "https://res.cloudinary.com/.../avatares/avatar_1.jpg",
+    "cloudinary_public_id": "avatares/avatar_1"
+  }
 }
 ```
 
@@ -217,7 +226,7 @@ Elimina la foto de perfil del usuario.
 ---
 
 ### POST `/auth/refresh`
-**Acceso:** Autenticado
+**Acceso:** Público (no requiere header Authorization)
 
 **Body:**
 ```json
@@ -232,7 +241,8 @@ Elimina la foto de perfil del usuario.
   "success": true,
   "data": {
     "token": "nuevo_access_token...",
-    "expiresIn": 3600
+    "refreshToken": "nuevo_refresh_token...",
+    "expiresIn": 86400
   }
 }
 ```
@@ -507,7 +517,52 @@ Elimina la foto de perfil del usuario.
 - `cantidad`: number
 - `tipo_averia`: string
 - `descripcion`: string
-- `foto`: file (imagen, max 10MB)
+- `foto`: file (imagen, max 10MB) — almacenado en Cloudinary (carpeta `averias/`)
+
+**Respuesta incluye:** `cloudinary_public_id` para eliminación posterior
+
+---
+
+### DELETE `/operaciones/:id/averias/:averiaId`
+**Acceso:** Operador+
+
+Elimina una avería y su foto de Cloudinary si existe.
+
+---
+
+### POST `/operaciones/:id/evidencias`
+**Acceso:** Operador+ (multipart/form-data)
+
+Sube múltiples archivos de evidencia para una operación. Usa `bulkCreate` internamente para rendimiento.
+
+**Body:**
+- `archivos[]`: files (máximo 15 archivos, imágenes + PDFs)
+- `descripcion`: string (opcional)
+
+Todos los archivos se almacenan en Cloudinary (carpeta `evidencias/`) con auto-compresión para imágenes.
+
+**Respuesta (200):**
+```json
+{
+  "success": true,
+  "message": "3 evidencias subidas",
+  "data": [
+    {
+      "id": 1,
+      "url": "https://res.cloudinary.com/.../evidencias/ev_1.jpg",
+      "cloudinary_public_id": "evidencias/ev_1",
+      "tipo": "imagen"
+    }
+  ]
+}
+```
+
+---
+
+### DELETE `/operaciones/:id/evidencias/:docId`
+**Acceso:** Operador+
+
+Elimina una evidencia y su archivo de Cloudinary si existe.
 
 ---
 
@@ -990,6 +1045,35 @@ Si `enviar_correo` es `true` y el usuario tiene email, se envía un correo con l
 #### GET `/admin/permisos`
 *Solo lectura - catálogo de 42+ permisos*
 
+### Configuración WMS
+
+#### GET `/admin/configuracion-wms`
+**Acceso:** Admin
+
+Lista todas las configuraciones WMS (estados, tipos de orden, motivos). Se usan para validación dinámica en las operaciones de sincronización.
+
+#### POST `/admin/configuracion-wms`
+**Acceso:** Admin
+
+**Body:**
+```json
+{
+  "tipo": "estado",
+  "codigo": "en_transito",
+  "nombre": "En Tránsito",
+  "descripcion": "Mercancía en camino",
+  "activo": true
+}
+```
+
+#### PUT `/admin/configuracion-wms/:id`
+**Acceso:** Admin
+
+#### DELETE `/admin/configuracion-wms/:id`
+**Acceso:** Admin
+
+*No se pueden eliminar configuraciones del sistema (`es_sistema: true`)*
+
 ---
 
 ## 8. Plantillas de Email (`/plantillas-email`)
@@ -1336,6 +1420,194 @@ Exporta auditorías a Excel. `:tipo` puede ser `entradas`, `salidas` o `kardex`.
 
 ---
 
+## 14. Vehículos (`/vehiculos`)
+
+### GET `/vehiculos`
+**Acceso:** Autenticado + permiso `vehiculos:ver`
+
+**Query:** `page`, `limit`, `search`, `estado`, `tipo`
+
+---
+
+### GET `/vehiculos/:id`
+**Acceso:** Autenticado + permiso `vehiculos:ver`
+
+---
+
+### POST `/vehiculos`
+**Acceso:** Operador+
+
+---
+
+### PUT `/vehiculos/:id`
+**Acceso:** Operador+
+
+---
+
+### DELETE `/vehiculos/:id`
+**Acceso:** Supervisor+
+
+---
+
+## 15. Viajes (`/viajes`)
+
+### GET `/viajes`
+**Acceso:** Autenticado + permiso `viajes:ver`
+
+**Query:** `page`, `limit`, `search`, `estado`, `conductor_id`, `vehiculo_id`, `desde`, `hasta`
+
+---
+
+### GET `/viajes/:id`
+**Acceso:** Autenticado + permiso `viajes:ver`
+
+---
+
+### POST `/viajes`
+**Acceso:** Operador+
+
+---
+
+### PUT `/viajes/:id`
+**Acceso:** Operador+
+
+---
+
+### PUT `/viajes/:id/completar`
+**Acceso:** Operador+
+
+Marca un viaje como completado. Actualiza la fecha de finalización.
+
+---
+
+### PUT `/viajes/:id/anular`
+**Acceso:** Operador+
+
+Anula un viaje. Requiere motivo de anulación.
+
+**Body:**
+```json
+{
+  "motivo": "Cancelado por el cliente"
+}
+```
+
+---
+
+### DELETE `/viajes/:id`
+**Acceso:** Supervisor+
+
+---
+
+## 16. Cajas Menores (`/cajas-menores`)
+
+### GET `/cajas-menores`
+**Acceso:** Autenticado + permiso `caja_menor:ver`
+
+Cada usuario solo ve las cajas asignadas a sí mismo (excepto admin/supervisor/financiera que ven todas).
+
+**Query:** `page`, `limit`, `search`, `estado`, `asignado_a`
+
+---
+
+### GET `/cajas-menores/usuarios-asignables`
+**Acceso:** Autenticado (no requiere rol admin)
+
+Lista los usuarios que pueden ser asignados a una caja menor. Disponible para cualquier rol interno (no solo admin).
+
+---
+
+### GET `/cajas-menores/:id`
+**Acceso:** Autenticado + permiso `caja_menor:ver`
+
+---
+
+### POST `/cajas-menores`
+**Acceso:** Financiera+
+
+---
+
+### PUT `/cajas-menores/:id`
+**Acceso:** Financiera+
+
+---
+
+### POST `/cajas-menores/:id/cerrar`
+**Acceso:** Financiera+
+
+Cierra una caja menor. Permite transferir el saldo sobrante a la siguiente caja o liquidar a $0.
+
+**Body:**
+```json
+{
+  "observaciones": "Cierre mensual",
+  "transferir_saldo": true,
+  "nueva_caja_id": 5
+}
+```
+
+---
+
+### DELETE `/cajas-menores/:id`
+**Acceso:** Admin
+
+---
+
+### Movimientos de Caja Menor
+
+#### GET `/cajas-menores/:id/movimientos`
+**Acceso:** Autenticado + permiso `movimientos:ver`
+
+#### POST `/cajas-menores/:id/movimientos`
+**Acceso:** Autenticado + permiso `movimientos:crear`
+
+Soporta archivos adjuntos (soporte/comprobante) vía multipart/form-data. Los archivos se almacenan en Cloudinary (carpeta `soportes/`).
+
+**Body (multipart/form-data):**
+- `tipo`: string (`ingreso` o `egreso`)
+- `monto`: number
+- `concepto`: string
+- `soporte`: file (opcional, imagen o PDF)
+
+#### PUT `/cajas-menores/:cajaId/movimientos/:movId`
+**Acceso:** Autenticado + permiso `movimientos:editar`
+
+#### PUT `/cajas-menores/:cajaId/movimientos/:movId/aprobar`
+**Acceso:** Financiera+
+
+Aprueba un movimiento. Solo los movimientos aprobados afectan el saldo de la caja.
+
+#### PUT `/cajas-menores/:cajaId/movimientos/:movId/rechazar`
+**Acceso:** Financiera+
+
+**Body:**
+```json
+{
+  "motivo_rechazo": "Soporte incompleto"
+}
+```
+
+---
+
+## Almacenamiento de Archivos (Cloudinary)
+
+Todos los archivos subidos se almacenan en **Cloudinary** con auto-compresión para imágenes. Si Cloudinary no está configurado, se usa base64 en la base de datos como fallback.
+
+| Endpoint | Carpeta Cloudinary | Tipo de archivo | Límite |
+|----------|-------------------|-----------------|--------|
+| `POST /auth/me/avatar` | `avatares/` | JPEG, PNG, WEBP | 2MB |
+| `POST /operaciones/:id/evidencias` | `evidencias/` | Imágenes + PDFs | 15 archivos |
+| `POST /operaciones/:id/averias` | `averias/` | Imágenes | 10MB |
+| `POST /cajas-menores/:id/movimientos` | `soportes/` | Imágenes, PDFs | Incluido en body |
+| `POST /clientes/:id/logo` | `branding/` | Imágenes | 5MB |
+| `POST /plantillas-email/logo-firma` | `branding/` | PNG, JPEG, WEBP | 5MB |
+
+**Variables de entorno requeridas:** `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+
+La respuesta de cada endpoint de subida incluye `cloudinary_public_id` que puede usarse para eliminar el archivo vía los endpoints DELETE correspondientes.
+
+---
+
 ## Middleware de Seguridad
 
 | Middleware | Descripción |
@@ -1359,3 +1631,33 @@ El sistema implementa un caché de permisos con TTL de 60 segundos para optimiza
 - `cargarCachePermisos()` - Carga roles + permisos desde DB
 - `invalidarCachePermisos()` - Se ejecuta al modificar roles/permisos
 - `rolTienePermiso(rolId, modulo, accion)` - Consulta desde caché
+
+---
+
+## Rendimiento y Optimización
+
+### Consultas por lotes (Batch Queries)
+
+- **`reservarStock`** y **`confirmarMovimientoStock`** usan mapas de inventario pre-cargados en lugar de consultas N+1. Se obtiene todo el inventario necesario en una sola consulta y se indexa en un Map por SKU/código.
+- **`subirEvidencias`** usa `bulkCreate` de Sequelize para insertar múltiples archivos en una sola operación de base de datos, en lugar de un INSERT por archivo.
+
+### Índices compuestos en base de datos
+
+Los siguientes índices compuestos mejoran el rendimiento de las consultas más frecuentes:
+
+**Tabla `operaciones`:**
+| Índice | Columnas | Uso |
+|--------|----------|-----|
+| `idx_operaciones_tipo_estado` | `tipo`, `estado` | Filtrado de operaciones por tipo y estado |
+| `idx_operaciones_tipo_cliente` | `tipo`, `cliente_id` | Filtrado por tipo y cliente (portal) |
+| `idx_operaciones_tipo_created` | `tipo`, `created_at` | Ordenamiento cronológico por tipo |
+
+**Tabla `movimientos_caja_menor`:**
+| Índice | Columnas | Uso |
+|--------|----------|-----|
+| `idx_movimientos_aprobado_rechazado` | `aprobado`, `rechazado` | Filtrado por estado de aprobación |
+| `idx_movimientos_caja_aprobado` | `caja_menor_id`, `aprobado` | Cálculo de saldo por caja |
+
+### Estadísticas combinadas
+
+Los endpoints **`estadisticas`** y **`recientes`** (en auditorías y operaciones) usan una sola consulta `GROUP BY` para obtener conteos por tipo/estado, en lugar de ejecutar 3 consultas separadas (una por cada tipo de operación: ingreso, salida, kardex). Esto reduce el número de queries de 3 a 1 por solicitud.

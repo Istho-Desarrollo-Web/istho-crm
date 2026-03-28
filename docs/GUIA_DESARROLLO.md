@@ -786,3 +786,53 @@ SHOW INDEX FROM nombre_tabla;
 -- Eliminar índice duplicado
 ALTER TABLE nombre_tabla DROP INDEX nombre_indice;
 ```
+
+---
+
+## 13. Patrones de Rendimiento
+
+### Evitar N+1 queries
+Cuando se necesita iterar sobre una lista y consultar datos relacionados, pre-cargar todos los registros antes del loop:
+
+```javascript
+// ❌ MAL - N+1 (1 query por iteración)
+for (const detalle of detalles) {
+  const inv = await Inventario.findOne({ where: { sku: detalle.sku } });
+}
+
+// ✅ BIEN - 1 query + Map lookup
+const inventarios = await Inventario.findAll({ where: { sku: { [Op.in]: skus } } });
+const invMap = new Map(inventarios.map(i => [i.sku, i]));
+for (const detalle of detalles) {
+  const inv = invMap.get(detalle.sku);
+}
+```
+
+### Usar bulkCreate para inserciones múltiples
+```javascript
+// ❌ MAL
+for (const doc of documentos) {
+  await Documento.create(doc);
+}
+
+// ✅ BIEN
+await Documento.bulkCreate(documentos);
+```
+
+### Combinar queries de estadísticas
+```javascript
+// ❌ MAL - 3 queries
+const entradas = await Op.findAll({ where: { tipo: 'ingreso' }, group: ['estado'] });
+const salidas = await Op.findAll({ where: { tipo: 'salida' }, group: ['estado'] });
+
+// ✅ BIEN - 1 query
+const stats = await Op.findAll({ group: ['tipo', 'estado'] });
+```
+
+### Índices compuestos
+Agregar en el modelo cuando hay queries frecuentes con WHERE sobre múltiples columnas:
+```javascript
+indexes: [
+  { fields: ['tipo', 'estado'] },  // Para WHERE tipo='x' AND estado='y'
+]
+```

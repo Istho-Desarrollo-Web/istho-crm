@@ -105,6 +105,7 @@ set CRM_API_URL=https://backend.up.railway.app/api/v1&& set WMS_API_KEY=key&& no
 - **DO NOT** set `PORT` variable in Railway — it assigns one automatically
 - **CORS_ORIGIN** in Railway must match exact Vercel URL (no trailing slash)
 - **File uploads** use Cloudinary (cloud storage, persistent). Avatars, soportes, evidencias, averías all go to Cloudinary. Fallback to base64 in DB if Cloudinary not configured. Variables: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- **Cloudinary structure:** avatares/ (user photos), soportes/ (petty cash docs), evidencias/ (audit photos+PDFs), averias/ (damage photos), branding/ (email logo)
 - **DB schema changes**: Set `DB_SYNC_ALTER=true` temporarily in Railway, deploy, then remove. Default is `alter: false` (fast startup)
 - **Email logo**: Cloudinary URL (not base64) to keep email under Gmail's 102KB limit
 - **Seeds run automatically** on every deploy via `initializeDatabase()` in server.js
@@ -131,11 +132,13 @@ set CRM_API_URL=https://backend.up.railway.app/api/v1&& set WMS_API_KEY=key&& no
 - **PERMISOS_POR_ROL** in `AuthContext.jsx` MUST include ALL 6 roles (admin, supervisor, financiera, operador, conductor, cliente). Missing roles fall back to `cliente` which causes permission leaks. Keep synced with `seedRolesPermisos.js`
 - Admin endpoints (`/admin/*`) require admin role. For forms accessible by other roles, create specific endpoints (e.g., `/cajas-menores/usuarios-asignables`)
 - WMS validation: Estado, tipo de orden y motivos se validan dinámicamente contra tabla `configuracion_wms`
+- Cloudinary upload pattern: upload to Cloudinary first, store URL in DB. Fallback to base64 if `CLOUDINARY_CLOUD_NAME` not set. Always cleanup multer temp file after upload
 
 ## Documentation
 - `docs/WMS_API_SPEC.md` — Complete WMS API specification with all fields, schemas, and business rules
-- `docs/FLUJOS_NEGOCIO.md` — Business flows (WMS sync, audits, auth, permissions, alerts)
+- `docs/FLUJOS_NEGOCIO.md` — Business flows (WMS sync, audits, auth, permissions, alerts, Cloudinary)
 - `docs/API.md` — General API documentation
 - `docs/GUIA_DESARROLLO.md` — Development guide
 - `docs/INSTALACION.md` — Installation guide
+- `docs/manuales/` — Manual de usuario + soporte administrativo (MD, HTML, Word)
 - `DEPLOY.md` — Deployment guide (Railway + Vercel)

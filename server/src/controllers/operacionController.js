@@ -89,15 +89,33 @@ const generarNumeroOperacion = async () => {
 const reservarStock = async (detalles, clienteId, numeroOperacion, usuarioId, ipAddress, transaction) => {
   const errores = [];
   const reservasRealizadas = [];
-  
+
+  // Pre-fetch all inventarios for this operation to avoid N+1
+  const productIds = detalles.map(d => d.producto_id || d.inventario_id).filter(Boolean);
+  const skus = detalles.map(d => d.sku).filter(Boolean);
+  const orConditions = [
+    ...(productIds.length ? [{ id: { [Op.in]: productIds } }] : []),
+    ...(skus.length ? [{ sku: { [Op.in]: skus } }] : []),
+  ];
+  const preloadedInventarios = orConditions.length ? await Inventario.findAll({
+    where: {
+      cliente_id: clienteId,
+      [Op.or]: orConditions
+    },
+    transaction,
+    lock: transaction.LOCK.UPDATE
+  }) : [];
+  const invById = new Map(preloadedInventarios.map(i => [i.id, i]));
+  const invBySku = new Map(preloadedInventarios.map(i => [i.sku, i]));
+
   for (const detalle of detalles) {
     try {
       // Buscar producto en inventario (por producto_id o por sku+cliente)
       let inventario = null;
-      
+
       if (detalle.producto_id) {
-        inventario = await Inventario.findOne({
-          where: { 
+        inventario = invById.get(detalle.producto_id) || await Inventario.findOne({
+          where: {
             id: detalle.producto_id,
             cliente_id: clienteId
           },
@@ -105,11 +123,11 @@ const reservarStock = async (detalles, clienteId, numeroOperacion, usuarioId, ip
           lock: transaction.LOCK.UPDATE
         });
       }
-      
+
       // Si no encontró por ID, buscar por SKU
       if (!inventario && detalle.sku) {
-        inventario = await Inventario.findOne({
-          where: { 
+        inventario = invBySku.get(detalle.sku) || await Inventario.findOne({
+          where: {
             sku: detalle.sku,
             cliente_id: clienteId
           },
@@ -298,20 +316,38 @@ const confirmarMovimientoStock = async (operacion, usuarioId, ipAddress, transac
     where: { operacion_id: operacion.id },
     transaction
   });
-  
+
+  // Pre-fetch all inventarios for this operation to avoid N+1
+  const productIds = detalles.map(d => d.inventario_id).filter(Boolean);
+  const skus = detalles.map(d => d.sku).filter(Boolean);
+  const orConditions = [
+    ...(productIds.length ? [{ id: { [Op.in]: productIds } }] : []),
+    ...(skus.length ? [{ sku: { [Op.in]: skus } }] : []),
+  ];
+  const preloadedInventarios = orConditions.length ? await Inventario.findAll({
+    where: {
+      cliente_id: operacion.cliente_id,
+      [Op.or]: orConditions
+    },
+    transaction,
+    lock: transaction.LOCK.UPDATE
+  }) : [];
+  const invById = new Map(preloadedInventarios.map(i => [i.id, i]));
+  const invBySku = new Map(preloadedInventarios.map(i => [i.sku, i]));
+
   for (const detalle of detalles) {
     try {
       let inventario = null;
-      
+
       // Buscar inventario
       if (detalle.inventario_id) {
-        inventario = await Inventario.findByPk(detalle.inventario_id, {
+        inventario = invById.get(detalle.inventario_id) || await Inventario.findByPk(detalle.inventario_id, {
           transaction,
           lock: transaction.LOCK.UPDATE
         });
       } else if (detalle.sku) {
-        inventario = await Inventario.findOne({
-          where: { 
+        inventario = invBySku.get(detalle.sku) || await Inventario.findOne({
+          where: {
             sku: detalle.sku,
             cliente_id: operacion.cliente_id
           },

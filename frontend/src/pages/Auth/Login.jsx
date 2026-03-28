@@ -20,6 +20,7 @@ import { getGreeting } from '../../utils/greeting';
 import logoNegro from '../../assets/logo-negro.png';
 import logoBlanco from '../../assets/logo-blanco.png';
 import logoCenthrix from '../../assets/Centhrix WMS - ISTHO-03.svg';
+import LoadingScreen from '../../components/common/LoadingScreen';
 import {
     User,
     Lock,
@@ -133,21 +134,46 @@ const LoginPage = () => {
     // HANDLERS
     // ──────────────────────────────────────────────────────────────────────────
 
+    const [serverWaking, setServerWaking] = useState(false);
+
     const onSubmit = async (data) => {
         setIsSubmitting(true);
+        setServerWaking(false);
 
         try {
             const result = await login(data.email, data.password);
 
             if (result.success) {
-                // Redirigir a la página original o dashboard del rol
                 const destino = from || getDefaultRoute(result.data?.user?.rol);
                 navigate(destino, { replace: true });
+            } else if (result.code === 'NETWORK_ERROR' || result.code === 'TIMEOUT') {
+                // Servidor dormido — intentar despertar
+                setServerWaking(true);
+                setIsSubmitting(false);
+
+                // Retry automático: intentar 3 veces con espera
+                for (let i = 0; i < 3; i++) {
+                    await new Promise(r => setTimeout(r, 3000));
+                    try {
+                        const retry = await login(data.email, data.password);
+                        if (retry.success) {
+                            setServerWaking(false);
+                            const destino = from || getDefaultRoute(retry.data?.user?.rol);
+                            navigate(destino, { replace: true });
+                            return;
+                        }
+                        if (retry.code !== 'NETWORK_ERROR' && retry.code !== 'TIMEOUT') {
+                            setServerWaking(false);
+                            return;
+                        }
+                    } catch { /* retry */ }
+                }
+                setServerWaking(false);
             }
         } catch (error) {
             console.error('Error en login:', error);
         } finally {
-            setIsSubmitting(false);
+            if (!serverWaking) setIsSubmitting(false);
         }
     };
 
@@ -159,11 +185,16 @@ const LoginPage = () => {
 
     // Mostrar loading si está verificando autenticación
     if (authLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900">
-                <Loader2 className="w-10 h-10 text-[#E74C3C] animate-spin" />
-            </div>
-        );
+        return <LoadingScreen mensaje="Verificando sesion..." />;
+    }
+
+    // Mostrar pantalla de reconexión si el servidor está despertando
+    if (serverWaking) {
+        return <LoadingScreen
+            tipo="reconectando"
+            mensaje="Conectando con el servidor..."
+            submensaje="El servidor se esta iniciando. Esto puede tomar unos segundos."
+        />;
     }
 
     return (

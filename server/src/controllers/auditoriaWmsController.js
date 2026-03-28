@@ -726,11 +726,11 @@ const subirEvidencias = async (req, res) => {
     const folder = `istho-crm/evidencias/${id}`;
     const resultados = await cloudinaryService.subirMultiples(archivos, folder);
 
-    // Guardar en BD
-    const documentos = [];
+    // Guardar en BD (batch insert en lugar de inserciones individuales)
+    const documentosBatch = [];
     for (const resultado of resultados) {
       if (resultado.url) {
-        const doc = await OperacionDocumento.create({
+        documentosBatch.push({
           operacion_id: id,
           tipo_documento: 'cumplido',
           nombre: `Evidencia - ${resultado.originalname}`,
@@ -741,8 +741,11 @@ const subirEvidencias = async (req, res) => {
           cloudinary_public_id: resultado.public_id,
           subido_por: req.user?.id
         });
-        documentos.push(doc);
       }
+    }
+    let documentos = [];
+    if (documentosBatch.length > 0) {
+      documentos = await OperacionDocumento.bulkCreate(documentosBatch);
     }
 
     // Limpiar archivos temporales de multer
@@ -946,56 +949,44 @@ const cerrarAuditoria = async (req, res) => {
 const estadisticas = async (req, res) => {
   try {
     const { cliente_id } = req.query;
-    const whereEntradas = { tipo: 'ingreso' };
-    const whereSalidas = { tipo: 'salida' };
-    const whereKardex = { tipo: 'kardex' };
+    const where = { tipo: { [Op.in]: ['ingreso', 'salida', 'kardex'] } };
     if (cliente_id) {
-      whereEntradas.cliente_id = cliente_id;
-      whereSalidas.cliente_id = cliente_id;
-      whereKardex.cliente_id = cliente_id;
+      where.cliente_id = cliente_id;
     }
 
-    const [entradas, salidas, kardex] = await Promise.all([
-      Operacion.findAll({
-        where: whereEntradas,
-        attributes: ['estado', [sequelize.fn('COUNT', sequelize.col('id')), 'total']],
-        group: ['estado'],
-        raw: true
-      }),
-      Operacion.findAll({
-        where: whereSalidas,
-        attributes: ['estado', [sequelize.fn('COUNT', sequelize.col('id')), 'total']],
-        group: ['estado'],
-        raw: true
-      }),
-      Operacion.findAll({
-        where: whereKardex,
-        attributes: ['estado', [sequelize.fn('COUNT', sequelize.col('id')), 'total']],
-        group: ['estado'],
-        raw: true
-      })
-    ]);
+    // Una sola consulta agrupada por tipo y estado en lugar de 3 consultas separadas
+    const stats = await Operacion.findAll({
+      attributes: ['tipo', 'estado', [sequelize.fn('COUNT', sequelize.col('id')), 'total']],
+      where,
+      group: ['tipo', 'estado'],
+      raw: true
+    });
 
-    const toMap = (arr) => arr.reduce((acc, r) => ({ ...acc, [r.estado]: parseInt(r.total) }), {});
-    const entradasMap = toMap(entradas);
-    const salidasMap = toMap(salidas);
-    const kardexMap = toMap(kardex);
+    // Transformar resultado plano en la estructura que espera el frontend
+    const resultado = { entradas: {}, salidas: {}, kardex: {} };
+    const tipoKeyMap = { ingreso: 'entradas', salida: 'salidas', kardex: 'kardex' };
+    for (const row of stats) {
+      const key = tipoKeyMap[row.tipo];
+      if (key) {
+        resultado[key][row.estado] = parseInt(row.total);
+      }
+    }
 
     return success(res, {
       entradas: {
-        pendientes: entradasMap.pendiente || 0,
-        en_proceso: entradasMap.en_proceso || 0,
-        cerradas: entradasMap.cerrado || 0,
+        pendientes: resultado.entradas.pendiente || 0,
+        en_proceso: resultado.entradas.en_proceso || 0,
+        cerradas: resultado.entradas.cerrado || 0,
       },
       salidas: {
-        pendientes: salidasMap.pendiente || 0,
-        en_proceso: salidasMap.en_proceso || 0,
-        cerradas: salidasMap.cerrado || 0,
+        pendientes: resultado.salidas.pendiente || 0,
+        en_proceso: resultado.salidas.en_proceso || 0,
+        cerradas: resultado.salidas.cerrado || 0,
       },
       kardex: {
-        pendientes: kardexMap.pendiente || 0,
-        en_proceso: kardexMap.en_proceso || 0,
-        cerradas: kardexMap.cerrado || 0,
+        pendientes: resultado.kardex.pendiente || 0,
+        en_proceso: resultado.kardex.en_proceso || 0,
+        cerradas: resultado.kardex.cerrado || 0,
       }
     });
   } catch (err) {
@@ -1012,50 +1003,43 @@ const recientes = async (req, res) => {
   try {
     const limite = parseInt(req.query.limit) || 5;
     const { cliente_id } = req.query;
-    const whereEntradas = { tipo: 'ingreso' };
-    const whereSalidas = { tipo: 'salida' };
-    const whereKardex = { tipo: 'kardex' };
+    const where = { tipo: { [Op.in]: ['ingreso', 'salida', 'kardex'] } };
     if (cliente_id) {
-      whereEntradas.cliente_id = cliente_id;
-      whereSalidas.cliente_id = cliente_id;
-      whereKardex.cliente_id = cliente_id;
+      where.cliente_id = cliente_id;
     }
 
-    const [entradas, salidas, kardex] = await Promise.all([
-      Operacion.findAll({
-        where: whereEntradas,
-        include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
-        order: [['created_at', 'DESC']],
-        limit: limite
-      }),
-      Operacion.findAll({
-        where: whereSalidas,
-        include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
-        order: [['created_at', 'DESC']],
-        limit: limite
-      }),
-      Operacion.findAll({
-        where: whereKardex,
-        include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
-        order: [['created_at', 'DESC']],
-        limit: limite
-      })
-    ]);
+    // Una sola consulta con límite generoso, luego dividir por tipo (5 por tipo)
+    const recientesTodas = await Operacion.findAll({
+      where,
+      include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
+      order: [['created_at', 'DESC']],
+      limit: limite * 3 // Máximo posible si hay suficientes de cada tipo
+    });
 
-    const mapOp = (op, tipo) => ({
+    // Separar por tipo, tomando hasta `limite` de cada uno
+    const entradas = [];
+    const salidas = [];
+    const kardex = [];
+    for (const op of recientesTodas) {
+      if (op.tipo === 'ingreso' && entradas.length < limite) entradas.push(op);
+      else if (op.tipo === 'salida' && salidas.length < limite) salidas.push(op);
+      else if (op.tipo === 'kardex' && kardex.length < limite) kardex.push(op);
+    }
+
+    const mapOp = (op) => ({
       id: op.id,
       documento: op.numero_operacion,
       cliente: op.cliente?.razon_social || 'Sin cliente',
-      tipo_documento: tipo === 'ingreso' ? 'Recepción' : tipo === 'kardex' ? 'Kardex' : 'Despacho',
+      tipo_documento: op.tipo === 'ingreso' ? 'Recepción' : op.tipo === 'kardex' ? 'Kardex' : 'Despacho',
       tipo_documento_wms: op.tipo_documento_wms || null,
       fecha: op.fecha_operacion || op.created_at,
       estado: op.estado,
     });
 
     return success(res, {
-      entradas: entradas.map(e => mapOp(e, 'ingreso')),
-      salidas: salidas.map(s => mapOp(s, 'salida')),
-      kardex: kardex.map(k => mapOp(k, 'kardex')),
+      entradas: entradas.map(mapOp),
+      salidas: salidas.map(mapOp),
+      kardex: kardex.map(mapOp),
     });
   } catch (err) {
     logger.error('[AUDITORIAS] Error al obtener recientes:', err);

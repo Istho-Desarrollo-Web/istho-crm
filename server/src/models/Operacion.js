@@ -241,7 +241,10 @@ module.exports = (sequelize) => {
       { fields: ['estado'] },
       { fields: ['fecha_operacion'] },
       { fields: ['prioridad'] },
-      { fields: ['tipo_documento_wms'] }
+      { fields: ['tipo_documento_wms'] },
+      { fields: ['tipo', 'estado'] },
+      { fields: ['tipo', 'cliente_id'] },
+      { fields: ['tipo', 'created_at'] }
     ]
   });
 
