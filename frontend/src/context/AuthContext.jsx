@@ -198,15 +198,33 @@ export const AuthProvider = ({ children }) => {
                 isLoading: false,
                 error: null,
               });
+            } else {
+              // Token expirado o inválido — limpiar sesión
+              console.warn('⚠️ Token expirado, cerrando sesión...');
+              clearAuthToken();
+              setState({
+                ...INITIAL_STATE,
+                isLoading: false,
+              });
             }
           } catch (verifyError) {
-            // Token inválido, limpiar sesión
-            console.warn('⚠️ Sesión inválida, cerrando...');
-            clearAuthToken();
-            setState({
-              ...INITIAL_STATE,
-              isLoading: false,
-            });
+            // Error de red — usar datos locales temporalmente
+            console.warn('⚠️ Error de red al verificar sesión:', verifyError.message);
+            // Si hay usuario local, dejarlo autenticado (offline-first)
+            if (storedUser) {
+              setState({
+                user: storedUser,
+                isAuthenticated: true,
+                isLoading: false,
+                error: null,
+              });
+            } else {
+              clearAuthToken();
+              setState({
+                ...INITIAL_STATE,
+                isLoading: false,
+              });
+            }
           }
         } else {
           // Intentar obtener del servidor
@@ -218,6 +236,12 @@ export const AuthProvider = ({ children }) => {
                 isAuthenticated: true,
                 isLoading: false,
                 error: null,
+              });
+            } else {
+              clearAuthToken();
+              setState({
+                ...INITIAL_STATE,
+                isLoading: false,
               });
             }
           } catch {
@@ -239,6 +263,19 @@ export const AuthProvider = ({ children }) => {
     };
     
     initializeAuth();
+
+    // Safety timeout: si isLoading queda true por más de 15s, forzar a false
+    const safetyTimeout = setTimeout(() => {
+      setState(prev => {
+        if (prev.isLoading) {
+          console.warn('⚠️ Auth timeout — forzando fin de carga');
+          return { ...prev, isLoading: false };
+        }
+        return prev;
+      });
+    }, 15000);
+
+    return () => clearTimeout(safetyTimeout);
   }, []);
   
   // ──────────────────────────────────────────────────────────────────────────
