@@ -5,14 +5,14 @@
  * Formulario para crear/editar productos de inventario.
  * Usa snake_case para campos del backend.
  * 
- * CORRECCIÓN v2.2.0:
- * - FIX: Conversión de números robusta (evita x10 bug)
- * - Carga clientes desde el backend con useClientesSelector
- * - Selector de cliente en lugar de input de texto
- * 
+ * CORRECCIÓN v2.3.0:
+ * - Formulario simplificado: solo campos esenciales para bodega
+ * - Campos gestionados por WMS (lote, fecha_vencimiento, cantidad, estado) removidos del form
+ * - Campos no relevantes (codigo_barras, zona, stock_maximo, costo_unitario) removidos
+ *
  * @author Coordinación TI ISTHO
- * @version 2.2.0
- * @date Enero 2026
+ * @version 2.3.0
+ * @date Marzo 2026
  */
 
 import { useState, useEffect } from 'react';
@@ -36,13 +36,6 @@ const CATEGORIAS = [
   { value: 'tecnologia', label: 'Tecnología' },
 ];
 
-const ZONAS = [
-  { value: 'BOD-01', label: 'Área 01 - Refrigerados' },
-  { value: 'BOD-02', label: 'Área 02 - Secos' },
-  { value: 'BOD-03', label: 'Área 03 - Químicos' },
-  { value: 'BOD-04', label: 'Área 04 - Construcción' },
-];
-
 const UNIDADES = [
   { value: 'UND', label: 'Unidades' },
   { value: 'KG', label: 'Kilogramos' },
@@ -51,12 +44,6 @@ const UNIDADES = [
   { value: 'PAQ', label: 'Paquetes' },
   { value: 'BTO', label: 'Bultos' },
   { value: 'GAL', label: 'Galones' },
-];
-
-const ESTADOS = [
-  { value: 'disponible', label: 'Disponible' },
-  { value: 'reservado', label: 'Reservado' },
-  { value: 'cuarentena', label: 'En Cuarentena' },
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -151,23 +138,25 @@ const ProductoForm = ({
   } = useClientesSelector();
 
   const [formData, setFormData] = useState({
+    // Campos visibles en el formulario
     cliente_id: '',
     sku: '',
-    codigo_barras: '',
     producto: '',
     descripcion: '',
     categoria: '',
     unidad_medida: 'UND',
-    cantidad: '',
     stock_minimo: '',
-    stock_maximo: '',
     ubicacion: '',
+    notas: '',
+    // Campos ocultos (se envían vacíos para evitar errores en backend)
+    codigo_barras: '',
+    cantidad: '',
+    stock_maximo: '',
     zona: '',
     lote: '',
     fecha_vencimiento: '',
     costo_unitario: '',
     estado: 'disponible',
-    notas: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -184,23 +173,25 @@ const ProductoForm = ({
       };
 
       setFormData({
+        // Campos visibles
         cliente_id: producto.cliente_id || '',
         sku: producto.sku || producto.codigo || '',
-        codigo_barras: producto.codigo_barras || '',
         producto: producto.producto || producto.nombre || '',
         descripcion: producto.descripcion || '',
         categoria: producto.categoria || '',
         unidad_medida: producto.unidad_medida || 'UND',
-        cantidad: toInputValue(producto.cantidad ?? producto.stock_actual),
         stock_minimo: toInputValue(producto.stock_minimo),
-        stock_maximo: toInputValue(producto.stock_maximo),
         ubicacion: producto.ubicacion || '',
+        notas: producto.notas || '',
+        // Campos ocultos (preservar valores existentes)
+        codigo_barras: producto.codigo_barras || '',
+        cantidad: toInputValue(producto.cantidad ?? producto.stock_actual),
+        stock_maximo: toInputValue(producto.stock_maximo),
         zona: producto.zona || producto.bodega || '',
         lote: producto.lote || '',
         fecha_vencimiento: producto.fecha_vencimiento ? producto.fecha_vencimiento.split('T')[0] : '',
         costo_unitario: toInputValue(producto.costo_unitario),
         estado: producto.estado || 'disponible',
-        notas: producto.notas || '',
       });
       setErrors({});
       setTouched({});
@@ -209,21 +200,21 @@ const ProductoForm = ({
       setFormData({
         cliente_id: '',
         sku: '',
-        codigo_barras: '',
         producto: '',
         descripcion: '',
         categoria: '',
         unidad_medida: 'UND',
-        cantidad: '',
         stock_minimo: '',
-        stock_maximo: '',
         ubicacion: '',
+        notas: '',
+        codigo_barras: '',
+        cantidad: '',
+        stock_maximo: '',
         zona: '',
         lote: '',
         fecha_vencimiento: '',
         costo_unitario: '',
         estado: 'disponible',
-        notas: '',
       });
       setErrors({});
       setTouched({});
@@ -246,20 +237,8 @@ const ProductoForm = ({
     }
 
     // Validar que los campos numéricos sean válidos
-    if (formData.cantidad && safeParseNumber(formData.cantidad) === null) {
-      newErrors.cantidad = 'La cantidad debe ser un número válido';
-    }
-
     if (formData.stock_minimo && safeParseNumber(formData.stock_minimo) === null) {
       newErrors.stock_minimo = 'El stock mínimo debe ser un número válido';
-    }
-
-    if (formData.stock_maximo && safeParseNumber(formData.stock_maximo) === null) {
-      newErrors.stock_maximo = 'El stock máximo debe ser un número válido';
-    }
-
-    if (formData.costo_unitario && safeParseNumber(formData.costo_unitario) === null) {
-      newErrors.costo_unitario = 'El costo debe ser un número válido';
     }
 
     setErrors(newErrors);
@@ -282,27 +261,11 @@ const ProductoForm = ({
     });
 
     if (validate()) {
-      // ✅ CORRECCIÓN: Usar safeParseNumber para conversión robusta
       const submitData = {
         ...formData,
         cliente_id: formData.cliente_id ? safeParseInt(formData.cliente_id) : null,
-        cantidad: safeParseNumber(formData.cantidad) ?? 0,
         stock_minimo: safeParseNumber(formData.stock_minimo) ?? 0,
-        stock_maximo: safeParseNumber(formData.stock_maximo),
-        costo_unitario: safeParseNumber(formData.costo_unitario),
       };
-
-      // ✅ DEBUG: Log para verificar qué se envía
-      console.log('📦 ProductoForm - Datos a enviar:', {
-        original: {
-          stock_minimo: formData.stock_minimo,
-          stock_maximo: formData.stock_maximo,
-        },
-        converted: {
-          stock_minimo: submitData.stock_minimo,
-          stock_maximo: submitData.stock_maximo,
-        }
-      });
 
       onSubmit(submitData);
     }
@@ -315,18 +278,18 @@ const ProductoForm = ({
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+        <div className="relative bg-white dark:bg-[#1A1B3A] rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700 sticky top-0 bg-white dark:bg-[#1A1B3A] z-10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
                 <Package className="w-5 h-5 text-orange-600" />
               </div>
-              <h2 className="text-lg font-semibold text-slate-800">
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
                 {isEditing ? 'Editar Producto' : 'Nuevo Producto'}
               </h2>
             </div>
-            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg">
+            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30 rounded-lg">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -337,7 +300,7 @@ const ProductoForm = ({
               
               {/* Nombre del producto */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Nombre del Producto *
                 </label>
                 <input
@@ -345,8 +308,8 @@ const ProductoForm = ({
                   value={formData.producto}
                   onChange={(e) => handleChange('producto', e.target.value)}
                   onBlur={() => handleBlur('producto')}
-                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
-                    errors.producto && touched.producto ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 ${
+                    errors.producto && touched.producto ? 'border-red-300 bg-red-50' : 'border-gray-200 dark:border-slate-700'
                   }`}
                   placeholder="Nombre del producto"
                 />
@@ -359,7 +322,7 @@ const ProductoForm = ({
 
               {/* SKU */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Código SKU *
                 </label>
                 <input
@@ -368,7 +331,7 @@ const ProductoForm = ({
                   onChange={(e) => handleChange('sku', e.target.value.toUpperCase())}
                   onBlur={() => handleBlur('sku')}
                   className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-mono ${
-                    errors.sku && touched.sku ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                    errors.sku && touched.sku ? 'border-red-300 bg-red-50' : 'border-gray-200 dark:border-slate-700'
                   }`}
                   placeholder="SKU-001"
                 />
@@ -379,30 +342,16 @@ const ProductoForm = ({
                 )}
               </div>
 
-              {/* Código de barras */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Código de Barras
-                </label>
-                <input
-                  type="text"
-                  value={formData.codigo_barras}
-                  onChange={(e) => handleChange('codigo_barras', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-mono"
-                  placeholder="7701234567890"
-                />
-              </div>
-
               {/* ✅ Cliente - Selector desde Backend (Solo para nuevo) */}
               {!isEditing && (
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                     Cliente *
                   </label>
                   {loadingClientes ? (
-                    <div className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl bg-slate-50">
+                    <div className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                       <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
-                      <span className="text-sm text-slate-500">Cargando clientes...</span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">Cargando clientes...</span>
                     </div>
                   ) : errorClientes ? (
                     <div className="px-4 py-2.5 border border-red-200 rounded-xl bg-red-50">
@@ -413,8 +362,8 @@ const ProductoForm = ({
                       value={formData.cliente_id}
                       onChange={(e) => handleChange('cliente_id', e.target.value)}
                       onBlur={() => handleBlur('cliente_id')}
-                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
-                        errors.cliente_id && touched.cliente_id ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 ${
+                        errors.cliente_id && touched.cliente_id ? 'border-red-300 bg-red-50' : 'border-gray-200 dark:border-slate-700'
                       }`}
                     >
                       <option value="">Seleccionar cliente...</option>
@@ -437,11 +386,11 @@ const ProductoForm = ({
               {/* Cliente Info (Solo lectura si editando) */}
               {isEditing && producto?.cliente && (
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                     Cliente
                   </label>
-                  <div className="px-4 py-2.5 border border-gray-200 rounded-xl bg-slate-50">
-                    <span className="text-slate-700">
+                  <div className="px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                    <span className="text-slate-700 dark:text-slate-300">
                       {producto.cliente.codigo_cliente ? `${producto.cliente.codigo_cliente} - ` : ''}
                       {producto.cliente.razon_social || producto.cliente.nombre || `Cliente ID: ${producto.cliente_id}`}
                     </span>
@@ -451,13 +400,13 @@ const ProductoForm = ({
 
               {/* Categoría */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Categoría
                 </label>
                 <select
                   value={formData.categoria}
                   onChange={(e) => handleChange('categoria', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100"
                 >
                   <option value="">Seleccionar categoría</option>
                   {CATEGORIAS.map((cat) => (
@@ -468,13 +417,13 @@ const ProductoForm = ({
 
               {/* Unidad de medida */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Unidad de Medida
                 </label>
                 <select
                   value={formData.unidad_medida}
                   onChange={(e) => handleChange('unidad_medida', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100"
                 >
                   {UNIDADES.map((und) => (
                     <option key={und.value} value={und.value}>{und.label}</option>
@@ -482,64 +431,23 @@ const ProductoForm = ({
                 </select>
               </div>
 
-              {/* Zona/Bodega */}
+              {/* Ubicación */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Zona/Bodega
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  Ubicación
                 </label>
-                <select
-                  value={formData.zona}
-                  onChange={(e) => handleChange('zona', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                >
-                  <option value="">Seleccionar zona</option>
-                  {ZONAS.map((zona) => (
-                    <option key={zona.value} value={zona.value}>{zona.label}</option>
-                  ))}
-                </select>
+                <input
+                  type="text"
+                  value={formData.ubicacion}
+                  onChange={(e) => handleChange('ubicacion', e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-mono"
+                  placeholder="A1-B2-C3"
+                />
               </div>
-
-              {/* Ubicación (solo en creación) */}
-              {!isEditing && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                    Ubicación
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.ubicacion}
-                    onChange={(e) => handleChange('ubicacion', e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-mono"
-                    placeholder="A1-B2-C3"
-                  />
-                </div>
-              )}
-
-              {/* Cantidad inicial (solo nuevo) */}
-              {!isEditing && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                    Cantidad Inicial
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={formData.cantidad}
-                    onChange={(e) => handleChange('cantidad', e.target.value)}
-                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
-                      errors.cantidad ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                    }`}
-                    placeholder="0"
-                  />
-                  {errors.cantidad && (
-                    <p className="mt-1 text-sm text-red-500">{errors.cantidad}</p>
-                  )}
-                </div>
-              )}
 
               {/* Stock mínimo */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Stock Mínimo
                 </label>
                 <input
@@ -547,8 +455,8 @@ const ProductoForm = ({
                   inputMode="decimal"
                   value={formData.stock_minimo}
                   onChange={(e) => handleChange('stock_minimo', e.target.value)}
-                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
-                    errors.stock_minimo ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 ${
+                    errors.stock_minimo ? 'border-red-300 bg-red-50' : 'border-gray-200 dark:border-slate-700'
                   }`}
                   placeholder="0"
                 />
@@ -557,95 +465,9 @@ const ProductoForm = ({
                 )}
               </div>
 
-              {/* Stock máximo */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Stock Máximo
-                </label>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={formData.stock_maximo}
-                  onChange={(e) => handleChange('stock_maximo', e.target.value)}
-                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
-                    errors.stock_maximo ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                  }`}
-                  placeholder="0"
-                />
-                {errors.stock_maximo && (
-                  <p className="mt-1 text-sm text-red-500">{errors.stock_maximo}</p>
-                )}
-              </div>
-
-              {/* Costo unitario */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Costo Unitario
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">$</span>
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={formData.costo_unitario}
-                    onChange={(e) => handleChange('costo_unitario', e.target.value)}
-                    className={`w-full pl-8 pr-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
-                      errors.costo_unitario ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                    }`}
-                    placeholder="0"
-                  />
-                </div>
-                {errors.costo_unitario && (
-                  <p className="mt-1 text-sm text-red-500">{errors.costo_unitario}</p>
-                )}
-              </div>
-
-              {/* Lote */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Lote
-                </label>
-                <input
-                  type="text"
-                  value={formData.lote}
-                  onChange={(e) => handleChange('lote', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-mono"
-                  placeholder="LOTE-2026-001"
-                />
-              </div>
-
-              {/* Fecha de vencimiento */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Fecha de Vencimiento
-                </label>
-                <input
-                  type="date"
-                  value={formData.fecha_vencimiento}
-                  onChange={(e) => handleChange('fecha_vencimiento', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                />
-              </div>
-
-              {/* Estado */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Estado
-                </label>
-                <select
-                  value={formData.estado}
-                  onChange={(e) => handleChange('estado', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                >
-                  {ESTADOS.map((est) => (
-                    <option key={est.value} value={est.value}>{est.label}</option>
-                  ))}
-                </select>
-              </div>
-
               {/* Descripción */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Descripción
                 </label>
                 <textarea
@@ -659,7 +481,7 @@ const ProductoForm = ({
 
               {/* Notas */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Notas Internas
                 </label>
                 <textarea
@@ -673,7 +495,7 @@ const ProductoForm = ({
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100">
+            <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-slate-700">
               <Button 
                 type="button" 
                 variant="outline" 

@@ -570,9 +570,9 @@ const PerfilUsuario = () => {
     eliminar: 'Eliminar',
   };
 
-  const diasActivo = Math.floor(
-    (new Date() - new Date(user.created_at || Date.now())) / (1000 * 60 * 60 * 24)
-  );
+  const diasActivo = Math.max(1, Math.ceil(
+    (new Date() - new Date(user.created_at || user.createdAt || Date.now())) / (1000 * 60 * 60 * 24)
+  ));
 
   // Rol label
   const rolLabels = {

@@ -42,6 +42,7 @@ const PERMISOS_CATALOGO = [
   { modulo: 'clientes', accion: 'editar', descripcion: 'Modificar datos de clientes', grupo: 'Gestión' },
   { modulo: 'clientes', accion: 'eliminar', descripcion: 'Eliminar clientes (soft delete)', grupo: 'Gestión' },
   { modulo: 'clientes', accion: 'exportar', descripcion: 'Exportar listado de clientes', grupo: 'Gestión' },
+  { modulo: 'clientes', accion: 'importar', descripcion: 'Importar clientes desde Excel', grupo: 'Gestión' },
 
   // Inventario
   { modulo: 'inventario', accion: 'ver', descripcion: 'Ver productos e inventario', grupo: 'Operaciones' },

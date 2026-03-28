@@ -172,21 +172,21 @@ const MovimientoForm = ({
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md">
+        <div className="relative bg-white dark:bg-[#1A1B3A] rounded-2xl shadow-xl w-full max-w-md">
           
           {/* ══════════════════════════════════════════════════════════════ */}
           {/* HEADER */}
           {/* ══════════════════════════════════════════════════════════════ */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${config.bg}`}>
                 <Icon className={`w-5 h-5 ${config.color}`} />
               </div>
-              <h2 className="text-lg font-semibold text-slate-800">{config.title}</h2>
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{config.title}</h2>
             </div>
             <button 
               onClick={onClose} 
-              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg"
+              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30 rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
@@ -196,15 +196,15 @@ const MovimientoForm = ({
           {/* PRODUCT INFO */}
           {/* ══════════════════════════════════════════════════════════════ */}
           {producto && (
-            <div className="px-6 py-4 bg-slate-50 border-b border-gray-100">
+            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-slate-800">{productoNombre}</p>
-                  <p className="text-sm text-slate-500 font-mono">{productoCodigo}</p>
+                  <p className="font-medium text-slate-800 dark:text-slate-100">{productoNombre}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-mono">{productoCodigo}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-slate-500">Stock Actual</p>
-                  <p className={`text-lg font-bold ${stockActual === 0 ? 'text-red-600' : 'text-slate-800'}`}>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Stock Actual</p>
+                  <p className={`text-lg font-bold ${stockActual === 0 ? 'text-red-600' : 'text-slate-800 dark:text-slate-100'}`}>
                     {stockActual.toLocaleString()} {unidadMedida}
                   </p>
                 </div>
@@ -219,7 +219,7 @@ const MovimientoForm = ({
             
             {/* Cantidad */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                 Cantidad *
               </label>
               <div className="relative">
@@ -228,14 +228,14 @@ const MovimientoForm = ({
                   value={formData.cantidad}
                   onChange={(e) => handleChange('cantidad', e.target.value)}
                   onBlur={() => handleBlur('cantidad')}
-                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
-                    errors.cantidad && touched.cantidad ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 ${
+                    errors.cantidad && touched.cantidad ? 'border-red-300 bg-red-50' : 'border-gray-200 dark:border-slate-700'
                   }`}
                   placeholder="0"
                   min="0.001"
                   step="0.001"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400">
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400 dark:text-slate-500">
                   {unidadMedida}
                 </span>
               </div>
@@ -256,7 +256,7 @@ const MovimientoForm = ({
                         key={percent} 
                         type="button" 
                         onClick={() => handleChange('cantidad', value.toString())}
-                        className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors"
+                        className="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors"
                       >
                         {percent}% ({value})
                       </button>
@@ -268,15 +268,15 @@ const MovimientoForm = ({
 
             {/* Motivo */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                 Motivo *
               </label>
               <select
                 value={formData.motivo}
                 onChange={(e) => handleChange('motivo', e.target.value)}
                 onBlur={() => handleBlur('motivo')}
-                className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
-                  errors.motivo && touched.motivo ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 ${
+                  errors.motivo && touched.motivo ? 'border-red-300 bg-red-50' : 'border-gray-200 dark:border-slate-700'
                 }`}
               >
                 <option value="">Seleccionar motivo...</option>
@@ -294,24 +294,24 @@ const MovimientoForm = ({
 
             {/* Documento de referencia */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                 Documento de Referencia
               </label>
               <input
                 type="text"
                 value={formData.documento_referencia}
                 onChange={(e) => handleChange('documento_referencia', e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100"
                 placeholder="Ej: OC-2026-001, FAC-12345"
               />
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
                 Orden de compra, factura, remisión, etc.
               </p>
             </div>
 
             {/* Observaciones */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                 Observaciones
               </label>
               <textarea
@@ -325,16 +325,16 @@ const MovimientoForm = ({
 
             {/* Preview del resultado */}
             {formData.cantidad && !errors.cantidad && (
-              <div className="bg-slate-50 rounded-xl p-4">
-                <p className="text-sm text-slate-500 mb-2">Resultado del movimiento:</p>
+              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Resultado del movimiento:</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-600">{stockActual.toLocaleString()}</span>
+                    <span className="text-slate-600 dark:text-slate-300">{stockActual.toLocaleString()}</span>
                     <span className={tipo === 'entrada' ? 'text-emerald-600' : 'text-red-600'}>
                       {tipo === 'entrada' ? '+' : '-'} {parseFloat(formData.cantidad).toLocaleString()}
                     </span>
                   </div>
-                  <span className="text-lg font-bold text-slate-800">
+                  <span className="text-lg font-bold text-slate-800 dark:text-slate-100">
                     = {(tipo === 'entrada' 
                       ? stockActual + parseFloat(formData.cantidad)
                       : stockActual - parseFloat(formData.cantidad)
@@ -345,7 +345,7 @@ const MovimientoForm = ({
             )}
 
             {/* Actions */}
-            <div className="flex gap-3 pt-4 border-t border-gray-100">
+            <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-slate-700">
               <Button 
                 type="button" 
                 variant="outline" 

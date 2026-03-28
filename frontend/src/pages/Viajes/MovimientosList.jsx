@@ -584,15 +584,7 @@ const MovimientosList = () => {
                 </button>
               </>
             )}
-            <ProtectedAction module="movimientos" action="crear">
-              <button
-                onClick={handleCreate}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Nuevo Movimiento
-              </button>
-            </ProtectedAction>
+            {/* Botón movido a la barra de filtros */}
           </div>
         </div>
 
@@ -689,6 +681,17 @@ const MovimientosList = () => {
                 </button>
               ))}
             </div>
+
+            {/* Botón crear */}
+            <ProtectedAction module="movimientos" action="crear">
+              <button
+                onClick={handleCreate}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#E74C3C] hover:bg-[#C0392B] rounded-xl shadow-sm transition-colors whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4" />
+                Nuevo Movimiento
+              </button>
+            </ProtectedAction>
           </div>
         </div>
 

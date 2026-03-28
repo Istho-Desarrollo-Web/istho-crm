@@ -29,6 +29,8 @@ import {
   Building2,
   FileText,
   RefreshCw,
+  List,
+  LayoutGrid,
 } from 'lucide-react';
 import { Pagination } from '../../../components/common';
 import { exportToCsv } from '../../../utils/exportCsv';
@@ -154,6 +156,7 @@ const KardexList = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('todos');
+  const [viewMode, setViewMode] = useState('table');
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
@@ -308,31 +311,45 @@ const KardexList = () => {
           </div>
         </div>
 
-        {/* RESULTS COUNT */}
-        <div className="mb-4">
+        {/* RESULTS COUNT + VIEW TOGGLE */}
+        <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {filtered.length} kardex encontrado{filtered.length !== 1 && 's'}
           </p>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* TABLE */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-          {loading ? (
-            <div className="p-8 text-center">
-              <Loader2 className="w-8 h-8 text-purple-500 animate-spin mx-auto mb-3" />
-              <p className="text-slate-500">Cargando kardex del WMS...</p>
+        {/* TABLE / CARDS */}
+        {loading ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-8 text-center">
+            <Loader2 className="w-8 h-8 text-purple-500 animate-spin mx-auto mb-3" />
+            <p className="text-slate-500">Cargando kardex del WMS...</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ClipboardList className="w-8 h-8 text-slate-400" />
             </div>
-          ) : filtered.length === 0 ? (
-            <div className="py-16 text-center">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ClipboardList className="w-8 h-8 text-slate-400" />
-              </div>
-              <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">No se encontraron kardex</h3>
-              <p className="text-slate-500 dark:text-slate-400">
-                {searchTerm ? 'Intenta ajustar el término de búsqueda' : 'No hay kardex pendientes de auditoría'}
-              </p>
-            </div>
-          ) : (
+            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">No se encontraron kardex</h3>
+            <p className="text-slate-500 dark:text-slate-400">
+              {searchTerm ? 'Intenta ajustar el término de búsqueda' : 'No hay kardex pendientes de auditoría'}
+            </p>
+          </div>
+        ) : viewMode === 'table' ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -363,7 +380,6 @@ const KardexList = () => {
                             <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors truncate max-w-[220px]" title={item.motivo || item.documento_wms}>
                               {item.motivo || item.documento_wms || item.documento}
                             </p>
-                            {/* Mostrar doc WMS debajo solo si es un documento real (diferente al motivo) */}
                             <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
                               {item.documento}
                               {item.documento_wms && item.documento_wms !== item.motivo && (
@@ -413,18 +429,88 @@ const KardexList = () => {
                 </tbody>
               </table>
             </div>
-          )}
+            {!loading && pagination.totalPages > 1 && (
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.total}
+                itemsPerPage={20}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filtered.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-700 hover:shadow-md transition-all cursor-pointer group"
+                  onClick={() => handleView(item)}
+                >
+                  {/* Card Header */}
+                  <div className="flex items-center justify-between px-4 pt-4 pb-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-4.5 h-4.5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors truncate max-w-[180px]" title={item.motivo || item.documento_wms}>
+                          {item.motivo || item.documento_wms || item.documento}
+                        </p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
+                          {item.documento}
+                          {item.documento_wms && item.documento_wms !== item.motivo && (
+                            <span className="ml-1.5 text-purple-400">• {item.documento_wms}</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <RowActions item={item} onView={handleView} />
+                    </div>
+                  </div>
 
-          {!loading && pagination.totalPages > 1 && (
-            <Pagination
-              currentPage={pagination.page}
-              totalPages={pagination.totalPages}
-              totalItems={pagination.total}
-              itemsPerPage={20}
-              onPageChange={handlePageChange}
-            />
-          )}
-        </div>
+                  {/* Card Body */}
+                  <div className="px-4 py-3 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                      <span className="text-sm text-slate-700 dark:text-slate-200 truncate">{item.cliente}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                        {item.tipo_documento_wms || 'CR'}
+                      </span>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {formatDate(item.fecha_ingreso)}
+                      </div>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ProgressBar verified={item.lineas_verificadas} total={item.lineas} />
+                    </div>
+                  </div>
+
+                  {/* Card Footer */}
+                  <div className="px-4 py-3 border-t border-gray-100 dark:border-slate-700">
+                    <StatusBadge estado={item.estado} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            {!loading && pagination.totalPages > 1 && (
+              <div className="mt-4">
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  totalItems={pagination.total}
+                  itemsPerPage={20}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
+          </>
+        )}
 
         <footer className="text-center py-6 mt-8 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">
           &copy; 2026 ISTHO S.A.S. - Sistema CRM Interno<br />

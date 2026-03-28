@@ -74,6 +74,15 @@ router.get('/:id', idParamValidator, clienteController.obtenerPorId);
 router.post('/', noClientes, requiereRolMinimo('operador'), crearClienteValidator, clienteController.crear);
 
 /**
+ * @route   POST /clientes/importar
+ * @desc    Importar clientes desde Excel (.xlsx)
+ * @access  Privado (supervisor o superior)
+ */
+const multer = require('multer');
+const uploadMemory = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+router.post('/importar', noClientes, requiereRolMinimo('supervisor'), uploadMemory.single('archivo'), clienteController.importarClientes);
+
+/**
  * @route   PUT /clientes/:id
  * @desc    Actualizar un cliente
  * @access  Privado (supervisor o superior)

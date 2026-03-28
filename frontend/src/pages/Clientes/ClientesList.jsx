@@ -11,7 +11,7 @@
  * @date Enero 2026
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -194,7 +194,72 @@ const ClientesList = () => {
   // ──────────────────────────────────────────────────────────────────────────
   // HOOKS
   // ──────────────────────────────────────────────────────────────────────────
-  const { success, apiError, saved, deleted } = useNotification();
+  const { success: notifySuccess, apiError, saved, deleted, error: notifyError } = useNotification();
+  const importInputRef = useRef(null);
+  const [importPreview, setImportPreview] = useState(null);
+  const [importFile, setImportFile] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+
+  const handleExport = () => {
+    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+    const token = localStorage.getItem('istho_token');
+    window.open(`${baseUrl}/reportes/clientes/excel?token=${token}`, '_blank');
+  };
+
+  const handleImportSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+
+    try {
+      const XLSX = (await import('xlsx')).default;
+      const buffer = await file.arrayBuffer();
+      const wb = XLSX.read(buffer, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+      if (rows.length === 0) {
+        notifyError('El archivo no contiene datos');
+        return;
+      }
+
+      setImportFile(file);
+      setImportPreview(rows.slice(0, 50)); // Max 50 filas en preview
+    } catch (err) {
+      notifyError('Error al leer el archivo. Verifique que sea un Excel válido.');
+    }
+  };
+
+  const handleImportConfirm = async () => {
+    if (!importFile) return;
+    setImportLoading(true);
+
+    const formData = new FormData();
+    formData.append('archivo', importFile);
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const token = localStorage.getItem('istho_token');
+      const res = await fetch(`${baseUrl}/clientes/importar`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        notifySuccess(`Importación completada: ${data.data.creados} creados, ${data.data.actualizados} actualizados${data.data.errores?.length ? `, ${data.data.errores.length} errores` : ''}`);
+        fetchClientes();
+        setImportPreview(null);
+        setImportFile(null);
+      } else {
+        notifyError(data.message || 'Error al importar');
+      }
+    } catch (err) {
+      notifyError('Error al importar archivo');
+    } finally {
+      setImportLoading(false);
+    }
+  };
 
   const {
     clientes,
@@ -323,7 +388,7 @@ const ClientesList = () => {
     setFormLoading(true);
     try {
       await changeStatus(statusModal.cliente.id, nuevoEstado);
-      success(`Estado cambiado a ${nuevoEstado}`);
+      notifySuccess(`Estado cambiado a ${nuevoEstado}`);
       setStatusModal({ isOpen: false, cliente: null });
     } catch (err) {
       apiError(err);
@@ -344,23 +409,30 @@ const ClientesList = () => {
         {/* PAGE HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">Clientes</h1>
-            <p className="text-slate-500 mt-1">
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Clientes</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">
               Gestiona la información de tus clientes
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <ProtectedAction module="clientes" action="exportar">
-              <Button variant="outline" icon={Download} size="md">
+              <Button variant="outline" icon={Download} size="md" onClick={handleExport}>
                 Exportar
               </Button>
             </ProtectedAction>
 
             <ProtectedAction module="clientes" action="importar">
-              <Button variant="outline" icon={Upload} size="md">
+              <Button variant="outline" icon={Upload} size="md" onClick={() => importInputRef.current?.click()}>
                 Importar
               </Button>
+              <input
+                ref={importInputRef}
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                className="hidden"
+                onChange={handleImportSelect}
+              />
             </ProtectedAction>
 
             <ProtectedAction module="clientes" action="crear">
@@ -373,7 +445,7 @@ const ClientesList = () => {
 
         {/* ERROR STATE */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300">
             <p className="font-medium">Error al cargar clientes</p>
             <p className="text-sm">{error}</p>
             <button
@@ -386,7 +458,7 @@ const ClientesList = () => {
         )}
 
         {/* SEARCH & FILTERS BAR */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <SearchBar
@@ -421,7 +493,7 @@ const ClientesList = () => {
           </div>
 
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FilterDropdown
                   label="Tipo de Cliente"
@@ -459,13 +531,13 @@ const ClientesList = () => {
 
         {/* RESULTS COUNT */}
         <div className="mb-4">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             {pagination.total} cliente{pagination.total !== 1 && 's'} encontrado{pagination.total !== 1 && 's'}
           </p>
         </div>
 
         {/* TABLE */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
           {loading ? (
             <div className="p-4">
               {[...Array(5)].map((_, i) => (
@@ -484,10 +556,10 @@ const ClientesList = () => {
               <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Building2 className="w-8 h-8 text-slate-400" />
               </div>
-              <h3 className="text-lg font-medium text-slate-800 mb-1">
+              <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
                 No se encontraron clientes
               </h3>
-              <p className="text-slate-500 mb-4">
+              <p className="text-slate-500 dark:text-slate-400 mb-4">
                 {searchTerm || Object.values(filters).filter(Boolean).length > 0
                   ? 'Intenta ajustar los filtros de búsqueda'
                   : 'Comienza agregando tu primer cliente'}
@@ -504,23 +576,23 @@ const ClientesList = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <tr className="border-b border-gray-100 dark:border-slate-700">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Cliente
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       NIT
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Tipo
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Ciudad
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Estado
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Acciones
                     </th>
                   </tr>
@@ -529,7 +601,7 @@ const ClientesList = () => {
                   {clientes.map((cliente) => (
                     <tr
                       key={cliente.id}
-                      className="border-b border-gray-50 hover:bg-slate-50 transition-colors"
+                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
                     >
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
@@ -538,24 +610,24 @@ const ClientesList = () => {
                           </div>
                           <div>
                             <p
-                              className="text-sm font-medium text-slate-800 hover:text-orange-600 cursor-pointer"
+                              className="text-sm font-medium text-slate-800 dark:text-slate-100 hover:text-orange-600 cursor-pointer"
                               onClick={() => handleView(cliente)}
                             >
                               {cliente.razon_social}
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               {cliente.codigo_cliente} • {cliente.email || 'Sin email'}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-sm text-slate-600 font-mono">
+                      <td className="py-4 px-4 text-sm text-slate-600 dark:text-slate-300 font-mono">
                         {cliente.nit}
                       </td>
-                      <td className="py-4 px-4 text-sm text-slate-600">
+                      <td className="py-4 px-4 text-sm text-slate-600 dark:text-slate-300">
                         {formatTipoCliente(cliente.tipo_cliente)}
                       </td>
-                      <td className="py-4 px-4 text-sm text-slate-600">
+                      <td className="py-4 px-4 text-sm text-slate-600 dark:text-slate-300">
                         {cliente.ciudad || '-'}
                       </td>
                       <td className="py-4 px-4 text-center">
@@ -589,7 +661,7 @@ const ClientesList = () => {
         </div>
 
         {/* FOOTER */}
-        <footer className="text-center py-6 mt-8 text-slate-500 text-sm border-t border-gray-200">
+        <footer className="text-center py-6 mt-8 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">
           © 2026 ISTHO S.A.S. - Sistema CRM Interno<br />
           Centro Logístico Industrial del Norte, Girardota, Antioquia
         </footer>
@@ -632,8 +704,8 @@ const ClientesList = () => {
                   className={`
                     w-full p-3 text-left rounded-xl border transition-colors
                     ${statusModal.cliente?.estado === opt.value
-                      ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                      : 'bg-white border-slate-200 hover:border-orange-500 hover:bg-orange-50'
+                      ? 'bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-400 cursor-not-allowed'
+                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20'
                     }
                   `}
                 >
@@ -647,6 +719,89 @@ const ClientesList = () => {
           }
           hideConfirmButton
         />
+      )}
+
+      {/* MODAL VISTA PREVIA IMPORTACIÓN */}
+      {importPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-[#1A1B3A] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Vista Previa de Importación</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {importPreview.length} registros encontrados{importPreview.length >= 50 ? ' (mostrando primeros 50)' : ''} — {importFile?.name}
+                </p>
+              </div>
+              <button
+                onClick={() => { setImportPreview(null); setImportFile(null); }}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Table */}
+            <div className="flex-1 overflow-auto px-6 py-4">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50">
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">#</th>
+                    {Object.keys(importPreview[0] || {}).slice(0, 8).map((key) => (
+                      <th key={key} className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase whitespace-nowrap">
+                        {key}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {importPreview.map((row, idx) => (
+                    <tr key={idx} className="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                      <td className="py-2 px-3 text-slate-400 text-xs">{idx + 1}</td>
+                      {Object.values(row).slice(0, 8).map((val, i) => (
+                        <td key={i} className="py-2 px-3 text-slate-700 dark:text-slate-300 whitespace-nowrap max-w-[200px] truncate">
+                          {val != null ? String(val) : '-'}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-b-2xl">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Columnas esperadas: NIT, Razón Social, Tipo, Sector, Dirección, Ciudad, Teléfono, Email
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => { setImportPreview(null); setImportFile(null); }}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleImportConfirm}
+                  disabled={importLoading}
+                  className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-[#E74C3C] hover:bg-[#C0392B] rounded-xl transition-colors disabled:opacity-50"
+                >
+                  {importLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Importando...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      Confirmar Importación ({importPreview.length} registros)
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

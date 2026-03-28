@@ -164,13 +164,14 @@ const ReporteInventario = () => {
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   })();
 
-  const topProductos = (() => {
+  const cajasPorProducto = (() => {
     return [...productos]
-      .sort((a, b) => ((b.cantidad || 0) * (b.costo_unitario || 0)) - ((a.cantidad || 0) * (a.costo_unitario || 0)))
+      .sort((a, b) => (b.total_cajas || 0) - (a.total_cajas || 0))
       .slice(0, 8)
       .map(p => ({
         label: (p.producto || p.nombre || p.sku || '').substring(0, 20),
-        value1: (p.cantidad || 0) * (p.costo_unitario || 0),
+        value1: p.total_cajas || p.cajas || 0,
+        value2: p.cantidad || 0,
       }));
   })();
 
@@ -291,10 +292,10 @@ const ReporteInventario = () => {
               size={180}
             />
             <BarChart
-              title="Top Productos por Valor"
-              subtitle="Mayor valorización en inventario"
-              data={topProductos}
-              legend={[{ label: 'Valor ($)', color: '#10b981' }]}
+              title="Cajas por Producto"
+              subtitle="Top 8 productos con más cajas en bodega"
+              data={cajasPorProducto}
+              legend={[{ label: 'Cajas', color: '#3B82F6' }, { label: 'Unidades', color: '#10b981' }]}
               height={300}
             />
           </div>

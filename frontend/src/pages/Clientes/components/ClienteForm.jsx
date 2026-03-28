@@ -20,10 +20,7 @@ import {
   Phone, 
   Mail, 
   Globe,
-  DollarSign,
   Calendar,
-  FileEdit,
-  Database,
 } from 'lucide-react';
 import { Button, Modal } from '../../../components/common/index';
 
@@ -96,12 +93,19 @@ const FORM_FIELDS = {
       required: false, 
       options: TIPOS_CLIENTE,
     },
-    { 
-      name: 'sector', 
-      label: 'Sector', 
-      type: 'select', 
-      required: false, 
+    {
+      name: 'sector',
+      label: 'Sector',
+      type: 'select',
+      required: false,
       options: SECTORES,
+    },
+    {
+      name: 'fecha_inicio_relacion',
+      label: 'Fecha Inicio Relación',
+      type: 'date',
+      required: false,
+      icon: Calendar,
     },
   ],
   contacto: [
@@ -158,41 +162,6 @@ const FORM_FIELDS = {
       maxLength: 200,
     },
   ],
-  comercial: [
-    { 
-      name: 'credito_aprobado', 
-      label: 'Límite de Crédito (COP)', 
-      type: 'number', 
-      required: false, 
-      icon: DollarSign,
-      placeholder: '50000000',
-      min: 0,
-    },
-    { 
-      name: 'fecha_inicio_relacion', 
-      label: 'Fecha Inicio Relación', 
-      type: 'date', 
-      required: false, 
-      icon: Calendar,
-    },
-    { 
-      name: 'codigo_wms', 
-      label: 'Código WMS', 
-      type: 'text', 
-      required: false,
-      icon: Database,
-      placeholder: 'Código en sistema WMS Copérnico',
-      maxLength: 50,
-    },
-    { 
-      name: 'notas', 
-      label: 'Observaciones', 
-      type: 'textarea', 
-      required: false, 
-      icon: FileEdit,
-      placeholder: 'Notas adicionales sobre el cliente...',
-    },
-  ],
 };
 
 // ============================================================================
@@ -203,12 +172,12 @@ const InputField = ({ field, value, onChange, error }) => {
   const Icon = field.icon;
   
   const baseInputClasses = `
-    w-full px-4 py-2.5 
-    bg-white border rounded-xl
-    text-sm text-slate-800 placeholder-slate-400
+    w-full px-4 py-2.5
+    bg-white dark:bg-slate-800 border rounded-xl
+    text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400
     focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
     transition-all duration-200
-    ${error ? 'border-red-300' : 'border-slate-200'}
+    ${error ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'}
     ${Icon ? 'pl-10' : ''}
   `;
 
@@ -225,7 +194,7 @@ const InputField = ({ field, value, onChange, error }) => {
 
   return (
     <div className="space-y-1">
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
         {field.label}
         {field.required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -316,10 +285,7 @@ const ClienteForm = ({
         telefono: cliente.telefono || '',
         email: cliente.email || '',
         sitio_web: cliente.sitio_web || '',
-        credito_aprobado: cliente.credito_aprobado || null,
         fecha_inicio_relacion: cliente.fecha_inicio_relacion || '',
-        codigo_wms: cliente.codigo_wms || '',
-        notas: cliente.notas || '',
         estado: cliente.estado || 'activo',
       });
     } else {
@@ -374,11 +340,6 @@ const ClienteForm = ({
       }
     }
 
-    // Validar límite de crédito
-    if (formData.credito_aprobado !== null && formData.credito_aprobado < 0) {
-      newErrors.credito_aprobado = 'El límite de crédito no puede ser negativo';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -386,7 +347,7 @@ const ClienteForm = ({
   const handleSubmit = async () => {
     if (!validateForm()) {
       // Ir a la primera pestaña con errores
-      const tabsWithErrors = ['info', 'contacto', 'comercial'].filter(tab =>
+      const tabsWithErrors = ['info', 'contacto'].filter(tab =>
         FORM_FIELDS[tab].some(field => errors[field.name])
       );
       if (tabsWithErrors.length > 0) {
@@ -406,7 +367,6 @@ const ClienteForm = ({
   const tabs = [
     { id: 'info', label: 'Información' },
     { id: 'contacto', label: 'Contacto' },
-    { id: 'comercial', label: 'Comercial' },
   ];
 
   return (
@@ -428,7 +388,7 @@ const ClienteForm = ({
       }
     >
       {/* Tabs */}
-      <div className="border-b border-gray-100 mb-6">
+      <div className="border-b border-gray-100 dark:border-slate-700 mb-6">
         <nav className="flex gap-4">
           {tabs.map((tab) => (
             <button
@@ -438,7 +398,7 @@ const ClienteForm = ({
                 pb-3 px-1 text-sm font-medium transition-colors relative
                 ${activeTab === tab.id
                   ? 'text-orange-600'
-                  : 'text-slate-500 hover:text-slate-700'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                 }
               `}
             >
@@ -470,8 +430,8 @@ const ClienteForm = ({
 
       {/* Estado (solo en edición) */}
       {isEditing && activeTab === 'info' && (
-        <div className="mt-6 p-4 bg-slate-50 rounded-xl">
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+        <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             Estado del Cliente
           </label>
           <div className="flex gap-4">
@@ -485,7 +445,7 @@ const ClienteForm = ({
                   onChange={(e) => handleChange('estado', e.target.value)}
                   className="w-4 h-4 text-orange-500 focus:ring-orange-500"
                 />
-                <span className="text-sm text-slate-700">{estado.label}</span>
+                <span className="text-sm text-slate-700 dark:text-slate-300">{estado.label}</span>
               </label>
             ))}
           </div>
@@ -494,9 +454,9 @@ const ClienteForm = ({
 
       {/* Código de cliente (solo en edición, solo lectura) */}
       {isEditing && activeTab === 'info' && cliente?.codigo_cliente && (
-        <div className="mt-4 p-3 bg-blue-50 rounded-xl">
-          <p className="text-xs text-blue-600 font-medium">Código de Cliente</p>
-          <p className="text-sm text-blue-800 font-mono">{cliente.codigo_cliente}</p>
+        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+          <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Código de Cliente</p>
+          <p className="text-sm text-blue-800 dark:text-blue-300 font-mono">{cliente.codigo_cliente}</p>
         </div>
       )}
     </Modal>

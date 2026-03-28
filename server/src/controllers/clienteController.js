@@ -789,6 +789,108 @@ const subirLogo = async (req, res) => {
   }
 };
 
+/**
+ * Importar clientes desde Excel/CSV
+ */
+const importarClientes = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    if (!req.file) {
+      return error(res, 'Debe adjuntar un archivo Excel (.xlsx) o CSV (.csv)', 400);
+    }
+
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(req.file.buffer);
+    const sheet = workbook.worksheets[0];
+
+    if (!sheet || sheet.rowCount < 2) {
+      return error(res, 'El archivo está vacío o no tiene datos', 400);
+    }
+
+    // Leer encabezados (fila 1)
+    const headers = [];
+    sheet.getRow(1).eachCell((cell, colNumber) => {
+      headers[colNumber] = String(cell.value || '').toLowerCase().trim()
+        .replace(/\s+/g, '_')
+        .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i').replace(/ó/g, 'o').replace(/ú/g, 'u')
+        .replace(/ñ/g, 'n');
+    });
+
+    const resultados = { creados: 0, actualizados: 0, errores: [] };
+
+    for (let rowNum = 2; rowNum <= sheet.rowCount; rowNum++) {
+      const row = sheet.getRow(rowNum);
+      const datos = {};
+      row.eachCell((cell, colNumber) => {
+        const header = headers[colNumber];
+        if (header) datos[header] = cell.value;
+      });
+
+      // Mapeo flexible de columnas
+      const nit = String(datos.nit || datos.nit_cc || datos.documento || '').trim();
+      const razonSocial = String(datos.razon_social || datos.nombre || datos.empresa || '').trim();
+
+      if (!nit || !razonSocial) {
+        resultados.errores.push({ fila: rowNum, error: 'NIT y Razón Social son obligatorios' });
+        continue;
+      }
+
+      try {
+        const [cliente, created] = await Cliente.findOrCreate({
+          where: { nit },
+          defaults: {
+            razon_social: razonSocial,
+            nit,
+            tipo: datos.tipo || 'Corporativo',
+            sector: datos.sector || null,
+            direccion: datos.direccion || null,
+            ciudad: datos.ciudad || null,
+            departamento: datos.departamento || null,
+            telefono: datos.telefono ? String(datos.telefono) : null,
+            email: datos.email || datos.correo || null,
+            fecha_inicio_relacion: datos.fecha_inicio_relacion || new Date(),
+            estado: 'activo',
+          },
+          transaction,
+        });
+
+        if (created) {
+          resultados.creados++;
+        } else {
+          // Actualizar datos existentes si vienen
+          const updates = {};
+          if (datos.direccion) updates.direccion = datos.direccion;
+          if (datos.ciudad) updates.ciudad = datos.ciudad;
+          if (datos.telefono) updates.telefono = String(datos.telefono);
+          if (datos.email || datos.correo) updates.email = datos.email || datos.correo;
+          if (datos.sector) updates.sector = datos.sector;
+          if (Object.keys(updates).length > 0) {
+            await cliente.update(updates, { transaction });
+          }
+          resultados.actualizados++;
+        }
+      } catch (err) {
+        resultados.errores.push({ fila: rowNum, nit, error: err.message });
+      }
+    }
+
+    await transaction.commit();
+
+    // Limpiar archivo temporal
+    if (req.file.path) {
+      const fs = require('fs');
+      fs.unlink(req.file.path, () => {});
+    }
+
+    return success(res, resultados, 'Importación completada');
+  } catch (err) {
+    await transaction.rollback();
+    logger.error('Error al importar clientes:', { message: err.message });
+    return serverError(res, 'Error al importar clientes', err);
+  }
+};
+
 module.exports = {
   // Clientes
   listar,
@@ -798,6 +900,7 @@ module.exports = {
   actualizar,
   eliminar,
   subirLogo,
+  importarClientes,
   // Contactos
   listarContactos,
   crearContacto,

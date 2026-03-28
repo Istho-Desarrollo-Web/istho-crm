@@ -32,6 +32,8 @@ import {
   Building2,
   FileText,
   ArrowDownCircle,
+  List,
+  LayoutGrid,
 } from 'lucide-react';
 import { Pagination } from '../../../components/common';
 import { exportToCsv } from '../../../utils/exportCsv';
@@ -191,6 +193,7 @@ const EntradasList = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('todos');
+  const [viewMode, setViewMode] = useState('table');
   const [loading, setLoading] = useState(true);
   const [entradas, setEntradas] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
@@ -372,33 +375,47 @@ const EntradasList = () => {
           </div>
         </div>
 
-        {/* RESULTS COUNT */}
-        <div className="mb-4">
+        {/* RESULTS COUNT + VIEW TOGGLE */}
+        <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {filtered.length} entrada{filtered.length !== 1 && 's'} encontrada{filtered.length !== 1 && 's'}
           </p>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* TABLE */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-          {loading ? (
-            <div className="p-8 text-center">
-              <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mx-auto mb-3" />
-              <p className="text-slate-500">Cargando entradas del WMS...</p>
+        {/* TABLE / CARDS */}
+        {loading ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-8 text-center">
+            <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mx-auto mb-3" />
+            <p className="text-slate-500">Cargando entradas del WMS...</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ClipboardList className="w-8 h-8 text-slate-400" />
             </div>
-          ) : filtered.length === 0 ? (
-            <div className="py-16 text-center">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ClipboardList className="w-8 h-8 text-slate-400" />
-              </div>
-              <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
-                No se encontraron entradas
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400">
-                {searchTerm ? 'Intenta ajustar el término de búsqueda' : 'No hay entradas pendientes de auditoría'}
-              </p>
-            </div>
-          ) : (
+            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
+              No se encontraron entradas
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400">
+              {searchTerm ? 'Intenta ajustar el término de búsqueda' : 'No hay entradas pendientes de auditoría'}
+            </p>
+          </div>
+        ) : viewMode === 'table' ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -433,7 +450,6 @@ const EntradasList = () => {
                       className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer group"
                       onClick={() => handleView(entrada)}
                     >
-                      {/* Documento */}
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -449,8 +465,6 @@ const EntradasList = () => {
                           </div>
                         </div>
                       </td>
-
-                      {/* Cliente */}
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
                           <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
@@ -459,35 +473,25 @@ const EntradasList = () => {
                           </span>
                         </div>
                       </td>
-
-                      {/* Tipo Documento WMS */}
                       <td className="py-4 px-4 hidden md:table-cell">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
                           {entrada.tipo_documento_wms || 'CO'}
                         </span>
                       </td>
-
-                      {/* Fecha */}
                       <td className="py-4 px-4 hidden lg:table-cell">
                         <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
                           <Calendar className="w-4 h-4 text-slate-400" />
                           {formatDate(entrada.fecha_ingreso)}
                         </div>
                       </td>
-
-                      {/* Líneas / Progreso */}
                       <td className="py-4 px-4" onClick={(e) => e.stopPropagation()}>
                         <div className="w-32 mx-auto">
                           <ProgressBar verified={entrada.lineas_verificadas} total={entrada.lineas} />
                         </div>
                       </td>
-
-                      {/* Estado */}
                       <td className="py-4 px-4 text-center">
                         <StatusBadge estado={entrada.estado} />
                       </td>
-
-                      {/* Acciones */}
                       <td className="py-4 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                         <RowActions entrada={entrada} onView={handleView} />
                       </td>
@@ -496,18 +500,83 @@ const EntradasList = () => {
                 </tbody>
               </table>
             </div>
-          )}
+            {!loading && pagination.totalPages > 1 && (
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.total}
+                itemsPerPage={PAGE_SIZE}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filtered.map((entrada) => (
+                <div
+                  key={entrada.id}
+                  className="bg-white dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-700 hover:shadow-md transition-all cursor-pointer group"
+                  onClick={() => handleView(entrada)}
+                >
+                  {/* Card Header */}
+                  <div className="flex items-center justify-between px-4 pt-4 pb-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                          {entrada.documento_wms || entrada.documento}
+                        </p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">{entrada.documento}</p>
+                      </div>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <RowActions entrada={entrada} onView={handleView} />
+                    </div>
+                  </div>
 
-          {!loading && pagination.totalPages > 1 && (
-            <Pagination
-              currentPage={pagination.page}
-              totalPages={pagination.totalPages}
-              totalItems={pagination.total}
-              itemsPerPage={PAGE_SIZE}
-              onPageChange={handlePageChange}
-            />
-          )}
-        </div>
+                  {/* Card Body */}
+                  <div className="px-4 py-3 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                      <span className="text-sm text-slate-700 dark:text-slate-200 truncate">{entrada.cliente}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+                        {entrada.tipo_documento_wms || 'CO'}
+                      </span>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {formatDate(entrada.fecha_ingreso)}
+                      </div>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ProgressBar verified={entrada.lineas_verificadas} total={entrada.lineas} />
+                    </div>
+                  </div>
+
+                  {/* Card Footer */}
+                  <div className="px-4 py-3 border-t border-gray-100 dark:border-slate-700">
+                    <StatusBadge estado={entrada.estado} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            {!loading && pagination.totalPages > 1 && (
+              <div className="mt-4">
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  totalItems={pagination.total}
+                  itemsPerPage={PAGE_SIZE}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
+          </>
+        )}
 
         {/* FOOTER */}
         <footer className="text-center py-6 mt-8 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">

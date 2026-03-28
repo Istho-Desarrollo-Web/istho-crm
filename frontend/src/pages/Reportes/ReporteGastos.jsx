@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Receipt, DollarSign, CheckCircle, Clock, FileSpreadsheet, Download, Calendar } from 'lucide-react';
+import { Receipt, DollarSign, CheckCircle, Clock, FileSpreadsheet, Download, Calendar, ArrowLeft, RefreshCw, Mail } from 'lucide-react';
 import { KpiCard } from '../../components/common';
 import { BarChart, PieChart } from '../../components/charts';
 import reportesService from '../../api/reportes.service';
@@ -59,11 +59,27 @@ const ReporteGastos = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Reporte de Gastos</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Detalle de egresos e ingresos por usuario y concepto</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/reportes')}
+              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
+                <Receipt className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Reporte de Gastos</h1>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Detalle de egresos e ingresos por usuario y concepto</p>
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={fetchData} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
+              <RefreshCw className="w-4 h-4" /> Actualizar
+            </button>
             <button onClick={() => handleExport('excel')} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
               <FileSpreadsheet className="w-4 h-4" /> Excel
             </button>

@@ -262,7 +262,9 @@ async function paso3_entradaGrande() {
     nit: NIT_CLIENTE_1,
     documento_origen: DOC_ENTRADA_1,
     fecha_ingreso: new Date().toISOString(),
-    tipo_documento: 'Remisión',
+    tipo_documento: 'CO',
+    tipo_orden: 'Recepcion',
+    estado: 'Finalizada',
     observaciones: 'Despacho planta Funza - Ruta AM01',
     detalles: [
       // SKU 1: Balde dulce de leche - 2 cajas
@@ -375,7 +377,9 @@ async function paso4_devolucion() {
     nit: NIT_CLIENTE_1,
     documento_origen: DOC_ENTRADA_2,
     fecha_ingreso: new Date().toISOString(),
-    tipo_documento: 'Devolución',
+    tipo_documento: 'CO',
+    tipo_orden: 'Recepcion',
+    estado: 'Finalizada',
     observaciones: 'Devolución por producto cercano a vencimiento - Tienda Chapinero',
     detalles: [
       {
@@ -420,6 +424,9 @@ async function paso5_despachoSucursal() {
     nit: NIT_CLIENTE_1,
     numero_picking: PICKING_1,
     documento_wms: DOC_SALIDA_1,
+    tipo_documento: 'PK',
+    tipo_orden: 'Picking',
+    estado: 'Finalizada',
     sucursal_entrega: 'ÉXITO COUNTRY (C/C COUNTRY PLAZA)',
     ciudad_destino: 'BOGOTÁ',
     observaciones: 'Despacho rutero D-14 / Turno mañana',
@@ -490,6 +497,9 @@ async function paso6_pedidoUrgente() {
     nit: NIT_CLIENTE_1,
     numero_picking: PICKING_2,
     documento_wms: DOC_SALIDA_2,
+    tipo_documento: 'PK',
+    tipo_orden: 'Picking',
+    estado: 'Finalizada',
     sucursal_entrega: 'JUMBO CALLE 80',
     ciudad_destino: 'BOGOTÁ',
     observaciones: 'URGENTE - Solicitud directa del cliente',
@@ -535,8 +545,9 @@ async function paso7_kardexSuma() {
   // La caja5 (crema de leche) sigue disponible con 24 unidades tras los pickings
   const kardexData = {
     nit: NIT_CLIENTE_1,
-    motivo: 'Ajuste por conteo físico',
-    observaciones: 'Conteo cíclico detectó 10 unidades adicionales no registradas',
+    motivo: 'Recarga',
+    estado: 'Finalizada',
+    observaciones: 'Recarga de stock por conteo cíclico - 10 unidades adicionales',
     detalles: [
       {
         producto: '9400118',
@@ -556,7 +567,7 @@ async function paso7_kardexSuma() {
     kardex1_opId = d.operacion_id;
 
     log.ok(`Kardex creado: ${d.numero_operacion} (ID: ${d.operacion_id})`);
-    assert(d.motivo === 'Ajuste por conteo físico', `Motivo: ${d.motivo}`, `Motivo incorrecto: ${d.motivo}`);
+    assert(d.motivo === 'Recarga', `Motivo: ${d.motivo}`, `Motivo incorrecto: ${d.motivo}`);
     assert(d.total_unidades === 10, `Unidades ajustadas: ${d.total_unidades}`, `Unidades incorrectas: ${d.total_unidades}`);
 
     log.info('Stock esperado SKU 9400118 (Crema de leche):');
@@ -579,7 +590,9 @@ async function paso8_kardexResta() {
   // Restar TODAS las unidades de caja5 para dejarla inactiva
   const kardexData = {
     nit: NIT_CLIENTE_1,
-    motivo: 'Producto dañado',
+    motivo: 'Otro',
+    motivo_detalle: 'Producto dañado por humedad',
+    estado: 'Finalizada',
     observaciones: 'Caja con producto dañado por humedad - Sacar de inventario',
     detalles: [
       {
@@ -617,7 +630,8 @@ async function paso9_kardexReactivarInactiva() {
   // La caja5 quedó inactiva en paso8. Sumar unidades la reactiva.
   const kardexData = {
     nit: NIT_CLIENTE_1,
-    motivo: 'Reclasificación',
+    motivo: 'Recarga',
+    estado: 'Finalizada',
     observaciones: 'Producto recuperado tras inspección - apto para venta',
     detalles: [
       {
@@ -655,7 +669,9 @@ async function paso10_kardexReactivarDespachada() {
   // La caja1 fue despachada en paso5 (picking). Sumar unidades la reactiva.
   const kardexData = {
     nit: NIT_CLIENTE_1,
-    motivo: 'Devolución parcial de picking',
+    motivo: 'Otro',
+    motivo_detalle: 'Devolución parcial de picking',
+    estado: 'Finalizada',
     observaciones: 'Cliente rechazó parte del pedido - reingreso al inventario',
     detalles: [
       {
@@ -878,7 +894,8 @@ async function paso13_duplicados() {
     nit: NIT_CLIENTE_1,
     documento_origen: DOC_ENTRADA_1,
     fecha_ingreso: new Date().toISOString(),
-    tipo_documento: 'Remisión',
+    tipo_documento: 'CO',
+    estado: 'Finalizada',
     detalles: [{ producto: '9400605', cantidad: 10, caja: 'TEST-DUP' }],
   });
 
@@ -894,6 +911,8 @@ async function paso13_duplicados() {
     nit: NIT_CLIENTE_1,
     numero_picking: PICKING_1,
     documento_wms: `FAC-DUP-${uid()}`,
+    tipo_documento: 'PK',
+    estado: 'Finalizada',
     detalles: [{ producto: '9400605', cantidad: 5 }],
   });
 
@@ -968,7 +987,8 @@ async function paso14_errores() {
   log.info('Probando kardex sin detalles...');
   const r7 = await wmsCall('POST', '/kardex', {
     nit: NIT_CLIENTE_1,
-    motivo: 'Test sin detalles',
+    motivo: 'Recarga',
+    estado: 'Finalizada',
     detalles: [],
   });
   assert(!r7.ok, `Kardex vacío rechazado (${r7.status})`, 'Kardex vacío NO fue rechazado');
@@ -979,7 +999,9 @@ async function paso14_errores() {
   log.info('Probando kardex resta en caja despachada (línea omitida silenciosamente)...');
   const r8 = await wmsCall('POST', '/kardex', {
     nit: NIT_CLIENTE_1,
-    motivo: 'Intento de resta en despachada',
+    motivo: 'Otro',
+    motivo_detalle: 'Intento de resta en despachada',
+    estado: 'Finalizada',
     detalles: [
       {
         producto: '9400605',
@@ -1005,10 +1027,57 @@ async function paso14_errores() {
   log.info('Probando kardex con NIT inexistente...');
   const r9 = await wmsCall('POST', '/kardex', {
     nit: '999999999-0',
-    motivo: 'Test NIT inválido',
+    motivo: 'Recarga',
+    estado: 'Finalizada',
     detalles: [{ producto: '9400605', cantidad: 5, caja: 'CJ-FAKE' }],
   });
   assert(!r9.ok, `Kardex con NIT inexistente rechazado (${r9.status})`, 'Kardex con NIT inexistente NO fue rechazado');
+
+  // 14j. Entrada con estado NO finalizada (debe rechazar)
+  log.info('Probando entrada con estado "En Proceso" (no finalizada)...');
+  const r10 = await wmsCall('POST', '/entradas', {
+    nit: NIT_CLIENTE_1,
+    documento_origen: `TEST-NOFIN-${uid()}`,
+    fecha_ingreso: new Date().toISOString(),
+    tipo_documento: 'CO',
+    estado: 'En Proceso',
+    detalles: [{ producto: '9400605', cantidad: 10, caja: `CJ-TEST-${uid()}` }],
+  });
+  assert(!r10.ok, `Entrada no finalizada rechazada (${r10.status}): ${r10.data?.message || ''}`, `Entrada no finalizada NO fue rechazada (${r10.status})`);
+
+  // 14k. Salida con estado NO finalizada
+  log.info('Probando salida con estado "Pendiente" (no finalizada)...');
+  const r11 = await wmsCall('POST', '/salidas', {
+    nit: NIT_CLIENTE_1,
+    numero_picking: `PICK-NOFIN-${uid()}`,
+    documento_wms: `FAC-NOFIN-${uid()}`,
+    tipo_documento: 'PK',
+    estado: 'Pendiente',
+    detalles: [{ producto: '9400605', cantidad: 5 }],
+  });
+  assert(!r11.ok, `Salida no finalizada rechazada (${r11.status}): ${r11.data?.message || ''}`, `Salida no finalizada NO fue rechazada (${r11.status})`);
+
+  // 14l. Kardex con motivo NO permitido
+  log.info('Probando kardex con motivo no permitido "Ajuste manual"...');
+  const r12 = await wmsCall('POST', '/kardex', {
+    nit: NIT_CLIENTE_1,
+    motivo: 'Ajuste manual',
+    estado: 'Finalizada',
+    detalles: [{ producto: '9400605', cantidad: 5, caja: `CJ-TEST-${uid()}` }],
+  });
+  assert(!r12.ok, `Kardex con motivo no permitido rechazado (${r12.status}): ${r12.data?.message || ''}`, `Kardex con motivo no permitido NO fue rechazado (${r12.status})`);
+
+  // 14m. Entrada usando tipo_orden como fallback (sin tipo_documento)
+  log.info('Probando entrada con tipo_orden "Recepcion" (fallback sin tipo_documento)...');
+  const r13 = await wmsCall('POST', '/entradas', {
+    nit: NIT_CLIENTE_1,
+    documento_origen: `FALLBACK-${uid()}`,
+    fecha_ingreso: new Date().toISOString(),
+    tipo_orden: 'Recepcion',
+    estado: 'Finalizada',
+    detalles: [{ producto: '9400605', cantidad: 5, caja: `CJ-FB-${uid()}` }],
+  });
+  assert(r13.ok, `Entrada con tipo_orden fallback aceptada (${r13.status})`, `Entrada con tipo_orden fallback rechazada (${r13.status}): ${r13.data?.message || ''}`);
 }
 
 // ============================================================================

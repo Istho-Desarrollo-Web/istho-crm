@@ -121,9 +121,9 @@ const allMenuConfig = [
     soloInternos: true,
     items: [
       { icon: CarFront, label: 'Vehículos', href: '/viajes/vehiculos', shortcut: 'G V' },
-      { icon: Wallet, label: 'Cajas Menores', href: '/viajes/cajas-menores' },
-      { icon: MapPin, label: 'Viajes', href: '/viajes/viajes' },
-      { icon: Receipt, label: 'Movimientos', href: '/viajes/movimientos' },
+      { icon: Wallet, label: 'Cajas Menores', href: '/viajes/cajas-menores', shortcut: 'G M' },
+      { icon: MapPin, label: 'Viajes', href: '/viajes/viajes', shortcut: 'G T' },
+      { icon: Receipt, label: 'Movimientos', href: '/viajes/movimientos', shortcut: 'G O' },
     ],
   },
   {
@@ -133,8 +133,8 @@ const allMenuConfig = [
     shortcut: 'A',
     soloAdmin: true,
     items: [
-      { icon: Settings, label: 'Usuarios y Roles', href: '/administracion' },
-      { icon: Activity, label: 'Auditoría de Acciones', href: '/auditoria-acciones' },
+      { icon: Settings, label: 'Usuarios y Roles', href: '/administracion', shortcut: 'G U' },
+      { icon: Activity, label: 'Auditoría de Acciones', href: '/auditoria-acciones', shortcut: 'G A' },
       { icon: Truck, label: 'Configuración WMS', href: '/configuracion-wms' },
     ],
   },
@@ -226,10 +226,13 @@ const useKeyboardShortcuts = (shortcuts, enabled = true) => {
       // Ignorar si está escribiendo en un input
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
-      // Atajos especiales con modificadores
+      // Atajos especiales con modificadores (Ctrl en Windows, Cmd en Mac)
       if (e.ctrlKey || e.metaKey) {
         const key = e.key.toUpperCase();
-        const shortcut = shortcuts.find(s => s.key === `CMD+${key}` || s.key === `CTRL+${key}`);
+        const shortcut = shortcuts.find(s => {
+          const sKey = s.key.toUpperCase();
+          return sKey === `CMD+${key}` || sKey === `CTRL+${key}`;
+        });
         if (shortcut) {
           e.preventDefault();
           shortcut.action();
@@ -373,22 +376,40 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
 
   const shortcuts = [
     {
-      category: 'Navegación', items: [
+      category: 'Navegación General', items: [
         { keys: ['G', 'D'], description: 'Ir a Dashboard' },
-        { keys: ['G', 'C'], description: 'Ir a Clientes' },
-        { keys: ['G', 'I'], description: 'Ir a Inventario' },
-        { keys: ['G', 'E'], description: 'Ir a Entradas' },
-        { keys: ['G', 'S'], description: 'Ir a Salidas' },
-        { keys: ['G', 'K'], description: 'Ir a Kardex' },
-        { keys: ['G', 'P'], description: 'Ir a Plantillas'},
         { keys: ['G', 'R'], description: 'Ir a Reportes' },
+        { keys: ['G', 'C'], description: 'Ir a Clientes' },
+        { keys: ['G', 'P'], description: 'Ir a Plantillas Email' },
       ]
     },
     {
-      category: 'Acciones', items: [
-        { keys: ['Ctrl/Cmd', 'K'], description: 'Abrir búsqueda' },
-        { keys: ['Ctrl/Cmd', 'B'], description: 'Toggle modo oscuro' },
-        { keys: ['Ctrl/Cmd', '¿'], description: 'Ver atajos de teclado' },
+      category: 'Inventario', items: [
+        { keys: ['G', 'I'], description: 'Maestro de Productos' },
+        { keys: ['G', 'E'], description: 'Entradas (Ingresos)' },
+        { keys: ['G', 'S'], description: 'Salidas (Despachos)' },
+        { keys: ['G', 'K'], description: 'Kardex (Ajustes)' },
+      ]
+    },
+    {
+      category: 'Viajes y Cajas', items: [
+        { keys: ['G', 'V'], description: 'Vehículos' },
+        { keys: ['G', 'T'], description: 'Viajes' },
+        { keys: ['G', 'M'], description: 'Cajas Menores' },
+        { keys: ['G', 'O'], description: 'Movimientos' },
+      ]
+    },
+    {
+      category: 'Administración', items: [
+        { keys: ['G', 'U'], description: 'Usuarios y Roles' },
+        { keys: ['G', 'A'], description: 'Auditoría de Acciones' },
+      ]
+    },
+    {
+      category: 'Acciones Rápidas', items: [
+        { keys: ['Ctrl', 'K'], description: 'Abrir búsqueda' },
+        { keys: ['Ctrl', 'B'], description: 'Toggle modo oscuro' },
+        { keys: ['Ctrl', '/'], description: 'Ver atajos de teclado' },
         { keys: ['ESC'], description: 'Cerrar modal/menú' },
       ]
     },
@@ -405,7 +426,7 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
           {/* Header */}
           <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#E74C3C] to-[#C0392B] rounded-lg flex items-center justify-center">
                 <Keyboard className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -1003,7 +1024,7 @@ const FloatingHeader = () => {
   const shortcuts = [
     { key: 'CMD+K', action: () => document.querySelector('[data-search-input]')?.focus() },
     { key: 'CMD+B', action: toggleDark },
-    { key: 'CMD+¿', action: () => setIsShortcutsOpen(true) },
+    { key: 'CMD+/', action: () => setIsShortcutsOpen(true) },
     // Navegación
     ...menuConfig.flatMap(menu =>
       menu.items

@@ -166,13 +166,8 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
     return parseFloat(cajaAnteriorSeleccionada.saldo_actual) || 0;
   }, [cajaAnteriorSeleccionada]);
 
-  // Auto-rellenar saldo inicial cuando se selecciona caja anterior con saldo
-  useEffect(() => {
-    if (!isEditing && saldoTrasladado > 0 && !formData.saldo_inicial) {
-      setFormData(prev => ({ ...prev, saldo_inicial: saldoTrasladado.toString() }));
-    }
-  }, [saldoTrasladado, isEditing]);
-
+  // Saldo total = saldo_inicial (manual) + saldo_trasladado (de caja anterior)
+  // El saldo_inicial es lo que el usuario escribe, NO se auto-rellena
   const saldoTotal = useMemo(() => {
     const inicial = parseFloat(formData.saldo_inicial) || 0;
     return inicial + saldoTrasladado;
@@ -183,7 +178,14 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
   // ──────────────────────────────────────────────────────────────────────────
 
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const updated = { ...prev, [field]: value };
+      // Si cambia el usuario, limpiar caja anterior (pertenece a otro usuario)
+      if (field === 'asignado_a') {
+        updated.caja_anterior_id = '';
+      }
+      return updated;
+    });
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: null }));
     }
@@ -362,7 +364,7 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
               >
                 <option value="">Sin traslado (opcional)</option>
                 {cajasCerradas
-                  .filter((c) => parseFloat(c.saldo_actual) > 0)
+                  .filter((c) => parseFloat(c.saldo_actual) > 0 && (!formData.asignado_a || String(c.asignado_a) === String(formData.asignado_a)))
                   .map((c) => (
                     <option key={c.id} value={c.id}>
                       Caja #{c.numero || c.id} - {c.asignado_nombre || c.asignado?.nombre_completo || 'Sin asignar'} - {formatMoney(c.saldo_actual)}

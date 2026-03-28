@@ -34,7 +34,6 @@ import {
   Clock,
   MessageSquare,
   FileCheck,
-  DollarSign,
   Database,
   Package,
   Camera,
@@ -89,14 +88,6 @@ const formatSector = (sector) => {
   return sectores[sector] || sector || '-';
 };
 
-const formatCurrency = (value) => {
-  if (!value) return '$0';
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-  }).format(value);
-};
 
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -709,20 +700,13 @@ const ClienteDetail = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <KpiCard
             title="Operaciones del Mes"
             value={cliente.operaciones_mes || 0}
             icon={Truck}
             iconBg="bg-blue-100"
             iconColor="text-blue-600"
-          />
-          <KpiCard
-            title="Crédito Aprobado"
-            value={formatCurrency(cliente.credito_aprobado)}
-            icon={DollarSign}
-            iconBg="bg-emerald-100"
-            iconColor="text-emerald-600"
           />
           <KpiCard
             title="Productos en Bodega"
@@ -847,18 +831,6 @@ const ClienteDetail = () => {
                         </a>
                       </div>
                     )}
-                  </div>
-                </div>
-
-                {/* Información Comercial */}
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-slate-800 dark:text-slate-100">Información Comercial</h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-sm">
-                      <DollarSign className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-                      <span className="text-slate-500 dark:text-slate-400 w-32">Crédito aprobado:</span>
-                      <span className="text-slate-800 dark:text-slate-200">{formatCurrency(cliente.credito_aprobado)}</span>
-                    </div>
                   </div>
                 </div>
 

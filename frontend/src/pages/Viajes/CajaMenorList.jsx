@@ -363,15 +363,7 @@ const CajaMenorList = () => {
               <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestión de cajas menores y saldos</p>
             </div>
           </div>
-          <ProtectedAction module="caja_menor" action="crear">
-            <button
-              onClick={handleCreate}
-              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Nueva Caja
-            </button>
-          </ProtectedAction>
+          {/* Botón movido a la barra de filtros */}
         </div>
 
         {/* KPI CARDS */}
@@ -446,6 +438,17 @@ const CajaMenorList = () => {
                 </button>
               ))}
             </div>
+
+            {/* Botón crear */}
+            <ProtectedAction module="caja_menor" action="crear">
+              <button
+                onClick={handleCreate}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#E74C3C] hover:bg-[#C0392B] rounded-xl shadow-sm transition-colors whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4" />
+                Nueva Caja
+              </button>
+            </ProtectedAction>
           </div>
         </div>
 
