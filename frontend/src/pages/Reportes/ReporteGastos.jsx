@@ -4,6 +4,7 @@ import { Receipt, DollarSign, CheckCircle, Clock, FileSpreadsheet, Download, Cal
 import { KpiCard } from '../../components/common';
 import { BarChart, PieChart } from '../../components/charts';
 import reportesService from '../../api/reportes.service';
+import EnviarReporteModal from '../../components/common/EnviarReporteModal';
 import logoNegro from '../../assets/logo-negro.png';
 import logoBlanco from '../../assets/logo-blanco.png';
 
@@ -23,6 +24,7 @@ const ReporteGastos = () => {
   const [data, setData] = useState(null);
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
+  const [emailModal, setEmailModal] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -85,6 +87,9 @@ const ReporteGastos = () => {
             </button>
             <button onClick={() => handleExport('csv')} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
               <Download className="w-4 h-4" /> CSV
+            </button>
+            <button onClick={() => setEmailModal(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
+              <Mail className="w-4 h-4" /> Enviar
             </button>
           </div>
         </div>
@@ -171,6 +176,15 @@ const ReporteGastos = () => {
           </div>
         </footer>
       </main>
+      <EnviarReporteModal
+        isOpen={emailModal}
+        onClose={() => setEmailModal(false)}
+        tipoReporte="gastos"
+        onSend={async (data) => {
+          const res = await reportesService.enviarPorEmail(data);
+          if (!res.success) throw new Error(res.message);
+        }}
+      />
     </div>
   );
 };

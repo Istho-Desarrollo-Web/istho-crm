@@ -144,7 +144,7 @@ const BarChart = ({
       </div>
 
       {/* Chart */}
-      <div className="relative overflow-x-auto">
+      <div className="relative">
         <svg
           width="100%"
           height={height}
@@ -297,42 +297,40 @@ const BarChart = ({
                   {item.label || item.name || ''}
                 </text>
 
-                {/* Tooltip */}
-                {isHovered && (
-                  <g>
-                    <rect
-                      x={x - 55}
-                      y={Math.min(y1, hasSecondLine ? y2 : y1) - 52}
-                      width={110}
-                      height={hasSecondLine ? 48 : 32}
-                      rx="8"
-                      fill="#0F1023"
-                      opacity="0.95"
-                    />
-                    <text
-                      x={x}
-                      y={Math.min(y1, hasSecondLine ? y2 : y1) - 34}
-                      textAnchor="middle"
-                      className="text-[11px] fill-white font-medium"
-                    >
-                      {legend[0]?.label || 'Valor'}: {val1.toLocaleString('es-CO')}
-                    </text>
-                    {hasSecondLine && val2 > 0 && (
-                      <text
-                        x={x}
-                        y={Math.min(y1, y2) - 18}
-                        textAnchor="middle"
-                        className="text-[11px] fill-white font-medium"
-                      >
-                        {legend[1]?.label || 'Valor 2'}: {val2.toLocaleString('es-CO')}
-                      </text>
-                    )}
-                  </g>
-                )}
               </g>
             );
           })}
         </svg>
+
+        {/* Tooltip HTML (fuera del SVG para que no se recorte) */}
+        {hoveredPoint !== null && (() => {
+          const item = data[hoveredPoint];
+          const val1 = item?.value1 ?? item?.value ?? 0;
+          const val2 = item?.value2 ?? 0;
+          const x = xScale(hoveredPoint);
+          const y1 = yScale(val1);
+          // Posicionar tooltip como porcentaje del contenedor
+          const leftPct = (x / chartWidth) * 100;
+          const topPct = ((Math.min(y1, hasSecondLine ? yScale(val2) : y1) - 10) / height) * 100;
+
+          return (
+            <div
+              className="absolute pointer-events-none z-50"
+              style={{
+                left: `${leftPct}%`,
+                top: `${topPct}%`,
+                transform: 'translate(-50%, -100%)',
+              }}
+            >
+              <div className="bg-[#0F1023] text-white text-[11px] font-medium rounded-lg px-3 py-2 shadow-xl whitespace-nowrap">
+                <div>{legend[0]?.label || 'Valor'}: {val1.toLocaleString('es-CO')}</div>
+                {hasSecondLine && val2 > 0 && (
+                  <div className="mt-0.5">{legend[1]?.label || 'Valor 2'}: {val2.toLocaleString('es-CO')}</div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

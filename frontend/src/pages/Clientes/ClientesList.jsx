@@ -212,7 +212,7 @@ const ClientesList = () => {
     e.target.value = '';
 
     try {
-      const XLSX = (await import('xlsx')).default;
+      const XLSX = await import('xlsx');
       const buffer = await file.arrayBuffer();
       const wb = XLSX.read(buffer, { type: 'array' });
       const ws = wb.Sheets[wb.SheetNames[0]];
