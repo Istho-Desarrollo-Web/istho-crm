@@ -431,20 +431,6 @@ const ProductoForm = ({
                 </select>
               </div>
 
-              {/* Ubicación */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  Ubicación
-                </label>
-                <input
-                  type="text"
-                  value={formData.ubicacion}
-                  onChange={(e) => handleChange('ubicacion', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-mono"
-                  placeholder="A1-B2-C3"
-                />
-              </div>
-
               {/* Stock mínimo */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">

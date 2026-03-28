@@ -166,12 +166,13 @@ const ReporteInventario = () => {
 
   const cajasPorProducto = (() => {
     return [...productos]
-      .sort((a, b) => (b.total_cajas || 0) - (a.total_cajas || 0))
+      .filter(p => (parseInt(p.total_cajas) || 0) > 0 || (parseFloat(p.cantidad) || 0) > 0)
+      .sort((a, b) => (parseInt(b.total_cajas) || 0) - (parseInt(a.total_cajas) || 0))
       .slice(0, 8)
       .map(p => ({
         label: (p.producto || p.nombre || p.sku || '').substring(0, 20),
-        value1: p.total_cajas || p.cajas || 0,
-        value2: p.cantidad || 0,
+        value1: parseInt(p.total_cajas) || 0,
+        value2: parseFloat(p.cantidad) || 0,
       }));
   })();
 

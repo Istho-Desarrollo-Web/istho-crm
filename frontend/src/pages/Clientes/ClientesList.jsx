@@ -25,6 +25,8 @@ import {
   Trash2,
   Building2,
   RefreshCw,
+  List,
+  LayoutGrid,
 } from 'lucide-react';
 
 // Layout
@@ -296,6 +298,7 @@ const ClientesList = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Modales
+  const [viewMode, setViewMode] = useState('table');
   const [formModal, setFormModal] = useState({ isOpen: false, cliente: null });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, cliente: null });
   const [statusModal, setStatusModal] = useState({ isOpen: false, cliente: null });
@@ -529,50 +532,58 @@ const ClientesList = () => {
           )}
         </div>
 
-        {/* RESULTS COUNT */}
-        <div className="mb-4">
+        {/* RESULTS COUNT + VIEW TOGGLE */}
+        <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {pagination.total} cliente{pagination.total !== 1 && 's'} encontrado{pagination.total !== 1 && 's'}
           </p>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+            <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+              <List className="w-4 h-4" />
+            </button>
+            <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* TABLE */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-          {loading ? (
-            <div className="p-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 animate-pulse">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-1/3" />
-                    <div className="h-3 bg-gray-100 rounded w-1/4" />
-                  </div>
-                  <div className="h-6 w-16 bg-gray-200 rounded-full" />
+        {/* TABLE / CARDS */}
+        {loading ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 animate-pulse">
+                <div className="w-10 h-10 bg-gray-200 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-1/3" />
+                  <div className="h-3 bg-gray-100 rounded w-1/4" />
                 </div>
-              ))}
-            </div>
-          ) : clientes.length === 0 ? (
-            <div className="py-16 text-center">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Building2 className="w-8 h-8 text-slate-400" />
+                <div className="h-6 w-16 bg-gray-200 rounded-full" />
               </div>
-              <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
-                No se encontraron clientes
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-4">
-                {searchTerm || Object.values(filters).filter(Boolean).length > 0
-                  ? 'Intenta ajustar los filtros de búsqueda'
-                  : 'Comienza agregando tu primer cliente'}
-              </p>
-              {!searchTerm && Object.values(filters).filter(Boolean).length === 0 && (
-                <ProtectedAction module="clientes" action="crear">
-                  <Button variant="primary" icon={Plus} onClick={handleCreate}>
-                    Nuevo Cliente
-                  </Button>
-                </ProtectedAction>
-              )}
+            ))}
+          </div>
+        ) : clientes.length === 0 ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Building2 className="w-8 h-8 text-slate-400" />
             </div>
-          ) : (
+            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
+              No se encontraron clientes
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 mb-4">
+              {searchTerm || Object.values(filters).filter(Boolean).length > 0
+                ? 'Intenta ajustar los filtros de búsqueda'
+                : 'Comienza agregando tu primer cliente'}
+            </p>
+            {!searchTerm && Object.values(filters).filter(Boolean).length === 0 && (
+              <ProtectedAction module="clientes" action="crear">
+                <Button variant="primary" icon={Plus} onClick={handleCreate}>
+                  Nuevo Cliente
+                </Button>
+              </ProtectedAction>
+            )}
+          </div>
+        ) : viewMode === 'table' ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -647,18 +658,87 @@ const ClientesList = () => {
                 </tbody>
               </table>
             </div>
-          )}
 
-          {!loading && pagination.totalPages > 1 && (
-            <Pagination
-              currentPage={pagination.page}
-              totalPages={pagination.totalPages}
-              totalItems={pagination.total}
-              itemsPerPage={pagination.limit}
-              onPageChange={goToPage}
-            />
-          )}
-        </div>
+            {!loading && pagination.totalPages > 1 && (
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.total}
+                itemsPerPage={pagination.limit}
+                onPageChange={goToPage}
+              />
+            )}
+          </div>
+        ) : (
+          /* CARD VIEW */
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {clientes.map((cliente) => (
+                <div
+                  key={cliente.id}
+                  className="bg-white dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition p-5 cursor-pointer relative group"
+                  onClick={() => handleView(cliente)}
+                >
+                  {/* Actions menu */}
+                  <div className="absolute top-3 right-3" onClick={(e) => e.stopPropagation()}>
+                    <RowActions
+                      cliente={cliente}
+                      onView={handleView}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onChangeStatus={handleChangeStatus}
+                    />
+                  </div>
+
+                  {/* Icon + Name */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center shrink-0">
+                      <Building2 className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                        {cliente.razon_social}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                        {cliente.codigo_cliente}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Details */}
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">NIT</span>
+                      <span className="text-slate-700 dark:text-slate-200 font-mono text-xs">{cliente.nit}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Ciudad</span>
+                      <span className="text-slate-700 dark:text-slate-200">{cliente.ciudad || '-'}</span>
+                    </div>
+                  </div>
+
+                  {/* Footer: Estado */}
+                  <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                    <StatusChip status={cliente.estado} />
+                    <span className="text-xs text-slate-400">{formatTipoCliente(cliente.tipo_cliente)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {!loading && pagination.totalPages > 1 && (
+              <div className="mt-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  totalItems={pagination.total}
+                  itemsPerPage={pagination.limit}
+                  onPageChange={goToPage}
+                />
+              </div>
+            )}
+          </>
+        )}
 
         {/* FOOTER */}
         <footer className="text-center py-6 mt-8 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">

@@ -10,7 +10,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Plus, Search, RefreshCw, UserCheck, UserX, KeyRound,
-  MoreVertical, Pencil, Trash2, Eye, ChevronLeft, ChevronRight, Shield, Mail
+  MoreVertical, Pencil, Trash2, Eye, ChevronLeft, ChevronRight, Shield, Mail,
+  List, LayoutGrid,
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import adminService from '../../api/admin.service';
@@ -38,6 +39,7 @@ const UsuariosList = () => {
   const [showPermisos, setShowPermisos] = useState(null);
   const [sendingCredentials, setSendingCredentials] = useState(null);
   const [credentialsMsg, setCredentialsMsg] = useState(null);
+  const [viewMode, setViewMode] = useState('table');
 
   const fetchUsuarios = useCallback(async () => {
     setLoading(true);
@@ -193,7 +195,23 @@ const UsuariosList = () => {
         )}
       </div>
 
-      {/* Table */}
+      {/* Results count + View toggle */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          {pagination.total} usuario{pagination.total !== 1 ? 's' : ''} encontrado{pagination.total !== 1 ? 's' : ''}
+        </p>
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+          <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+            <List className="w-4 h-4" />
+          </button>
+          <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Table / Cards */}
+      {viewMode === 'table' ? (
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700">
         <div className="overflow-x-auto rounded-t-2xl">
           <table className="w-full text-sm">
@@ -204,7 +222,7 @@ const UsuariosList = () => {
                 <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Rol</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Cliente</th>
                 <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Estado</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Último acceso</th>
+                <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Ultimo acceso</th>
                 <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Acciones</th>
               </tr>
             </thead>
@@ -315,6 +333,142 @@ const UsuariosList = () => {
           </div>
         )}
       </div>
+      ) : (
+        /* CARD VIEW */
+        <>
+          {loading ? (
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-12 text-center">
+              <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+              <p className="text-slate-500 dark:text-slate-400 text-sm">Cargando usuarios...</p>
+            </div>
+          ) : usuarios.length === 0 ? (
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 py-12 text-center text-slate-400">
+              No se encontraron usuarios
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {usuarios.map((user) => {
+                const initials = (user.nombre_completo || user.username || '')
+                  .split(' ')
+                  .map(w => w[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2);
+
+                return (
+                  <div
+                    key={user.id}
+                    className="bg-white dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition p-5 relative group"
+                  >
+                    {/* Actions menu */}
+                    <div className="absolute top-3 right-3">
+                      <button
+                        onClick={(e) => {
+                          if (menuOpen === user.id) {
+                            setMenuOpen(null);
+                          } else {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                            setMenuOpen(user.id);
+                          }
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Avatar + Name */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center shrink-0">
+                        {user.avatar ? (
+                          <img src={user.avatar} alt="" className="w-12 h-12 rounded-full object-cover" />
+                        ) : (
+                          <span className="text-sm font-bold text-orange-600 dark:text-orange-400">{initials}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
+                          {user.nombre_completo || user.username}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          @{user.username}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Details */}
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">Email</span>
+                        <span className="text-slate-700 dark:text-slate-200 truncate ml-2 text-xs">{user.email}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">Rol</span>
+                        {user.rolInfo ? (
+                          <span
+                            className="inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full text-white"
+                            style={{ backgroundColor: user.rolInfo.color || '#6B7280' }}
+                          >
+                            {user.rolInfo.nombre}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-400">{user.rol}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Footer: Estado */}
+                    <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full ${
+                        user.activo
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      }`}>
+                        {user.activo ? 'Activo' : 'Inactivo'}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {user.ultimo_acceso
+                          ? new Date(user.ultimo_acceso).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
+                          : 'Sin acceso'
+                        }
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Pagination for cards */}
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 mt-4">
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                {pagination.total} usuario(s) en total
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  disabled={pagination.page <= 1}
+                  onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="px-3 py-1 text-sm text-slate-600 dark:text-slate-300">
+                  {pagination.page} / {pagination.totalPages}
+                </span>
+                <button
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* Modal: Form */}
       {showForm && (

@@ -150,6 +150,11 @@ const listar = async (req, res) => {
       order,
       limit,
       offset,
+      attributes: {
+        include: [
+          [sequelize.literal('(SELECT COUNT(*) FROM caja_inventario WHERE caja_inventario.inventario_id = Inventario.id)'), 'total_cajas']
+        ]
+      },
       include: [{
         model: Cliente,
         as: 'cliente',

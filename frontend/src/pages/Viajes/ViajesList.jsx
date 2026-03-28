@@ -340,15 +340,7 @@ const ViajesList = () => {
                 </button>
               </>
             )}
-            <ProtectedAction module="viajes" action="crear">
-              <button
-                onClick={() => navigate('/viajes/viajes/nuevo')}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl transition-colors shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                Nuevo Viaje
-              </button>
-            </ProtectedAction>
+            {/* Botón movido a la barra de filtros */}
           </div>
         </div>
 
@@ -443,6 +435,17 @@ const ViajesList = () => {
                 />
               </div>
             </div>
+
+            {/* Botón crear */}
+            <ProtectedAction module="viajes" action="crear">
+              <button
+                onClick={() => navigate('/viajes/viajes/nuevo')}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#E74C3C] hover:bg-[#C0392B] rounded-xl shadow-sm transition-colors whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4" />
+                Nuevo Viaje
+              </button>
+            </ProtectedAction>
           </div>
         </div>
 

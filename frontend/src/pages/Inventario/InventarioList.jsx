@@ -33,6 +33,8 @@ import {
   AlertTriangle,
   Warehouse,
   RefreshCw,
+  List,
+  LayoutGrid,
 } from 'lucide-react';
 
 // Layout
@@ -268,6 +270,7 @@ const InventarioList = () => {
   // ──────────────────────────────────────────────────────────────────────────
   // ESTADOS LOCALES
   // ──────────────────────────────────────────────────────────────────────────
+  const [viewMode, setViewMode] = useState('table');
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({});
   const [showFilters, setShowFilters] = useState(false);
@@ -480,12 +483,6 @@ const InventarioList = () => {
               </Button>
             )}
 
-            {canImport && (
-              <Button variant="outline" icon={Upload} size="md">
-                Importar
-              </Button>
-            )}
-
             {canCreate && (
               <Button variant="primary" icon={Plus} onClick={handleCreate}>
                 Nuevo Producto
@@ -593,12 +590,20 @@ const InventarioList = () => {
         </div>
 
         {/* ════════════════════════════════════════════════════════════════ */}
-        {/* RESULTS COUNT */}
+        {/* RESULTS COUNT + VIEW TOGGLE */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <div className="mb-4">
-          <p className="text-sm text-slate-500">
+        <div className="mb-4 flex items-center justify-between">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             {pagination?.total || productos.length} producto{(pagination?.total || productos.length) !== 1 ? 's' : ''} encontrado{(pagination?.total || productos.length) !== 1 ? 's' : ''}
           </p>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+            <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+              <List className="w-4 h-4" />
+            </button>
+            <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Active filter chips */}
@@ -622,42 +627,42 @@ const InventarioList = () => {
         )}
 
         {/* ════════════════════════════════════════════════════════════════ */}
-        {/* TABLE */}
+        {/* TABLE / CARDS */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-          {loading ? (
-            <div className="p-4">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 animate-pulse">
-                  <div className="w-10 h-10 bg-gray-200 rounded-lg" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-1/3" />
-                    <div className="h-3 bg-gray-100 rounded w-1/4" />
-                  </div>
-                  <div className="h-6 w-16 bg-gray-200 rounded-full" />
+        {loading ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 animate-pulse">
+                <div className="w-10 h-10 bg-gray-200 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-1/3" />
+                  <div className="h-3 bg-gray-100 rounded w-1/4" />
                 </div>
-              ))}
-            </div>
-          ) : productos.length === 0 ? (
-            <div className="py-16 text-center">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Package className="w-8 h-8 text-slate-400" />
+                <div className="h-6 w-16 bg-gray-200 rounded-full" />
               </div>
-              <h3 className="text-lg font-medium text-slate-800 mb-1">
-                No se encontraron productos
-              </h3>
-              <p className="text-slate-500 mb-4">
-                {searchTerm || Object.keys(filters).length > 0
-                  ? 'Intenta ajustar los filtros de búsqueda'
-                  : 'Comienza agregando tu primer producto'}
-              </p>
-              {!searchTerm && Object.keys(filters).length === 0 && canCreate && (
-                <Button variant="primary" icon={Plus} onClick={handleCreate}>
-                  Nuevo Producto
-                </Button>
-              )}
+            ))}
+          </div>
+        ) : productos.length === 0 ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Package className="w-8 h-8 text-slate-400" />
             </div>
-          ) : (
+            <h3 className="text-lg font-medium text-slate-800 mb-1">
+              No se encontraron productos
+            </h3>
+            <p className="text-slate-500 mb-4">
+              {searchTerm || Object.keys(filters).length > 0
+                ? 'Intenta ajustar los filtros de búsqueda'
+                : 'Comienza agregando tu primer producto'}
+            </p>
+            {!searchTerm && Object.keys(filters).length === 0 && canCreate && (
+              <Button variant="primary" icon={Plus} onClick={handleCreate}>
+                Nuevo Producto
+              </Button>
+            )}
+          </div>
+        ) : viewMode === 'table' ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -672,7 +677,7 @@ const InventarioList = () => {
                       Stock
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell">
-                      Ubicación
+                      Ubicacion
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Estado
@@ -687,7 +692,6 @@ const InventarioList = () => {
                 </thead>
                 <tbody>
                   {productos.map((producto) => {
-                    // Usar snake_case para campos del backend
                     const stockActual = producto.stock_actual || producto.cantidad || 0;
                     const stockMinimo = producto.stock_minimo || 0;
                     const costoUnitario = producto.costo_unitario || 0;
@@ -749,18 +753,105 @@ const InventarioList = () => {
                 </tbody>
               </table>
             </div>
-          )}
 
-          {!loading && pagination && pagination.totalPages > 1 && (
-            <Pagination
-              currentPage={pagination.page}
-              totalPages={pagination.totalPages}
-              totalItems={pagination.total}
-              itemsPerPage={pagination.limit}
-              onPageChange={goToPage}
-            />
-          )}
-        </div>
+            {!loading && pagination && pagination.totalPages > 1 && (
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.total}
+                itemsPerPage={pagination.limit}
+                onPageChange={goToPage}
+              />
+            )}
+          </div>
+        ) : (
+          /* CARD VIEW */
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {productos.map((producto) => {
+                const stockActual = producto.stock_actual || producto.cantidad || 0;
+                const stockMinimo = producto.stock_minimo || 0;
+                const costoUnitario = producto.costo_unitario || 0;
+
+                const getStockBadge = () => {
+                  if (stockActual <= 0) return { label: 'Agotado', classes: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' };
+                  if (stockMinimo > 0 && stockActual <= stockMinimo) return { label: 'Bajo stock', classes: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' };
+                  return { label: 'Disponible', classes: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' };
+                };
+                const stockBadge = getStockBadge();
+
+                return (
+                  <div
+                    key={producto.id}
+                    className="bg-white dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition p-5 cursor-pointer relative group"
+                    onClick={() => handleView(producto)}
+                  >
+                    {/* Actions menu */}
+                    <div className="absolute top-3 right-3" onClick={(e) => e.stopPropagation()}>
+                      <RowActions
+                        producto={producto}
+                        onView={handleView}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onEntrada={handleEntrada}
+                        onSalida={handleSalida}
+                        canEdit={canEdit}
+                        canDelete={canDelete}
+                      />
+                    </div>
+
+                    {/* Icon + Name */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center shrink-0">
+                        <Package className="w-6 h-6 text-slate-500 dark:text-slate-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                          {producto.nombre || producto.producto}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">
+                          {producto.codigo || producto.sku}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Details */}
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">Cliente</span>
+                        <span className="text-slate-700 dark:text-slate-200 truncate ml-2">{producto.cliente_nombre || '-'}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">Stock</span>
+                        <span className="text-slate-800 dark:text-slate-100 font-semibold">{stockActual.toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    {/* Footer: Estado badge */}
+                    <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                      <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${stockBadge.classes}`}>
+                        {stockBadge.label}
+                      </span>
+                      <span className="text-xs text-slate-400 font-medium">{formatCurrency(stockActual * costoUnitario)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {!loading && pagination && pagination.totalPages > 1 && (
+              <div className="mt-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  totalItems={pagination.total}
+                  itemsPerPage={pagination.limit}
+                  onPageChange={goToPage}
+                />
+              </div>
+            )}
+          </>
+        )}
 
         {/* Footer */}
         <footer className="text-center py-6 mt-8 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">
