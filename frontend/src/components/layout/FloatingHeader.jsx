@@ -340,7 +340,7 @@ const NotificationBadge = ({ count }) => {
 
   return (
     <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white dark:border-slate-800">
-      {count > 99 ? '99+' : count}
+      {count > 9 ? '+9' : count}
     </span>
   );
 };

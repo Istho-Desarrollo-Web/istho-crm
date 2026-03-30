@@ -50,6 +50,12 @@ router.put('/leer-todas', notificacionesController.marcarTodasLeidas);
 router.delete('/leidas', notificacionesController.eliminarLeidas);
 
 /**
+ * DELETE /api/v1/notificaciones/todas
+ * Eliminar todas las notificaciones del usuario
+ */
+router.delete('/todas', notificacionesController.eliminarTodas);
+
+/**
  * PUT /api/v1/notificaciones/:id/leer
  * Marcar una como leída
  */

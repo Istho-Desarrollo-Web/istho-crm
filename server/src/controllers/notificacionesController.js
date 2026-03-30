@@ -250,6 +250,30 @@ const crear = async (req, res) => {
 // EXPORTAR
 // ════════════════════════════════════════════════════════════════════════════
 
+/**
+ * DELETE /api/v1/notificaciones/todas
+ * Eliminar TODAS las notificaciones del usuario
+ */
+const eliminarTodas = async (req, res) => {
+  try {
+    const usuario_id = req.user.id;
+    const count = await Notificacion.eliminarTodas(usuario_id);
+
+    res.json({
+      success: true,
+      message: `${count} notificaciones eliminadas`,
+      data: { count },
+    });
+  } catch (error) {
+    console.error('[Notificaciones] Error al eliminar todas:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al eliminar notificaciones',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   listar,
   contarNoLeidas,
@@ -257,5 +281,6 @@ module.exports = {
   marcarTodasLeidas,
   eliminar,
   eliminarLeidas,
+  eliminarTodas,
   crear,
 };

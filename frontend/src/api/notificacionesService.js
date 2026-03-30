@@ -154,6 +154,20 @@ const notificacionesService = {
   },
 
   /**
+   * Eliminar TODAS las notificaciones del usuario
+   * @returns {Promise<boolean>}
+   */
+  async eliminarTodas() {
+    try {
+      await client.delete(`${BASE_URL}/todas`);
+      return true;
+    } catch (error) {
+      console.error('[notificacionesService] Error en eliminarTodas:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Crear una notificación (admin)
    * @param {Object} data - { usuario_id, tipo, titulo, mensaje, prioridad, accion_url }
    * @returns {Promise<Object>}

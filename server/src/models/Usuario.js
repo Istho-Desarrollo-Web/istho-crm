@@ -506,7 +506,7 @@ module.exports = (sequelize) => {
       activo: this.activo,
       estado: this.activo ? 'activo' : 'inactivo',
       ultimo_acceso: this.ultimo_acceso,
-      created_at: this.created_at,
+      created_at: this.created_at || this.createdAt,
       // Campos de cliente (solo si aplica)
       cliente_id: this.cliente_id || null,
       permisos: this.getPermisos(permisosDB),

@@ -36,10 +36,17 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/
  */
 export const getServerFileUrl = (filePath) => {
   if (!filePath) return null;
-  if (filePath.startsWith('http')) return filePath;
+  // URLs completas (Cloudinary, etc.)
+  if (filePath.startsWith('http://') || filePath.startsWith('https://')) return filePath;
+  // Base64 data URIs
   if (filePath.startsWith('data:')) return filePath;
+  // Fix: URLs de Cloudinary sin ":" (https//res.cloudinary.com → https://res.cloudinary.com)
+  if (filePath.startsWith('https//') || filePath.startsWith('http//')) {
+    return filePath.replace('https//', 'https://').replace('http//', 'http://');
+  }
+  // URLs relativas al servidor
   const serverBase = API_BASE_URL.replace('/api/v1', '');
-  return `${serverBase}${filePath}`;
+  return `${serverBase}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
 };
 
 /**

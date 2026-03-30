@@ -129,6 +129,16 @@ module.exports = (sequelize) => {
     }
 
     /**
+     * Eliminar todas las notificaciones del usuario
+     */
+    static async eliminarTodas(usuario_id) {
+      const deleted = await this.destroy({
+        where: { usuario_id }
+      });
+      return deleted;
+    }
+
+    /**
      * Notificar a múltiples usuarios
      */
     static async notificarMultiple(usuarios_ids, data) {

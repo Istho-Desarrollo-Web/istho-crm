@@ -230,6 +230,7 @@ const Notificaciones = () => {
   const [filter, setFilter] = useState('todas');
   const [searchTerm, setSearchTerm] = useState('');
   const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 1 });
+  const [confirmBorrarTodas, setConfirmBorrarTodas] = useState(false);
 
   // ──────────────────────────────────────────────────────────────────────────
   // CARGAR NOTIFICACIONES
@@ -341,6 +342,20 @@ const Notificaciones = () => {
     }
   };
 
+  const handleBorrarTodas = async () => {
+    try {
+      await notificacionesService.eliminarTodas();
+      setNotificaciones([]);
+      setPagination({ page: 1, total: 0, totalPages: 1 });
+      fetchCount();
+      success('Todas las notificaciones eliminadas');
+    } catch (err) {
+      apiError(err);
+    } finally {
+      setConfirmBorrarTodas(false);
+    }
+  };
+
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
     setLoading(true);
@@ -375,6 +390,17 @@ const Notificaciones = () => {
               loading={isRefreshing}
               title="Actualizar"
             />
+            {pagination.total > 0 && (
+              <Button
+                variant="ghost"
+                icon={Trash2}
+                onClick={() => setConfirmBorrarTodas(true)}
+                className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+                title="Borrar todas"
+              >
+                Borrar todas
+              </Button>
+            )}
             {stats.noLeidas > 0 && (
               <Button variant="outline" icon={CheckCheck} onClick={handleMarcarTodasLeidas}>
                 Marcar todas leídas
@@ -512,6 +538,36 @@ const Notificaciones = () => {
               </div>
             )}
           </>
+        )}
+        {/* Modal de confirmación - Borrar todas */}
+        {confirmBorrarTodas && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 p-6 max-w-sm mx-4 w-full">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
+                  <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                  Borrar todas las notificaciones
+                </h3>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+                Esta acción eliminará permanentemente todas tus notificaciones. No se puede deshacer.
+              </p>
+              <div className="flex items-center justify-end gap-3">
+                <Button variant="ghost" onClick={() => setConfirmBorrarTodas(false)}>
+                  Cancelar
+                </Button>
+                <Button
+                  variant="danger"
+                  icon={Trash2}
+                  onClick={handleBorrarTodas}
+                >
+                  Borrar todas
+                </Button>
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>
