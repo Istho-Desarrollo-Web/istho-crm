@@ -314,7 +314,7 @@ const Dashboard = () => {
 
   const handleAlertClick = (alert) => {
     if (alert.originalData?.producto_id) {
-      navigate(`/inventario/${alert.originalData.producto_id}`);
+      navigate(`/inventario/productos/${alert.originalData.producto_id}`);
     } else {
       navigate('/inventario/alertas');
     }
