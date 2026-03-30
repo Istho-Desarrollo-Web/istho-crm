@@ -377,7 +377,7 @@ const CajaMenorDetail = () => {
                         {viajes.map((viaje) => (
                           <tr
                             key={viaje.id}
-                            onClick={() => navigate(`/viajes/${viaje.id}`)}
+                            onClick={() => navigate(`/viajes/viajes/${viaje.id}`)}
                             className="border-b border-gray-50 hover:bg-slate-50 cursor-pointer transition-colors"
                           >
                             <td className="py-3 px-4 font-medium text-slate-800">{viaje.numero}</td>
