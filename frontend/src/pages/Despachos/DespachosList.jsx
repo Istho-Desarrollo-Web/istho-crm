@@ -95,10 +95,10 @@ const FILTER_OPTIONS = {
  */
 const PriorityBadge = ({ prioridad }) => {
   const config = {
-    urgente: { color: 'bg-red-100 text-red-700', label: 'Urgente' },
-    alta: { color: 'bg-orange-100 text-orange-700', label: 'Alta' },
-    normal: { color: 'bg-slate-100 text-slate-700', label: 'Normal' },
-    baja: { color: 'bg-slate-100 text-slate-500', label: 'Baja' },
+    urgente: { color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', label: 'Urgente' },
+    alta: { color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300', label: 'Alta' },
+    normal: { color: 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300', label: 'Normal' },
+    baja: { color: 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400', label: 'Baja' },
   };
 
   const c = config[prioridad] || config.normal;
@@ -204,7 +204,7 @@ const DespachoCard = ({ despacho, onView, onEdit }) => {
   return (
     <div
       onClick={() => onView(despacho)}
-      className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md hover:border-orange-200 transition-all cursor-pointer"
+      className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md hover:border-orange-200 dark:hover:border-orange-700 transition-all cursor-pointer"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
@@ -480,8 +480,8 @@ const DespachosList = () => {
             title="En Proceso"
             value={displayKpis.enProceso}
             icon={Truck}
-            iconBg="bg-blue-100"
-            iconColor="text-blue-600"
+            iconBg="bg-blue-100 dark:bg-blue-900/30"
+            iconColor="text-blue-600 dark:text-blue-400"
             onClick={() => handleFilterChange('estado', 'en_proceso')}
             className="cursor-pointer hover:shadow-md transition-shadow"
           />
@@ -489,8 +489,8 @@ const DespachosList = () => {
             title="Pendientes"
             value={displayKpis.pendientes}
             icon={Clock}
-            iconBg="bg-amber-100"
-            iconColor="text-amber-600"
+            iconBg="bg-amber-100 dark:bg-amber-900/30"
+            iconColor="text-amber-600 dark:text-amber-400"
             onClick={() => handleFilterChange('estado', 'pendiente')}
             className="cursor-pointer hover:shadow-md transition-shadow"
           />
@@ -498,8 +498,8 @@ const DespachosList = () => {
             title="Cerrados"
             value={displayKpis.cerrados}
             icon={CheckCircle}
-            iconBg="bg-emerald-100"
-            iconColor="text-emerald-600"
+            iconBg="bg-emerald-100 dark:bg-emerald-900/30"
+            iconColor="text-emerald-600 dark:text-emerald-400"
             onClick={() => handleFilterChange('estado', 'cerrado')}
             className="cursor-pointer hover:shadow-md transition-shadow"
           />
@@ -507,8 +507,8 @@ const DespachosList = () => {
             title="Anulados"
             value={displayKpis.anulados}
             icon={XCircle}
-            iconBg="bg-red-100"
-            iconColor="text-red-600"
+            iconBg="bg-red-100 dark:bg-red-900/30"
+            iconColor="text-red-600 dark:text-red-400"
             onClick={() => handleFilterChange('estado', 'anulado')}
             className="cursor-pointer hover:shadow-md transition-shadow"
           />
@@ -518,7 +518,7 @@ const DespachosList = () => {
         {/* SEARCH & FILTERS */}
         {/* ════════════════════════════════════════════════════════════════ */}
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <SearchBar
@@ -531,17 +531,17 @@ const DespachosList = () => {
 
             <div className="flex items-center gap-2">
               {/* View Toggle */}
-              <div className="flex bg-slate-100 rounded-lg p-1">
+              <div className="flex bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('table')}
-                  className={`px-3 py-1.5 text-sm rounded-md transition-colors ${viewMode === 'table' ? 'bg-white shadow text-slate-800' : 'text-slate-500'
+                  className={`px-3 py-1.5 text-sm rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-600 shadow text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                     }`}
                 >
                   Tabla
                 </button>
                 <button
                   onClick={() => setViewMode('cards')}
-                  className={`px-3 py-1.5 text-sm rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white shadow text-slate-800' : 'text-slate-500'
+                  className={`px-3 py-1.5 text-sm rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-600 shadow text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                     }`}
                 >
                   Tarjetas
@@ -633,7 +633,7 @@ const DespachosList = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
 
         {loading ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
             {[0, 1, 2, 3, 4].map((i) => (
               <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 animate-pulse">
                 <div className="w-10 h-10 bg-gray-200 rounded-lg" />
@@ -646,7 +646,7 @@ const DespachosList = () => {
             ))}
           </div>
         ) : despachos.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 py-16 text-center">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Truck className="w-8 h-8 text-slate-400" />
             </div>
@@ -678,11 +678,11 @@ const DespachosList = () => {
           </div>
         ) : (
           // Table View
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-100">
+                  <tr className="border-b border-gray-100 dark:border-slate-700">
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                       Operación
                     </th>
@@ -713,7 +713,7 @@ const DespachosList = () => {
                   {despachos.map((despacho) => (
                     <tr
                       key={despacho.id}
-                      className="border-b border-gray-50 hover:bg-slate-50 transition-colors"
+                      className="border-b border-gray-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                     >
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
@@ -807,7 +807,7 @@ const DespachosList = () => {
 
         {/* Pagination for Cards */}
         {viewMode === 'cards' && pagination && pagination.totalPages > 1 && (
-          <div className="mt-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+          <div className="mt-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
             <Pagination
               currentPage={pagination.page}
               totalPages={pagination.totalPages}

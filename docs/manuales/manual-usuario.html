@@ -819,6 +819,7 @@
         <li><strong>Operaciones:</strong> Historial de operaciones asociadas al cliente.</li>
         <li><strong>Inventario:</strong> Productos almacenados pertenecientes al cliente.</li>
         <li><strong>Facturacion:</strong> Resumen de facturacion y estado de pagos.</li>
+        <li><strong>Usuarios Portal:</strong> Gestion de usuarios con acceso al portal del cliente. Permite crear, editar y desactivar cuentas de acceso para que el cliente consulte su informacion desde el portal.</li>
       </ul>
       <img src="https://res.cloudinary.com/dut7n03xd/image/upload/v1774554951/Detalle_Cliente_pbspcl.png" alt="Vista de detalle del cliente con pestanas" class="screenshot" />
       <p class="screenshot-caption">Fig. 9 — Vista de detalle del cliente con pestanas</p>
@@ -841,6 +842,13 @@
         <strong>Consejo:</strong> El campo NIT se valida automaticamente para evitar duplicados. Si el NIT ya existe,
         el sistema le notificara y no permitira crear un registro duplicado.
       </div>
+
+      <hr class="sub-divider">
+
+      <h3>3.4 Importar Clientes</h3>
+      <ol class="steps">
+        <li><strong>Importar clientes:</strong> Haga clic en el boton <strong>Importar</strong>. Seleccione un archivo Excel (.xlsx). Se mostrara una vista previa con los datos encontrados. Revise la informacion y haga clic en <strong>Confirmar Importacion</strong>. Columnas esperadas: NIT, Razon Social, Tipo, Sector, Direccion, Ciudad, Telefono, Email.</li>
+      </ol>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -873,11 +881,25 @@
 
       <hr class="sub-divider">
 
-      <h3>4.2 Detalle del Producto</h3>
+      <h3>4.2 Crear / Editar Producto</h3>
+      <p>El formulario simplificado de producto incluye los siguientes campos:</p>
+      <ul>
+        <li><strong>Nombre del Producto</strong> (obligatorio)</li>
+        <li><strong>SKU</strong> (obligatorio)</li>
+        <li><strong>Cliente</strong> (obligatorio al crear)</li>
+        <li><strong>Categoria</strong></li>
+        <li><strong>Unidad de Medida</strong></li>
+        <li><strong>Stock Minimo</strong></li>
+        <li><strong>Descripcion</strong></li>
+      </ul>
+
+      <hr class="sub-divider">
+
+      <h3>4.3 Detalle del Producto</h3>
       <ol class="steps">
         <li>Haga clic en cualquier producto de la lista para ver su detalle completo.</li>
         <li>El detalle se organiza en 4 pestanas: <strong>Info</strong>, <strong>Cajas</strong>, <strong>Movimientos</strong> y <strong>Estadisticas</strong>.</li>
-        <li>En <strong>Info</strong>: datos basicos del producto, ubicacion en bodega y zona.</li>
+        <li>En <strong>Info</strong>: datos basicos del producto (nombre, SKU, cliente, categoria, unidad de medida, stock minimo y descripcion).</li>
         <li>En <strong>Movimientos</strong>: historial completo de entradas, salidas y ajustes con fechas y cantidades.</li>
         <li>En <strong>Cajas</strong>: cajas de inventario asociadas con lote, ubicacion y estado.</li>
         <li>En <strong>Estadisticas</strong>: graficos de movimientos mensuales y tendencias de stock.</li>
@@ -887,12 +909,11 @@
 
       <hr class="sub-divider">
 
-      <h3>4.3 Alertas de Inventario</h3>
+      <h3>4.4 Alertas de Inventario</h3>
       <p>El sistema genera alertas automaticas para mantener el inventario bajo control:</p>
       <ul>
         <li><strong>Agotado (prioridad alta):</strong> Cuando el stock de un producto llega a 0 unidades.</li>
         <li><strong>Stock bajo (prioridad media):</strong> Cuando un producto esta por debajo del minimo configurado.</li>
-        <li><strong>Por vencer (prioridad baja):</strong> Cuando un producto tiene fecha de vencimiento proxima.</li>
       </ul>
       <ol class="steps">
         <li>Acceda a <strong>Inventario &gt; Alertas</strong> en el menu.</li>
@@ -1184,9 +1205,11 @@
       </ol>
 
       <div class="info-box blue">
-        <strong>Traslado de saldo:</strong> Al seleccionar una caja anterior para traslado de saldo, el campo
-        <strong>"Saldo Inicial"</strong> se auto-rellena con el saldo de la caja anterior y muestra un indicador
-        <em>"Saldo heredado de caja anterior"</em>.
+        <strong>Saldo Inicial:</strong> El campo Saldo Inicial es independiente: ingrese manualmente el monto que desea asignar. Si selecciona una caja anterior, el saldo de esa caja se sumara automaticamente al saldo inicial como "Saldo Trasladado", pero NO reemplaza el valor que usted escriba.
+      </div>
+
+      <div class="info-box green">
+        <strong>Caja Anterior:</strong> Al seleccionar una Caja Anterior, solo se muestran cajas cerradas del mismo usuario asignado. Si cambia el usuario, la caja anterior se limpia automaticamente.
       </div>
 
       <img src="https://res.cloudinary.com/dut7n03xd/image/upload/v1774558209/Form_CajaM_pbfva8.png" alt="Formulario de creacion de caja menor" class="screenshot" />

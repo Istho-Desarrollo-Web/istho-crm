@@ -133,7 +133,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
   - Gestión de vehículos y viajes
 
 ### 5.3 Financiera
-- **Nivel jerárquico:** 60
+- **Nivel jerárquico:** 70
 - **Responsabilidades:**
   - Gestión de cajas menores (crear, editar, cerrar)
   - Aprobación y rechazo de gastos

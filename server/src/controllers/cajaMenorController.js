@@ -90,6 +90,7 @@ const obtenerPorId = async (req, res) => {
         },
         {
           model: MovimientoCajaMenor, as: 'movimientos',
+          attributes: { exclude: ['soporte_url'] }, // Excluir base64 pesado del listado
           include: [
             { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
             { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },

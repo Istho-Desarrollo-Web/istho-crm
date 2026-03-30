@@ -404,7 +404,7 @@ const UsuariosCliente = ({ clienteId, clienteNombre }) => {
       {/* ESTADÍSTICAS RÁPIDAS */}
       {/* ════════════════════════════════════════════════════════════════════ */}
       
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 text-center">
           <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{stats.total}</p>
           <p className="text-xs text-slate-500 dark:text-slate-400">Total</p>

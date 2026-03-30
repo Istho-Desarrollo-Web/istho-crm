@@ -291,25 +291,27 @@ const syncEntrada = async (data) => {
         alertas_silenciadas: null, // Limpiar alertas silenciadas al cambiar stock
       }, { transaction });
 
-      // Verificar si la caja ya existe para evitar duplicados si el WMS re-envía
-      let numeroCaja = linea.caja ? linea.caja.toString() : null;
-      if (numeroCaja) {
+      // El WMS envía el número de caja autoincremental
+      // Si no viene, generar uno basado en el ID del registro
+      const numeroCajaWms = linea.caja ? linea.caja.toString() : null;
+
+      // Verificar duplicados si viene número de caja
+      if (numeroCajaWms) {
         const cajaExistente = await CajaInventario.findOne({
-          where: { numero_caja: numeroCaja, estado: 'disponible' },
+          where: { numero_caja: numeroCajaWms, inventario_id: inventario.id },
           transaction
         });
         if (cajaExistente) {
-          logger.warn(`[WMS Sync] La caja ${numeroCaja} ya existe y está disponible. Omitiendo duplicado.`);
-          continue; 
+          logger.warn(`[WMS Sync] Caja ${numeroCajaWms} ya existe para este producto. Omitiendo duplicado.`);
+          continue;
         }
       }
 
-      // Crear caja en el nuevo modelo
       const nuevaCaja = await CajaInventario.create({
         inventario_id: inventario.id,
         operacion_id: operacion.id,
         operacion_detalle_id: detalle.id,
-        numero_caja: numeroCaja,
+        numero_caja: numeroCajaWms,
         lote: linea.lote || null,
         lote_externo: linea.lote_externo || null,
         ubicacion: linea.ubicacion || null,
@@ -323,8 +325,8 @@ const syncEntrada = async (data) => {
         fecha_movimiento: new Date(),
       }, { transaction });
 
-      // Si no venía número de caja, podemos asignar el ID como número único
-      if (!numeroCaja) {
+      // Si no venía número de caja del WMS, asignar uno autoincremental
+      if (!numeroCajaWms) {
         await nuevaCaja.update({ numero_caja: `CJ-${nuevaCaja.id.toString().padStart(6, '0')}` }, { transaction });
       }
 

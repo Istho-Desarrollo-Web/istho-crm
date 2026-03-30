@@ -464,7 +464,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
               type="checkbox"
               checked={formData.requiere_detalle || false}
               onChange={(e) => handleChange('requiere_detalle', e.target.checked)}
-              className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-[#E74C3C] focus:ring-[#E74C3C]"
+              className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-[#E74C3C] focus:ring-[#E74C3C]"
             />
             <label className="text-sm text-slate-600 dark:text-slate-400">Requiere detalle adicional del WMS</label>
           </div>

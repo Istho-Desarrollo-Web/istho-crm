@@ -362,7 +362,7 @@ const Dashboard = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 dark:text-slate-100">
               {getGreeting()}, {user?.nombre_completo?.split(' ')[0] || 'Usuario'}
             </h1>
             <p className="text-slate-500 mt-1 dark:text-slate-400">
@@ -542,7 +542,7 @@ const Dashboard = () => {
                   <Clock className="w-5 h-5 text-amber-500" />
                   <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">Pendientes</span>
                 </div>
-                <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1">
+                <p className="text-2xl sm:text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1">
                   {(kpis.entradasPendientes ?? 0) + (kpis.salidasPendientes ?? 0)}
                 </p>
                 <p className="text-xs text-amber-500/80 dark:text-amber-400/60">Requieren atención</p>
@@ -554,7 +554,7 @@ const Dashboard = () => {
                   <Loader2 className="w-5 h-5 text-blue-500" />
                   <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">En Proceso</span>
                 </div>
-                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                <p className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
                   {kpis.auditoriasEnProceso ?? 0}
                 </p>
                 <p className="text-xs text-blue-500/80 dark:text-blue-400/60">Verificándose ahora</p>
@@ -566,7 +566,7 @@ const Dashboard = () => {
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
                   <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Cerradas</span>
                 </div>
-                <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">
+                <p className="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">
                   {kpis.auditoriasCerradasMes ?? 0}
                 </p>
                 <p className="text-xs text-emerald-500/80 dark:text-emerald-400/60">Completadas este mes</p>

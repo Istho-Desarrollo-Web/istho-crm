@@ -318,7 +318,7 @@ const RolesList = () => {
                               ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }}
                               onChange={() => canEditRol && toggleModuloCompleto(rol.id, grupo.modulo)}
                               disabled={!canEditRol}
-                              className={`w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500 ${canEditRol ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+                              className={`w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-orange-500 focus:ring-orange-500 dark:bg-slate-700 ${canEditRol ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
                             />
                           </td>
                         );
@@ -349,7 +349,7 @@ const RolesList = () => {
                                   checked={checked}
                                   onChange={() => canEditRol && togglePermiso(rol.id, permiso.id)}
                                   disabled={!canEditRol}
-                                  className={`w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500 ${canEditRol ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+                                  className={`w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-orange-500 focus:ring-orange-500 dark:bg-slate-700 ${canEditRol ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
                                 />
                               </td>
                             );

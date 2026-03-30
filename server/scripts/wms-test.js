@@ -245,13 +245,15 @@ async function paso2_catalogo() {
 // ============================================================================
 
 let entradaGrande_opId = null;
+// El WMS envía números de caja autoincrementales
+const cajaBase = parseInt(uid());
 const CAJAS_ENTRADA_1 = {
-  caja1: `CJ-${uid()}1`,
-  caja2: `CJ-${uid()}2`,
-  caja3: `CJ-${uid()}3`,
-  caja4: `CJ-${uid()}4`,
-  caja5: `CJ-${uid()}5`,
-  caja6: `CJ-${uid()}6`,
+  caja1: String(cajaBase + 1),
+  caja2: String(cajaBase + 2),
+  caja3: String(cajaBase + 3),
+  caja4: String(cajaBase + 4),
+  caja5: String(cajaBase + 5),
+  caja6: String(cajaBase + 6),
 };
 const DOC_ENTRADA_1 = `REM-${uid()}`;
 

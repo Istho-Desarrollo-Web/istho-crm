@@ -140,8 +140,8 @@ const ProductoRow = ({ producto }) => {
  */
 const InfoCard = ({ title, icon: Icon, children, action }) => {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-700">
         <div className="flex items-center gap-2">
           {Icon && <Icon className="w-5 h-5 text-slate-500" />}
           <h3 className="font-semibold text-slate-800">{title}</h3>
@@ -190,7 +190,7 @@ const CierreModal = ({ isOpen, onClose, onSubmit, loading }) => {
       }
     >
       <div className="space-y-4">
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl">
           <p className="text-sm text-amber-700">
             <strong>⚠️ Importante:</strong> Al cerrar la operación se actualizará el inventario
             y se enviará notificación al cliente.
@@ -206,11 +206,11 @@ const CierreModal = ({ isOpen, onClose, onSubmit, loading }) => {
             onChange={(e) => setObservaciones(e.target.value)}
             placeholder="Agregar notas sobre el cierre..."
             rows={3}
-            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-700 dark:text-slate-200"
           />
         </div>
 
-        <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+        <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-600 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/30">
           <input
             type="checkbox"
             checked={enviarCorreo}
@@ -498,34 +498,34 @@ const DespachoDetail = () => {
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Quick Stats */}
-            <div className="grid grid-cols-4 gap-4">
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 text-center">
                 <Package className="w-8 h-8 text-blue-500 mx-auto mb-2" />
                 <p className="text-2xl font-bold text-slate-800">{totalProductos}</p>
                 <p className="text-sm text-slate-500">Referencias</p>
               </div>
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 text-center">
                 <Package className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-slate-800">{totalUnidades.toLocaleString()}</p>
-                <p className="text-sm text-slate-500">Unidades</p>
+                <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{totalUnidades.toLocaleString()}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Unidades</p>
               </div>
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center">
-                <AlertCircle className={`w-8 h-8 mx-auto mb-2 ${totalAverias > 0 ? 'text-red-500' : 'text-slate-300'
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 text-center">
+                <AlertCircle className={`w-8 h-8 mx-auto mb-2 ${totalAverias > 0 ? 'text-red-500' : 'text-slate-300 dark:text-slate-600'
                   }`} />
-                <p className={`text-2xl font-bold ${totalAverias > 0 ? 'text-red-600' : 'text-slate-800'
+                <p className={`text-2xl font-bold ${totalAverias > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-100'
                   }`}>{totalAverias.toLocaleString()}</p>
-                <p className="text-sm text-slate-500">Averías</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Averías</p>
               </div>
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 text-center">
                 <FileText className="w-8 h-8 text-violet-500 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-slate-800">{documentos.length}</p>
-                <p className="text-sm text-slate-500">Documentos</p>
+                <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{documentos.length}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Documentos</p>
               </div>
             </div>
 
             {/* Tabs Content */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-              <div className="border-b border-gray-100">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+              <div className="border-b border-gray-100 dark:border-slate-700">
                 <nav className="flex px-6">
                   {tabs.map((tab) => (
                     <button
@@ -668,7 +668,7 @@ const DespachoDetail = () => {
                         {documentos.map((doc) => (
                           <div
                             key={doc.id}
-                            className="flex items-center justify-between p-4 bg-slate-50 rounded-xl"
+                            className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl"
                           >
                             <div className="flex items-center gap-3">
                               <FileText className="w-8 h-8 text-violet-500" />

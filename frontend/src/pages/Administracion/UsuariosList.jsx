@@ -358,7 +358,7 @@ const UsuariosList = () => {
                 return (
                   <div
                     key={user.id}
-                    className="bg-white dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition p-5 relative group"
+                    className="bg-white dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-700/80 shadow-sm hover:shadow-md transition p-5 relative group"
                   >
                     {/* Actions menu */}
                     <div className="absolute top-3 right-3">

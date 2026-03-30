@@ -295,6 +295,7 @@ Para acceder al modulo de clientes:
   - **Ver** — Ir al detalle del cliente.
   - **Editar** — Abrir formulario de edicion.
   - **Eliminar** — Eliminar el cliente (requiere confirmacion).
+- **Importar clientes:** Boton **"Importar"** permite cargar un archivo Excel (.xlsx) con vista previa antes de confirmar.
 - **Exportar:** Boton de descarga para exportar la lista a Excel.
 - **Paginacion:** Navegue entre paginas usando los controles inferiores.
 
@@ -362,6 +363,18 @@ Para acceder al inventario:
   - Rojo: agotado (stock en cero).
 - **Crear producto:** Boton **"+ Nuevo Producto"** para agregar un producto manualmente.
 - **Exportar:** Descargue el listado en formato Excel.
+
+**Formulario de producto (Crear / Editar):**
+
+| Campo | Tipo | Obligatorio | Descripcion |
+|-------|------|-------------|-------------|
+| Nombre | Texto | Si | Nombre del producto |
+| SKU | Texto | Si | Codigo unico del producto |
+| Cliente | Seleccion | Si | Cliente al que pertenece el producto |
+| Categoria | Seleccion | No | Categoria del producto |
+| Unidad de Medida | Seleccion | Si | Unidad en la que se mide el stock (Unidades, Cajas, Kilos, etc.) |
+| Stock Minimo | Numero | No | Cantidad minima para generar alerta de stock bajo |
+| Descripcion | Texto largo | No | Descripcion detallada del producto |
 
 > **Nota:** Los productos se sincronizan automaticamente desde el WMS Copernico. Los productos creados manualmente estan disponibles para operaciones internas.
 
@@ -675,9 +688,9 @@ Para crear una nueva caja menor:
 | Observaciones | Texto largo | No | Notas sobre el proposito de la caja |
 
 **Saldo heredado:**
-- Al seleccionar una **caja anterior**, el campo **Saldo Inicial** se auto-rellena con el saldo sobrante de dicha caja.
+- El **Saldo Inicial** se ingresa manualmente. Si selecciona una **Caja Anterior**, el saldo de esa caja se suma como **"Saldo Trasladado"** adicional al saldo inicial.
 - Se muestra un indicador visual **"Saldo heredado"** junto al campo para informar que el valor proviene de una caja previa.
-- El usuario puede ajustar manualmente el saldo inicial si lo desea.
+- La lista de **Caja Anterior** solo muestra cajas cerradas del mismo usuario seleccionado en **Usuario Asignado**.
 
 3. Haga clic en **"Guardar"**.
 4. El sistema generara automaticamente un numero de caja consecutivo.

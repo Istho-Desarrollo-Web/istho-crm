@@ -74,12 +74,15 @@ const listar = async (req, res) => {
     // Count separado (sin JOINs, mucho más rápido)
     const count = await MovimientoCajaMenor.count({ where });
 
-    // Datos con includes
+    // Datos con includes (excluir soporte_url que es MEDIUMTEXT pesado)
     const rows = await MovimientoCajaMenor.findAll({
       where,
       order,
       limit,
       offset,
+      attributes: {
+        exclude: ['soporte_url'] // Se carga solo en detalle individual (GET /:id)
+      },
       include: [
         { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero', 'estado'] },
         { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
