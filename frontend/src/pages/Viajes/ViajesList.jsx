@@ -38,7 +38,7 @@ import {
   LayoutGrid,
   LayoutList,
 } from 'lucide-react';
-import { Pagination, ConfirmDialog, AccionesDropdown } from '../../components/common';
+import { Pagination, ConfirmDialog } from '../../components/common';
 
 // ════════════════════════════════════════════════════════════════════════════
 // CONFIGURACIÓN DE ESTADOS
@@ -321,10 +321,26 @@ const ViajesList = () => {
               <p className="text-slate-500 dark:text-slate-400 mt-0.5">Registro y seguimiento de viajes</p>
             </div>
           </div>
-          <AccionesDropdown acciones={[
-            { label: 'Excel', icon: FileSpreadsheet, onClick: handleExportExcel, hidden: viajes.length === 0 },
-            { label: 'CSV', icon: Download, onClick: handleExportCsv, hidden: viajes.length === 0 },
-          ]} />
+          <div className="flex items-center gap-2">
+            {viajes.length > 0 && (
+              <>
+                <button
+                  onClick={handleExportExcel}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  Excel
+                </button>
+                <button
+                  onClick={handleExportCsv}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  CSV
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* KPI CARDS */}
