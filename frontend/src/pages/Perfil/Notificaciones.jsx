@@ -31,7 +31,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-import { Button, SearchBar } from '../../components/common';
+import { Button, SearchBar, AccionesDropdown } from '../../components/common';
 import { useNotificaciones } from '../../context/NotificacionesContext';
 import useNotification from '../../hooks/useNotification';
 import notificacionesService from '../../api/notificacionesService';
@@ -383,29 +383,31 @@ const Notificaciones = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Actualizar: siempre visible como ícono */}
             <Button
               variant="ghost"
               icon={RefreshCw}
               onClick={handleRefresh}
               loading={isRefreshing}
               title="Actualizar"
-            />
-            {pagination.total > 0 && (
-              <Button
-                variant="ghost"
-                icon={Trash2}
-                onClick={() => setConfirmBorrarTodas(true)}
-                className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
-                title="Borrar todas"
-              >
-                Borrar todas
-              </Button>
-            )}
-            {stats.noLeidas > 0 && (
-              <Button variant="outline" icon={CheckCheck} onClick={handleMarcarTodasLeidas}>
-                Marcar todas leídas
-              </Button>
-            )}
+            >
+              <span className="hidden sm:inline">Actualizar</span>
+            </Button>
+            {/* Resto de acciones: dropdown en móvil, botones en desktop */}
+            <AccionesDropdown acciones={[
+              {
+                label: 'Marcar todas leídas',
+                icon: CheckCheck,
+                onClick: handleMarcarTodasLeidas,
+                hidden: stats.noLeidas === 0,
+              },
+              {
+                label: 'Borrar todas',
+                icon: Trash2,
+                onClick: () => setConfirmBorrarTodas(true),
+                hidden: pagination.total === 0,
+              },
+            ]} />
           </div>
         </div>
 

@@ -27,34 +27,64 @@ const POLLING_INTERVAL = 30000; // 30 segundos
 const INITIAL_RETRY_DELAY = 2000; // 2 segundos para retry inicial
 
 /**
+ * AudioContext persistente — se crea una vez con la primera interacción
+ * del usuario para cumplir la política de Autoplay de los navegadores.
+ */
+let _audioCtx = null;
+
+const getAudioContext = () => {
+  if (!_audioCtx || _audioCtx.state === 'closed') {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return _audioCtx;
+};
+
+// Desbloquear el AudioContext con la primera interacción del usuario
+const unlockAudio = () => {
+  try {
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') ctx.resume();
+  } catch { /* noop */ }
+};
+if (typeof window !== 'undefined') {
+  window.addEventListener('click', unlockAudio, { once: false, capture: true });
+  window.addEventListener('keydown', unlockAudio, { once: false, capture: true });
+  window.addEventListener('touchstart', unlockAudio, { once: false, capture: true });
+}
+
+/**
  * Genera un sonido de notificación con Web Audio API (sin archivo externo)
  * Dos tonos cortos: ding-ding
  */
 const playNotificationSound = () => {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-
-    const playTone = (freq, startTime, duration) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.3, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-      osc.start(startTime);
-      osc.stop(startTime + duration);
+    const ctx = getAudioContext();
+    // Reanudar si el navegador lo suspendió
+    const play = () => {
+      const playTone = (freq, startTime, duration) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.3, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
+      const now = ctx.currentTime;
+      playTone(880, now, 0.12);            // A5 — primer ding
+      playTone(1174.66, now + 0.15, 0.15); // D6 — segundo ding
     };
 
-    const now = ctx.currentTime;
-    playTone(880, now, 0.12);       // A5 — primer ding
-    playTone(1174.66, now + 0.15, 0.15); // D6 — segundo ding (más alto)
-
-    // Cerrar contexto después
-    setTimeout(() => ctx.close().catch(() => {}), 500);
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(play).catch(() => {});
+    } else {
+      play();
+    }
   } catch {
-    // Web Audio API no disponible o bloqueada
+    // Web Audio API no disponible
   }
 };
 
