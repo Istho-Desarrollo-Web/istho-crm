@@ -191,12 +191,10 @@ const DashboardConductor = () => {
       setGastos((prev) => prev.map((g) => (g.id === data.id ? { ...g, ...data } : g)));
       refetchCaja();
     };
-    const handleMovimientoCreado = async () => {
-      try {
-        const res = await movimientosService.getAll({ limit: 5, sort: '-created_at' });
-        const g = res?.data?.data || res?.data || [];
-        setGastos(Array.isArray(g) ? g : []);
-      } catch {}
+    const handleMovimientoCreado = (data) => {
+      // Solo mostrar gastos del propio conductor
+      if (data.usuario_id && data.usuario_id !== user?.id) return;
+      setGastos((prev) => [data, ...prev].slice(0, 5));
     };
     const handleMovimientoEliminado = (data) => {
       setGastos((prev) => prev.filter((g) => g.id !== data.id));
