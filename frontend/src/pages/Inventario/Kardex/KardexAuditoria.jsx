@@ -49,6 +49,7 @@ import { useAlert } from '../../../context/AlertContext';
 import { useAuth } from '../../../context/AuthContext';
 import CierreAuditoriaModal from '../../../components/common/CierreAuditoriaModal';
 import { formatDateShort } from '../../../utils/formatDate';
+import { getServerFileUrl } from '../../../api/client';
 
 // URL base del servidor para archivos estaticos (sin /api/v1)
 const SERVER_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/api\/v1\/?$/, '');
@@ -1372,8 +1373,8 @@ const KardexAuditoria = () => {
                   return (
                     <div key={av.id || idx} className="flex items-center gap-3 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl">
                       {av.foto_url ? (
-                        <a href={av.foto_url.startsWith('http') ? av.foto_url : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '')}${av.foto_url}`} target="_blank" rel="noopener noreferrer">
-                          <img src={av.foto_url.startsWith('http') ? av.foto_url : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '')}${av.foto_url}`} alt="Evidencia" className="w-10 h-10 object-cover rounded-lg border border-amber-300 dark:border-amber-700 flex-shrink-0 hover:opacity-80 transition-opacity" />
+                        <a href={getServerFileUrl(av.foto_url)} target="_blank" rel="noopener noreferrer">
+                          <img src={getServerFileUrl(av.foto_url)} alt="Evidencia" className="w-10 h-10 object-cover rounded-lg border border-amber-300 dark:border-amber-700 flex-shrink-0 hover:opacity-80 transition-opacity" />
                         </a>
                       ) : (
                         <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />

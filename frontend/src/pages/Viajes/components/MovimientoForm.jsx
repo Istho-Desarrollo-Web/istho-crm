@@ -16,6 +16,7 @@ import { Button, Modal } from '../../../components/common/index';
 import { movimientosService, cajasMenoresService, viajesService } from '../../../api/viajes.service';
 import useNotification from '../../../hooks/useNotification';
 import { useAuth } from '../../../context/AuthContext';
+import { getServerFileUrl } from '../../../api/client';
 
 // ════════════════════════════════════════════════════════════════════════════
 // OPCIONES ESTÁTICAS
@@ -538,10 +539,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
 
               {/* Soporte existente (al editar/ver) */}
               {soporteExistente && !soporte && (() => {
-                const isDataUri = soporteExistente.url?.startsWith('data:');
-                const soporteUrl = isDataUri
-                  ? soporteExistente.url
-                  : `${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || ''}${soporteExistente.url}`;
+                const soporteUrl = getServerFileUrl(soporteExistente.url);
                 const isImage = isDataUri
                   ? soporteExistente.url.startsWith('data:image/')
                   : /\.(jpg|jpeg|png|gif|webp)$/i.test(soporteExistente.nombre || soporteExistente.url);
