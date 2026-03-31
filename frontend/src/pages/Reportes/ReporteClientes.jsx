@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 // Components
-import { Button, KpiCard, ReportFilters } from '../../components/common';
+import { Button, KpiCard, ReportFilters, AccionesDropdown } from '../../components/common';
 import { PieChart } from '../../components/charts';
 import EnviarReporteModal from '../../components/common/EnviarReporteModal';
 
@@ -172,20 +172,12 @@ const ReporteClientes = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button variant="outline" icon={RefreshCw} onClick={fetchData}>
-              Actualizar
-            </Button>
-            <Button variant="outline" icon={Mail} onClick={() => setEmailModal(true)}>
-              Enviar
-            </Button>
-            <Button variant="outline" icon={FileSpreadsheet} onClick={() => handleExport('excel')}>
-              Excel
-            </Button>
-            <Button variant="primary" icon={Download} onClick={() => handleExport('pdf')}>
-              PDF
-            </Button>
-          </div>
+          <AccionesDropdown acciones={[
+            { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+            { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true) },
+            { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel') },
+            { label: 'PDF', icon: Download, onClick: () => handleExport('pdf'), variant: 'primary' },
+          ]} />
         </div>
 
         {error && (

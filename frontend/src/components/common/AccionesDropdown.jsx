@@ -1,0 +1,81 @@
+/**
+ * ISTHO CRM - AccionesDropdown
+ * Muestra botones de acción en desktop, dropdown en móvil
+ *
+ * @author Coordinación TI ISTHO
+ * @date Marzo 2026
+ */
+
+import { useState, useRef, useEffect } from 'react';
+import { MoreVertical } from 'lucide-react';
+
+/**
+ * @param {{ acciones: Array<{ label: string, icon: import('lucide-react').LucideIcon, onClick: () => void, variant?: string, hidden?: boolean }> }} props
+ */
+const AccionesDropdown = ({ acciones = [] }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const visibles = acciones.filter(a => !a.hidden);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  if (visibles.length === 0) return null;
+
+  const btnBase = 'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-colors';
+  const btnOutline = `${btnBase} bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700`;
+  const btnPrimary = `${btnBase} bg-orange-500 text-white hover:bg-orange-600`;
+
+  return (
+    <>
+      {/* Desktop: botones individuales */}
+      <div className="hidden md:flex items-center gap-2">
+        {visibles.map((a, i) => {
+          const Icon = a.icon;
+          const cls = a.variant === 'primary' ? btnPrimary : btnOutline;
+          return (
+            <button key={i} onClick={a.onClick} className={cls}>
+              {Icon && <Icon className="w-4 h-4" />}
+              {a.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Móvil: dropdown */}
+      <div className="md:hidden relative" ref={ref}>
+        <button
+          onClick={() => setOpen(!open)}
+          className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+        >
+          <MoreVertical className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+        </button>
+
+        {open && (
+          <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-50 py-1 overflow-hidden">
+            {visibles.map((a, i) => {
+              const Icon = a.icon;
+              return (
+                <button
+                  key={i}
+                  onClick={() => { setOpen(false); a.onClick(); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  {Icon && <Icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
+                  {a.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
+export default AccionesDropdown;

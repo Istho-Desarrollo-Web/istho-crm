@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Wallet, DollarSign, CheckCircle, Clock, FileSpreadsheet, TrendingDown, TrendingUp, ArrowLeft, RefreshCw, Mail } from 'lucide-react';
-import { KpiCard } from '../../components/common';
+import { KpiCard, AccionesDropdown } from '../../components/common';
 import { PieChart } from '../../components/charts';
 import reportesService from '../../api/reportes.service';
 import EnviarReporteModal from '../../components/common/EnviarReporteModal';
@@ -62,17 +62,11 @@ const ReporteCajasMenores = () => {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={fetchData} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
-              <RefreshCw className="w-4 h-4" /> Actualizar
-            </button>
-            <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
-              <FileSpreadsheet className="w-4 h-4" /> Excel
-            </button>
-            <button onClick={() => setEmailModal(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
-              <Mail className="w-4 h-4" /> Enviar
-            </button>
-          </div>
+          <AccionesDropdown acciones={[
+            { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+            { label: 'Excel', icon: FileSpreadsheet, onClick: handleExport },
+            { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true) },
+          ]} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

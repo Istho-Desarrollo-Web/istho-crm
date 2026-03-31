@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Truck, CheckCircle, DollarSign, FileSpreadsheet, Download, Calendar, ArrowLeft, RefreshCw, Mail } from 'lucide-react';
-import { KpiCard } from '../../components/common';
+import { Truck, CheckCircle, DollarSign, FileSpreadsheet, Download, Calendar, ArrowLeft, RefreshCw, Mail, MoreVertical } from 'lucide-react';
+import { KpiCard, AccionesDropdown } from '../../components/common';
 import { BarChart, PieChart } from '../../components/charts';
 import reportesService from '../../api/reportes.service';
 import EnviarReporteModal from '../../components/common/EnviarReporteModal';
@@ -69,20 +69,12 @@ const ReporteViajes = () => {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={fetchData} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
-              <RefreshCw className="w-4 h-4" /> Actualizar
-            </button>
-            <button onClick={() => handleExport('excel')} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
-              <FileSpreadsheet className="w-4 h-4" /> Excel
-            </button>
-            <button onClick={() => handleExport('csv')} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
-              <Download className="w-4 h-4" /> CSV
-            </button>
-            <button onClick={() => setEmailModal(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
-              <Mail className="w-4 h-4" /> Enviar
-            </button>
-          </div>
+          <AccionesDropdown acciones={[
+            { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+            { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel') },
+            { label: 'CSV', icon: Download, onClick: () => handleExport('csv') },
+            { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true) },
+          ]} />
         </div>
 
         {/* Filters */}

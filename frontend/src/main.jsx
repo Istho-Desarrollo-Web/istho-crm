@@ -12,6 +12,7 @@ import App from './App';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import { AppThemeProvider } from './context/ThemeContext';
+import { SocketProvider } from './context/SocketContext';
 import { NotificacionesProvider } from './context/NotificacionesContext';
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
@@ -21,11 +22,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <Analytics />
     <SpeedInsights />
     <AuthProvider>
-      <AppThemeProvider>
-        <NotificacionesProvider>
-          <App />
-        </NotificacionesProvider>
-      </AppThemeProvider>
+      <SocketProvider>
+        <AppThemeProvider>
+          <NotificacionesProvider>
+            <App />
+          </NotificacionesProvider>
+        </AppThemeProvider>
+      </SocketProvider>
     </AuthProvider>
   </React.StrictMode>,
 );
