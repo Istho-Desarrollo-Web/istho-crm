@@ -370,16 +370,16 @@ const aprobar = async (req, res) => {
 
     await transaction.commit();
 
-    // Notificar al usuario
+    // Notificar al usuario que registró el gasto
     notificacionService.notificar({
       usuario_id: movimiento.usuario_id,
+      tipo: 'sistema',
       titulo: aprobado ? 'Gasto aprobado' : 'Gasto rechazado',
-      cuerpo: aprobado
+      mensaje: aprobado
         ? `Tu gasto #${movimiento.consecutivo} (${movimiento.concepto}) fue aprobado por $${Number(valor_aprobado || movimiento.valor).toLocaleString('es-CO')}`
         : `Tu gasto #${movimiento.consecutivo} (${movimiento.concepto}) fue rechazado. ${observaciones_aprobacion || ''}`,
-      tipo: 'sistema',
       prioridad: aprobado ? 'normal' : 'alta',
-      datos: { movimiento_id: movimiento.id }
+      accion_url: `/viajes/cajas-menores/${movimiento.cajaMenor?.id}`,
     }).catch(() => {});
 
     logger.info(`Movimiento ${aprobado ? 'aprobado' : 'rechazado'}:`, { id: movimiento.id });
@@ -450,6 +450,27 @@ const aprobarMasivo = async (req, res) => {
     });
 
     await transaction.commit();
+
+    // Notificar a cada usuario afectado (agrupado por usuario)
+    const porUsuario = movimientos.reduce((acc, mov) => {
+      if (!acc[mov.usuario_id]) acc[mov.usuario_id] = [];
+      acc[mov.usuario_id].push(mov);
+      return acc;
+    }, {});
+    for (const [usuario_id, movs] of Object.entries(porUsuario)) {
+      const cantidad = movs.length;
+      notificacionService.notificar({
+        usuario_id: Number(usuario_id),
+        tipo: 'sistema',
+        titulo: cantidad === 1 ? 'Gasto aprobado' : `${cantidad} gastos aprobados`,
+        mensaje: cantidad === 1
+          ? `Tu gasto #${movs[0].consecutivo} (${movs[0].concepto}) fue aprobado`
+          : `${cantidad} de tus gastos fueron aprobados`,
+        prioridad: 'normal',
+        accion_url: `/viajes/cajas-menores/${movs[0].caja_menor_id}`,
+      }).catch(() => {});
+    }
+
     return success(res, { aprobados }, `${aprobados} movimiento(s) aprobado(s) exitosamente`);
   } catch (error) {
     try { await transaction.rollback(); } catch (_) {}
