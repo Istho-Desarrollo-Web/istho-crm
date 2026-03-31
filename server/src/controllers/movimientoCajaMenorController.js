@@ -393,6 +393,9 @@ const aprobar = async (req, res) => {
 
     await transaction.commit();
 
+    // Recargar caja para obtener saldo actualizado post-commit
+    await movimiento.cajaMenor.reload();
+
     socketService.emitToAll('movimiento:actualizado', {
       id: movimiento.id,
       aprobado: movimiento.aprobado,
@@ -403,6 +406,7 @@ const aprobar = async (req, res) => {
       observaciones_aprobacion: movimiento.observaciones_aprobacion,
       caja_menor_id: movimiento.caja_menor_id,
       usuario_id: movimiento.usuario_id,
+      saldo_actual_caja: movimiento.cajaMenor.saldo_actual,
     });
 
     // Notificar al usuario que registró el gasto

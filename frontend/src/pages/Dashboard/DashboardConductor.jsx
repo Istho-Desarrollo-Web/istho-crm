@@ -202,16 +202,20 @@ const DashboardConductor = () => {
       setCajaActiva((prev) => (prev?.id === data.id ? null : prev));
     };
 
-    // Movimientos — actualizar estado del gasto + refetch saldo de caja
+    // Movimientos — actualizar estado del gasto + saldo de caja
     const handleMovimientoActualizado = (data) => {
-      // Si el movimiento pertenece a este conductor y fue aprobado/rechazado → refetch
-      if (data.usuario_id && parseInt(data.usuario_id) === parseInt(userId) && (data.aprobado || data.rechazado)) {
-        refetchGastos();
-        refetchCaja();
-        return;
+      // Actualizar saldo de caja directamente si viene en el evento
+      if (data.saldo_actual_caja !== undefined) {
+        setCajaActiva((prev) =>
+          prev && prev.id === data.caja_menor_id
+            ? { ...prev, saldo_actual: data.saldo_actual_caja }
+            : prev
+        );
       }
-      setGastos((prev) => prev.map((g) => (g.id === data.id ? { ...g, ...data } : g)));
-      refetchCaja();
+      // Si el movimiento pertenece a este conductor → actualizar estado del gasto
+      if (data.usuario_id && parseInt(data.usuario_id) === parseInt(userId)) {
+        setGastos((prev) => prev.map((g) => (g.id === data.id ? { ...g, ...data } : g)));
+      }
     };
     const handleMovimientoCreado = (data) => {
       // Solo mostrar gastos del propio conductor
@@ -345,7 +349,7 @@ const DashboardConductor = () => {
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
               {cajaActiva.numero || `Caja #${cajaActiva.id}`}
             </p>
-            <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+            <p className={`text-3xl font-bold mb-2 ${Number(cajaActiva.saldo_actual) < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
               {formatMoney(cajaActiva.saldo_actual)}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
