@@ -168,13 +168,29 @@ const DashboardConductor = () => {
     } catch {}
   }, []);
 
+  const refetchGastos = useCallback(async () => {
+    try {
+      const res = await movimientosService.getAll({ limit: 5 });
+      const g = res?.data?.data || res?.data?.rows || res?.data || [];
+      setGastos(Array.isArray(g) ? g : []);
+    } catch {}
+  }, []);
+
   // ──────────────────────────────────────────────────────────────────────
   // SOCKET — ACTUALIZACIONES EN TIEMPO REAL
   // ──────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!socket?.on) return;
 
+    const userId = user?.id;
+
     // Caja menor
+    const handleCajaCreada = (data) => {
+      // Mostrar solo si la caja fue asignada a este conductor
+      if (parseInt(data.asignado_a) === parseInt(userId)) {
+        setCajaActiva(data);
+      }
+    };
     const handleCajaActualizada = (data) => {
       setCajaActiva((prev) => {
         if (!prev || prev.id !== data.id) return prev;
@@ -188,12 +204,18 @@ const DashboardConductor = () => {
 
     // Movimientos — actualizar estado del gasto + refetch saldo de caja
     const handleMovimientoActualizado = (data) => {
+      // Si el movimiento pertenece a este conductor y fue aprobado/rechazado → refetch
+      if (data.usuario_id && parseInt(data.usuario_id) === parseInt(userId) && (data.aprobado || data.rechazado)) {
+        refetchGastos();
+        refetchCaja();
+        return;
+      }
       setGastos((prev) => prev.map((g) => (g.id === data.id ? { ...g, ...data } : g)));
       refetchCaja();
     };
     const handleMovimientoCreado = (data) => {
       // Solo mostrar gastos del propio conductor
-      if (data.usuario_id && data.usuario_id !== user?.id) return;
+      if (data.usuario_id && parseInt(data.usuario_id) !== parseInt(userId)) return;
       setGastos((prev) => [data, ...prev].slice(0, 5));
     };
     const handleMovimientoEliminado = (data) => {
@@ -216,6 +238,7 @@ const DashboardConductor = () => {
       setViajes((prev) => prev.filter((v) => v.id !== data.id));
     };
 
+    socket.on('caja:creada', handleCajaCreada);
     socket.on('caja:actualizada', handleCajaActualizada);
     socket.on('caja:eliminada', handleCajaEliminada);
     socket.on('movimiento:actualizado', handleMovimientoActualizado);
@@ -226,6 +249,7 @@ const DashboardConductor = () => {
     socket.on('viaje:eliminado', handleViajeEliminado);
 
     return () => {
+      socket.off('caja:creada', handleCajaCreada);
       socket.off('caja:actualizada', handleCajaActualizada);
       socket.off('caja:eliminada', handleCajaEliminada);
       socket.off('movimiento:actualizado', handleMovimientoActualizado);
@@ -235,7 +259,7 @@ const DashboardConductor = () => {
       socket.off('viaje:actualizado', handleViajeActualizado);
       socket.off('viaje:eliminado', handleViajeEliminado);
     };
-  }, [socket, refetchCaja]);
+  }, [socket, refetchCaja, refetchGastos]);
 
   // ──────────────────────────────────────────────────────────────────────
   // DATOS DEL USUARIO

@@ -402,6 +402,7 @@ const aprobar = async (req, res) => {
       fecha_aprobacion: movimiento.fecha_aprobacion,
       observaciones_aprobacion: movimiento.observaciones_aprobacion,
       caja_menor_id: movimiento.caja_menor_id,
+      usuario_id: movimiento.usuario_id,
     });
 
     // Notificar al usuario que registró el gasto
