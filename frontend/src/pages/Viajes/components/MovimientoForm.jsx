@@ -540,9 +540,8 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
               {/* Soporte existente (al editar/ver) */}
               {soporteExistente && !soporte && (() => {
                 const soporteUrl = getServerFileUrl(soporteExistente.url);
-                const isImage = isDataUri
-                  ? soporteExistente.url.startsWith('data:image/')
-                  : /\.(jpg|jpeg|png|gif|webp)$/i.test(soporteExistente.nombre || soporteExistente.url);
+                const isImage = soporteExistente.url?.startsWith('data:image/')
+                  || /\.(jpg|jpeg|png|gif|webp)$/i.test(soporteExistente.nombre || soporteExistente.url);
                 return (
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
