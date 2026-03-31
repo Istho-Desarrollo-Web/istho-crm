@@ -32,6 +32,7 @@ import { formatDate } from '../../utils/formatDate';
 import { getGreeting } from '../../utils/greeting';
 import { cajasMenoresService, movimientosService, vehiculosService } from '../../api/viajes.service';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
 import useNotification from '../../hooks/useNotification';
 import logoNegro from '../../assets/logo-negro.png';
 import logoBlanco from '../../assets/logo-blanco.png';
@@ -145,6 +146,7 @@ const DashboardFinanciera = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showSuccess, showError } = useNotification();
+  const socket = useSocket();
 
   // Estado
   const [loading, setLoading] = useState(true);
@@ -223,6 +225,100 @@ const DashboardFinanciera = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SOCKET — ACTUALIZACIONES EN TIEMPO REAL
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const refetchStats = useCallback(async () => {
+    try {
+      const res = await cajasMenoresService.getStats();
+      setStats(res?.data || res || {});
+      setLastUpdated(new Date());
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (!socket?.on) return;
+
+    // Movimientos
+    const handleMovimientoCreado = async () => {
+      // Un nuevo gasto puede ser pendiente: recargar lista
+      try {
+        const res = await movimientosService.getAll({ aprobado: 'pendiente', limit: 20 });
+        const data = res?.data?.rows || res?.data || [];
+        setPendientes(Array.isArray(data) ? data : []);
+      } catch {}
+    };
+    const handleMovimientoActualizado = (data) => {
+      // Si fue aprobado o rechazado, sacar de pendientes y actualizar saldo en caja
+      if (data.aprobado || data.rechazado) {
+        setPendientes((prev) => prev.filter((m) => m.id !== data.id));
+        setSelected((prev) => prev.filter((id) => id !== data.id));
+        // Actualizar saldo de la caja asociada en la lista
+        if (data.caja_menor_id) {
+          setCajasAbiertas((prev) =>
+            prev.map((c) =>
+              c.id === data.caja_menor_id ? { ...c, saldo_actual: data.saldo_actual ?? c.saldo_actual } : c
+            )
+          );
+          refetchStats();
+        }
+      }
+    };
+    const handleMovimientoEliminado = (data) => {
+      setPendientes((prev) => prev.filter((m) => m.id !== data.id));
+      setSelected((prev) => prev.filter((id) => id !== data.id));
+      if (data.caja_menor_id) refetchStats();
+    };
+    const handleAprobacionMasiva = (data) => {
+      setPendientes((prev) => prev.filter((m) => !data.ids.includes(m.id)));
+      setSelected([]);
+      refetchStats();
+    };
+
+    // Cajas
+    const handleCajaCreada = async () => {
+      try {
+        const res = await cajasMenoresService.getAll({ estado: 'abierta', limit: 10 });
+        const data = res?.data?.rows || res?.data || [];
+        setCajasAbiertas(Array.isArray(data) ? data : []);
+      } catch {}
+      refetchStats();
+    };
+    const handleCajaActualizada = (data) => {
+      if (data.estado === 'cerrada') {
+        setCajasAbiertas((prev) => prev.filter((c) => c.id !== data.id));
+      } else {
+        setCajasAbiertas((prev) =>
+          prev.map((c) => (c.id === data.id ? { ...c, ...data } : c))
+        );
+      }
+      refetchStats();
+    };
+    const handleCajaEliminada = (data) => {
+      setCajasAbiertas((prev) => prev.filter((c) => c.id !== data.id));
+      refetchStats();
+    };
+
+    socket.on('movimiento:creado', handleMovimientoCreado);
+    socket.on('movimiento:actualizado', handleMovimientoActualizado);
+    socket.on('movimiento:eliminado', handleMovimientoEliminado);
+    socket.on('movimiento:aprobacion_masiva', handleAprobacionMasiva);
+    socket.on('caja:creada', handleCajaCreada);
+    socket.on('caja:actualizada', handleCajaActualizada);
+    socket.on('caja:eliminada', handleCajaEliminada);
+
+    return () => {
+      socket.off('movimiento:creado', handleMovimientoCreado);
+      socket.off('movimiento:actualizado', handleMovimientoActualizado);
+      socket.off('movimiento:eliminado', handleMovimientoEliminado);
+      socket.off('movimiento:aprobacion_masiva', handleAprobacionMasiva);
+      socket.off('caja:creada', handleCajaCreada);
+      socket.off('caja:actualizada', handleCajaActualizada);
+      socket.off('caja:eliminada', handleCajaEliminada);
+    };
+  }, [socket, refetchStats]);
 
   // ──────────────────────────────────────────────────────────────────────────
   // ACCIONES

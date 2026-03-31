@@ -11,7 +11,7 @@
  * @date Marzo 2026
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Chip,
@@ -36,6 +36,7 @@ import { Button, Modal, StatusChip, ConfirmDialog } from '../../components/commo
 import { cajasMenoresService, movimientosService } from '../../api/viajes.service';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
 import { Clock } from 'lucide-react';
 import { formatDate } from '../../utils/formatDate';
@@ -95,6 +96,7 @@ const CajaMenorDetail = () => {
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
   const { success, apiError } = useNotification();
+  const socket = useSocket();
 
   // ──────────────────────────────────────────────────────────────────────────
   // ESTADOS
@@ -116,23 +118,62 @@ const CajaMenorDetail = () => {
   // FETCH DATA
   // ──────────────────────────────────────────────────────────────────────────
 
-  const fetchCaja = async () => {
-    setLoading(true);
-    setError(null);
+  const fetchCaja = useCallback(async (silencioso = false) => {
+    if (!silencioso) { setLoading(true); setError(null); }
     try {
       const response = await cajasMenoresService.getById(id);
       setCaja(response.data || response);
     } catch (err) {
-      setError(err?.response?.data?.mensaje || 'Error al cargar la caja menor');
-      apiError(err);
+      if (!silencioso) {
+        setError(err?.response?.data?.mensaje || 'Error al cargar la caja menor');
+        apiError(err);
+      }
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
-  };
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchCaja();
-  }, [id]);
+  }, [fetchCaja]);
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SOCKET — ACTUALIZACIONES EN TIEMPO REAL
+  // ──────────────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!socket?.on) return;
+    const cajaId = parseInt(id);
+
+    // Movimientos de esta caja → refrescar para actualizar saldo y lista
+    const handleMovimiento = (data) => {
+      if (!data.caja_menor_id || data.caja_menor_id === cajaId) {
+        fetchCaja(true);
+      }
+    };
+    const handleAprobacionMasiva = () => { fetchCaja(true); };
+
+    // Estado de la caja actualizado desde otro lado
+    const handleCajaActualizada = (data) => {
+      if (data.id === cajaId) {
+        setCaja((prev) => prev ? { ...prev, ...data } : prev);
+      }
+    };
+
+    socket.on('movimiento:creado', handleMovimiento);
+    socket.on('movimiento:actualizado', handleMovimiento);
+    socket.on('movimiento:eliminado', handleMovimiento);
+    socket.on('movimiento:aprobacion_masiva', handleAprobacionMasiva);
+    socket.on('caja:actualizada', handleCajaActualizada);
+
+    return () => {
+      socket.off('movimiento:creado', handleMovimiento);
+      socket.off('movimiento:actualizado', handleMovimiento);
+      socket.off('movimiento:eliminado', handleMovimiento);
+      socket.off('movimiento:aprobacion_masiva', handleAprobacionMasiva);
+      socket.off('caja:actualizada', handleCajaActualizada);
+    };
+  }, [socket, id, fetchCaja]);
 
   // ──────────────────────────────────────────────────────────────────────────
   // HANDLERS
