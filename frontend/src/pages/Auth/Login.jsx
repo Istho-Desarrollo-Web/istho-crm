@@ -93,7 +93,10 @@ const LoginPage = () => {
             default: return '/dashboard';
         }
     };
+    // No usar "from" si fue un cierre forzado (otro usuario podría no tener permiso)
     const from = location.state?.from || null;
+    const getDestino = (rol, pending = mensajePendiente) =>
+        pending ? getDefaultRoute(rol) : (from || getDefaultRoute(rol));
 
     // React Hook Form
     const {
@@ -116,10 +119,10 @@ const LoginPage = () => {
     // Redirigir si ya está autenticado
     useEffect(() => {
         if (isAuthenticated && !authLoading) {
-            const destino = from || getDefaultRoute(user?.rol);
+            const destino = getDestino(user?.rol);
             navigate(destino, { replace: true });
         }
-    }, [isAuthenticated, authLoading, navigate, from, user]);
+    }, [isAuthenticated, authLoading, navigate, from, user, mensajePendiente]);
 
     // Focus en email al montar
     useEffect(() => {
@@ -154,7 +157,7 @@ const LoginPage = () => {
             const result = await login(data.email, data.password);
 
             if (result.success) {
-                const destino = from || getDefaultRoute(result.data?.user?.rol);
+                const destino = getDestino(result.data?.user?.rol);
                 navigate(destino, { replace: true });
             } else if (result.code === 'NETWORK_ERROR' || result.code === 'TIMEOUT') {
                 // Servidor dormido — intentar despertar
@@ -168,7 +171,7 @@ const LoginPage = () => {
                         const retry = await login(data.email, data.password);
                         if (retry.success) {
                             setServerWaking(false);
-                            const destino = from || getDefaultRoute(retry.data?.user?.rol);
+                            const destino = getDestino(retry.data?.user?.rol);
                             navigate(destino, { replace: true });
                             return;
                         }

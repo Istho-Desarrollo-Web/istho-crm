@@ -139,7 +139,7 @@ const disconnectUser = (userId, options = {}) => {
     const socket = io.sockets.sockets.get(socketId);
     if (socket) {
       socket.emit('session:cerrada', payload);
-      socket.disconnect(true);
+      setTimeout(() => socket.disconnect(true), 500);
     }
   });
 
@@ -168,7 +168,7 @@ const disconnectAllUsers = (exceptUserId) => {
       const socket = io.sockets.sockets.get(socketId);
       if (socket) {
         socket.emit('session:cerrada', payload);
-        socket.disconnect(true);
+        setTimeout(() => socket.disconnect(true), 500);
       }
     });
     toDelete.push(userId);

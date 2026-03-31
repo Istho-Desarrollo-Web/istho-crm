@@ -201,13 +201,29 @@ apiClient.interceptors.response.use(
         }
         break;
         
-      case 403:
-        // Sin permisos para la acción - emitir evento global para toast
-        console.warn('⚠️ [API] Sin permisos para esta acción');
-        window.dispatchEvent(new CustomEvent('istho:permission-denied', {
-          detail: { message: data?.message || 'No tienes permiso para realizar esta acción' }
-        }));
+      case 403: {
+        const msg403 = data?.message || '';
+        // Usuario desactivado → redirigir a login con mensaje
+        if (msg403.toLowerCase().includes('desactivado')) {
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(REFRESH_TOKEN_KEY);
+          localStorage.removeItem('istho_user');
+          sessionStorage.setItem('auth_mensaje_pendiente', JSON.stringify({
+            tipo: 'desactivado',
+            mensaje: 'Tu cuenta ha sido desactivada. Contacta al administrador para más información.',
+          }));
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+          }
+        } else {
+          // Sin permisos para la acción - emitir evento global para toast
+          console.warn('⚠️ [API] Sin permisos para esta acción');
+          window.dispatchEvent(new CustomEvent('istho:permission-denied', {
+            detail: { message: msg403 || 'No tienes permiso para realizar esta acción' }
+          }));
+        }
         break;
+      }
         
       case 404:
         // Recurso no encontrado
