@@ -68,7 +68,8 @@ const listar = async (req, res) => {
       where[Op.or] = [
         { descripcion: { [Op.like]: `%${s}%` } },
         { concepto_otro: { [Op.like]: `%${s}%` } },
-        { observaciones_aprobacion: { [Op.like]: `%${s}%` } }
+        { observaciones_aprobacion: { [Op.like]: `%${s}%` } },
+        { '$usuario.nombre_completo$': { [Op.like]: `%${s}%` } },
       ];
     }
 
@@ -81,14 +82,15 @@ const listar = async (req, res) => {
       order,
       limit,
       offset,
+      subQuery: false,
       attributes: {
         exclude: ['soporte_url'] // Se carga solo en detalle individual (GET /:id)
       },
       include: [
         { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero', 'estado'] },
         { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
-        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
-        { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] }
+        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'], required: false },
+        { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'], required: false }
       ]
     });
 

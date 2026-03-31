@@ -37,6 +37,9 @@ import {
   Loader2,
   LayoutGrid,
   LayoutList,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
 } from 'lucide-react';
 import { Button, Modal, Pagination, ConfirmDialog } from '../../components/common';
 import PageFooter from '@components/common/PageFooter';
@@ -351,6 +354,8 @@ const MovimientosList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [tipoFilter, setTipoFilter] = useState(searchParams.get('tipo_movimiento') || 'todos');
   const [aprobadoFilter, setAprobadoFilter] = useState(searchParams.get('aprobado') || 'todos');
+  const [sortField, setSortField] = useState('created_at');
+  const [sortDir, setSortDir] = useState('DESC');
 
   const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
 
@@ -374,7 +379,7 @@ const MovimientosList = () => {
     if (!silencioso) setLoading(true);
     setError(null);
     try {
-      const params = { page, limit: PAGE_SIZE };
+      const params = { page, limit: PAGE_SIZE, sort: sortField, order: sortDir };
       if (tipoFilter !== 'todos') params.tipo_movimiento = tipoFilter;
       if (aprobadoFilter !== 'todos') params.aprobado = aprobadoFilter;
       if (searchTerm) params.search = searchTerm;
@@ -392,7 +397,7 @@ const MovimientosList = () => {
     } finally {
       if (!silencioso) setLoading(false);
     }
-  }, [tipoFilter, aprobadoFilter, searchTerm]);
+  }, [tipoFilter, aprobadoFilter, searchTerm, sortField, sortDir]);
 
   useEffect(() => {
     fetchMovimientos(1);
@@ -447,6 +452,22 @@ const MovimientosList = () => {
   // ──────────────────────────────────────────────────────────────────────────
   // KPIs (calculados de la data actual)
   // ──────────────────────────────────────────────────────────────────────────
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDir(d => d === 'ASC' ? 'DESC' : 'ASC');
+    } else {
+      setSortField(field);
+      setSortDir('ASC');
+    }
+  };
+
+  const SortIcon = ({ field }) => {
+    if (sortField !== field) return <ChevronsUpDown className="w-3 h-3 opacity-40" />;
+    return sortDir === 'ASC'
+      ? <ChevronUp className="w-3 h-3 text-purple-500" />
+      : <ChevronDown className="w-3 h-3 text-purple-500" />;
+  };
 
   const totalPendientes = movimientos.filter((m) => !m.aprobado && !m.rechazado).length;
   const totalAprobados = movimientos.filter((m) => m.aprobado === true).length;
@@ -827,30 +848,27 @@ const MovimientosList = () => {
                         />
                       </th>
                     )}
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Consecutivo
-                    </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Concepto
-                    </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Tipo
-                    </th>
-                    <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Valor
-                    </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Aprobado
-                    </th>
-                    <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Valor Aprobado
-                    </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Caja Menor
-                    </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Usuario
-                    </th>
+                    {[
+                      { label: 'Consecutivo', field: 'consecutivo', align: 'left' },
+                      { label: 'Concepto', field: 'concepto', align: 'left' },
+                      { label: 'Tipo', field: 'tipo_movimiento', align: 'center' },
+                      { label: 'Valor', field: 'valor', align: 'right' },
+                      { label: 'Aprobado', field: 'aprobado', align: 'center' },
+                      { label: 'Valor Aprobado', field: 'valor_aprobado', align: 'right' },
+                      { label: 'Caja Menor', field: null, align: 'left' },
+                      { label: 'Usuario', field: null, align: 'left' },
+                    ].map(({ label, field, align }) => (
+                      <th
+                        key={label}
+                        onClick={field ? () => handleSort(field) : undefined}
+                        className={`py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-${align} ${field ? 'cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200' : ''}`}
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          {label}
+                          {field && <SortIcon field={field} />}
+                        </span>
+                      </th>
+                    ))}
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">
                       {/* Acciones */}
                     </th>
@@ -865,7 +883,7 @@ const MovimientosList = () => {
                     >
                       {/* Checkbox (solo si puede aprobar) */}
                       {canAprobar && (
-                        <td className="py-4 px-4 text-center">
+                        <td className="py-4 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                           {isPendiente(mov) ? (
                             <Checkbox
                               size="small"
