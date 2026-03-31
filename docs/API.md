@@ -1231,12 +1231,14 @@ proxy: {
 ### GET `/notificaciones`
 **Acceso:** Autenticado
 
-**Query:** `page`, `limit`, `tipo`, `leida`
+**Query:** `page`, `limit`, `tipo`, `no_leidas` (boolean)
 
 ---
 
 ### GET `/notificaciones/count`
-**Respuesta:** `{ noLeidas: 5 }`
+**Respuesta:** `{ success: true, data: { count: 5 } }`
+
+Retorna solo las notificaciones **no leídas**. El badge del header muestra este número, con tope visual de "+9" cuando supera 9.
 
 ---
 
@@ -1249,8 +1251,22 @@ proxy: {
 ### DELETE `/notificaciones/:id`
 ---
 
+### DELETE `/notificaciones/todas`
+*Elimina TODAS las notificaciones del usuario (leídas y no leídas)*
+
+**Respuesta (200):**
+```json
+{
+  "success": true,
+  "message": "15 notificaciones eliminadas",
+  "data": { "count": 15 }
+}
+```
+
+---
+
 ### DELETE `/notificaciones/leidas`
-*Elimina todas las notificaciones leídas*
+*Elimina solo las notificaciones leídas*
 
 ---
 

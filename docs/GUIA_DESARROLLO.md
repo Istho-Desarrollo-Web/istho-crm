@@ -754,14 +754,79 @@ notificacionService.notificar() → DB + socketService.emitToUser()
 Frontend: SocketContext → NotificacionesContext → FloatingHeader toast
 ```
 
+### Provider Order (CRÍTICO)
+
+En `frontend/src/main.jsx`, el orden de providers DEBE ser:
+
+```jsx
+<AuthProvider>          // 1. Auth (token JWT)
+  <SocketProvider>      // 2. Socket (usa useAuth para el token)
+    <NotificacionesProvider>  // 3. Notificaciones (usa useSocket para eventos)
+```
+
+Si `SocketProvider` está después de `NotificacionesProvider`, las notificaciones solo llegan por polling (30s) en vez de en tiempo real.
+
+### Tipos de Notificación
+
+| Tipo | Disparador | Destinatarios | Prioridad |
+|------|-----------|---------------|-----------|
+| `inventario` | Stock agotado (qty=0) | admin, supervisor | urgente |
+| `inventario` | Stock bajo (≤ mínimo) | admin, supervisor | alta |
+| `inventario` | Stock sobre máximo | admin, supervisor | normal |
+| `despacho` | Operación cerrada | cliente + admin + supervisor | normal |
+| `despacho` | Entrada/Salida WMS sync | cliente + admin + supervisor | normal |
+| `cliente` | Cliente creado/eliminado | admin, supervisor | normal |
+| `sistema` | Sync WMS completada/error | admin, supervisor | baja/alta |
+| `sistema` | Caja menor abierta | admin, supervisor, financiera | normal |
+| `sistema` | Gasto pendiente aprobación | admin, supervisor, financiera | alta |
+| `sistema` | Gasto aprobado/rechazado | usuario asignado | normal |
+| `sistema` | Viaje completado | admin, supervisor, financiera | normal |
+| `sistema` | Caja menor asignada/cerrada | usuario asignado | normal |
+
+**Nota:** Los tipos `alerta` y `reporte` existen en el ENUM pero no se usan actualmente.
+
+### Badge de Notificaciones
+
+- Cuenta solo no leídas (`leida: false`)
+- Muestra "+9" cuando el conteo supera 9 (`FloatingHeader.jsx`)
+- Sonido vía Web Audio API (880Hz + 1174Hz), configurable por usuario
+
 ---
 
-## 12. Troubleshooting Común
+## 12. Componentes Responsivos
+
+### AccionesDropdown
+
+Para páginas con 3+ botones de acción que rompen la vista móvil:
+
+```jsx
+import { AccionesDropdown } from '@components/common';
+import { RefreshCw, FileSpreadsheet, Download, Mail } from 'lucide-react';
+
+<AccionesDropdown acciones={[
+  { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+  { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel') },
+  { label: 'PDF', icon: Download, onClick: () => handleExport('pdf'), variant: 'primary' },
+  { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true), hidden: !canDownload },
+]} />
+```
+
+- **Desktop (md+):** Botones individuales en fila
+- **Móvil (<md):** Botón ⋮ que abre menú dropdown
+- `variant: 'primary'` → botón naranja (solo en desktop)
+- `hidden: true` → oculta la acción (útil para permisos)
+
+Usado en: ReporteDespachos, ReporteClientes, ReporteInventario, ReporteViajes, ReporteGastos, ReporteCajasMenores.
+
+---
+
+## 13. Troubleshooting Común
 
 | Problema | Solución |
 |----------|---------|
 | WebSocket 404 en desarrollo | Verificar proxy `/socket.io` en `vite.config.js` con `ws: true` |
 | WebSocket no conecta | Verificar que backend use `http.createServer(app)` + `socketService.inicializar(server)` |
+| Notificaciones no llegan en tiempo real | Verificar que `SocketProvider` esté en `main.jsx` ANTES de `NotificacionesProvider` |
 | Toast no aparece | Verificar que `SocketProvider` envuelva la app dentro de `AuthProvider` |
 | CORS bloqueado | Agregar URL a `CORS_ORIGIN` en `.env` |
 | Permisos no funcionan | Ejecutar `seedRolesPermisos.js`, verificar `rol_id` del usuario |

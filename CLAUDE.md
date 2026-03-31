@@ -58,7 +58,7 @@ set CRM_API_URL=https://backend.up.railway.app/api/v1&& set WMS_API_KEY=key&& no
 
 ### Frontend: React 19 + Vite + Tailwind 4 + MUI 7
 - **Routing:** React Router with lazy loading. Permission-based guards: `PermissionRoute`, `AdminRoute`, `PortalPermissionRoute`
-- **State:** Context-based (AuthContext, ThemeContext, NotificacionesContext, SocketContext)
+- **State:** Context-based (AuthContext, ThemeContext, NotificacionesContext, SocketContext). **CRITICAL:** In `main.jsx`, provider order is AuthProvider → SocketProvider → NotificacionesProvider. SocketProvider MUST wrap NotificacionesProvider or real-time notifications won't work
 - **API layer:** Axios client with interceptors in `src/api/client.js`. Centralized endpoints in `src/api/endpoints.js`
 - **Forms:** React Hook Form + Yup validation
 - **Charts:** Recharts
@@ -133,6 +133,8 @@ set CRM_API_URL=https://backend.up.railway.app/api/v1&& set WMS_API_KEY=key&& no
 - Admin endpoints (`/admin/*`) require admin role. For forms accessible by other roles, create specific endpoints (e.g., `/cajas-menores/usuarios-asignables`)
 - WMS validation: Estado, tipo de orden y motivos se validan dinámicamente contra tabla `configuracion_wms`
 - Cloudinary upload pattern: upload to Cloudinary first, store URL in DB. Fallback to base64 if `CLOUDINARY_CLOUD_NAME` not set. Always cleanup multer temp file after upload
+- **AccionesDropdown:** Use `AccionesDropdown` component for pages with 3+ action buttons. Desktop shows buttons in a row, mobile shows a ⋮ dropdown menu. See `components/common/AccionesDropdown.jsx`
+- **Notification badge:** Shows unread count capped at "+9" when count > 9 (FloatingHeader.jsx). Sound plays via Web Audio API when socket event arrives (configurable per user)
 
 ## Documentation
 - `docs/WMS_API_SPEC.md` — Complete WMS API specification with all fields, schemas, and business rules
