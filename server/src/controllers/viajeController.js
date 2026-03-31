@@ -13,6 +13,7 @@ const { success, created, paginated, notFound, conflict, serverError, error: err
 const { parsePaginacion, buildPaginacion, parseOrdenamiento, limpiarObjeto, getClientIP, sanitizarBusqueda } = require('../utils/helpers');
 const logger = require('../utils/logger');
 const notificacionService = require('../services/notificacionService');
+const socketService = require('../services/socketService');
 
 const CAMPOS_ORDENAMIENTO = ['numero', 'fecha', 'destino', 'cliente_nombre', 'valor_viaje', 'estado', 'created_at'];
 
@@ -181,6 +182,19 @@ const crear = async (req, res) => {
       ]
     });
 
+    socketService.emitToAll('viaje:creado', {
+      id: resultado.id,
+      numero: resultado.numero,
+      origen: resultado.origen,
+      destino: resultado.destino,
+      estado: resultado.estado,
+      fecha_salida: resultado.fecha_salida,
+      conductor_id: resultado.conductor_id,
+      vehiculo_id: resultado.vehiculo_id,
+      vehiculo: resultado.vehiculo,
+      conductor: resultado.conductor,
+    });
+
     return created(res, resultado, 'Viaje registrado exitosamente');
   } catch (error) {
     try { await transaction.rollback(); } catch (_) {}
@@ -230,6 +244,14 @@ const actualizar = async (req, res) => {
     });
 
     await transaction.commit();
+
+    socketService.emitToAll('viaje:actualizado', {
+      id: viaje.id,
+      estado: viaje.estado,
+      origen: viaje.origen,
+      destino: viaje.destino,
+      valor_viaje: viaje.valor_viaje,
+    });
 
     // Notificar a financieros si el viaje se completó
     if (datos.estado === 'completado' && datosAnteriores.estado !== 'completado') {
@@ -285,6 +307,7 @@ const eliminar = async (req, res) => {
     });
 
     await transaction.commit();
+    socketService.emitToAll('viaje:eliminado', { id: parseInt(id) });
     return success(res, { id }, 'Viaje eliminado exitosamente');
   } catch (error) {
     try { await transaction.rollback(); } catch (_) {}
@@ -337,6 +360,8 @@ const completar = async (req, res) => {
     });
 
     await transaction.commit();
+
+    socketService.emitToAll('viaje:actualizado', { id: viaje.id, estado: 'completado' });
 
     // Notificar
     notificacionService.notificarViajeCompletado?.({
@@ -396,6 +421,8 @@ const anular = async (req, res) => {
     });
 
     await transaction.commit();
+
+    socketService.emitToAll('viaje:actualizado', { id: viaje.id, estado: 'anulado' });
 
     logger.info('Viaje anulado:', { id: viaje.id, numero: viaje.numero, motivo });
     return success(res, viaje, 'Viaje anulado exitosamente');

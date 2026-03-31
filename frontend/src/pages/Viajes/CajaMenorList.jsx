@@ -16,6 +16,7 @@ import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useThemeContext } from '../../context/ThemeContext';
 import { cajasMenoresService } from '../../api/viajes.service';
 import useNotification from '../../hooks/useNotification';
+import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
 import { formatDateShort } from '../../utils/formatDate';
@@ -212,6 +213,7 @@ const CajaMenorList = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { success, apiError, deleted } = useNotification();
+  const socket = useSocket();
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('todos');
   const [loading, setLoading] = useState(true);
@@ -233,8 +235,8 @@ const CajaMenorList = () => {
   // FETCH DATA
   // ──────────────────────────────────────────────────────────────────────────
 
-  const fetchCajas = useCallback(async (page = 1) => {
-    setLoading(true);
+  const fetchCajas = useCallback(async (page = 1, silencioso = false) => {
+    if (!silencioso) setLoading(true);
     setError(null);
     try {
       const params = { page, limit: PAGE_SIZE };
@@ -247,10 +249,12 @@ const CajaMenorList = () => {
         setPagination(response.pagination);
       }
     } catch {
-      setCajas([]);
-      setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
+      if (!silencioso) {
+        setCajas([]);
+        setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
+      }
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   }, [estadoFilter, searchTerm]);
 
@@ -267,6 +271,36 @@ const CajaMenorList = () => {
     fetchCajas(1);
     fetchStats();
   }, [fetchCajas, fetchStats]);
+
+  // Tiempo real: escuchar eventos de socket
+  useEffect(() => {
+    if (!socket?.on) return;
+
+    const handleCreada = () => {
+      fetchCajas(1, true);
+      fetchStats();
+    };
+
+    const handleActualizada = (data) => {
+      setCajas(prev => prev.map(c => c.id === data.id ? { ...c, ...data } : c));
+      fetchStats();
+    };
+
+    const handleEliminada = (data) => {
+      setCajas(prev => prev.filter(c => c.id !== data.id));
+      fetchStats();
+    };
+
+    socket.on('caja:creada', handleCreada);
+    socket.on('caja:actualizada', handleActualizada);
+    socket.on('caja:eliminada', handleEliminada);
+
+    return () => {
+      socket.off('caja:creada', handleCreada);
+      socket.off('caja:actualizada', handleActualizada);
+      socket.off('caja:eliminada', handleEliminada);
+    };
+  }, [socket, fetchCajas, fetchStats]);
 
   const handlePageChange = (page) => {
     fetchCajas(page);

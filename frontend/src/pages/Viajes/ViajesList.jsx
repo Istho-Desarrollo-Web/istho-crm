@@ -17,6 +17,7 @@ import { useThemeContext } from '../../context/ThemeContext';
 import { viajesService } from '../../api/viajes.service';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
 import {
   MapPin,
@@ -226,6 +227,7 @@ const ViajesList = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { success, apiError, deleted } = useNotification();
+  const socket = useSocket();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('todos');
@@ -244,8 +246,8 @@ const ViajesList = () => {
   const [formLoading, setFormLoading] = useState(false);
 
   // Cargar datos desde API
-  const fetchViajes = useCallback(async (page = 1) => {
-    setLoading(true);
+  const fetchViajes = useCallback(async (page = 1, silencioso = false) => {
+    if (!silencioso) setLoading(true);
     setError(null);
     try {
       const params = { page, limit: PAGE_SIZE };
@@ -260,16 +262,45 @@ const ViajesList = () => {
         setPagination(response.pagination);
       }
     } catch {
-      setViajes([]);
-      setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
+      if (!silencioso) {
+        setViajes([]);
+        setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
+      }
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   }, [estadoFilter, searchTerm, fechaDesde, fechaHasta]);
 
   useEffect(() => {
     fetchViajes(1);
   }, [fetchViajes]);
+
+  // Tiempo real: escuchar eventos de socket
+  useEffect(() => {
+    if (!socket?.on) return;
+
+    const handleCreado = () => {
+      fetchViajes(1, true);
+    };
+
+    const handleActualizado = (data) => {
+      setViajes(prev => prev.map(v => v.id === data.id ? { ...v, ...data } : v));
+    };
+
+    const handleEliminado = (data) => {
+      setViajes(prev => prev.filter(v => v.id !== data.id));
+    };
+
+    socket.on('viaje:creado', handleCreado);
+    socket.on('viaje:actualizado', handleActualizado);
+    socket.on('viaje:eliminado', handleEliminado);
+
+    return () => {
+      socket.off('viaje:creado', handleCreado);
+      socket.off('viaje:actualizado', handleActualizado);
+      socket.off('viaje:eliminado', handleEliminado);
+    };
+  }, [socket, fetchViajes]);
 
   const handlePageChange = (page) => {
     fetchViajes(page);

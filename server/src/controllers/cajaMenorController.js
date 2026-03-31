@@ -10,6 +10,7 @@
 const { Op } = require('sequelize');
 const { CajaMenor, MovimientoCajaMenor, Viaje, Usuario, Vehiculo, Auditoria, sequelize } = require('../models');
 const notificacionService = require('../services/notificacionService');
+const socketService = require('../services/socketService');
 const { success, created, paginated, notFound, conflict, serverError, error: errorResponse } = require('../utils/responses');
 const { parsePaginacion, buildPaginacion, parseOrdenamiento, limpiarObjeto, getClientIP, sanitizarBusqueda } = require('../utils/helpers');
 const logger = require('../utils/logger');
@@ -190,6 +191,16 @@ const crear = async (req, res) => {
       ]
     });
 
+    socketService.emitToAll('caja:creada', {
+      id: resultado.id,
+      numero: resultado.numero,
+      estado: resultado.estado,
+      saldo_inicial: resultado.saldo_inicial,
+      saldo_actual: resultado.saldo_actual,
+      asignado_a: resultado.asignado_a,
+      asignado: resultado.asignado,
+    });
+
     return created(res, resultado, 'Caja menor creada exitosamente');
   } catch (error) {
     try { await transaction.rollback(); } catch (_) {}
@@ -239,6 +250,12 @@ const actualizar = async (req, res) => {
     });
 
     await transaction.commit();
+    socketService.emitToAll('caja:actualizada', {
+      id: caja.id,
+      saldo_inicial: caja.saldo_inicial,
+      saldo_actual: caja.saldo_actual,
+      observaciones: caja.observaciones,
+    });
     return success(res, caja, 'Caja menor actualizada exitosamente');
   } catch (error) {
     try { await transaction.rollback(); } catch (_) {}
@@ -325,6 +342,8 @@ const cerrar = async (req, res) => {
 
     await transaction.commit();
 
+    socketService.emitToAll('caja:actualizada', { id: caja.id, estado: 'cerrada', saldo_actual: caja.saldo_actual });
+
     // Notificar al usuario asignado
     notificacionService.notificar({
       usuario_id: caja.asignado_a,
@@ -378,6 +397,7 @@ const eliminar = async (req, res) => {
     });
 
     await transaction.commit();
+    socketService.emitToAll('caja:eliminada', { id: parseInt(id) });
     return success(res, { id }, 'Caja menor eliminada exitosamente');
   } catch (error) {
     try { await transaction.rollback(); } catch (_) {}
