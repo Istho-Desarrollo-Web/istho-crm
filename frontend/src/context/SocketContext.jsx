@@ -70,9 +70,12 @@ export const SocketProvider = ({ children }) => {
       }
     });
 
-    // Sesión cerrada por admin
+    // Sesión cerrada por admin o cuenta desactivada
     socket.on('session:cerrada', (data) => {
-      alert(data?.mensaje || 'Tu sesión fue cerrada por un administrador');
+      sessionStorage.setItem('auth_mensaje_pendiente', JSON.stringify({
+        tipo: data?.tipo || 'admin_logout',
+        mensaje: data?.mensaje || 'Tu sesión fue cerrada por un administrador',
+      }));
       logout();
     });
 

@@ -912,7 +912,7 @@ const exportarCajasMenores = async (cajas) => {
 
   const COLS = [
     { header: 'Número', key: 'num', width: 14, align: 'left' },
-    { header: 'Conductor', key: 'cond', width: 25, align: 'left' },
+    { header: 'Asignado A', key: 'cond', width: 25, align: 'left' },
     { header: 'Estado', key: 'estado', width: 12, align: 'center' },
     { header: 'Saldo Inicial', key: 'si', width: 16, align: 'right' },
     { header: 'Saldo Trasladado', key: 'st', width: 16, align: 'right' },
@@ -951,7 +951,7 @@ const exportarCajasMenores = async (cajas) => {
     const row = ws.getRow(dataFila);
     row.height = 20;
     const vals = [
-      c.numero, c.conductor?.nombre_completo || '', (c.estado || '').toUpperCase(),
+      c.numero, c.asignado?.nombre_completo || c.asignado_nombre || '', (c.estado || '').toUpperCase(),
       parseFloat(c.saldo_inicial) || 0, parseFloat(c.saldo_trasladado) || 0,
       parseFloat(c.total_ingresos) || 0, parseFloat(c.total_egresos) || 0,
       parseFloat(c.saldo_actual) || 0,
@@ -1003,7 +1003,7 @@ const exportarMovimientos = async (movimientos) => {
   const COLS = [
     { header: '#', key: 'num', width: 8, align: 'center' },
     { header: 'Caja Menor', key: 'caja', width: 14, align: 'center' },
-    { header: 'Conductor', key: 'cond', width: 22, align: 'left' },
+    { header: 'Usuario', key: 'cond', width: 22, align: 'left' },
     { header: 'Tipo', key: 'tipo', width: 10, align: 'center' },
     { header: 'Concepto', key: 'concepto', width: 20, align: 'left' },
     { header: 'Descripción', key: 'desc', width: 28, align: 'left' },
@@ -1011,8 +1011,9 @@ const exportarMovimientos = async (movimientos) => {
     { header: 'Estado', key: 'estado', width: 12, align: 'center' },
     { header: 'Valor Aprobado', key: 'va', width: 15, align: 'right' },
     { header: 'Aprobador', key: 'aprobador', width: 22, align: 'left' },
+    { header: 'Fecha Aprobación', key: 'faprobacion', width: 16, align: 'center' },
     { header: 'Viaje', key: 'viaje', width: 16, align: 'left' },
-    { header: 'Fecha', key: 'fecha', width: 14, align: 'center' },
+    { header: 'Fecha Creación', key: 'fecha', width: 14, align: 'center' },
   ];
 
   ws.columns = COLS.map(c => ({ width: c.width }));
@@ -1044,11 +1045,12 @@ const exportarMovimientos = async (movimientos) => {
     row.height = 20;
     const estadoText = m.aprobado ? 'APROBADO' : m.rechazado ? 'RECHAZADO' : 'PENDIENTE';
     const vals = [
-      m.consecutivo, m.cajaMenor?.numero || '', m.conductor?.nombre_completo || '',
+      m.consecutivo, m.cajaMenor?.numero || '', m.usuario?.nombre_completo || '',
       (m.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso'),
       m.concepto, m.descripcion || '',
       parseFloat(m.valor) || 0, estadoText,
       parseFloat(m.valor_aprobado) || 0, m.aprobador?.nombre_completo || '',
+      m.fecha_aprobacion ? new Date(m.fecha_aprobacion) : null,
       m.viaje ? `#${m.viaje.numero} - ${m.viaje.destino}` : 'Directo',
       m.created_at ? new Date(m.created_at) : null,
     ];
@@ -1057,7 +1059,7 @@ const exportarMovimientos = async (movimientos) => {
       cell.value = val;
       estiloCelda(cell, ci, idx, { align: COLS[ci].align });
       if (ci === 6 || ci === 8) cell.numFmt = '$#,##0';
-      if (ci === 11 && val) cell.numFmt = 'DD/MM/YYYY';
+      if ((ci === 10 || ci === 12) && val) cell.numFmt = 'DD/MM/YYYY';
       if (ci === 3) {
         cell.font = { bold: true, color: { argb: m.tipo_movimiento === 'ingreso' ? C.verde : C.rojo } };
       }

@@ -34,8 +34,7 @@ import { cajasMenoresService, movimientosService, vehiculosService } from '../..
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import useNotification from '../../hooks/useNotification';
-import logoNegro from '../../assets/logo-negro.png';
-import logoBlanco from '../../assets/logo-blanco.png';
+import PageFooter from '@components/common/PageFooter';
 
 // ════════════════════════════════════════════════════════════════════════════
 // MAPA DE CONCEPTOS
@@ -256,14 +255,14 @@ const DashboardFinanciera = () => {
         setPendientes((prev) => prev.filter((m) => m.id !== data.id));
         setSelected((prev) => prev.filter((id) => id !== data.id));
         // Actualizar saldo de la caja asociada en la lista
-        if (data.caja_menor_id) {
+        if (data.caja_menor_id && data.saldo_actual_caja !== undefined) {
           setCajasAbiertas((prev) =>
             prev.map((c) =>
-              c.id === data.caja_menor_id ? { ...c, saldo_actual: data.saldo_actual ?? c.saldo_actual } : c
+              c.id === data.caja_menor_id ? { ...c, saldo_actual: data.saldo_actual_caja } : c
             )
           );
-          refetchStats();
         }
+        refetchStats();
       }
     };
     const handleMovimientoEliminado = (data) => {
@@ -700,7 +699,7 @@ const DashboardFinanciera = () => {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-slate-800 dark:text-white">
+                        <span className={`text-sm font-bold ${Number(caja.saldo_actual) < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-white'}`}>
                           {formatCOP(caja.saldo_actual)}
                         </span>
                         <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-600" />
@@ -763,14 +762,7 @@ const DashboardFinanciera = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* FOOTER */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <footer className="flex flex-col items-center gap-3 py-6 mt-8 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">
-          <div className="flex items-center gap-2">
-            <img src={logoNegro} alt="ISTHO" className="w-6 h-6 rounded dark:hidden" />
-            <img src={logoBlanco} alt="ISTHO" className="w-6 h-6 rounded hidden dark:block" />
-            <span>&copy; 2026 ISTHO S.A.S. - Sistema CRM Interno</span>
-          </div>
-          <span className="text-xs text-slate-400 dark:text-slate-500">Centro Logistico Industrial del Norte, Girardota, Antioquia</span>
-        </footer>
+        <PageFooter />
       </main>
     </div>
   );

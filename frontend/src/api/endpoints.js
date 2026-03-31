@@ -247,6 +247,7 @@ export const ADMIN_ENDPOINTS = {
   // Sesiones
   SESIONES: '/admin/sesiones',
   SESION_CERRAR: (id) => `/admin/sesiones/${id}/cerrar`,
+  SESIONES_CERRAR_TODAS: '/admin/sesiones/cerrar-todas',
 
   // Configuración WMS
   CONFIGURACION_WMS: '/admin/configuracion-wms',

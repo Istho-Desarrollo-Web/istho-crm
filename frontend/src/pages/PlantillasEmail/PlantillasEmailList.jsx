@@ -26,6 +26,7 @@ import { Button, ConfirmDialog } from '../../components/common';
 import useNotification from '../../hooks/useNotification';
 import plantillasEmailService from '../../api/plantillasEmail.service';
 import { useAuth } from '../../context/AuthContext';
+import PageFooter from '@components/common/PageFooter';
 
 const TIPO_CONFIG = {
   operacion_cierre: {
@@ -241,9 +242,7 @@ const PlantillasEmailList = () => {
         )}
 
         {/* Footer */}
-        <footer className="text-center py-6 mt-8 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">
-          © 2026 ISTHO S.A.S. - Sistema CRM Interno
-        </footer>
+        <PageFooter />
       </main>
 
       {/* Delete Modal */}

@@ -13,7 +13,7 @@
  * @date Enero 2026
  */
 
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Suspense, lazy, useEffect } from 'react';
 import { SnackbarProvider } from 'notistack';
 import useNotification from './hooks/useNotification';
@@ -182,11 +182,21 @@ const PermissionDeniedListener = () => {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
+// SCROLL TO TOP EN CADA NAVEGACIÓN
+// ════════════════════════════════════════════════════════════════════════════
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+};
+
+// ════════════════════════════════════════════════════════════════════════════
 // APP PRINCIPAL
 // ════════════════════════════════════════════════════════════════════════════
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       {/* Provider de notificaciones toast */}
       <SnackbarProvider {...snackbarConfig}>
         {/* Listener global para 403 - Permission Denied */}

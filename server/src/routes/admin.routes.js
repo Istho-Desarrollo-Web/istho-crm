@@ -54,6 +54,7 @@ router.get('/permisos', adminController.listarPermisos);
 // =============================================
 
 router.get('/sesiones', adminController.listarSesionesActivas);
+router.post('/sesiones/cerrar-todas', adminController.cerrarTodasSesiones);
 router.post('/sesiones/:id/cerrar', adminController.cerrarSesion);
 
 // =============================================

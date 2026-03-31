@@ -122,16 +122,23 @@ const getConnectedUserIds = () => Array.from(userSockets.keys()).map(Number);
 
 /**
  * Forzar desconexión de un usuario (cierra todos sus sockets)
+ * @param {number|string} userId
+ * @param {object} options - { mensaje, tipo } para el evento session:cerrada
  */
-const disconnectUser = (userId) => {
+const disconnectUser = (userId, options = {}) => {
   if (!io) return false;
   const sockets = userSockets.get(userId) || userSockets.get(String(userId));
   if (!sockets || sockets.size === 0) return false;
 
+  const payload = {
+    mensaje: options.mensaje || 'Tu sesión fue cerrada por un administrador',
+    tipo: options.tipo || 'admin_logout',
+  };
+
   sockets.forEach(socketId => {
     const socket = io.sockets.sockets.get(socketId);
     if (socket) {
-      socket.emit('session:cerrada', { mensaje: 'Tu sesión fue cerrada por un administrador' });
+      socket.emit('session:cerrada', payload);
       socket.disconnect(true);
     }
   });
@@ -139,6 +146,36 @@ const disconnectUser = (userId) => {
   userSockets.delete(userId);
   userSockets.delete(String(userId));
   return true;
+};
+
+/**
+ * Forzar desconexión de todos los usuarios conectados (excepto uno)
+ * @param {number} exceptUserId - ID del usuario a excluir (el admin que ejecuta)
+ * @returns {number} cantidad de usuarios desconectados
+ */
+const disconnectAllUsers = (exceptUserId) => {
+  if (!io) return 0;
+  let count = 0;
+  const payload = {
+    mensaje: 'Tu sesión fue cerrada por un administrador',
+    tipo: 'admin_logout',
+  };
+
+  const toDelete = [];
+  userSockets.forEach((sockets, userId) => {
+    if (Number(userId) === Number(exceptUserId)) return;
+    sockets.forEach(socketId => {
+      const socket = io.sockets.sockets.get(socketId);
+      if (socket) {
+        socket.emit('session:cerrada', payload);
+        socket.disconnect(true);
+      }
+    });
+    toDelete.push(userId);
+    count++;
+  });
+  toDelete.forEach(uid => userSockets.delete(uid));
+  return count;
 };
 
 /**
@@ -154,5 +191,6 @@ module.exports = {
   getConnectedCount,
   getConnectedUserIds,
   disconnectUser,
+  disconnectAllUsers,
   getIO,
 };

@@ -79,6 +79,7 @@ const LoginPage = () => {
 
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [mensajePendiente, setMensajePendiente] = useState(null);
 
     // Obtener la ruta de origen (si viene de una redirección)
     const getDefaultRoute = (rol) => {
@@ -129,6 +130,15 @@ const LoginPage = () => {
     useEffect(() => {
         return () => clearError();
     }, [clearError]);
+
+    // Leer mensaje pendiente (sesión cerrada / cuenta desactivada)
+    useEffect(() => {
+        const stored = sessionStorage.getItem('auth_mensaje_pendiente');
+        if (stored) {
+            try { setMensajePendiente(JSON.parse(stored)); } catch {}
+            sessionStorage.removeItem('auth_mensaje_pendiente');
+        }
+    }, []);
 
     // ──────────────────────────────────────────────────────────────────────────
     // HANDLERS
@@ -248,6 +258,40 @@ const LoginPage = () => {
                                 Ingresa tus credenciales para continuar
                             </p>
                         </div>
+
+                        {/* Mensaje pendiente: sesión cerrada / cuenta desactivada */}
+                        {mensajePendiente && (
+                            <div
+                                className={`mb-6 p-4 rounded-2xl flex items-start gap-3 border ${
+                                    mensajePendiente.tipo === 'desactivado'
+                                        ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/50'
+                                        : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50'
+                                }`}
+                                style={slideUp}
+                            >
+                                <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                                    mensajePendiente.tipo === 'desactivado'
+                                        ? 'text-orange-500 dark:text-orange-400'
+                                        : 'text-amber-500 dark:text-amber-400'
+                                }`} />
+                                <div>
+                                    <p className={`text-sm font-semibold ${
+                                        mensajePendiente.tipo === 'desactivado'
+                                            ? 'text-orange-800 dark:text-orange-300'
+                                            : 'text-amber-800 dark:text-amber-300'
+                                    }`}>
+                                        {mensajePendiente.tipo === 'desactivado' ? 'Cuenta desactivada' : 'Sesión cerrada'}
+                                    </p>
+                                    <p className={`text-sm mt-0.5 ${
+                                        mensajePendiente.tipo === 'desactivado'
+                                            ? 'text-orange-700 dark:text-orange-400'
+                                            : 'text-amber-700 dark:text-amber-400'
+                                    }`}>
+                                        {mensajePendiente.mensaje}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Mensaje de error */}
                         {authError && (

@@ -5,8 +5,7 @@ import { KpiCard, AccionesDropdown } from '../../components/common';
 import { BarChart, PieChart } from '../../components/charts';
 import reportesService from '../../api/reportes.service';
 import EnviarReporteModal from '../../components/common/EnviarReporteModal';
-import logoNegro from '../../assets/logo-negro.png';
-import logoBlanco from '../../assets/logo-blanco.png';
+import PageFooter from '@components/common/PageFooter';
 
 const CONCEPTO_LABELS = {
   cuadre_de_caja: 'Cuadre', descargues: 'Descargues', acpm: 'ACPM',
@@ -160,13 +159,7 @@ const ReporteGastos = () => {
           </div>
         </div>
 
-        <footer className="flex flex-col items-center gap-3 py-6 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">
-          <div className="flex items-center gap-2">
-            <img src={logoNegro} alt="ISTHO" className="w-6 h-6 rounded dark:hidden" />
-            <img src={logoBlanco} alt="ISTHO" className="w-6 h-6 rounded hidden dark:block" />
-            <span>&copy; 2026 ISTHO S.A.S. - Sistema CRM Interno</span>
-          </div>
-        </footer>
+        <PageFooter />
       </main>
       <EnviarReporteModal
         isOpen={emailModal}

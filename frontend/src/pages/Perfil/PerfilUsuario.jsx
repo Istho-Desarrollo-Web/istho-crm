@@ -47,6 +47,7 @@ import useNotification from '../../hooks/useNotification';
 import authService from '../../api/auth.service';
 import { formatDate } from '../../utils/formatDate';
 import usuarioService from '../../api/usuarioService';
+import PageFooter from '@components/common/PageFooter';
 import { getServerFileUrl } from '../../api/client';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1006,10 +1007,7 @@ const PerfilUsuario = () => {
         </div>
 
         {/* Footer */}
-        <footer className="text-center py-6 mt-8 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">
-          © 2026 ISTHO S.A.S. - Sistema CRM<br />
-          Centro Logístico Industrial del Norte, Girardota, Antioquia
-        </footer>
+        <PageFooter />
       </main>
 
       {/* ══════════════════════════════════════════════════════════════════ */}

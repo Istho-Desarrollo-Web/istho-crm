@@ -374,6 +374,13 @@ const desactivarUsuario = async (req, res) => {
     }
 
     await usuario.update({ activo: false });
+
+    // Forzar cierre de sesión si el usuario está conectado
+    socketService.disconnectUser(usuario.id, {
+      tipo: 'desactivado',
+      mensaje: 'Tu cuenta ha sido desactivada. Contacta al administrador para más información.',
+    });
+
     logger.info('Usuario desactivado:', { id: usuario.id, por: req.user.id });
     Auditoria.registrar({
       tabla: 'usuarios', registro_id: usuario.id, accion: 'eliminar',
@@ -785,6 +792,7 @@ module.exports = {
   // Sesiones
   listarSesionesActivas,
   cerrarSesion,
+  cerrarTodasSesiones,
 };
 
 // =============================================
@@ -860,5 +868,32 @@ async function cerrarSesion(req, res) {
   } catch (error) {
     logger.error('Error al cerrar sesión:', { message: error.message });
     return serverError(res, 'Error al cerrar sesión', error);
+  }
+}
+
+/**
+ * POST /admin/sesiones/cerrar-todas
+ * Forzar cierre de todas las sesiones activas (excepto la propia)
+ */
+async function cerrarTodasSesiones(req, res) {
+  try {
+    const count = socketService.disconnectAllUsers(req.user.id);
+
+    await Auditoria.registrar({
+      tabla: 'usuarios',
+      registro_id: req.user.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_nuevos: { accion: 'cerrar_todas_sesiones', desconectados: count },
+      ip_address: req.ip,
+      descripcion: `Todas las sesiones activas cerradas por admin (${count} usuario${count !== 1 ? 's' : ''} desconectado${count !== 1 ? 's' : ''})`,
+    });
+
+    logger.info('Todas las sesiones cerradas:', { admin: req.user.username, count });
+    return successMessage(res, `${count} sesión${count !== 1 ? 'es' : ''} cerrada${count !== 1 ? 's' : ''} exitosamente`, { count });
+  } catch (error) {
+    logger.error('Error al cerrar todas las sesiones:', { message: error.message });
+    return serverError(res, 'Error al cerrar todas las sesiones', error);
   }
 }

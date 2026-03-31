@@ -52,6 +52,7 @@ import {
 
 // Local Components
 import DespachoForm from './components/DespachoForm';
+import PageFooter from '@components/common/PageFooter';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HOOKS INTEGRADOS
@@ -819,10 +820,7 @@ const DespachosList = () => {
         )}
 
         {/* Footer */}
-        <footer className="text-center py-6 mt-8 text-slate-500 text-sm border-t border-gray-200">
-          © 2026 ISTHO S.A.S. - Sistema CRM Interno<br />
-          Centro Logístico Industrial del Norte, Girardota, Antioquia
-        </footer>
+        <PageFooter />
       </main>
 
       {/* ══════════════════════════════════════════════════════════════════ */}

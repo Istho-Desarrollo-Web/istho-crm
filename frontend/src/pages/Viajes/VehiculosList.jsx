@@ -37,6 +37,7 @@ import {
 
 // Components
 import { Pagination, ConfirmDialog } from '../../components/common';
+import PageFooter from '@components/common/PageFooter';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
 
 // Local Components
@@ -727,10 +728,7 @@ const VehiculosList = () => {
         </div>
 
         {/* FOOTER */}
-        <footer className="text-center py-6 mt-8 text-slate-500 dark:text-slate-400 text-sm border-t border-gray-200 dark:border-slate-700">
-          &copy; 2026 ISTHO S.A.S. - Sistema CRM Interno<br />
-          Centro Logístico Industrial del Norte, Girardota, Antioquia
-        </footer>
+        <PageFooter />
       </main>
 
       {/* MODALS */}
