@@ -113,10 +113,11 @@ const StatusBadge = ({ estado }) => {
 // ROW ACTIONS COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
 
-const RowActions = ({ viaje, onView, onEdit, onDelete }) => {
+const RowActions = ({ viaje, onView, onEdit, onDelete, onCompletar, onAnular }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const { isDark } = useThemeContext();
   const open = Boolean(anchorEl);
+  const esActivo = viaje.estado === 'activo';
 
   return (
     <>
@@ -138,7 +139,7 @@ const RowActions = ({ viaje, onView, onEdit, onDelete }) => {
             borderRadius: '0.75rem',
             border: isDark ? '1px solid #334155' : '1px solid #f3f4f6',
             backgroundColor: isDark ? '#0F1023' : '#ffffff',
-            minWidth: '160px',
+            minWidth: '170px',
             '& .MuiMenuItem-root': {
               fontSize: '0.875rem',
               color: isDark ? '#e2e8f0' : '#334155',
@@ -160,6 +161,30 @@ const RowActions = ({ viaje, onView, onEdit, onDelete }) => {
             Editar
           </MenuItem>
         </ProtectedAction>
+
+        {esActivo && (
+          <ProtectedAction module="viajes" action="editar">
+            <MenuItem
+              onClick={() => { onCompletar(viaje); setAnchorEl(null); }}
+              sx={{ color: '#059669 !important', '&:hover': { backgroundColor: isDark ? '#052e16 !important' : '#f0fdf4 !important' } }}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Completar
+            </MenuItem>
+          </ProtectedAction>
+        )}
+
+        {esActivo && (
+          <ProtectedAction module="viajes" action="editar">
+            <MenuItem
+              onClick={() => { onAnular(viaje); setAnchorEl(null); }}
+              sx={{ color: '#d97706 !important', '&:hover': { backgroundColor: isDark ? '#451a03 !important' : '#fffbeb !important' } }}
+            >
+              <XCircle className="w-4 h-4" />
+              Anular
+            </MenuItem>
+          </ProtectedAction>
+        )}
 
         <ProtectedAction module="viajes" action="eliminar">
           <MenuItem
@@ -214,6 +239,8 @@ const ViajesList = () => {
 
   // Modales
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, viaje: null });
+  const [completarModal, setCompletarModal] = useState({ isOpen: false, viaje: null });
+  const [anularModal, setAnularModal] = useState({ isOpen: false, viaje: null });
   const [formLoading, setFormLoading] = useState(false);
 
   // Cargar datos desde API
@@ -264,6 +291,46 @@ const ViajesList = () => {
 
   const handleDelete = (viaje) => {
     setDeleteModal({ isOpen: true, viaje });
+  };
+
+  const handleCompletar = (viaje) => {
+    setCompletarModal({ isOpen: true, viaje });
+  };
+
+  const handleConfirmCompletar = async () => {
+    setFormLoading(true);
+    try {
+      await viajesService.completar(completarModal.viaje.id);
+      success(`Viaje ${completarModal.viaje.numero} completado`);
+      setCompletarModal({ isOpen: false, viaje: null });
+      setViajes(prev => prev.map(v =>
+        v.id === completarModal.viaje.id ? { ...v, estado: 'completado' } : v
+      ));
+    } catch (err) {
+      apiError(err);
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleAnular = (viaje) => {
+    setAnularModal({ isOpen: true, viaje });
+  };
+
+  const handleConfirmAnular = async () => {
+    setFormLoading(true);
+    try {
+      await viajesService.anular(anularModal.viaje.id);
+      success(`Viaje ${anularModal.viaje.numero} anulado`);
+      setAnularModal({ isOpen: false, viaje: null });
+      setViajes(prev => prev.map(v =>
+        v.id === anularModal.viaje.id ? { ...v, estado: 'anulado' } : v
+      ));
+    } catch (err) {
+      apiError(err);
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -609,6 +676,8 @@ const ViajesList = () => {
                           onView={handleView}
                           onEdit={handleEdit}
                           onDelete={handleDelete}
+                          onCompletar={handleCompletar}
+                          onAnular={handleAnular}
                         />
                       </td>
                     </tr>
@@ -716,6 +785,28 @@ const ViajesList = () => {
         message={`¿Estás seguro de eliminar el viaje "${deleteModal.viaje?.numero}"? Esta acción no se puede deshacer.`}
         confirmText="Eliminar"
         type="danger"
+        loading={formLoading}
+      />
+
+      <ConfirmDialog
+        isOpen={completarModal.isOpen}
+        onClose={() => setCompletarModal({ isOpen: false, viaje: null })}
+        onConfirm={handleConfirmCompletar}
+        title="Completar Viaje"
+        message={`¿Confirmas que el viaje "${completarModal.viaje?.numero}" (${completarModal.viaje?.origen} → ${completarModal.viaje?.destino}) ha sido completado?`}
+        confirmText="Completar"
+        type="success"
+        loading={formLoading}
+      />
+
+      <ConfirmDialog
+        isOpen={anularModal.isOpen}
+        onClose={() => setAnularModal({ isOpen: false, viaje: null })}
+        onConfirm={handleConfirmAnular}
+        title="Anular Viaje"
+        message={`¿Estás seguro de anular el viaje "${anularModal.viaje?.numero}"? Esta acción cambiará su estado a anulado.`}
+        confirmText="Anular"
+        type="warning"
         loading={formLoading}
       />
     </div>
