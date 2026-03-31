@@ -165,11 +165,11 @@ const crear = async (req, res) => {
     // Notificar al usuario asignado
     notificacionService.notificar({
       usuario_id: datos.asignado_a,
-      titulo: 'Nueva caja menor asignada',
-      cuerpo: `Se te ha asignado la caja menor ${caja.numero} con saldo de $${Number(caja.saldo_actual).toLocaleString('es-CO')}`,
       tipo: 'sistema',
+      titulo: 'Nueva caja menor asignada',
+      mensaje: `Se te ha asignado la caja menor ${caja.numero} con saldo de $${Number(caja.saldo_actual).toLocaleString('es-CO')}`,
       prioridad: 'alta',
-      datos: { caja_menor_id: caja.id }
+      accion_url: `/viajes/cajas-menores/${caja.id}`,
     }).catch(() => {});
 
     // Notificar a financieros
