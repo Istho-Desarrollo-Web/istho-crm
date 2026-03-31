@@ -11,7 +11,7 @@
  * @date Marzo 2026
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MapPin,
@@ -30,6 +30,7 @@ import { formatDateShort } from '../../utils/formatDate';
 import { getGreeting } from '../../utils/greeting';
 import { cajasMenoresService, viajesService, movimientosService } from '../../api/viajes.service';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
 import { getServerFileUrl } from '../../api/client';
 import useNotification from '../../hooks/useNotification';
 
@@ -111,6 +112,7 @@ const DashboardConductor = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showError } = useNotification();
+  const socket = useSocket();
 
   const [cajaActiva, setCajaActiva] = useState(null);
   const [viajes, setViajes] = useState([]);
@@ -154,6 +156,88 @@ const DashboardConductor = () => {
 
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ──────────────────────────────────────────────────────────────────────
+  // REFETCH SILENCIOSO DE CAJA (cuando un movimiento cambia el saldo)
+  // ──────────────────────────────────────────────────────────────────────
+  const refetchCaja = useCallback(async () => {
+    try {
+      const res = await cajasMenoresService.getAll({ estado: 'abierta', limit: 1 });
+      const cajas = res?.data?.data || res?.data || [];
+      setCajaActiva(Array.isArray(cajas) ? cajas[0] || null : null);
+    } catch {}
+  }, []);
+
+  // ──────────────────────────────────────────────────────────────────────
+  // SOCKET — ACTUALIZACIONES EN TIEMPO REAL
+  // ──────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!socket?.on) return;
+
+    // Caja menor
+    const handleCajaActualizada = (data) => {
+      setCajaActiva((prev) => {
+        if (!prev || prev.id !== data.id) return prev;
+        if (data.estado === 'cerrada') return null;
+        return { ...prev, ...data };
+      });
+    };
+    const handleCajaEliminada = (data) => {
+      setCajaActiva((prev) => (prev?.id === data.id ? null : prev));
+    };
+
+    // Movimientos — actualizar estado del gasto + refetch saldo de caja
+    const handleMovimientoActualizado = (data) => {
+      setGastos((prev) => prev.map((g) => (g.id === data.id ? { ...g, ...data } : g)));
+      refetchCaja();
+    };
+    const handleMovimientoCreado = async () => {
+      try {
+        const res = await movimientosService.getAll({ limit: 5, sort: '-created_at' });
+        const g = res?.data?.data || res?.data || [];
+        setGastos(Array.isArray(g) ? g : []);
+      } catch {}
+    };
+    const handleMovimientoEliminado = (data) => {
+      setGastos((prev) => prev.filter((g) => g.id !== data.id));
+      refetchCaja();
+    };
+
+    // Viajes
+    const handleViajeCreado = async () => {
+      try {
+        const res = await viajesService.getAll({ limit: 5, sort: '-fecha' });
+        const v = res?.data?.data || res?.data || [];
+        setViajes(Array.isArray(v) ? v : []);
+      } catch {}
+    };
+    const handleViajeActualizado = (data) => {
+      setViajes((prev) => prev.map((v) => (v.id === data.id ? { ...v, ...data } : v)));
+    };
+    const handleViajeEliminado = (data) => {
+      setViajes((prev) => prev.filter((v) => v.id !== data.id));
+    };
+
+    socket.on('caja:actualizada', handleCajaActualizada);
+    socket.on('caja:eliminada', handleCajaEliminada);
+    socket.on('movimiento:actualizado', handleMovimientoActualizado);
+    socket.on('movimiento:creado', handleMovimientoCreado);
+    socket.on('movimiento:eliminado', handleMovimientoEliminado);
+    socket.on('viaje:creado', handleViajeCreado);
+    socket.on('viaje:actualizado', handleViajeActualizado);
+    socket.on('viaje:eliminado', handleViajeEliminado);
+
+    return () => {
+      socket.off('caja:actualizada', handleCajaActualizada);
+      socket.off('caja:eliminada', handleCajaEliminada);
+      socket.off('movimiento:actualizado', handleMovimientoActualizado);
+      socket.off('movimiento:creado', handleMovimientoCreado);
+      socket.off('movimiento:eliminado', handleMovimientoEliminado);
+      socket.off('viaje:creado', handleViajeCreado);
+      socket.off('viaje:actualizado', handleViajeActualizado);
+      socket.off('viaje:eliminado', handleViajeEliminado);
+    };
+  }, [socket, refetchCaja]);
 
   // ──────────────────────────────────────────────────────────────────────
   // DATOS DEL USUARIO
