@@ -187,6 +187,10 @@ const getMenuForRole = (rol, hasPermission) => {
         if (item.href === '/reportes') return hasPermission('reportes', 'ver');
         // Configuración WMS requiere permiso
         if (item.href === '/configuracion-wms') return hasPermission('configuracion_wms', 'ver');
+        // Plantillas de email requiere permiso específico
+        if (item.href === '/plantillas-email') return hasPermission('plantillas_email', 'ver');
+        // Lista de clientes requiere permiso
+        if (item.href === '/clientes') return hasPermission('clientes', 'ver');
         // Sub-items de viajes por módulo
         if (item.href === '/viajes/vehiculos') return hasPermission('vehiculos', 'ver');
         if (item.href === '/viajes/viajes') return hasPermission('viajes', 'ver');

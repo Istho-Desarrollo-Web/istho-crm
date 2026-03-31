@@ -25,10 +25,6 @@ import { AlertProvider } from './context/AlertContext';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute, {
   AdminRoute,
-  SupervisorRoute,
-  OperadorRoute,
-  ClienteRoute,
-  PortalPermissionRoute,
   PermissionRoute
 } from './components/auth/PrivateRoute';
 
@@ -220,33 +216,33 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
 
                 {/* ────────────────────────────────────────────────────────── */}
-                {/* CLIENTES - Solo usuarios internos */}
+                {/* CLIENTES - Requiere permiso clientes.ver */}
                 {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/clientes" element={<OperadorRoute><ClientesList /></OperadorRoute>} />
-                <Route path="/clientes/:id" element={<OperadorRoute><ClienteDetail /></OperadorRoute>} />
+                <Route path="/clientes" element={<PermissionRoute module="clientes" action="ver"><ClientesList /></PermissionRoute>} />
+                <Route path="/clientes/:id" element={<PermissionRoute module="clientes" action="ver"><ClienteDetail /></PermissionRoute>} />
 
                 {/* ────────────────────────────────────────────────────────── */}
-                {/* INVENTARIO - Portal users need inventario.ver */}
+                {/* INVENTARIO - Requiere inventario.ver (todos los roles) */}
                 {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/inventario" element={<PortalPermissionRoute module="inventario" action="ver"><InventarioList /></PortalPermissionRoute>} />
-                <Route path="/inventario/productos/:id" element={<PortalPermissionRoute module="inventario" action="ver"><ProductoDetail /></PortalPermissionRoute>} />
-                <Route path="/inventario/alertas" element={<PortalPermissionRoute module="inventario" action="alertas"><AlertasInventario /></PortalPermissionRoute>} />
+                <Route path="/inventario" element={<PermissionRoute module="inventario" action="ver"><InventarioList /></PermissionRoute>} />
+                <Route path="/inventario/productos/:id" element={<PermissionRoute module="inventario" action="ver"><ProductoDetail /></PermissionRoute>} />
+                <Route path="/inventario/alertas" element={<PermissionRoute module="inventario" action="alertas"><AlertasInventario /></PermissionRoute>} />
 
-                <Route path="/inventario/entradas" element={<PortalPermissionRoute module="inventario" action="ver"><EntradasList /></PortalPermissionRoute>} />
-                <Route path="/inventario/entradas/:id" element={<PortalPermissionRoute module="inventario" action="ver"><EntradaAuditoria /></PortalPermissionRoute>} />
+                <Route path="/inventario/entradas" element={<PermissionRoute module="inventario" action="ver"><EntradasList /></PermissionRoute>} />
+                <Route path="/inventario/entradas/:id" element={<PermissionRoute module="inventario" action="ver"><EntradaAuditoria /></PermissionRoute>} />
 
-                <Route path="/inventario/salidas" element={<PortalPermissionRoute module="inventario" action="ver"><SalidasList /></PortalPermissionRoute>} />
-                <Route path="/inventario/salidas/:id" element={<PortalPermissionRoute module="inventario" action="ver"><SalidaAuditoria /></PortalPermissionRoute>} />
+                <Route path="/inventario/salidas" element={<PermissionRoute module="inventario" action="ver"><SalidasList /></PermissionRoute>} />
+                <Route path="/inventario/salidas/:id" element={<PermissionRoute module="inventario" action="ver"><SalidaAuditoria /></PermissionRoute>} />
 
-                <Route path="/inventario/kardex" element={<PortalPermissionRoute module="kardex" action="ver"><KardexList /></PortalPermissionRoute>} />
-                <Route path="/inventario/kardex/:id" element={<PortalPermissionRoute module="kardex" action="ver"><KardexAuditoria /></PortalPermissionRoute>} />
+                <Route path="/inventario/kardex" element={<PermissionRoute module="kardex" action="ver"><KardexList /></PermissionRoute>} />
+                <Route path="/inventario/kardex/:id" element={<PermissionRoute module="kardex" action="ver"><KardexAuditoria /></PermissionRoute>} />
 
                 {/* ────────────────────────────────────────────────────────── */}
-                {/* REPORTES - Portal users need reportes.ver */}
+                {/* REPORTES - Requiere reportes.ver (todos los roles) */}
                 {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/reportes" element={<PortalPermissionRoute module="reportes" action="ver"><ReportesList /></PortalPermissionRoute>} />
-                <Route path="/reportes/despachos" element={<PortalPermissionRoute module="reportes" action="ver"><ReporteDespachos /></PortalPermissionRoute>} />
-                <Route path="/reportes/inventario" element={<PortalPermissionRoute module="reportes" action="ver"><ReporteInventario /></PortalPermissionRoute>} />
+                <Route path="/reportes" element={<PermissionRoute module="reportes" action="ver"><ReportesList /></PermissionRoute>} />
+                <Route path="/reportes/despachos" element={<PermissionRoute module="reportes" action="ver"><ReporteDespachos /></PermissionRoute>} />
+                <Route path="/reportes/inventario" element={<PermissionRoute module="reportes" action="ver"><ReporteInventario /></PermissionRoute>} />
                 <Route path="/reportes/clientes" element={<PermissionRoute module="reportes" action="ver"><ReporteClientes /></PermissionRoute>} />
                 <Route path="/reportes/viajes" element={<PermissionRoute module="reportes" action="ver"><ReporteViajes /></PermissionRoute>} />
                 <Route path="/reportes/cajas-menores" element={<PermissionRoute module="reportes" action="ver"><ReporteCajasMenores /></PermissionRoute>} />

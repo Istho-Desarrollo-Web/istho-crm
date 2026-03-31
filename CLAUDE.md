@@ -57,7 +57,7 @@ set CRM_API_URL=https://backend.up.railway.app/api/v1&& set WMS_API_KEY=key&& no
 - **Error handlers:** Registered via `app.registerErrorHandlers()` — MUST be called AFTER all route definitions
 
 ### Frontend: React 19 + Vite + Tailwind 4 + MUI 7
-- **Routing:** React Router with lazy loading. Permission-based guards: `PermissionRoute`, `AdminRoute`, `PortalPermissionRoute`
+- **Routing:** React Router with lazy loading. Permission-based guards: `PermissionRoute`, `AdminRoute`
 - **State:** Context-based (AuthContext, ThemeContext, NotificacionesContext, SocketContext). **CRITICAL:** In `main.jsx`, provider order is AuthProvider → SocketProvider → NotificacionesProvider. SocketProvider MUST wrap NotificacionesProvider or real-time notifications won't work
 - **API layer:** Axios client with interceptors in `src/api/client.js`. Centralized endpoints in `src/api/endpoints.js`
 - **Forms:** React Hook Form + Yup validation
@@ -128,7 +128,8 @@ set CRM_API_URL=https://backend.up.railway.app/api/v1&& set WMS_API_KEY=key&& no
 - `useNotification` is a **default export**, not named: `import useNotification from '@hooks/useNotification'`
 - Date fields: use `DATEONLY` in Sequelize to avoid timezone shifts. Parse with `new Date(date + 'T00:00:00')` on frontend
 - Price/currency fields: store as integers in DB, format with `Intl.NumberFormat('es-CO')` on frontend
-- Route protection: ALWAYS use `PermissionRoute` with module+action, NOT role-based guards like `OperadorRoute`
+- Route protection: ALWAYS use `PermissionRoute` with module+action. NEVER use role-based guards (`OperadorRoute`, `SupervisorRoute`, `ClienteRoute`, `PortalPermissionRoute`) — they cause mismatches between menu visibility and route access. Only `AdminRoute` is valid for truly admin-exclusive pages (`/administracion`, `/auditoria-acciones`, `/configuracion-wms`)
+- Menu sub-items in `FloatingHeader.getMenuForRole`: EVERY sub-item href must have an explicit `if (item.href === '...') return hasPermission(...)` check. Items without explicit check fall through to `return true` and show regardless of permissions
 - **PERMISOS_POR_ROL** in `AuthContext.jsx` MUST include ALL 6 roles (admin, supervisor, financiera, operador, conductor, cliente). Missing roles fall back to `cliente` which causes permission leaks. Keep synced with `seedRolesPermisos.js`
 - Admin endpoints (`/admin/*`) require admin role. For forms accessible by other roles, create specific endpoints (e.g., `/cajas-menores/usuarios-asignables`)
 - WMS validation: Estado, tipo de orden y motivos se validan dinámicamente contra tabla `configuracion_wms`

@@ -17,6 +17,7 @@ import { useThemeContext } from '../../context/ThemeContext';
 import { movimientosService } from '../../api/viajes.service';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
 import {
   Receipt,
@@ -320,6 +321,7 @@ const MovimientosList = () => {
   const { user, hasPermission } = useAuth();
   const canAprobar = hasPermission('movimientos', 'aprobar');
   const { isDark } = useThemeContext();
+  const socket = useSocket();
   const { success, error: showError, apiError, deleted } = useNotification();
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -352,8 +354,8 @@ const MovimientosList = () => {
   // FETCH DATA
   // ──────────────────────────────────────────────────────────────────────────
 
-  const fetchMovimientos = useCallback(async (page = 1) => {
-    setLoading(true);
+  const fetchMovimientos = useCallback(async (page = 1, silencioso = false) => {
+    if (!silencioso) setLoading(true);
     setError(null);
     try {
       const params = { page, limit: PAGE_SIZE };
@@ -367,16 +369,55 @@ const MovimientosList = () => {
         setPagination(response.pagination);
       }
     } catch (err) {
-      setMovimientos([]);
-      setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
+      if (!silencioso) {
+        setMovimientos([]);
+        setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
+      }
     } finally {
-      setLoading(false);
+      if (!silencioso) setLoading(false);
     }
   }, [tipoFilter, aprobadoFilter, searchTerm]);
 
   useEffect(() => {
     fetchMovimientos(1);
   }, [fetchMovimientos]);
+
+  // Tiempo real: escuchar eventos de socket
+  useEffect(() => {
+    if (!socket?.on) return;
+
+    const handleCreado = () => {
+      fetchMovimientos(1, true);
+    };
+
+    const handleActualizado = (data) => {
+      setMovimientos(prev => prev.map(m => m.id === data.id ? { ...m, ...data } : m));
+    };
+
+    const handleEliminado = (data) => {
+      setMovimientos(prev => prev.filter(m => m.id !== data.id));
+    };
+
+    const handleAprobacionMasiva = (data) => {
+      setMovimientos(prev => prev.map(m =>
+        data.ids.includes(m.id)
+          ? { ...m, aprobado: true, rechazado: false, valor_aprobado: m.valor, aprobado_por: data.aprobado_por, fecha_aprobacion: data.fecha_aprobacion }
+          : m
+      ));
+    };
+
+    socket.on('movimiento:creado', handleCreado);
+    socket.on('movimiento:actualizado', handleActualizado);
+    socket.on('movimiento:eliminado', handleEliminado);
+    socket.on('movimiento:aprobacion_masiva', handleAprobacionMasiva);
+
+    return () => {
+      socket.off('movimiento:creado', handleCreado);
+      socket.off('movimiento:actualizado', handleActualizado);
+      socket.off('movimiento:eliminado', handleEliminado);
+      socket.off('movimiento:aprobacion_masiva', handleAprobacionMasiva);
+    };
+  }, [socket, fetchMovimientos]);
 
   const handlePageChange = (page) => {
     fetchMovimientos(page);

@@ -10,6 +10,7 @@
 const { Op } = require('sequelize');
 const { MovimientoCajaMenor, CajaMenor, Viaje, Usuario, Auditoria, sequelize } = require('../models');
 const notificacionService = require('../services/notificacionService');
+const socketService = require('../services/socketService');
 const { success, created, paginated, notFound, conflict, serverError, error: errorResponse } = require('../utils/responses');
 const { parsePaginacion, buildPaginacion, parseOrdenamiento, limpiarObjeto, getClientIP, sanitizarBusqueda } = require('../utils/helpers');
 const logger = require('../utils/logger');
@@ -230,6 +231,21 @@ const crear = async (req, res) => {
       ]
     });
 
+    socketService.emitToAll('movimiento:creado', {
+      id: resultado.id,
+      consecutivo: resultado.consecutivo,
+      concepto: resultado.concepto,
+      tipo_movimiento: resultado.tipo_movimiento,
+      valor: resultado.valor,
+      aprobado: resultado.aprobado,
+      rechazado: resultado.rechazado,
+      caja_menor_id: resultado.caja_menor_id,
+      usuario_id: resultado.usuario_id,
+      cajaMenor: resultado.cajaMenor,
+      usuario: resultado.usuario,
+      created_at: resultado.created_at,
+    });
+
     return created(res, resultado, 'Movimiento registrado exitosamente');
   } catch (error) {
     try { await transaction.rollback(); } catch (_) {}
@@ -303,6 +319,13 @@ const actualizar = async (req, res) => {
     });
 
     await transaction.commit();
+    socketService.emitToAll('movimiento:actualizado', {
+      id: movimiento.id,
+      concepto: movimiento.concepto,
+      tipo_movimiento: movimiento.tipo_movimiento,
+      valor: movimiento.valor,
+      caja_menor_id: movimiento.caja_menor_id,
+    });
     return success(res, movimiento, 'Movimiento actualizado exitosamente');
   } catch (error) {
     try { await transaction.rollback(); } catch (_) {}
@@ -369,6 +392,17 @@ const aprobar = async (req, res) => {
     });
 
     await transaction.commit();
+
+    socketService.emitToAll('movimiento:actualizado', {
+      id: movimiento.id,
+      aprobado: movimiento.aprobado,
+      rechazado: movimiento.rechazado,
+      valor_aprobado: movimiento.valor_aprobado,
+      aprobado_por: movimiento.aprobado_por,
+      fecha_aprobacion: movimiento.fecha_aprobacion,
+      observaciones_aprobacion: movimiento.observaciones_aprobacion,
+      caja_menor_id: movimiento.caja_menor_id,
+    });
 
     // Notificar al usuario que registró el gasto
     notificacionService.notificar({
@@ -451,6 +485,13 @@ const aprobarMasivo = async (req, res) => {
 
     await transaction.commit();
 
+    socketService.emitToAll('movimiento:aprobacion_masiva', {
+      ids,
+      aprobado: true,
+      aprobado_por: req.user.id,
+      fecha_aprobacion: new Date(),
+    });
+
     // Notificar a cada usuario afectado (agrupado por usuario)
     const porUsuario = movimientos.reduce((acc, mov) => {
       if (!acc[mov.usuario_id]) acc[mov.usuario_id] = [];
@@ -516,6 +557,10 @@ const eliminar = async (req, res) => {
     });
 
     await transaction.commit();
+    socketService.emitToAll('movimiento:eliminado', {
+      id: parseInt(id),
+      caja_menor_id: movimiento.caja_menor_id,
+    });
     return success(res, { id }, 'Movimiento eliminado exitosamente');
   } catch (error) {
     try { await transaction.rollback(); } catch (_) {}
