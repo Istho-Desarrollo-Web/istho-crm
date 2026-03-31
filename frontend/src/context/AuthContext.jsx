@@ -469,7 +469,7 @@ export const AuthProvider = ({ children }) => {
     // Admin siempre tiene todos los permisos
     if (rol === 'admin' || rol === 'administrador' || state.user.permisos?.esAdmin) return true;
 
-    // Intentar con permisos dinámicos del backend
+    // Permisos dinámicos del backend — si están disponibles, son la fuente de verdad
     const backendPermisos = state.user.permisos?.permisos;
     if (backendPermisos && typeof backendPermisos === 'object') {
       const moduloPermisos = backendPermisos[modulo];
@@ -479,9 +479,11 @@ export const AuthProvider = ({ children }) => {
       if (moduloPermisos && typeof moduloPermisos === 'object' && moduloPermisos[accion] === true) {
         return true;
       }
+      // Backend cargó permisos pero no incluye este — denegar sin consultar fallback
+      return false;
     }
 
-    // Fallback a permisos hardcodeados por rol (siempre como respaldo)
+    // Fallback solo cuando el backend no envió permisos (sesión offline o error de carga)
     const permisosFallback = PERMISOS_POR_ROL[rol] || PERMISOS_POR_ROL.cliente;
     return permisosFallback[modulo]?.includes(accion) || false;
   }, [state.user]);
