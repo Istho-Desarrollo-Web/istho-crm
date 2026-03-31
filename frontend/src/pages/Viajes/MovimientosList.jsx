@@ -233,15 +233,24 @@ const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar, onRechaza
 // ════════════════════════════════════════════════════════════════════════════
 
 const AprobarMovimientoDialog = ({ isOpen, onClose, movimiento, onAprobar, onRechazar, loading }) => {
-  const [valorAprobado, setValorAprobado] = useState('');
+  const [valorRaw, setValorRaw] = useState('');
   const [observaciones, setObservaciones] = useState('');
 
   useEffect(() => {
     if (movimiento) {
-      setValorAprobado(movimiento.valor || '');
+      // Guardar solo dígitos — parseInt evita el ".00" que viene del DECIMAL de MySQL
+      setValorRaw(String(parseInt(movimiento.valor) || 0));
       setObservaciones('');
     }
   }, [movimiento]);
+
+  const handleValorChange = (e) => {
+    // Solo permitir dígitos
+    const soloDigitos = e.target.value.replace(/\D/g, '');
+    setValorRaw(soloDigitos);
+  };
+
+  const valorNumerico = parseInt(valorRaw) || 0;
 
   if (!isOpen || !movimiento) return null;
 
@@ -262,12 +271,18 @@ const AprobarMovimientoDialog = ({ isOpen, onClose, movimiento, onAprobar, onRec
             Valor Aprobado
           </label>
           <input
-            type="number"
-            value={valorAprobado}
-            onChange={(e) => setValorAprobado(e.target.value)}
+            type="text"
+            inputMode="numeric"
+            value={valorRaw}
+            onChange={handleValorChange}
             className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
-            placeholder="Valor aprobado"
+            placeholder="0"
           />
+          {valorRaw && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+              {formatMoney(valorNumerico)}
+            </p>
+          )}
         </div>
 
         <div>
@@ -286,8 +301,8 @@ const AprobarMovimientoDialog = ({ isOpen, onClose, movimiento, onAprobar, onRec
 
       <div className="flex items-center gap-3 mt-6">
         <button
-          onClick={() => onAprobar({ valor_aprobado: Number(valorAprobado), observaciones_aprobacion: observaciones })}
-          disabled={loading}
+          onClick={() => onAprobar({ valor_aprobado: valorNumerico, observaciones_aprobacion: observaciones })}
+          disabled={loading || valorNumerico <= 0}
           className="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
         >
           Aprobar
