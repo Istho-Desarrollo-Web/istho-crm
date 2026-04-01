@@ -9,6 +9,8 @@
  */
 
 const wmsSyncService = require('../services/wmsSyncService');
+const { Auditoria } = require('../models');
+const { getClientIP } = require('../utils/helpers');
 const logger = require('../utils/logger');
 
 // ============================================================================
@@ -29,6 +31,17 @@ const logger = require('../utils/logger');
 const syncProductos = async (req, res) => {
   try {
     const resultado = await wmsSyncService.syncProductos(req.body);
+
+    await Auditoria.registrar({
+      tabla: 'inventario',
+      registro_id: null,
+      accion: 'crear',
+      usuario_id: null,
+      usuario_nombre: 'WMS Copérnico',
+      datos_nuevos: { creados: resultado.creados, actualizados: resultado.actualizados, total: resultado.total },
+      ip_address: getClientIP(req),
+      descripcion: `Sync WMS productos: ${resultado.creados} creados, ${resultado.actualizados} actualizados`
+    });
 
     return res.json({
       success: true,
@@ -65,6 +78,17 @@ const syncProductos = async (req, res) => {
 const syncEntrada = async (req, res) => {
   try {
     const resultado = await wmsSyncService.syncEntrada(req.body);
+
+    await Auditoria.registrar({
+      tabla: 'operaciones',
+      registro_id: resultado.id || null,
+      accion: 'crear',
+      usuario_id: null,
+      usuario_nombre: 'WMS Copérnico',
+      datos_nuevos: { numero_operacion: resultado.numero_operacion, documento_origen: req.body.documento_origen, tipo_documento: req.body.tipo_documento },
+      ip_address: getClientIP(req),
+      descripcion: `Sync WMS entrada: ${resultado.numero_operacion} (doc: ${req.body.documento_origen || 'N/A'})`
+    });
 
     return res.status(201).json({
       success: true,
@@ -112,6 +136,17 @@ const syncSalida = async (req, res) => {
   try {
     const resultado = await wmsSyncService.syncSalida(req.body);
 
+    await Auditoria.registrar({
+      tabla: 'operaciones',
+      registro_id: resultado.id || null,
+      accion: 'crear',
+      usuario_id: null,
+      usuario_nombre: 'WMS Copérnico',
+      datos_nuevos: { numero_operacion: resultado.numero_operacion, numero_picking: resultado.numero_picking, sucursal_entrega: req.body.sucursal_entrega },
+      ip_address: getClientIP(req),
+      descripcion: `Sync WMS salida: ${resultado.numero_operacion} (picking: ${resultado.numero_picking || 'N/A'})`
+    });
+
     return res.status(201).json({
       success: true,
       message: `Salida ${resultado.numero_operacion} creada exitosamente (Picking: ${resultado.numero_picking || 'N/A'})`,
@@ -154,6 +189,17 @@ const syncSalida = async (req, res) => {
 const syncKardex = async (req, res) => {
   try {
     const resultado = await wmsSyncService.syncKardex(req.body);
+
+    await Auditoria.registrar({
+      tabla: 'operaciones',
+      registro_id: resultado.id || null,
+      accion: 'crear',
+      usuario_id: null,
+      usuario_nombre: 'WMS Copérnico',
+      datos_nuevos: { numero_operacion: resultado.numero_operacion, motivo: resultado.motivo, documento_origen: req.body.documento_origen },
+      ip_address: getClientIP(req),
+      descripcion: `Sync WMS kardex: ${resultado.numero_operacion} (motivo: ${resultado.motivo})`
+    });
 
     return res.status(201).json({
       success: true,

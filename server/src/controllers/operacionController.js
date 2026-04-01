@@ -1087,7 +1087,18 @@ const subirDocumento = async (req, res) => {
     });
     
     logger.info('Documento subido:', { operacionId: id, documentoId: documento.id });
-    
+
+    await Auditoria.registrar({
+      tabla: 'operacion_documentos',
+      registro_id: documento.id,
+      accion: 'crear',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_nuevos: { operacion_id: id, tipo_documento: documento.tipo_documento, nombre: documento.nombre, archivo_nombre: documento.archivo_nombre },
+      ip_address: getClientIP(req),
+      descripcion: `Documento subido a operación #${id}: ${documento.nombre}`
+    });
+
     return created(res, 'Documento subido exitosamente', documento);
     
   } catch (error) {

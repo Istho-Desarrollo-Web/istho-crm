@@ -295,6 +295,17 @@ const actualizarPerfil = async (req, res) => {
 
     logger.info('Perfil actualizado:', { userId, campos: Object.keys(camposActualizables) });
 
+    await registrarAuditoria({
+      tabla: 'usuarios',
+      registro_id: userId,
+      accion: 'actualizar',
+      usuario_id: userId,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_nuevos: camposActualizables,
+      ip_address: getClientIP(req),
+      descripcion: `Perfil actualizado: ${Object.keys(camposActualizables).join(', ')}`
+    });
+
     await cargarCachePermisos();
     const permisosDB = usuarioActualizado.rol_id ? getPermisosForRol(usuarioActualizado.rol_id) : null;
     return successMessage(res, 'Perfil actualizado correctamente', usuarioActualizado.toPublicJSON(permisosDB));

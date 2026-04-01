@@ -136,6 +136,7 @@ set CRM_API_URL=https://backend.up.railway.app/api/v1&& set WMS_API_KEY=key&& no
 - Cloudinary upload pattern: upload to Cloudinary first, store URL in DB. Fallback to base64 if `CLOUDINARY_CLOUD_NAME` not set. Always cleanup multer temp file after upload
 - **AccionesDropdown:** Use `AccionesDropdown` component for pages with 3+ action buttons. Desktop shows buttons in a row, mobile shows a ⋮ dropdown menu. See `components/common/AccionesDropdown.jsx`
 - **Notification badge:** Shows unread count capped at "+9" when count > 9 (FloatingHeader.jsx). Sound plays via Web Audio API when socket event arrives (configurable per user)
+- **Auditoría obligatoria:** Every new controller MUST register audit entries for ALL write operations (crear, actualizar, eliminar, and any custom action that mutates data). Use `Auditoria.registrar({ tabla, registro_id, accion, usuario_id, usuario_nombre, datos_anteriores, datos_nuevos, ip_address, descripcion })`. For system-origin operations (WMS sync, cron jobs) use `usuario_id: null` and a descriptive `usuario_nombre` (e.g. `'WMS Copérnico'`, `'Scheduler'`). Import `Auditoria` from models and `getClientIP` from `utils/helpers`. Never skip this — missing audit logs are a silent compliance gap.
 
 ## Documentation
 - `docs/WMS_API_SPEC.md` — Complete WMS API specification with all fields, schemas, and business rules

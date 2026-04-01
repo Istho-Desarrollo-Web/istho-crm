@@ -10,8 +10,9 @@
  * @version 1.0.0
  */
 
-const { ConfiguracionWms } = require('../models');
+const { ConfiguracionWms, Auditoria } = require('../models');
 const { success, successMessage, created, error, notFound } = require('../utils/responses');
+const { getClientIP } = require('../utils/helpers');
 const logger = require('../utils/logger');
 
 // ============================================================================
@@ -103,6 +104,17 @@ const crear = async (req, res) => {
 
     logger.info('Configuración WMS creada:', { id: config.id, categoria, valor_wms });
 
+    await Auditoria.registrar({
+      tabla: 'configuracion_wms',
+      registro_id: config.id,
+      accion: 'crear',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_nuevos: { categoria, valor_wms, valor_crm, tipo_documento, requiere_detalle, descripcion, orden },
+      ip_address: getClientIP(req),
+      descripcion: `Configuración WMS creada: [${categoria}] ${valor_wms} → ${valor_crm}`
+    });
+
     return created(res, 'Configuración creada exitosamente', config);
   } catch (err) {
     logger.error('Error al crear configuración WMS:', { message: err.message });
@@ -146,6 +158,17 @@ const actualizar = async (req, res) => {
 
     logger.info('Configuración WMS actualizada:', { id: config.id, valor_wms: config.valor_wms });
 
+    await Auditoria.registrar({
+      tabla: 'configuracion_wms',
+      registro_id: config.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_nuevos: req.body,
+      ip_address: getClientIP(req),
+      descripcion: `Configuración WMS actualizada: [${config.categoria}] ${config.valor_wms}`
+    });
+
     return successMessage(res, 'Configuración actualizada exitosamente', config);
   } catch (err) {
     logger.error('Error al actualizar configuración WMS:', { message: err.message });
@@ -169,6 +192,17 @@ const eliminar = async (req, res) => {
 
     logger.info('Configuración WMS eliminada:', { id: config.id, valor_wms: config.valor_wms });
 
+    await Auditoria.registrar({
+      tabla: 'configuracion_wms',
+      registro_id: config.id,
+      accion: 'eliminar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_anteriores: { categoria: config.categoria, valor_wms: config.valor_wms, valor_crm: config.valor_crm },
+      ip_address: getClientIP(req),
+      descripcion: `Configuración WMS eliminada: [${config.categoria}] ${config.valor_wms}`
+    });
+
     return successMessage(res, 'Configuración eliminada exitosamente');
   } catch (err) {
     logger.error('Error al eliminar configuración WMS:', { message: err.message });
@@ -191,6 +225,17 @@ const toggleActivo = async (req, res) => {
     await config.update({ activo: !config.activo });
 
     logger.info('Configuración WMS toggled:', { id: config.id, activo: config.activo });
+
+    await Auditoria.registrar({
+      tabla: 'configuracion_wms',
+      registro_id: config.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_nuevos: { activo: config.activo },
+      ip_address: getClientIP(req),
+      descripcion: `Configuración WMS ${config.activo ? 'activada' : 'desactivada'}: [${config.categoria}] ${config.valor_wms}`
+    });
 
     return successMessage(res, `Configuración ${config.activo ? 'activada' : 'desactivada'}`, config);
   } catch (err) {

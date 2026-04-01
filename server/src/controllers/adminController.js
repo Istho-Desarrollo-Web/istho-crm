@@ -637,6 +637,16 @@ const crearRol = async (req, res) => {
 
     invalidarCachePermisos();
     logger.info('Rol creado:', { id: rol.id, nombre, creadoPor: req.user.id });
+    await Auditoria.registrar({
+      tabla: 'roles',
+      registro_id: rol.id,
+      accion: 'crear',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_nuevos: { nombre, codigo, nivel_jerarquia: rol.nivel_jerarquia, color: rol.color, permisos_count: permisos_ids?.length || 0 },
+      ip_address: getClientIP(req),
+      descripcion: `Rol creado: "${nombre}" (${codigo})`
+    });
     return created(res, 'Rol creado exitosamente', resultado);
   } catch (error) {
     logger.error('Error al crear rol:', { message: error.message });
@@ -730,6 +740,16 @@ const eliminarRol = async (req, res) => {
 
     invalidarCachePermisos();
     logger.info('Rol eliminado:', { id: rol.id, nombre: rol.nombre, por: req.user.id });
+    await Auditoria.registrar({
+      tabla: 'roles',
+      registro_id: rol.id,
+      accion: 'eliminar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_anteriores: { nombre: rol.nombre, codigo: rol.codigo, nivel_jerarquia: rol.nivel_jerarquia },
+      ip_address: getClientIP(req),
+      descripcion: `Rol eliminado: "${rol.nombre}" (${rol.codigo})`
+    });
     return successMessage(res, 'Rol eliminado exitosamente');
   } catch (error) {
     logger.error('Error al eliminar rol:', { message: error.message });

@@ -984,6 +984,18 @@ const ejecutarProgramadoManual = async (req, res) => {
     if (!reporte) return notFound(res, 'Reporte programado no encontrado');
 
     await scheduler.ejecutarReporte(reporte);
+
+    await Auditoria.registrar({
+      tabla: 'reportes_programados',
+      registro_id: reporte.id,
+      accion: 'ejecutar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_nuevos: { nombre: reporte.nombre, tipo: reporte.tipo },
+      ip_address: getClientIP(req),
+      descripcion: `Reporte programado ejecutado manualmente: "${reporte.nombre}"`
+    });
+
     return res.json({ success: true, message: `Reporte "${reporte.nombre}" ejecutado y enviado exitosamente` });
   } catch (error) {
     logger.error('Error al ejecutar programado manual:', { message: error.message });
