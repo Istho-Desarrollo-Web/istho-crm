@@ -120,6 +120,7 @@ export const AUDITORIAS_ENDPOINTS = {
   DATOS_LOGISTICOS: (id) => `/auditorias/${id}/logistica`,
   EVIDENCIAS: (id) => `/auditorias/${id}/evidencias`,
   CERRAR: (id) => `/auditorias/${id}/cerrar`,
+  DESTINATARIOS: (id) => `/auditorias/${id}/destinatarios`,
 
   // KPIs y estadísticas
   STATS: '/auditorias/stats',

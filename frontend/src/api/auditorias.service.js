@@ -435,6 +435,24 @@ const auditoriasService = {
   },
 
   /**
+   * Obtener contactos que recibirán el correo de cierre de una auditoría
+   * @param {string} auditoriaId - ID de la auditoría
+   * @returns {Promise<Array<{nombre, cargo, email}>>}
+   */
+  getDestinatarios: async (auditoriaId) => {
+    try {
+      const response = await apiClient.get(AUDITORIAS_ENDPOINTS.DESTINATARIOS(auditoriaId));
+      return response;
+    } catch (error) {
+      throw {
+        success: false,
+        message: error.message || 'Error al obtener destinatarios',
+        code: 'GET_DESTINATARIOS_ERROR',
+      };
+    }
+  },
+
+  /**
    * Reenviar correo de cierre de una operación
    * @param {string} operacionId - ID de la operación
    * @param {Object} [data] - { correos_destino } opcional

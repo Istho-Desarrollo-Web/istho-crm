@@ -231,7 +231,7 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
 
   useEffect(() => {
     if (isOpen) {
-      setFormData(contacto || { es_principal: false, recibe_notificaciones: true });
+      setFormData(contacto || { es_principal: false, recibe_notificaciones: true, tipos_notificacion: ['todas'] });
       setErrors({});
     }
   }, [contacto, isOpen]);
@@ -350,12 +350,70 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
             <input
               type="checkbox"
               checked={formData.recibe_notificaciones ?? true}
-              onChange={(e) => handleChange('recibe_notificaciones', e.target.checked)}
+              onChange={(e) => {
+                handleChange('recibe_notificaciones', e.target.checked);
+                if (e.target.checked && !(formData.tipos_notificacion?.length)) {
+                  handleChange('tipos_notificacion', ['todas']);
+                }
+              }}
               className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
             />
             <span className="text-sm text-slate-700 dark:text-slate-300">Recibe notificaciones</span>
           </label>
         </div>
+
+        {/* Tipos de notificación (visible solo si recibe_notificaciones) */}
+        {formData.recibe_notificaciones && (() => {
+          const tipos = formData.tipos_notificacion || ['todas'];
+          const esTodas = tipos.includes('todas');
+
+          const handleTipoChange = (tipo, checked) => {
+            if (tipo === 'todas') {
+              handleChange('tipos_notificacion', checked ? ['todas'] : ['ingreso', 'salida', 'kardex']);
+              return;
+            }
+            // Si estaba en modo "todas", expandir a individuales
+            const base = esTodas ? ['ingreso', 'salida', 'kardex'] : [...tipos];
+            const sin_todas = base.filter(t => t !== 'todas');
+            const nuevos = checked
+              ? [...new Set([...sin_todas, tipo])]
+              : sin_todas.filter(t => t !== tipo);
+            // Si quedan todos los 3, guardar como 'todas'
+            const todos3 = ['ingreso', 'salida', 'kardex'].every(t => nuevos.includes(t));
+            handleChange('tipos_notificacion', todos3 ? ['todas'] : nuevos.length ? nuevos : ['todas']);
+          };
+
+          const tiposOpciones = [
+            { value: 'todas', label: 'Todas las operaciones' },
+            { value: 'ingreso', label: 'Entradas de inventario' },
+            { value: 'salida', label: 'Salidas de inventario' },
+            { value: 'kardex', label: 'Ajustes de Kardex' },
+          ];
+
+          return (
+            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-3 space-y-2 bg-slate-50 dark:bg-slate-800/50">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                Tipos de notificación
+              </p>
+              <div className="space-y-1.5">
+                {tiposOpciones.map(({ value, label }) => {
+                  const isChecked = value === 'todas' ? esTodas : (esTodas || tipos.includes(value));
+                  return (
+                    <label key={value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => handleTipoChange(value, e.target.checked)}
+                        className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                      />
+                      <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </Modal>
   );

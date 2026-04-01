@@ -864,7 +864,13 @@ const cerrarAuditoria = async (req, res) => {
           email: { [Op.ne]: null }
         }
       });
-      correosEnvio = contactos.map(c => c.email).join(', ');
+      // Filtrar según tipos_notificacion del contacto vs tipo de la operación
+      const tipoOp = operacion.tipo; // 'ingreso' | 'salida' | 'kardex'
+      const contactosFiltrados = contactos.filter(c => {
+        const tipos = c.tipos_notificacion || ['todas'];
+        return tipos.includes('todas') || tipos.includes(tipoOp);
+      });
+      correosEnvio = contactosFiltrados.map(c => c.email).join(', ');
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -935,6 +941,47 @@ const cerrarAuditoria = async (req, res) => {
   } catch (err) {
     logger.error('[AUDITORIAS] Error al cerrar auditoría:', err);
     return serverError(res, 'Error al cerrar auditoría', err);
+  }
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+// DESTINATARIOS
+// ════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Obtener contactos que recibirán el correo de cierre para una auditoría
+ * GET /auditorias/:id/destinatarios
+ */
+const obtenerDestinatarios = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const operacion = await Operacion.findByPk(id, {
+      attributes: ['id', 'cliente_id', 'tipo']
+    });
+    if (!operacion) return notFound(res, 'Auditoría no encontrada');
+
+    const contactos = await Contacto.findAll({
+      where: {
+        cliente_id: operacion.cliente_id,
+        recibe_notificaciones: true,
+        activo: true,
+        email: { [Op.ne]: null }
+      },
+      attributes: ['id', 'nombre', 'cargo', 'email', 'tipos_notificacion']
+    });
+
+    const tipoOp = operacion.tipo; // 'ingreso' | 'salida' | 'kardex'
+    const destinatarios = contactos
+      .filter(c => {
+        const tipos = c.tipos_notificacion || ['todas'];
+        return tipos.includes('todas') || tipos.includes(tipoOp);
+      })
+      .map(c => ({ nombre: c.nombre, cargo: c.cargo, email: c.email }));
+
+    return success(res, destinatarios);
+  } catch (err) {
+    logger.error('[AUDITORIAS] Error al obtener destinatarios:', err);
+    return serverError(res, 'Error al obtener destinatarios', err);
   }
 };
 
@@ -1102,6 +1149,7 @@ module.exports = {
   subirEvidencias,
   eliminarEvidencia,
   cerrarAuditoria,
+  obtenerDestinatarios,
   estadisticas,
   recientes,
   exportarExcel,

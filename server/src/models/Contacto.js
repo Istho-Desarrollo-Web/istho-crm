@@ -73,6 +73,13 @@ module.exports = (sequelize) => {
       defaultValue: true,
       comment: 'Indica si recibe emails de notificación'
     },
+
+    tipos_notificacion: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: ['todas'],
+      comment: "Tipos de notificación: ['todas'] o combinación de ['ingreso','salida','kardex']"
+    },
     
     notas: {
       type: DataTypes.TEXT,

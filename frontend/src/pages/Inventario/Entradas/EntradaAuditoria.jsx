@@ -1561,6 +1561,7 @@ const EntradaAuditoria = () => {
         onClose={() => setShowCierreModal(false)}
         onConfirm={handleConfirmarCierre}
         tipoAuditoria="ingreso"
+        auditoriaId={id}
         closing={closing}
         colorScheme="emerald"
       />

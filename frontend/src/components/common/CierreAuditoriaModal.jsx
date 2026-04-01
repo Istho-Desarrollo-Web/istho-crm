@@ -8,8 +8,9 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Mail, CheckCircle2, FileText, Star, Loader2, X, ChevronDown } from 'lucide-react';
+import { Mail, CheckCircle2, FileText, Star, Loader2, X, ChevronDown, Users } from 'lucide-react';
 import plantillasEmailService from '../../api/plantillasEmail.service';
+import auditoriasService from '../../api/auditorias.service';
 
 const CierreAuditoriaModal = ({
   isOpen,
@@ -18,12 +19,15 @@ const CierreAuditoriaModal = ({
   tipoAuditoria = 'ingreso', // 'ingreso' | 'salida' | 'kardex'
   closing = false,
   colorScheme = 'emerald', // 'emerald' | 'blue' | 'purple'
+  auditoriaId = null,
 }) => {
   const [plantillas, setPlantillas] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [enviarCorreo, setEnviarCorreo] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [destinatarios, setDestinatarios] = useState([]);
+  const [loadingDestinatarios, setLoadingDestinatarios] = useState(false);
 
   const colors = {
     emerald: {
@@ -100,10 +104,24 @@ const CierreAuditoriaModal = ({
       .finally(() => setLoading(false));
   }, [isOpen, tipoAuditoria]);
 
+  // Cargar destinatarios al abrir (si hay auditoriaId)
+  useEffect(() => {
+    if (!isOpen || !auditoriaId) return;
+    setLoadingDestinatarios(true);
+    auditoriasService.getDestinatarios(auditoriaId)
+      .then(res => {
+        const data = res?.data || res || [];
+        setDestinatarios(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setDestinatarios([]))
+      .finally(() => setLoadingDestinatarios(false));
+  }, [isOpen, auditoriaId]);
+
   // Reset al cerrar
   useEffect(() => {
     if (!isOpen) {
       setShowDropdown(false);
+      setDestinatarios([]);
     }
   }, [isOpen]);
 
@@ -264,6 +282,46 @@ const CierreAuditoriaModal = ({
                     </div>
                   )}
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* Destinatarios del correo */}
+          {enviarCorreo && auditoriaId && (
+            <div className={`rounded-xl border ${c.border} ${c.bg}`}>
+              <div className={`flex items-center gap-2 px-3 pt-3 pb-2`}>
+                <Users className={`w-4 h-4 flex-shrink-0 ${c.icon}`} />
+                <span className={`text-xs font-semibold uppercase tracking-wider ${c.text}`}>
+                  Recibirán este correo
+                </span>
+              </div>
+              {loadingDestinatarios ? (
+                <div className="flex items-center gap-2 px-3 pb-3">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+                  <span className="text-xs text-slate-500">Consultando contactos...</span>
+                </div>
+              ) : destinatarios.length === 0 ? (
+                <p className="px-3 pb-3 text-xs text-slate-500 dark:text-slate-400">
+                  Ningún contacto configurado recibirá el correo.
+                </p>
+              ) : (
+                <ul className="px-3 pb-3 space-y-1.5">
+                  {destinatarios.map((d, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <span className={`text-xs font-bold ${c.text}`}>
+                          {d.nombre?.charAt(0)?.toUpperCase() || '?'}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate">
+                          {d.nombre}{d.cargo ? ` · ${d.cargo}` : ''}
+                        </p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{d.email}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           )}

@@ -75,6 +75,7 @@ router.delete('/:id/evidencias/:evidenciaId', requiereRolMinimo('operador'), aud
 // CIERRE
 // =============================================
 
+router.get('/:id/destinatarios', auditoriaWmsController.obtenerDestinatarios);
 router.post('/:id/cerrar', requiereRolMinimo('operador'), auditoriaWmsController.cerrarAuditoria);
 
 module.exports = router;

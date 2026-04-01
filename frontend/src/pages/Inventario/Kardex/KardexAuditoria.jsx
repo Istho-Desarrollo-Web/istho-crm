@@ -1522,6 +1522,7 @@ const KardexAuditoria = () => {
         onClose={() => setShowCierreModal(false)}
         onConfirm={handleConfirmarCierre}
         tipoAuditoria="kardex"
+        auditoriaId={id}
         closing={closing}
         colorScheme="purple"
       />
