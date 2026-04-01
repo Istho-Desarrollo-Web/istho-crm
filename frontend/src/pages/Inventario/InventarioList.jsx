@@ -509,7 +509,7 @@ const InventarioList = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* KPIs */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <KpiCard
             title="Total Productos"
             value={displayKpis.total}
@@ -527,14 +527,25 @@ const InventarioList = () => {
             iconColor="text-emerald-600"
           />
           <KpiCard
-            title="Stock Bajo / Agotado"
-            value={displayKpis.bajoStock + displayKpis.agotados}
-            change={displayKpis.agotados > 0 ? `${displayKpis.agotados} agotados` : 'Sin agotados'}
-            positive={displayKpis.agotados === 0}
+            title="Bajo Stock"
+            value={displayKpis.bajoStock}
+            change="Stock mínimo alcanzado"
+            positive={displayKpis.bajoStock === 0}
             icon={AlertTriangle}
             iconBg="bg-amber-100"
             iconColor="text-amber-600"
             onClick={() => handleFilterChange('estado', 'bajo_stock')}
+            className="cursor-pointer hover:shadow-md transition-shadow"
+          />
+          <KpiCard
+            title="Agotado"
+            value={displayKpis.agotados}
+            change="Sin unidades disponibles"
+            positive={displayKpis.agotados === 0}
+            icon={AlertTriangle}
+            iconBg="bg-red-100"
+            iconColor="text-red-600"
+            onClick={() => handleFilterChange('estado', 'agotado')}
             className="cursor-pointer hover:shadow-md transition-shadow"
           />
           <KpiCard

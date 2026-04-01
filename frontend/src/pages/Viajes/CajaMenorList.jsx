@@ -38,6 +38,7 @@ import {
   Loader2,
   LayoutGrid,
   LayoutList,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { Pagination, ConfirmDialog, Modal, Button } from '../../components/common';
 import PageFooter from '@components/common/PageFooter';
@@ -383,6 +384,19 @@ const CajaMenorList = () => {
   };
 
   // ──────────────────────────────────────────────────────────────────────────
+  // EXPORT
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const handleExportExcel = () => {
+    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+    const token = localStorage.getItem('istho_token');
+    const params = new URLSearchParams();
+    if (token) params.set('token', token);
+    if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
+    window.open(`${baseUrl}/reportes/cajas-menores/excel?${params.toString()}`, '_blank');
+  };
+
+  // ──────────────────────────────────────────────────────────────────────────
   // RENDER
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -476,6 +490,17 @@ const CajaMenorList = () => {
                 </button>
               ))}
             </div>
+
+            {/* Botón exportar Excel */}
+            {cajas.length > 0 && (
+              <button
+                onClick={handleExportExcel}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                Excel
+              </button>
+            )}
 
             {/* Botón crear */}
             <ProtectedAction module="caja_menor" action="crear">

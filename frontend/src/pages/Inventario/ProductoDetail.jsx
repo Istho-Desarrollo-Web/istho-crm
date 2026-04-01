@@ -405,10 +405,17 @@ const ProductoDetail = () => {
   // KPIs calculados desde movimientos
   const kpis = useMemo(() => {
     const entradas = (movimientos || []).filter(m => m.tipo === 'entrada');
-    const salidas = (movimientos || []).filter(m => m.tipo === 'salida');
+
+    const hace30Dias = new Date();
+    hace30Dias.setDate(hace30Dias.getDate() - 30);
+    const salidasUltimos30Dias = (movimientos || []).filter(m => {
+      if (m.tipo !== 'salida') return false;
+      const fecha = new Date(m.created_at || m.fecha_movimiento || m.fecha);
+      return fecha >= hace30Dias;
+    });
 
     const entradasMes = entradas.reduce((sum, m) => sum + Math.abs(parseFloat(m.cantidad) || 0), 0);
-    const salidasMes = salidas.reduce((sum, m) => sum + Math.abs(parseFloat(m.cantidad) || 0), 0);
+    const salidasMes = salidasUltimos30Dias.reduce((sum, m) => sum + Math.abs(parseFloat(m.cantidad) || 0), 0);
 
     return {
       valorStock: stockActual * costoUnitario,
@@ -713,14 +720,14 @@ const ProductoDetail = () => {
             iconColor="text-blue-600"
           />
           <KpiCard
-            title="Salidas del Mes"
+            title="Salidas (30 días)"
             value={`-${formatNumber(kpis.salidasMes)}`}
             icon={TrendingDown}
             iconBg="bg-red-100"
             iconColor="text-red-600"
           />
           <KpiCard
-            title="Rotación"
+            title="Rotación (30 días)"
             value={`${kpis.rotacion}%`}
             icon={Layers}
             iconBg="bg-violet-100"

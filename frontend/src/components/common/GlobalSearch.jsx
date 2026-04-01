@@ -1,6 +1,7 @@
 /**
  * ISTHO CRM - Búsqueda Global (Ctrl+K)
- * Busca en módulos: Inventario, Clientes, Entradas, Salidas, Kardex
+ * Busca en módulos: Inventario, Clientes, Entradas, Salidas, Kardex,
+ * Viajes, Vehículos, Cajas Menores, Movimientos Caja Menor
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -8,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Search, X, Package, Building2, ArrowDownCircle,
   ArrowUpCircle, RefreshCw, FileText, Loader2,
+  Truck, Car, Wallet, ArrowLeftRight,
 } from 'lucide-react';
 
 const MODULE_CONFIG = [
@@ -89,6 +91,70 @@ const MODULE_CONFIG = [
         title: k.documento_wms || k.motivo || k.documento,
         subtitle: `${k.cliente || ''} - ${k.estado}`,
         path: `/inventario/kardex/${k.id}`,
+      }));
+    },
+  },
+  {
+    key: 'viajes',
+    label: 'Viajes',
+    icon: Truck,
+    color: 'text-yellow-500',
+    searchFn: async (term, apiClient, endpoints) => {
+      const res = await apiClient.get(endpoints.VIAJES.BASE, { params: { search: term, limit: 5 } });
+      const data = Array.isArray(res?.data) ? res.data : res?.data?.viajes || [];
+      return data.map(v => ({
+        id: v.id,
+        title: v.numero_viaje || `Viaje #${v.id}`,
+        subtitle: v.destino || '-',
+        path: `/viajes/${v.id}`,
+      }));
+    },
+  },
+  {
+    key: 'vehiculos',
+    label: 'Vehículos',
+    icon: Car,
+    color: 'text-cyan-500',
+    searchFn: async (term, apiClient, endpoints) => {
+      const res = await apiClient.get(endpoints.VEHICULOS.BASE, { params: { search: term, limit: 5 } });
+      const data = Array.isArray(res?.data) ? res.data : res?.data?.vehiculos || [];
+      return data.map(v => ({
+        id: v.id,
+        title: v.placa,
+        subtitle: v.tipo_vehiculo || '-',
+        path: `/vehiculos`,
+      }));
+    },
+  },
+  {
+    key: 'cajas_menores',
+    label: 'Cajas Menores',
+    icon: Wallet,
+    color: 'text-orange-500',
+    searchFn: async (term, apiClient, endpoints) => {
+      const res = await apiClient.get(endpoints.CAJAS_MENORES.BASE, { params: { search: term, limit: 5 } });
+      const data = Array.isArray(res?.data) ? res.data : res?.data?.cajas || [];
+      return data.map(c => ({
+        id: c.id,
+        title: `Caja #${String(c.numero || c.id).padStart(3, '0')}`,
+        subtitle: c.estado || '-',
+        path: `/cajas-menores`,
+      }));
+    },
+  },
+  {
+    key: 'movimientos',
+    label: 'Movimientos',
+    icon: ArrowLeftRight,
+    color: 'text-pink-500',
+    searchFn: async (term, apiClient, endpoints) => {
+      const res = await apiClient.get(endpoints.MOVIMIENTOS.BASE, { params: { search: term, limit: 5 } });
+      const data = Array.isArray(res?.data) ? res.data : res?.data?.movimientos || [];
+      return data.map(m => ({
+        id: m.id,
+        title: m.concepto || m.descripcion || `Movimiento #${m.id}`,
+        subtitle: m.tipo_movimiento || '-',
+        path: `/movimientos`,
       }));
     },
   },
