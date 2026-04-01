@@ -46,6 +46,10 @@ import VehiculoForm from './components/VehiculoForm';
 // Hooks
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
+import useSort from '@hooks/useSort';
+
+// Components (common)
+import SortIcon from '@components/common/SortIcon';
 
 // Services
 import { vehiculosService } from '../../api/viajes.service';
@@ -281,6 +285,7 @@ const VehiculosList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('todos');
   const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
+  const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
 
   // Modales
   const [formModal, setFormModal] = useState({ isOpen: false, vehiculo: null });
@@ -298,6 +303,8 @@ const VehiculosList = () => {
       const params = {
         page,
         limit: PAGE_SIZE,
+        sort: sortField,
+        order: sortDir,
         ...(searchTerm && { search: searchTerm }),
         ...(estadoFilter !== 'todos' && { estado: estadoFilter }),
       };
@@ -316,7 +323,7 @@ const VehiculosList = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, estadoFilter]);
+  }, [searchTerm, estadoFilter, sortField, sortDir]);
 
   useEffect(() => {
     fetchVehiculos(1);
@@ -575,23 +582,48 @@ const VehiculosList = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Placa
+                    <th
+                      onClick={() => handleSort('placa')}
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Placa <SortIcon field="placa" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Conductor
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Capacidad
+                    <th
+                      onClick={() => handleSort('capacidad_ton')}
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center justify-center gap-1">
+                        Capacidad <SortIcon field="capacidad_ton" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      SOAT
+                    <th
+                      onClick={() => handleSort('vencimiento_soat')}
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center justify-center gap-1">
+                        SOAT <SortIcon field="vencimiento_soat" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Tecnicomecánica
+                    <th
+                      onClick={() => handleSort('vencimiento_tecnicomecanica')}
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center justify-center gap-1">
+                        Tecnicomecánica <SortIcon field="vencimiento_tecnicomecanica" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Estado
+                    <th
+                      onClick={() => handleSort('estado')}
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center justify-center gap-1">
+                        Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">
                       {/* Acciones */}

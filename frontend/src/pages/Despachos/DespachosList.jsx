@@ -62,6 +62,8 @@ import useDespachos from '../../hooks/useDespachos';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
+import useSort from '@hooks/useSort';
+import SortIcon from '@components/common/SortIcon';
 
 // ════════════════════════════════════════════════════════════════════════════
 // OPCIONES DE FILTROS
@@ -289,6 +291,17 @@ const DespachosList = () => {
     // Si es cliente, filtrar por su cliente_id
     initialFilters: user?.rol === 'cliente' ? { cliente_id: user.cliente_id } : {},
   });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // ORDENAMIENTO
+  // ──────────────────────────────────────────────────────────────────────────
+  const { sortField, sortDir, handleSort: _handleSort } = useSort('created_at', 'DESC');
+  const handleSort = (field) => {
+    const newDir = sortField === field ? (sortDir === 'ASC' ? 'DESC' : 'ASC') : 'ASC';
+    const newField = sortField === field ? sortField : field;
+    _handleSort(field);
+    applyFilters({ sort: newField, order: newDir });
+  };
 
   // ──────────────────────────────────────────────────────────────────────────
   // ESTADOS LOCALES
@@ -684,28 +697,48 @@ const DespachosList = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      Operación
+                    <th
+                      onClick={() => handleSort('numero_operacion')}
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Operación <SortIcon field="numero_operacion" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Cliente
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Destino / Origen
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      Fecha
+                    <th
+                      onClick={() => handleSort('fecha_operacion')}
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center justify-center gap-1">
+                        Fecha <SortIcon field="fecha_operacion" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      Tipo
+                    <th
+                      onClick={() => handleSort('tipo')}
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center justify-center gap-1">
+                        Tipo <SortIcon field="tipo" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Prioridad
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      Estado
+                    <th
+                      onClick={() => handleSort('estado')}
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center justify-center gap-1">
+                        Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Acciones
                     </th>
                   </tr>

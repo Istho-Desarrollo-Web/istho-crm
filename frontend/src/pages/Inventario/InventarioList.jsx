@@ -60,6 +60,8 @@ import useInventario from '../../hooks/useInventario';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
 import PageFooter from '@components/common/PageFooter';
+import useSort from '@hooks/useSort';
+import SortIcon from '@components/common/SortIcon';
 
 // ════════════════════════════════════════════════════════════════════════════
 // OPCIONES DE FILTROS
@@ -288,6 +290,18 @@ const InventarioList = () => {
   const canDelete = hasPermission('inventario', 'eliminar');
   const canExport = hasPermission('inventario', 'exportar');
   const canImport = hasPermission('inventario', 'importar');
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // ORDENAMIENTO
+  // ──────────────────────────────────────────────────────────────────────────
+  const { sortField, sortDir, handleSort: _handleSort } = useSort('created_at', 'DESC');
+
+  const handleSort = (field) => {
+    const newDir = sortField === field ? (sortDir === 'ASC' ? 'DESC' : 'ASC') : 'ASC';
+    const newField = sortField === field ? sortField : field;
+    _handleSort(field);
+    applyFilters({ ...filters, sort: newField, order: newDir });
+  };
 
   // ──────────────────────────────────────────────────────────────────────────
   // APLICAR FILTRO DE URL
@@ -668,17 +682,32 @@ const InventarioList = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Producto
+                    <th
+                      onClick={() => handleSort('producto')}
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Producto <SortIcon field="producto" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Cliente
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Stock
+                    <th
+                      onClick={() => handleSort('cantidad')}
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Stock <SortIcon field="cantidad" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Estado
+                    <th
+                      onClick={() => handleSort('estado')}
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center justify-center gap-1">
+                        Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
                     <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Valor

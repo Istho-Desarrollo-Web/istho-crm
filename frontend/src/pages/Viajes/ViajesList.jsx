@@ -16,6 +16,8 @@ import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useThemeContext } from '../../context/ThemeContext';
 import { viajesService } from '../../api/viajes.service';
 import useNotification from '../../hooks/useNotification';
+import useSort from '@hooks/useSort';
+import SortIcon from '@components/common/SortIcon';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
@@ -230,6 +232,7 @@ const ViajesList = () => {
   const { success, apiError, deleted } = useNotification();
   const socket = useSocket();
 
+  const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('todos');
   const [fechaDesde, setFechaDesde] = useState('');
@@ -251,7 +254,7 @@ const ViajesList = () => {
     if (!silencioso) setLoading(true);
     setError(null);
     try {
-      const params = { page, limit: PAGE_SIZE };
+      const params = { page, limit: PAGE_SIZE, sort: sortField, order: sortDir };
       if (estadoFilter !== 'todos') params.estado = estadoFilter;
       if (searchTerm) params.search = searchTerm;
       if (fechaDesde) params.fecha_desde = fechaDesde;
@@ -270,7 +273,7 @@ const ViajesList = () => {
     } finally {
       if (!silencioso) setLoading(false);
     }
-  }, [estadoFilter, searchTerm, fechaDesde, fechaHasta]);
+  }, [estadoFilter, searchTerm, fechaDesde, fechaHasta, sortField, sortDir]);
 
   useEffect(() => {
     fetchViajes(1);
@@ -594,14 +597,29 @@ const ViajesList = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Número
+                    <th
+                      onClick={() => handleSort('numero')}
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Número <SortIcon field="numero" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Ruta
+                    <th
+                      onClick={() => handleSort('destino')}
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Ruta <SortIcon field="destino" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Cliente
+                    <th
+                      onClick={() => handleSort('cliente_nombre')}
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Cliente <SortIcon field="cliente_nombre" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">
                       Vehículo
@@ -612,8 +630,13 @@ const ViajesList = () => {
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Facturado
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Estado
+                    <th
+                      onClick={() => handleSort('estado')}
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center justify-center gap-1">
+                        Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">
                       {/* Acciones */}

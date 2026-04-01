@@ -11,6 +11,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import useSort from '@hooks/useSort';
+import SortIcon from '@components/common/SortIcon';
 import { useNavigate } from 'react-router-dom';
 import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useThemeContext } from '../../../context/ThemeContext';
@@ -199,13 +201,14 @@ const EntradasList = () => {
   const [entradas, setEntradas] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [error, setError] = useState(null);
+  const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
 
   // Cargar datos desde API
   const fetchEntradas = useCallback(async (page = 1) => {
     setLoading(true);
     setError(null);
     try {
-      const params = { page, limit: PAGE_SIZE };
+      const params = { page, limit: PAGE_SIZE, sort: sortField, order: sortDir };
       if (estadoFilter !== 'todos') params.estado = estadoFilter;
       if (searchTerm) params.search = searchTerm;
 
@@ -224,7 +227,7 @@ const EntradasList = () => {
     } finally {
       setLoading(false);
     }
-  }, [estadoFilter, searchTerm]);
+  }, [estadoFilter, searchTerm, sortField, sortDir]);
 
   useEffect(() => {
     fetchEntradas(1);
@@ -421,23 +424,23 @@ const EntradasList = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Documento
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50" onClick={() => handleSort('numero_operacion')}>
+                      <span className="inline-flex items-center gap-1">Documento <SortIcon field="numero_operacion" sortField={sortField} sortDir={sortDir} /></span>
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Cliente
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">
-                      Tipo Doc.
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50" onClick={() => handleSort('tipo')}>
+                      <span className="inline-flex items-center gap-1">Tipo Doc. <SortIcon field="tipo" sortField={sortField} sortDir={sortDir} /></span>
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell">
-                      Fecha Ingreso
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50" onClick={() => handleSort('fecha_operacion')}>
+                      <span className="inline-flex items-center gap-1">Fecha Ingreso <SortIcon field="fecha_operacion" sortField={sortField} sortDir={sortDir} /></span>
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Líneas
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Estado
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50" onClick={() => handleSort('estado')}>
+                      <span className="inline-flex items-center gap-1">Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} /></span>
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">
                       {/* Acciones */}

@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import adminService from '../../api/admin.service';
+import useSort from '@hooks/useSort';
+import SortIcon from '@components/common/SortIcon';
 import UsuarioForm from './UsuarioForm';
 import UsuarioPermisos from './UsuarioPermisos';
 import { useAuth } from '../../context/AuthContext';
@@ -40,6 +42,7 @@ const UsuariosList = () => {
   const [sendingCredentials, setSendingCredentials] = useState(null);
   const [credentialsMsg, setCredentialsMsg] = useState(null);
   const [viewMode, setViewMode] = useState('table');
+  const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
 
   const fetchUsuarios = useCallback(async () => {
     setLoading(true);
@@ -48,6 +51,8 @@ const UsuariosList = () => {
       if (search) params.search = search;
       if (filtroRol) params.rol_id = filtroRol;
       if (filtroActivo) params.activo = filtroActivo;
+      params.sort = sortField;
+      params.order = sortDir;
 
       const res = await adminService.getUsuarios(params);
       setUsuarios(res.data?.usuarios || []);
@@ -56,7 +61,7 @@ const UsuariosList = () => {
       console.error('Error cargando usuarios:', error);
     }
     setLoading(false);
-  }, [pagination.page, pagination.limit, search, filtroRol, filtroActivo]);
+  }, [pagination.page, pagination.limit, search, filtroRol, filtroActivo, sortField, sortDir]);
 
   const fetchRoles = useCallback(async () => {
     try {
@@ -217,13 +222,34 @@ const UsuariosList = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-gray-200 dark:border-slate-700">
-                <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Usuario</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Email</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Rol</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Cliente</th>
-                <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Estado</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Ultimo acceso</th>
-                <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Acciones</th>
+                <th
+                  onClick={() => handleSort('nombre_completo')}
+                  className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                >
+                  <span className="inline-flex items-center gap-1">
+                    Usuario <SortIcon field="nombre_completo" sortField={sortField} sortDir={sortDir} />
+                  </span>
+                </th>
+                <th
+                  onClick={() => handleSort('email')}
+                  className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                >
+                  <span className="inline-flex items-center gap-1">
+                    Email <SortIcon field="email" sortField={sortField} sortDir={sortDir} />
+                  </span>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rol</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cliente</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Estado</th>
+                <th
+                  onClick={() => handleSort('ultimo_acceso')}
+                  className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                >
+                  <span className="inline-flex items-center gap-1">
+                    Último acceso <SortIcon field="ultimo_acceso" sortField={sortField} sortDir={sortDir} />
+                  </span>
+                </th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50">

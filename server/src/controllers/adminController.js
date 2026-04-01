@@ -15,7 +15,9 @@ const { invalidarCachePermisos } = require('../middleware/auth');
 const logger = require('../utils/logger');
 const socketService = require('../services/socketService');
 const { enviarBienvenidaUsuarioCliente, enviarBienvenida, enviarReseteoPassword } = require('../services/emailService');
-const { getClientIP } = require('../utils/helpers');
+const { getClientIP, parseOrdenamiento } = require('../utils/helpers');
+
+const CAMPOS_ORDENAMIENTO_USUARIOS = ['nombre_completo', 'username', 'email', 'created_at', 'ultimo_acceso'];
 
 // ═══════════════════════════════════════════════════════════════════════════
 // USUARIOS INTERNOS
@@ -26,7 +28,8 @@ const { getClientIP } = require('../utils/helpers');
  */
 const listarUsuarios = async (req, res) => {
   try {
-    const { page = 1, limit = 20, search, rol_id, activo, sort = 'created_at', order = 'DESC' } = req.query;
+    const { page = 1, limit = 20, search, rol_id, activo } = req.query;
+    const order = parseOrdenamiento(req.query, CAMPOS_ORDENAMIENTO_USUARIOS);
     const offset = (page - 1) * limit;
 
     const where = {};
@@ -49,7 +52,7 @@ const listarUsuarios = async (req, res) => {
         { model: Rol, as: 'rolInfo', attributes: ['id', 'nombre', 'codigo', 'color', 'nivel_jerarquia'] },
         { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social', 'codigo_cliente'], required: false }
       ],
-      order: [[sort, order]],
+      order,
       limit: parseInt(limit),
       offset: parseInt(offset)
     });

@@ -16,6 +16,8 @@ import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useThemeContext } from '../../context/ThemeContext';
 import { cajasMenoresService } from '../../api/viajes.service';
 import useNotification from '../../hooks/useNotification';
+import useSort from '@hooks/useSort';
+import SortIcon from '@components/common/SortIcon';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
@@ -215,6 +217,7 @@ const CajaMenorList = () => {
   const { user } = useAuth();
   const { success, apiError, deleted } = useNotification();
   const socket = useSocket();
+  const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('todos');
   const [loading, setLoading] = useState(true);
@@ -240,7 +243,7 @@ const CajaMenorList = () => {
     if (!silencioso) setLoading(true);
     setError(null);
     try {
-      const params = { page, limit: PAGE_SIZE };
+      const params = { page, limit: PAGE_SIZE, sort: sortField, order: sortDir };
       if (estadoFilter !== 'todos') params.estado = estadoFilter;
       if (searchTerm) params.search = searchTerm;
 
@@ -257,7 +260,7 @@ const CajaMenorList = () => {
     } finally {
       if (!silencioso) setLoading(false);
     }
-  }, [estadoFilter, searchTerm]);
+  }, [estadoFilter, searchTerm, sortField, sortDir]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -534,20 +537,40 @@ const CajaMenorList = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Número
+                    <th
+                      onClick={() => handleSort('numero')}
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Número <SortIcon field="numero" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Asignado a
                     </th>
-                    <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Saldo Inicial
+                    <th
+                      onClick={() => handleSort('saldo_inicial')}
+                      className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center justify-end gap-1">
+                        Saldo Inicial <SortIcon field="saldo_inicial" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Saldo Actual
+                    <th
+                      onClick={() => handleSort('saldo_actual')}
+                      className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center justify-end gap-1">
+                        Saldo Actual <SortIcon field="saldo_actual" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Estado
+                    <th
+                      onClick={() => handleSort('estado')}
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    >
+                      <span className="inline-flex items-center justify-center gap-1">
+                        Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">
                       {/* Acciones */}
