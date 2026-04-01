@@ -3,43 +3,39 @@
  * ISTHO CRM - ClienteForm Component
  * ============================================================================
  * Formulario para crear y editar clientes.
- * 
- * IMPORTANTE: Los campos usan snake_case para coincidir con el backend.
- * 
+ * Validación con React Hook Form + Yup.
+ *
  * @author Coordinación TI ISTHO
- * @version 2.0.0
- * @date Enero 2026
+ * @version 3.0.0
+ * @date Abril 2026
  */
 
 import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import PropTypes from 'prop-types';
-import { 
-  Building2, 
-  FileText, 
-  MapPin, 
-  Phone, 
-  Mail, 
+import {
+  Building2,
+  FileText,
+  MapPin,
+  Phone,
+  Mail,
   Globe,
   Calendar,
 } from 'lucide-react';
 import { Button, Modal } from '../../../components/common/index';
+import { clienteSchema } from '../../../utils/validationSchemas';
 
 // ============================================================================
-// CONFIGURACIÓN (Alineado con modelo Backend)
+// CONSTANTES
 // ============================================================================
 
-/**
- * Tipos de cliente según ENUM del modelo Cliente
- */
 const TIPOS_CLIENTE = [
   { value: 'corporativo', label: 'Corporativo' },
   { value: 'pyme', label: 'PyME' },
   { value: 'persona_natural', label: 'Persona Natural' },
 ];
 
-/**
- * Sectores disponibles
- */
 const SECTORES = [
   { value: 'alimentos', label: 'Alimentos y Bebidas' },
   { value: 'construccion', label: 'Construcción' },
@@ -53,203 +49,43 @@ const SECTORES = [
   { value: 'otro', label: 'Otro' },
 ];
 
-/**
- * Estados según ENUM del modelo Cliente
- */
 const ESTADOS = [
   { value: 'activo', label: 'Activo' },
   { value: 'inactivo', label: 'Inactivo' },
   { value: 'suspendido', label: 'Suspendido' },
 ];
 
-/**
- * Configuración de campos del formulario
- * IMPORTANTE: Los nombres (name) usan snake_case para coincidir con el backend
- */
-const FORM_FIELDS = {
-  info: [
-    { 
-      name: 'razon_social', 
-      label: 'Razón Social', 
-      type: 'text', 
-      required: true, 
-      icon: Building2, 
-      placeholder: 'Nombre de la empresa o persona',
-      maxLength: 200,
-    },
-    { 
-      name: 'nit', 
-      label: 'NIT', 
-      type: 'text', 
-      required: true, 
-      icon: FileText, 
-      placeholder: '900123456-7',
-      maxLength: 20,
-    },
-    { 
-      name: 'tipo_cliente', 
-      label: 'Tipo de Cliente', 
-      type: 'select', 
-      required: false, 
-      options: TIPOS_CLIENTE,
-    },
-    {
-      name: 'sector',
-      label: 'Sector',
-      type: 'select',
-      required: false,
-      options: SECTORES,
-    },
-    {
-      name: 'fecha_inicio_relacion',
-      label: 'Fecha Inicio Relación',
-      type: 'date',
-      required: false,
-      icon: Calendar,
-    },
-  ],
-  contacto: [
-    { 
-      name: 'direccion', 
-      label: 'Dirección', 
-      type: 'text', 
-      required: false, 
-      icon: MapPin, 
-      placeholder: 'Calle, número, barrio',
-      maxLength: 255,
-    },
-    { 
-      name: 'ciudad', 
-      label: 'Ciudad', 
-      type: 'text', 
-      required: false, 
-      placeholder: 'Ciudad',
-      maxLength: 100,
-    },
-    { 
-      name: 'departamento', 
-      label: 'Departamento', 
-      type: 'text', 
-      required: false, 
-      placeholder: 'Departamento',
-      maxLength: 100,
-    },
-    { 
-      name: 'telefono', 
-      label: 'Teléfono', 
-      type: 'tel', 
-      required: false, 
-      icon: Phone, 
-      placeholder: '+57 604 123 4567',
-      maxLength: 50,
-    },
-    { 
-      name: 'email', 
-      label: 'Email', 
-      type: 'email', 
-      required: false, 
-      icon: Mail, 
-      placeholder: 'contacto@empresa.com',
-      maxLength: 150,
-    },
-    { 
-      name: 'sitio_web', 
-      label: 'Sitio Web', 
-      type: 'url', 
-      required: false, 
-      icon: Globe, 
-      placeholder: 'https://www.empresa.com',
-      maxLength: 200,
-    },
-  ],
-};
-
 // ============================================================================
-// COMPONENTE INPUT FIELD
+// HELPERS
 // ============================================================================
 
-const InputField = ({ field, value, onChange, error }) => {
-  const Icon = field.icon;
-  
-  const baseInputClasses = `
-    w-full px-4 py-2.5
-    bg-white dark:bg-slate-800 border rounded-xl
-    text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400
-    focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
-    transition-all duration-200
-    ${error ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'}
-    ${Icon ? 'pl-10' : ''}
-  `;
-
-  const handleChange = (e) => {
-    let newValue = e.target.value;
-    
-    // Para números, convertir a número o null
-    if (field.type === 'number') {
-      newValue = newValue === '' ? null : Number(newValue);
-    }
-    
-    onChange(field.name, newValue);
-  };
-
-  return (
-    <div className="space-y-1">
-      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-        {field.label}
-        {field.required && <span className="text-red-500 ml-1">*</span>}
-      </label>
-      
-      <div className="relative">
-        {Icon && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Icon className="h-5 w-5 text-slate-400" />
-          </div>
-        )}
-        
-        {field.type === 'select' ? (
-          <select
-            name={field.name}
-            value={value || ''}
-            onChange={handleChange}
-            className={baseInputClasses}
-          >
-            <option value="">Seleccionar...</option>
-            {field.options?.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        ) : field.type === 'textarea' ? (
-          <textarea
-            name={field.name}
-            value={value || ''}
-            onChange={handleChange}
-            placeholder={field.placeholder}
-            maxLength={field.maxLength}
-            rows={3}
-            className={baseInputClasses}
-          />
-        ) : (
-          <input
-            type={field.type}
-            name={field.name}
-            value={value ?? ''}
-            onChange={handleChange}
-            placeholder={field.placeholder}
-            maxLength={field.maxLength}
-            min={field.min}
-            className={baseInputClasses}
-          />
-        )}
-      </div>
-      
-      {error && (
-        <p className="text-xs text-red-500">{error}</p>
+const InputField = ({ label, icon: Icon, required, error, children }) => (
+  <div className="space-y-1">
+    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+      {label}
+      {required && <span className="text-red-500 ml-1">*</span>}
+    </label>
+    <div className="relative">
+      {Icon && (
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Icon className="h-5 w-5 text-slate-400" />
+        </div>
       )}
+      {children}
     </div>
-  );
-};
+    {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
+  </div>
+);
+
+const inputCls = (hasIcon, hasError) => `
+  w-full px-4 py-2.5
+  bg-white dark:bg-slate-800 border rounded-xl
+  text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400
+  focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
+  transition-all duration-200
+  ${hasError ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'}
+  ${hasIcon ? 'pl-10' : ''}
+`.trim();
 
 // ============================================================================
 // COMPONENTE PRINCIPAL
@@ -262,102 +98,53 @@ const ClienteForm = ({
   cliente = null,
   loading = false,
 }) => {
-  const [formData, setFormData] = useState({});
-  const [errors, setErrors] = useState({});
   const [activeTab, setActiveTab] = useState('info');
-
   const isEditing = !!cliente;
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: yupResolver(clienteSchema),
+    defaultValues: { tipo_cliente: 'corporativo', estado: 'activo' },
+  });
+
   // ──────────────────────────────────────────────────────────────────────────
-  // INICIALIZAR FORMULARIO
+  // CARGAR DATOS
   // ──────────────────────────────────────────────────────────────────────────
+
   useEffect(() => {
+    if (!isOpen) return;
+    setActiveTab('info');
+
     if (cliente) {
-      // Edición: usar datos del cliente directamente
-      setFormData({
+      reset({
         razon_social: cliente.razon_social || '',
         nit: cliente.nit || '',
         tipo_cliente: cliente.tipo_cliente || 'corporativo',
         sector: cliente.sector || '',
+        fecha_inicio_relacion: cliente.fecha_inicio_relacion || '',
         direccion: cliente.direccion || '',
         ciudad: cliente.ciudad || '',
         departamento: cliente.departamento || '',
         telefono: cliente.telefono || '',
         email: cliente.email || '',
         sitio_web: cliente.sitio_web || '',
-        fecha_inicio_relacion: cliente.fecha_inicio_relacion || '',
         estado: cliente.estado || 'activo',
       });
     } else {
-      // Nuevo cliente: valores por defecto
-      setFormData({
-        tipo_cliente: 'corporativo',
-        estado: 'activo',
-      });
+      reset({ tipo_cliente: 'corporativo', estado: 'activo' });
     }
-    setErrors({});
-    setActiveTab('info');
-  }, [cliente, isOpen]);
+  }, [isOpen, cliente]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ──────────────────────────────────────────────────────────────────────────
-  // HANDLERS
+  // SUBMIT
   // ──────────────────────────────────────────────────────────────────────────
-  
-  const handleChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Limpiar error del campo
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: null }));
-    }
-  };
 
-  const validateForm = () => {
-    const newErrors = {};
-    
-    // Validar razón social (requerido)
-    if (!formData.razon_social?.trim()) {
-      newErrors.razon_social = 'La razón social es requerida';
-    } else if (formData.razon_social.length < 3) {
-      newErrors.razon_social = 'La razón social debe tener al menos 3 caracteres';
-    }
-    
-    // Validar NIT (requerido)
-    if (!formData.nit?.trim()) {
-      newErrors.nit = 'El NIT es requerido';
-    }
-
-    // Validar email si se proporciona
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
-    }
-
-    // Validar URL si se proporciona
-    if (formData.sitio_web && formData.sitio_web.trim()) {
-      try {
-        new URL(formData.sitio_web);
-      } catch {
-        newErrors.sitio_web = 'URL inválida (debe incluir https://)';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async () => {
-    if (!validateForm()) {
-      // Ir a la primera pestaña con errores
-      const tabsWithErrors = ['info', 'contacto'].filter(tab =>
-        FORM_FIELDS[tab].some(field => errors[field.name])
-      );
-      if (tabsWithErrors.length > 0) {
-        setActiveTab(tabsWithErrors[0]);
-      }
-      return;
-    }
-
-    // Enviar datos directamente (ya están en formato snake_case)
-    await onSubmit?.(formData);
+  const submitForm = async (data) => {
+    await onSubmit?.(data);
   };
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -378,10 +165,10 @@ const ClienteForm = ({
       size="lg"
       footer={
         <>
-          <Button variant="outline" onClick={onClose} disabled={loading}>
+          <Button variant="outline" onClick={onClose} disabled={loading || isSubmitting}>
             Cancelar
           </Button>
-          <Button variant="primary" onClick={handleSubmit} loading={loading}>
+          <Button variant="primary" onClick={handleSubmit(submitForm)} loading={loading || isSubmitting}>
             {isEditing ? 'Guardar Cambios' : 'Crear Cliente'}
           </Button>
         </>
@@ -393,6 +180,7 @@ const ClienteForm = ({
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setActiveTab(tab.id)}
               className={`
                 pb-3 px-1 text-sm font-medium transition-colors relative
@@ -411,54 +199,156 @@ const ClienteForm = ({
         </nav>
       </div>
 
-      {/* Form Fields */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {FORM_FIELDS[activeTab]?.map((field) => (
-          <div 
-            key={field.name} 
-            className={field.type === 'textarea' ? 'md:col-span-2' : ''}
-          >
-            <InputField
-              field={field}
-              value={formData[field.name]}
-              onChange={handleChange}
-              error={errors[field.name]}
-            />
-          </div>
-        ))}
-      </div>
+      <form onSubmit={handleSubmit(submitForm)} noValidate>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-      {/* Estado (solo en edición) */}
-      {isEditing && activeTab === 'info' && (
-        <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-            Estado del Cliente
-          </label>
-          <div className="flex gap-4">
-            {ESTADOS.map((estado) => (
-              <label key={estado.value} className="flex items-center gap-2 cursor-pointer">
+          {/* ── TAB INFORMACIÓN ── */}
+          {activeTab === 'info' && (
+            <>
+              <InputField label="Razón Social" icon={Building2} required error={errors.razon_social?.message}>
                 <input
-                  type="radio"
-                  name="estado"
-                  value={estado.value}
-                  checked={formData.estado === estado.value}
-                  onChange={(e) => handleChange('estado', e.target.value)}
-                  className="w-4 h-4 text-orange-500 focus:ring-orange-500"
+                  {...register('razon_social')}
+                  type="text"
+                  placeholder="Nombre de la empresa o persona"
+                  maxLength={200}
+                  className={inputCls(true, !!errors.razon_social)}
                 />
-                <span className="text-sm text-slate-700 dark:text-slate-300">{estado.label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
+              </InputField>
 
-      {/* Código de cliente (solo en edición, solo lectura) */}
-      {isEditing && activeTab === 'info' && cliente?.codigo_cliente && (
-        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-          <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Código de Cliente</p>
-          <p className="text-sm text-blue-800 dark:text-blue-300 font-mono">{cliente.codigo_cliente}</p>
+              <InputField label="NIT" icon={FileText} required error={errors.nit?.message}>
+                <input
+                  {...register('nit')}
+                  type="text"
+                  placeholder="900123456-7"
+                  maxLength={20}
+                  className={inputCls(true, !!errors.nit)}
+                />
+              </InputField>
+
+              <InputField label="Tipo de Cliente" error={errors.tipo_cliente?.message}>
+                <select {...register('tipo_cliente')} className={inputCls(false, !!errors.tipo_cliente)}>
+                  <option value="">Seleccionar...</option>
+                  {TIPOS_CLIENTE.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </InputField>
+
+              <InputField label="Sector" error={errors.sector?.message}>
+                <select {...register('sector')} className={inputCls(false, !!errors.sector)}>
+                  <option value="">Seleccionar...</option>
+                  {SECTORES.map((s) => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
+              </InputField>
+
+              <InputField label="Fecha Inicio Relación" icon={Calendar} error={errors.fecha_inicio_relacion?.message}>
+                <input
+                  {...register('fecha_inicio_relacion')}
+                  type="date"
+                  className={`${inputCls(true, !!errors.fecha_inicio_relacion)} min-w-0`}
+                />
+              </InputField>
+
+              {/* Estado (solo edición) */}
+              {isEditing && (
+                <div className="md:col-span-2 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Estado del Cliente
+                  </label>
+                  <div className="flex gap-4">
+                    {ESTADOS.map((estado) => (
+                      <label key={estado.value} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          {...register('estado')}
+                          type="radio"
+                          value={estado.value}
+                          className="w-4 h-4 text-orange-500 focus:ring-orange-500"
+                        />
+                        <span className="text-sm text-slate-700 dark:text-slate-300">{estado.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Código de cliente (solo lectura en edición) */}
+              {isEditing && cliente?.codigo_cliente && (
+                <div className="md:col-span-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                  <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Código de Cliente</p>
+                  <p className="text-sm text-blue-800 dark:text-blue-300 font-mono">{cliente.codigo_cliente}</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── TAB CONTACTO ── */}
+          {activeTab === 'contacto' && (
+            <>
+              <InputField label="Dirección" icon={MapPin} error={errors.direccion?.message}>
+                <input
+                  {...register('direccion')}
+                  type="text"
+                  placeholder="Calle, número, barrio"
+                  maxLength={255}
+                  className={inputCls(true, !!errors.direccion)}
+                />
+              </InputField>
+
+              <InputField label="Ciudad" error={errors.ciudad?.message}>
+                <input
+                  {...register('ciudad')}
+                  type="text"
+                  placeholder="Ciudad"
+                  maxLength={100}
+                  className={inputCls(false, !!errors.ciudad)}
+                />
+              </InputField>
+
+              <InputField label="Departamento" error={errors.departamento?.message}>
+                <input
+                  {...register('departamento')}
+                  type="text"
+                  placeholder="Departamento"
+                  maxLength={100}
+                  className={inputCls(false, !!errors.departamento)}
+                />
+              </InputField>
+
+              <InputField label="Teléfono" icon={Phone} error={errors.telefono?.message}>
+                <input
+                  {...register('telefono')}
+                  type="tel"
+                  placeholder="+57 604 123 4567"
+                  maxLength={50}
+                  className={inputCls(true, !!errors.telefono)}
+                />
+              </InputField>
+
+              <InputField label="Email" icon={Mail} error={errors.email?.message}>
+                <input
+                  {...register('email')}
+                  type="email"
+                  placeholder="contacto@empresa.com"
+                  maxLength={150}
+                  className={inputCls(true, !!errors.email)}
+                />
+              </InputField>
+
+              <InputField label="Sitio Web" icon={Globe} error={errors.sitio_web?.message}>
+                <input
+                  {...register('sitio_web')}
+                  type="url"
+                  placeholder="https://www.empresa.com"
+                  maxLength={200}
+                  className={inputCls(true, !!errors.sitio_web)}
+                />
+              </InputField>
+            </>
+          )}
         </div>
-      )}
+      </form>
     </Modal>
   );
 };

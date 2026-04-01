@@ -8,6 +8,7 @@ const router = express.Router();
 const vehiculoController = require('../controllers/vehiculoController');
 const { verificarToken } = require('../middleware/auth');
 const { requierePermiso } = require('../middleware/roles');
+const { crearVehiculoValidator, actualizarVehiculoValidator, idParamValidator } = require('../validators/vehiculoValidator');
 
 router.use(verificarToken);
 
@@ -17,9 +18,9 @@ router.get('/alertas-vencimiento', requierePermiso('vehiculos', 'ver'), vehiculo
 
 // CRUD
 router.get('/', requierePermiso('vehiculos', 'ver'), vehiculoController.listar);
-router.get('/:id', requierePermiso('vehiculos', 'ver'), vehiculoController.obtenerPorId);
-router.post('/', requierePermiso('vehiculos', 'crear'), vehiculoController.crear);
-router.put('/:id', requierePermiso('vehiculos', 'editar'), vehiculoController.actualizar);
-router.delete('/:id', requierePermiso('vehiculos', 'eliminar'), vehiculoController.eliminar);
+router.get('/:id', idParamValidator, requierePermiso('vehiculos', 'ver'), vehiculoController.obtenerPorId);
+router.post('/', crearVehiculoValidator, requierePermiso('vehiculos', 'crear'), vehiculoController.crear);
+router.put('/:id', actualizarVehiculoValidator, requierePermiso('vehiculos', 'editar'), vehiculoController.actualizar);
+router.delete('/:id', idParamValidator, requierePermiso('vehiculos', 'eliminar'), vehiculoController.eliminar);
 
 module.exports = router;

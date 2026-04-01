@@ -1,12 +1,14 @@
 /**
  * ISTHO CRM - ViajeForm Page
  * Formulario de página completa para crear y editar viajes.
- * Diseño tipo SalidaAuditoria con secciones card + iconos.
- * @version 3.0.0
+ * Validación con React Hook Form + Yup.
+ * @version 4.0.0
  */
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import {
   ArrowLeft, Save, MapPin, Truck, User, FileText, DollarSign, Calendar,
   Building2, Weight, Users, Hash, ChevronDown, ChevronUp, Wallet, Loader2
@@ -15,6 +17,7 @@ import { viajesService, vehiculosService, cajasMenoresService } from '../../api/
 import clientesService from '../../api/clientes.service';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
+import { viajeSchema } from '../../utils/validationSchemas';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -33,7 +36,7 @@ const parseThousands = (formatted) => {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
-// SECTION COMPONENT (estilo SalidaAuditoria)
+// SECTION COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
 
 const Section = ({ icon: Icon, title, color = 'blue', badge, collapsible, open, onToggle, children }) => {
@@ -83,7 +86,7 @@ const Section = ({ icon: Icon, title, color = 'blue', badge, collapsible, open, 
 // FORM FIELD
 // ════════════════════════════════════════════════════════════════════════════
 
-const FormField = ({ label, icon: Icon, required, children, className = '' }) => (
+const FormField = ({ label, icon: Icon, required, error, children, className = '' }) => (
   <div className={className}>
     <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
       {label}
@@ -97,13 +100,14 @@ const FormField = ({ label, icon: Icon, required, children, className = '' }) =>
       )}
       {children}
     </div>
+    {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
   </div>
 );
 
-const inputCls = (hasIcon = false) =>
-  `w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 ${hasIcon ? 'pl-10' : ''}`;
+const inputCls = (hasIcon = false, hasError = false) =>
+  `w-full bg-slate-50 dark:bg-slate-900 border rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 ${hasIcon ? 'pl-10' : ''} ${hasError ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'}`;
 
-const selectCls = (hasIcon = false) => `${inputCls(hasIcon)} appearance-none cursor-pointer`;
+const selectCls = (hasIcon = false, hasError = false) => `${inputCls(hasIcon, hasError)} appearance-none cursor-pointer`;
 
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
@@ -116,26 +120,51 @@ const ViajeForm = () => {
   const { user } = useAuth();
   const isEditing = !!id;
 
-  const [formData, setFormData] = useState({
-    fecha: new Date().toISOString().split('T')[0],
-    vehiculo_id: '', conductor_id: '', cliente_nombre: '', documento_cliente: '',
-    origen: 'GIRARDOTA', destino: '', caja_menor_id: '', descripcion: '',
-    peso: '', valor_descargue: '', num_personas: '',
-    no_factura: '', facturado: false, valor_viaje: '',
-  });
-
   const [vehiculos, setVehiculos] = useState([]);
   const [conductores, setConductores] = useState([]);
   const [cajasMenores, setCajasMenores] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [showAdicional, setShowAdicional] = useState(false);
   const [showFacturacion, setShowFacturacion] = useState(false);
 
   const esConductor = user?.rol === 'conductor';
 
-  // Carga inicial
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: yupResolver(viajeSchema),
+    defaultValues: {
+      fecha: new Date().toISOString().split('T')[0],
+      vehiculo_id: '',
+      conductor_id: '',
+      cliente_nombre: '',
+      documento_cliente: '',
+      origen: 'GIRARDOTA',
+      destino: '',
+      caja_menor_id: '',
+      descripcion: '',
+      peso: '',
+      valor_descargue: '',
+      num_personas: '',
+      no_factura: '',
+      facturado: false,
+      valor_viaje: '',
+    },
+  });
+
+  const watchFacturado = watch('facturado');
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // CARGA INICIAL
+  // ──────────────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -149,13 +178,13 @@ const ViajeForm = () => {
         if (condRes.success) setConductores(condRes.data || []);
         if (cajasRes.success) setCajasMenores(Array.isArray(cajasRes.data) ? cajasRes.data : []);
         if (clientesRes.success) setClientes(Array.isArray(clientesRes.data) ? clientesRes.data : clientesRes.data?.rows || []);
-      } catch (err) {
+      } catch {
         showError('Error al cargar datos iniciales');
       }
 
-      // Auto-fill conductor_id para rol conductor
+      // Auto-fill conductor para rol conductor
       if (esConductor && user?.id && !id) {
-        setFormData(prev => ({ ...prev, conductor_id: user.id }));
+        setValue('conductor_id', user.id);
       }
 
       if (id) {
@@ -163,15 +192,21 @@ const ViajeForm = () => {
           const res = await viajesService.getById(id);
           if (res.success && res.data) {
             const v = res.data;
-            setFormData({
-              fecha: v.fecha?.split('T')[0] || '', vehiculo_id: v.vehiculo_id || '',
-              conductor_id: v.conductor_id || '', cliente_nombre: v.cliente_nombre || '',
-              documento_cliente: v.documento_cliente || '', origen: v.origen || 'GIRARDOTA',
-              destino: v.destino || '', caja_menor_id: v.caja_menor_id || '',
-              descripcion: v.descripcion || '', peso: v.peso ?? '',
+            reset({
+              fecha: v.fecha?.split('T')[0] || '',
+              vehiculo_id: v.vehiculo_id || '',
+              conductor_id: v.conductor_id || '',
+              cliente_nombre: v.cliente_nombre || '',
+              documento_cliente: v.documento_cliente || '',
+              origen: v.origen || 'GIRARDOTA',
+              destino: v.destino || '',
+              caja_menor_id: v.caja_menor_id || '',
+              descripcion: v.descripcion || '',
+              peso: v.peso ?? '',
               valor_descargue: v.valor_descargue != null ? Math.round(parseFloat(v.valor_descargue)) : '',
               num_personas: v.num_personas ?? '',
-              no_factura: v.no_factura || '', facturado: v.facturado || false,
+              no_factura: v.no_factura || '',
+              facturado: v.facturado || false,
               valor_viaje: v.valor_viaje != null ? Math.round(parseFloat(v.valor_viaje)) : '',
             });
             if (v.peso || v.valor_descargue || v.num_personas) setShowAdicional(true);
@@ -184,47 +219,46 @@ const ViajeForm = () => {
     load();
   }, [id]); // eslint-disable-line
 
-  const handleChange = (name, value) => setFormData(prev => ({ ...prev, [name]: value }));
+  // ──────────────────────────────────────────────────────────────────────────
+  // HANDLERS
+  // ──────────────────────────────────────────────────────────────────────────
 
-  // Auto-fill conductor cuando se selecciona un vehículo con conductor asignado
   const handleVehiculoChange = (vehiculoId) => {
-    handleChange('vehiculo_id', vehiculoId);
+    setValue('vehiculo_id', vehiculoId);
     if (vehiculoId) {
       const vehiculo = vehiculos.find(v => String(v.id) === String(vehiculoId));
       if (vehiculo?.conductor_id) {
-        handleChange('conductor_id', vehiculo.conductor_id);
+        setValue('conductor_id', vehiculo.conductor_id);
       }
     }
   };
 
-  // Auto-fill nombre cuando se selecciona un cliente (documento queda vacío para llenarlo manual)
   const handleClienteChange = (clienteId) => {
     const cliente = clientes.find(c => String(c.id) === String(clienteId));
     if (cliente) {
-      setFormData(prev => ({
-        ...prev,
-        cliente_nombre: cliente.nombre || cliente.razon_social || '',
-        documento_cliente: '',
-      }));
+      setValue('cliente_nombre', cliente.nombre || cliente.razon_social || '');
+      setValue('documento_cliente', '');
     } else {
-      setFormData(prev => ({ ...prev, cliente_nombre: '', documento_cliente: '' }));
+      setValue('cliente_nombre', '');
+      setValue('documento_cliente', '');
     }
   };
 
-  const handleSubmit = async () => {
-    if (!formData.destino?.trim()) { showError('El destino es requerido'); return; }
+  // ──────────────────────────────────────────────────────────────────────────
+  // SUBMIT
+  // ──────────────────────────────────────────────────────────────────────────
 
-    setSaving(true);
+  const onSubmit = async (data) => {
     try {
       const payload = {
-        ...formData,
-        vehiculo_id: formData.vehiculo_id || null,
-        conductor_id: formData.conductor_id || null,
-        caja_menor_id: formData.caja_menor_id || null,
-        peso: formData.peso ? parseFloat(formData.peso) : null,
-        valor_descargue: formData.valor_descargue ? parseFloat(formData.valor_descargue) : null,
-        num_personas: formData.num_personas ? parseInt(formData.num_personas) : null,
-        valor_viaje: formData.valor_viaje ? parseFloat(formData.valor_viaje) : null,
+        ...data,
+        vehiculo_id: data.vehiculo_id || null,
+        conductor_id: data.conductor_id || null,
+        caja_menor_id: data.caja_menor_id || null,
+        peso: data.peso ? parseFloat(data.peso) : null,
+        valor_descargue: data.valor_descargue ? parseFloat(data.valor_descargue) : null,
+        num_personas: data.num_personas ? parseInt(data.num_personas) : null,
+        valor_viaje: data.valor_viaje ? parseFloat(data.valor_viaje) : null,
       };
 
       const response = isEditing
@@ -239,8 +273,6 @@ const ViajeForm = () => {
       }
     } catch (err) {
       showError(err.message || 'Error al guardar el viaje');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -254,258 +286,278 @@ const ViajeForm = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 pt-28 px-4 pb-32">
-      <div className="max-w-5xl mx-auto space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="max-w-5xl mx-auto space-y-6">
 
-        {/* ── BACK NAV ── */}
-        <button
-          onClick={() => navigate('/viajes/viajes')}
-          className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Volver a Viajes
-        </button>
+          {/* ── BACK NAV ── */}
+          <button
+            type="button"
+            onClick={() => navigate('/viajes/viajes')}
+            className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver a Viajes
+          </button>
 
-        {/* ── HEADER CARD ── */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
-                <Truck className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          {/* ── HEADER CARD ── */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                  <Truck className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+                    {isEditing ? `Editar Viaje #${id}` : 'Nuevo Viaje'}
+                  </h1>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {isEditing ? 'Modifique los datos del viaje' : 'Complete la información para registrar un nuevo viaje'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">
-                  {isEditing ? `Editar Viaje #${id}` : 'Nuevo Viaje'}
-                </h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {isEditing ? 'Modifique los datos del viaje' : 'Complete la información para registrar un nuevo viaje'}
-                </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/viajes/viajes')}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  {isEditing ? 'Guardar Cambios' : 'Crear Viaje'}
+                </button>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => navigate('/viajes/viajes')}
-                disabled={saving}
-                className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={saving}
-                className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {isEditing ? 'Guardar Cambios' : 'Crear Viaje'}
-              </button>
-            </div>
           </div>
-        </div>
 
-        {/* ── DATOS BÁSICOS ── */}
-        <Section icon={MapPin} title="Datos Básicos" color="blue">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField label="Fecha" icon={Calendar} required>
-              <input
-                type="date"
-                value={formData.fecha}
-                onChange={e => handleChange('fecha', e.target.value)}
-                className={`${inputCls(true)} min-w-0`}
-                required
-              />
-            </FormField>
-
-            <FormField label="Vehículo" icon={Truck}>
-              <select
-                value={formData.vehiculo_id}
-                onChange={e => handleVehiculoChange(e.target.value)}
-                className={selectCls(true)}
-              >
-                <option value="">Seleccionar vehículo...</option>
-                {vehiculos.map(v => (
-                  <option key={v.id} value={v.id}>
-                    {v.placa} - {v.tipo_vehiculo}
-                    {v.conductor?.nombre_completo ? ` (${v.conductor.nombre_completo})` : ''}
-                  </option>
-                ))}
-              </select>
-            </FormField>
-
-            <FormField label="Conductor" icon={User}>
-              <select
-                value={formData.conductor_id}
-                onChange={e => handleChange('conductor_id', e.target.value)}
-                disabled={esConductor}
-                className={`${selectCls(true)} ${esConductor ? 'opacity-60' : ''}`}
-              >
-                <option value="">Seleccionar conductor...</option>
-                {conductores.map(c => (
-                  <option key={c.id} value={c.id}>{c.nombre_completo || c.username}</option>
-                ))}
-              </select>
-            </FormField>
-
-            <FormField label="Cliente" icon={Building2}>
-              <select
-                onChange={e => handleClienteChange(e.target.value)}
-                className={selectCls(true)}
-                value={clientes.find(c => (c.nombre || c.razon_social) === formData.cliente_nombre)?.id || ''}
-              >
-                <option value="">Seleccionar cliente...</option>
-                {clientes.map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre || c.razon_social} {c.documento || c.nit ? `- ${c.documento || c.nit}` : ''}
-                  </option>
-                ))}
-              </select>
-            </FormField>
-
-            <FormField label="Documento del Cliente" icon={FileText}>
-              <input
-                type="text"
-                value={formData.documento_cliente}
-                onChange={e => handleChange('documento_cliente', e.target.value)}
-                placeholder="Remisión o documento"
-                className={inputCls(true)}
-              />
-            </FormField>
-
-            <FormField label="Origen" icon={MapPin} required>
-              <input
-                type="text"
-                value={formData.origen}
-                onChange={e => handleChange('origen', e.target.value.toUpperCase())}
-                className={inputCls(true)}
-                required
-              />
-            </FormField>
-
-            <FormField label="Destino" icon={MapPin} required>
-              <input
-                type="text"
-                value={formData.destino}
-                onChange={e => handleChange('destino', e.target.value)}
-                placeholder="Ciudad destino"
-                className={inputCls(true)}
-                required
-              />
-            </FormField>
-
-            <FormField label="Caja Menor" icon={Wallet}>
-              <select
-                value={formData.caja_menor_id}
-                onChange={e => handleChange('caja_menor_id', e.target.value)}
-                className={selectCls(true)}
-              >
-                <option value="">Sin caja menor</option>
-                {cajasMenores.map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.numero} - {c.asignado?.nombre_completo || c.asignado?.username || ''}
-                  </option>
-                ))}
-              </select>
-            </FormField>
-
-            <FormField label="Descripción" className="md:col-span-2">
-              <textarea
-                value={formData.descripcion}
-                onChange={e => handleChange('descripcion', e.target.value)}
-                rows={3}
-                placeholder="Notas del viaje..."
-                className={inputCls()}
-              />
-            </FormField>
-          </div>
-        </Section>
-
-        {/* ── INFORMACIÓN ADICIONAL ── */}
-        <Section
-          icon={Weight}
-          title="Información Adicional"
-          color="amber"
-          collapsible
-          open={showAdicional}
-          onToggle={() => setShowAdicional(!showAdicional)}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField label="Peso (ton)" icon={Weight}>
-              <input
-                type="number"
-                value={formData.peso}
-                onChange={e => handleChange('peso', e.target.value)}
-                min={0}
-                step={0.01}
-                placeholder="0.00"
-                className={inputCls(true)}
-              />
-            </FormField>
-            <FormField label="Valor Descargue ($)" icon={DollarSign}>
-              <input
-                type="text"
-                value={formatThousands(formData.valor_descargue)}
-                onChange={e => handleChange('valor_descargue', parseThousands(e.target.value))}
-                placeholder="0"
-                className={inputCls(true)}
-              />
-            </FormField>
-            <FormField label="Nº Personas" icon={Users}>
-              <input
-                type="number"
-                value={formData.num_personas}
-                onChange={e => handleChange('num_personas', e.target.value)}
-                min={0}
-                step={1}
-                placeholder="0"
-                className={inputCls(true)}
-              />
-            </FormField>
-          </div>
-        </Section>
-
-        {/* ── DATOS DE FACTURACIÓN ── */}
-        <Section
-          icon={DollarSign}
-          title="Datos de Facturación"
-          color="green"
-          collapsible
-          open={showFacturacion}
-          onToggle={() => setShowFacturacion(!showFacturacion)}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField label="Nº Factura" icon={Hash}>
-              <input
-                type="text"
-                value={formData.no_factura}
-                onChange={e => handleChange('no_factura', e.target.value)}
-                placeholder="Número de factura"
-                className={inputCls(true)}
-              />
-            </FormField>
-            <FormField label="Valor del Viaje ($)" icon={DollarSign}>
-              <input
-                type="text"
-                value={formatThousands(formData.valor_viaje)}
-                onChange={e => handleChange('valor_viaje', parseThousands(e.target.value))}
-                placeholder="0"
-                className={inputCls(true)}
-              />
-            </FormField>
-            <FormField label="Facturado">
-              <label className="flex items-center gap-3 h-[42px] cursor-pointer">
+          {/* ── DATOS BÁSICOS ── */}
+          <Section icon={MapPin} title="Datos Básicos" color="blue">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField label="Fecha" icon={Calendar} required error={errors.fecha?.message}>
                 <input
-                  type="checkbox"
-                  checked={formData.facturado}
-                  onChange={e => handleChange('facturado', e.target.checked)}
-                  className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  {...register('fecha')}
+                  type="date"
+                  className={`${inputCls(true, !!errors.fecha)} min-w-0`}
                 />
-                <span className="text-sm text-slate-700 dark:text-slate-300">
-                  {formData.facturado ? 'Sí' : 'No'}
-                </span>
-              </label>
-            </FormField>
-          </div>
-        </Section>
+              </FormField>
 
-      </div>
+              <FormField label="Vehículo" icon={Truck} required error={errors.vehiculo_id?.message}>
+                <Controller
+                  name="vehiculo_id"
+                  control={control}
+                  render={({ field }) => (
+                    <select
+                      value={field.value}
+                      onChange={e => handleVehiculoChange(e.target.value)}
+                      className={selectCls(true, !!errors.vehiculo_id)}
+                    >
+                      <option value="">Seleccionar vehículo...</option>
+                      {vehiculos.map(v => (
+                        <option key={v.id} value={v.id}>
+                          {v.placa} - {v.tipo_vehiculo}
+                          {v.conductor?.nombre_completo ? ` (${v.conductor.nombre_completo})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+              </FormField>
+
+              <FormField label="Conductor" icon={User} required error={errors.conductor_id?.message}>
+                <select
+                  {...register('conductor_id')}
+                  disabled={esConductor}
+                  className={`${selectCls(true, !!errors.conductor_id)} ${esConductor ? 'opacity-60' : ''}`}
+                >
+                  <option value="">Seleccionar conductor...</option>
+                  {conductores.map(c => (
+                    <option key={c.id} value={c.id}>{c.nombre_completo || c.username}</option>
+                  ))}
+                </select>
+              </FormField>
+
+              <FormField label="Cliente" icon={Building2}>
+                <Controller
+                  name="_cliente_selector"
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <select
+                      value={field.value}
+                      onChange={e => { field.onChange(e.target.value); handleClienteChange(e.target.value); }}
+                      className={selectCls(true)}
+                    >
+                      <option value="">Seleccionar cliente...</option>
+                      {clientes.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.nombre || c.razon_social} {c.documento || c.nit ? `- ${c.documento || c.nit}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+              </FormField>
+
+              <FormField label="Documento del Cliente" icon={FileText} error={errors.documento_cliente?.message}>
+                <input
+                  {...register('documento_cliente')}
+                  type="text"
+                  placeholder="Remisión o documento"
+                  className={inputCls(true, !!errors.documento_cliente)}
+                />
+              </FormField>
+
+              <FormField label="Origen" icon={MapPin} error={errors.origen?.message}>
+                <input
+                  {...register('origen')}
+                  type="text"
+                  className={inputCls(true, !!errors.origen)}
+                  onChange={e => setValue('origen', e.target.value.toUpperCase())}
+                />
+              </FormField>
+
+              <FormField label="Destino" icon={MapPin} required error={errors.destino?.message}>
+                <input
+                  {...register('destino')}
+                  type="text"
+                  placeholder="Ciudad destino"
+                  className={inputCls(true, !!errors.destino)}
+                />
+              </FormField>
+
+              <FormField label="Caja Menor" icon={Wallet} error={errors.caja_menor_id?.message}>
+                <select
+                  {...register('caja_menor_id')}
+                  className={selectCls(true, !!errors.caja_menor_id)}
+                >
+                  <option value="">Sin caja menor</option>
+                  {cajasMenores.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.numero} - {c.asignado?.nombre_completo || c.asignado?.username || ''}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+
+              <FormField label="Descripción" className="md:col-span-2" error={errors.descripcion?.message}>
+                <textarea
+                  {...register('descripcion')}
+                  rows={3}
+                  placeholder="Notas del viaje..."
+                  className={inputCls(false, !!errors.descripcion)}
+                />
+              </FormField>
+            </div>
+          </Section>
+
+          {/* ── INFORMACIÓN ADICIONAL ── */}
+          <Section
+            icon={Weight}
+            title="Información Adicional"
+            color="amber"
+            collapsible
+            open={showAdicional}
+            onToggle={() => setShowAdicional(!showAdicional)}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField label="Peso (ton)" icon={Weight} error={errors.peso?.message}>
+                <input
+                  {...register('peso')}
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  placeholder="0.00"
+                  className={inputCls(true, !!errors.peso)}
+                />
+              </FormField>
+
+              <FormField label="Valor Descargue ($)" icon={DollarSign} error={errors.valor_descargue?.message}>
+                <Controller
+                  name="valor_descargue"
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      type="text"
+                      value={formatThousands(field.value)}
+                      onChange={e => field.onChange(parseThousands(e.target.value))}
+                      placeholder="0"
+                      className={inputCls(true, !!errors.valor_descargue)}
+                    />
+                  )}
+                />
+              </FormField>
+
+              <FormField label="Nº Personas" icon={Users} error={errors.num_personas?.message}>
+                <input
+                  {...register('num_personas')}
+                  type="number"
+                  min={0}
+                  step={1}
+                  placeholder="0"
+                  className={inputCls(true, !!errors.num_personas)}
+                />
+              </FormField>
+            </div>
+          </Section>
+
+          {/* ── DATOS DE FACTURACIÓN ── */}
+          <Section
+            icon={DollarSign}
+            title="Datos de Facturación"
+            color="green"
+            collapsible
+            open={showFacturacion}
+            onToggle={() => setShowFacturacion(!showFacturacion)}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField label="Nº Factura" icon={Hash} error={errors.no_factura?.message}>
+                <input
+                  {...register('no_factura')}
+                  type="text"
+                  placeholder="Número de factura"
+                  className={inputCls(true, !!errors.no_factura)}
+                />
+              </FormField>
+
+              <FormField label="Valor del Viaje ($)" icon={DollarSign} error={errors.valor_viaje?.message}>
+                <Controller
+                  name="valor_viaje"
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      type="text"
+                      value={formatThousands(field.value)}
+                      onChange={e => field.onChange(parseThousands(e.target.value))}
+                      placeholder="0"
+                      className={inputCls(true, !!errors.valor_viaje)}
+                    />
+                  )}
+                />
+              </FormField>
+
+              <FormField label="Facturado">
+                <label className="flex items-center gap-3 h-[42px] cursor-pointer">
+                  <input
+                    {...register('facturado')}
+                    type="checkbox"
+                    className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">
+                    {watchFacturado ? 'Sí' : 'No'}
+                  </span>
+                </label>
+              </FormField>
+            </div>
+          </Section>
+
+        </div>
+      </form>
     </div>
   );
 };

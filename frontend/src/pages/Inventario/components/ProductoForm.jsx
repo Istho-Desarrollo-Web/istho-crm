@@ -3,22 +3,20 @@
  * ISTHO CRM - ProductoForm
  * ============================================================================
  * Formulario para crear/editar productos de inventario.
- * Usa snake_case para campos del backend.
- * 
- * CORRECCIÓN v2.3.0:
- * - Formulario simplificado: solo campos esenciales para bodega
- * - Campos gestionados por WMS (lote, fecha_vencimiento, cantidad, estado) removidos del form
- * - Campos no relevantes (codigo_barras, zona, stock_maximo, costo_unitario) removidos
+ * Validación con React Hook Form + Yup.
  *
  * @author Coordinación TI ISTHO
- * @version 2.3.0
- * @date Marzo 2026
+ * @version 3.0.0
+ * @date Abril 2026
  */
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { X, Package, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/common';
 import { useClientesSelector } from '../../../hooks/useClientes';
+import { productoSchema } from '../../../utils/validationSchemas';
 
 // ════════════════════════════════════════════════════════════════════════════
 // CONSTANTES
@@ -47,133 +45,77 @@ const UNIDADES = [
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
-// HELPERS DE CONVERSIÓN NUMÉRICA
+// HELPERS
 // ════════════════════════════════════════════════════════════════════════════
 
-/**
- * Convierte un string a número de forma segura
- * Maneja diferentes formatos de locale (comas, puntos)
- * @param {string|number} value - Valor a convertir
- * @returns {number|null} - Número convertido o null si no es válido
- */
 const safeParseNumber = (value) => {
-  if (value === null || value === undefined || value === '') {
-    return null;
-  }
-  
-  // Si ya es número, retornarlo directamente
-  if (typeof value === 'number') {
-    return isNaN(value) ? null : value;
-  }
-  
-  // Convertir a string y limpiar
-  let strValue = String(value).trim();
-  
-  // Remover cualquier separador de miles (puntos en formato colombiano)
-  // y reemplazar coma decimal por punto
-  // Detectar formato: si tiene punto y luego coma, es formato europeo
-  // Si tiene coma y luego punto, es formato americano
-  
-  const hasComma = strValue.includes(',');
-  const hasDot = strValue.includes('.');
-  
+  if (value === null || value === undefined || value === '') return null;
+  if (typeof value === 'number') return isNaN(value) ? null : value;
+
+  let str = String(value).trim();
+  const hasComma = str.includes(',');
+  const hasDot = str.includes('.');
+
   if (hasComma && hasDot) {
-    // Formato mixto - determinar cuál es decimal
-    const lastComma = strValue.lastIndexOf(',');
-    const lastDot = strValue.lastIndexOf('.');
-    
-    if (lastComma > lastDot) {
-      // Formato europeo: 1.000,50 → 1000.50
-      strValue = strValue.replace(/\./g, '').replace(',', '.');
+    if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
+      str = str.replace(/\./g, '').replace(',', '.');
     } else {
-      // Formato americano: 1,000.50 → 1000.50
-      strValue = strValue.replace(/,/g, '');
+      str = str.replace(/,/g, '');
     }
   } else if (hasComma) {
-    // Solo coma - podría ser decimal o miles
-    // Si tiene exactamente 3 dígitos después de la coma, asumir miles
-    const parts = strValue.split(',');
-    if (parts[1] && parts[1].length === 3 && !parts[1].includes('.')) {
-      // Probablemente separador de miles: 1,000 → 1000
-      strValue = strValue.replace(/,/g, '');
+    const parts = str.split(',');
+    if (parts[1] && parts[1].length === 3) {
+      str = str.replace(/,/g, '');
     } else {
-      // Probablemente decimal: 1,5 → 1.5
-      strValue = strValue.replace(',', '.');
+      str = str.replace(',', '.');
     }
   }
-  // Si solo tiene puntos, dejarlo como está (formato americano o decimal)
-  
-  const result = parseFloat(strValue);
+
+  const result = parseFloat(str);
   return isNaN(result) ? null : result;
 };
 
-/**
- * Convierte un valor a entero de forma segura
- * @param {string|number} value - Valor a convertir
- * @returns {number|null} - Entero convertido o null
- */
-const safeParseInt = (value) => {
-  const num = safeParseNumber(value);
-  return num !== null ? Math.round(num) : null;
+const toInputValue = (val) => {
+  if (val === null || val === undefined || val === '') return '';
+  const num = safeParseNumber(val);
+  return num !== null ? String(num) : '';
 };
 
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════════════════════════════════════
 
-const ProductoForm = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
+const ProductoForm = ({
+  isOpen,
+  onClose,
+  onSubmit,
   producto = null,
-  loading = false 
+  loading = false,
 }) => {
   const isEditing = !!producto;
-  
-  // ✅ Cargar clientes desde el backend
-  const { 
-    clientes, 
-    loading: loadingClientes, 
-    error: errorClientes 
-  } = useClientesSelector();
 
-  const [formData, setFormData] = useState({
-    // Campos visibles en el formulario
-    cliente_id: '',
-    sku: '',
-    producto: '',
-    descripcion: '',
-    categoria: '',
-    unidad_medida: 'UND',
-    stock_minimo: '',
-    ubicacion: '',
-    notas: '',
-    // Campos ocultos (se envían vacíos para evitar errores en backend)
-    codigo_barras: '',
-    cantidad: '',
-    stock_maximo: '',
-    zona: '',
-    lote: '',
-    fecha_vencimiento: '',
-    costo_unitario: '',
-    estado: 'disponible',
+  const { clientes, loading: loadingClientes, error: errorClientes } = useClientesSelector();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(productoSchema),
+    defaultValues: { unidad_medida: 'UND' },
   });
 
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
+  // ──────────────────────────────────────────────────────────────────────────
+  // CARGAR DATOS
+  // ──────────────────────────────────────────────────────────────────────────
 
-  // Cargar datos del producto si estamos editando
   useEffect(() => {
-    if (isOpen && producto) {
-      // ✅ Convertir números a string para el input, sin formateo de locale
-      const toInputValue = (val) => {
-        if (val === null || val === undefined || val === '') return '';
-        const num = safeParseNumber(val);
-        return num !== null ? String(num) : '';
-      };
+    if (!isOpen) return;
 
-      setFormData({
-        // Campos visibles
+    if (producto) {
+      reset({
         cliente_id: producto.cliente_id || '',
         sku: producto.sku || producto.codigo || '',
         producto: producto.producto || producto.nombre || '',
@@ -183,21 +125,9 @@ const ProductoForm = ({
         stock_minimo: toInputValue(producto.stock_minimo),
         ubicacion: producto.ubicacion || '',
         notas: producto.notas || '',
-        // Campos ocultos (preservar valores existentes)
-        codigo_barras: producto.codigo_barras || '',
-        cantidad: toInputValue(producto.cantidad ?? producto.stock_actual),
-        stock_maximo: toInputValue(producto.stock_maximo),
-        zona: producto.zona || producto.bodega || '',
-        lote: producto.lote || '',
-        fecha_vencimiento: producto.fecha_vencimiento ? producto.fecha_vencimiento.split('T')[0] : '',
-        costo_unitario: toInputValue(producto.costo_unitario),
-        estado: producto.estado || 'disponible',
       });
-      setErrors({});
-      setTouched({});
-    } else if (isOpen) {
-      // Reset form para nuevo producto
-      setFormData({
+    } else {
+      reset({
         cliente_id: '',
         sku: '',
         producto: '',
@@ -207,78 +137,55 @@ const ProductoForm = ({
         stock_minimo: '',
         ubicacion: '',
         notas: '',
-        codigo_barras: '',
-        cantidad: '',
-        stock_maximo: '',
-        zona: '',
-        lote: '',
-        fecha_vencimiento: '',
-        costo_unitario: '',
-        estado: 'disponible',
       });
-      setErrors({});
-      setTouched({});
     }
-  }, [isOpen, producto]);
+  }, [isOpen, producto]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const validate = () => {
-    const newErrors = {};
+  // ──────────────────────────────────────────────────────────────────────────
+  // SUBMIT
+  // ──────────────────────────────────────────────────────────────────────────
 
-    if (!formData.producto.trim()) {
-      newErrors.producto = 'El nombre del producto es requerido';
-    }
-
-    if (!formData.sku.trim()) {
-      newErrors.sku = 'El código SKU es requerido';
+  const submitForm = (data) => {
+    if (!isEditing && !data.cliente_id) {
+      setError('cliente_id', { message: 'El cliente es requerido' });
+      return;
     }
 
-    if (!isEditing && !formData.cliente_id) {
-      newErrors.cliente_id = 'El cliente es requerido';
-    }
+    const submitData = {
+      cliente_id: data.cliente_id ? parseInt(data.cliente_id, 10) : null,
+      sku: data.sku?.toUpperCase(),
+      producto: data.producto,
+      descripcion: data.descripcion || '',
+      categoria: data.categoria || '',
+      unidad_medida: data.unidad_medida || 'UND',
+      stock_minimo: safeParseNumber(data.stock_minimo) ?? 0,
+      ubicacion: data.ubicacion || '',
+      notas: data.notas || '',
+    };
 
-    // Validar que los campos numéricos sean válidos
-    if (formData.stock_minimo && safeParseNumber(formData.stock_minimo) === null) {
-      newErrors.stock_minimo = 'El stock mínimo debe ser un número válido';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    onSubmit(submitData);
   };
 
-  const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: null }));
-  };
-
-  const handleBlur = (field) => setTouched(prev => ({ ...prev, [field]: true }));
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setTouched({
-      producto: true,
-      sku: true,
-      cliente_id: true,
-    });
-
-    if (validate()) {
-      const submitData = {
-        ...formData,
-        cliente_id: formData.cliente_id ? safeParseInt(formData.cliente_id) : null,
-        stock_minimo: safeParseNumber(formData.stock_minimo) ?? 0,
-      };
-
-      onSubmit(submitData);
-    }
-  };
+  // ──────────────────────────────────────────────────────────────────────────
+  // RENDER
+  // ──────────────────────────────────────────────────────────────────────────
 
   if (!isOpen) return null;
+
+  const fieldCls = (hasError) => `
+    w-full px-4 py-2.5 border rounded-xl
+    focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
+    dark:bg-slate-800/50 dark:text-slate-100
+    ${hasError ? 'border-red-300 bg-red-50 dark:bg-red-900/10' : 'border-gray-200 dark:border-slate-700'}
+  `.trim();
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      
+
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative bg-white dark:bg-[#1A1B3A] rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700 sticky top-0 bg-white dark:bg-[#1A1B3A] z-10">
             <div className="flex items-center gap-3">
@@ -289,33 +196,33 @@ const ProductoForm = ({
                 {isEditing ? 'Editar Producto' : 'Nuevo Producto'}
               </h2>
             </div>
-            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30 rounded-lg">
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30 rounded-lg"
+            >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+          <form onSubmit={handleSubmit(submitForm)} noValidate className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
+
               {/* Nombre del producto */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Nombre del Producto *
                 </label>
                 <input
+                  {...register('producto')}
                   type="text"
-                  value={formData.producto}
-                  onChange={(e) => handleChange('producto', e.target.value)}
-                  onBlur={() => handleBlur('producto')}
-                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 ${
-                    errors.producto && touched.producto ? 'border-red-300 bg-red-50' : 'border-gray-200 dark:border-slate-700'
-                  }`}
                   placeholder="Nombre del producto"
+                  className={fieldCls(!!errors.producto)}
                 />
-                {errors.producto && touched.producto && (
+                {errors.producto && (
                   <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />{errors.producto}
+                    <AlertTriangle className="w-3 h-3" />{errors.producto.message}
                   </p>
                 )}
               </div>
@@ -326,23 +233,19 @@ const ProductoForm = ({
                   Código SKU *
                 </label>
                 <input
+                  {...register('sku')}
                   type="text"
-                  value={formData.sku}
-                  onChange={(e) => handleChange('sku', e.target.value.toUpperCase())}
-                  onBlur={() => handleBlur('sku')}
-                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-mono ${
-                    errors.sku && touched.sku ? 'border-red-300 bg-red-50' : 'border-gray-200 dark:border-slate-700'
-                  }`}
                   placeholder="SKU-001"
+                  className={`${fieldCls(!!errors.sku)} font-mono uppercase`}
                 />
-                {errors.sku && touched.sku && (
+                {errors.sku && (
                   <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />{errors.sku}
+                    <AlertTriangle className="w-3 h-3" />{errors.sku.message}
                   </p>
                 )}
               </div>
 
-              {/* ✅ Cliente - Selector desde Backend (Solo para nuevo) */}
+              {/* Cliente (solo en creación) */}
               {!isEditing && (
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
@@ -359,12 +262,8 @@ const ProductoForm = ({
                     </div>
                   ) : (
                     <select
-                      value={formData.cliente_id}
-                      onChange={(e) => handleChange('cliente_id', e.target.value)}
-                      onBlur={() => handleBlur('cliente_id')}
-                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 ${
-                        errors.cliente_id && touched.cliente_id ? 'border-red-300 bg-red-50' : 'border-gray-200 dark:border-slate-700'
-                      }`}
+                      {...register('cliente_id')}
+                      className={fieldCls(!!errors.cliente_id)}
                     >
                       <option value="">Seleccionar cliente...</option>
                       {clientes.map((cliente) => (
@@ -375,15 +274,15 @@ const ProductoForm = ({
                       ))}
                     </select>
                   )}
-                  {errors.cliente_id && touched.cliente_id && (
+                  {errors.cliente_id && (
                     <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" />{errors.cliente_id}
+                      <AlertTriangle className="w-3 h-3" />{errors.cliente_id.message}
                     </p>
                   )}
                 </div>
               )}
 
-              {/* Cliente Info (Solo lectura si editando) */}
+              {/* Cliente Info (solo lectura si editando) */}
               {isEditing && producto?.cliente && (
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
@@ -403,11 +302,7 @@ const ProductoForm = ({
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Categoría
                 </label>
-                <select
-                  value={formData.categoria}
-                  onChange={(e) => handleChange('categoria', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100"
-                >
+                <select {...register('categoria')} className={fieldCls(false)}>
                   <option value="">Seleccionar categoría</option>
                   {CATEGORIAS.map((cat) => (
                     <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -420,11 +315,7 @@ const ProductoForm = ({
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Unidad de Medida
                 </label>
-                <select
-                  value={formData.unidad_medida}
-                  onChange={(e) => handleChange('unidad_medida', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100"
-                >
+                <select {...register('unidad_medida')} className={fieldCls(false)}>
                   {UNIDADES.map((und) => (
                     <option key={und.value} value={und.value}>{und.label}</option>
                   ))}
@@ -437,17 +328,30 @@ const ProductoForm = ({
                   Stock Mínimo
                 </label>
                 <input
+                  {...register('stock_minimo')}
                   type="text"
                   inputMode="decimal"
-                  value={formData.stock_minimo}
-                  onChange={(e) => handleChange('stock_minimo', e.target.value)}
-                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 ${
-                    errors.stock_minimo ? 'border-red-300 bg-red-50' : 'border-gray-200 dark:border-slate-700'
-                  }`}
                   placeholder="0"
+                  className={fieldCls(!!errors.stock_minimo)}
                 />
                 {errors.stock_minimo && (
-                  <p className="mt-1 text-sm text-red-500">{errors.stock_minimo}</p>
+                  <p className="mt-1 text-sm text-red-500">{errors.stock_minimo.message}</p>
+                )}
+              </div>
+
+              {/* Ubicación */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  Ubicación
+                </label>
+                <input
+                  {...register('ubicacion')}
+                  type="text"
+                  placeholder="Bodega, estante, posición..."
+                  className={fieldCls(!!errors.ubicacion)}
+                />
+                {errors.ubicacion && (
+                  <p className="mt-1 text-sm text-red-500">{errors.ubicacion.message}</p>
                 )}
               </div>
 
@@ -457,11 +361,10 @@ const ProductoForm = ({
                   Descripción
                 </label>
                 <textarea
-                  value={formData.descripcion}
-                  onChange={(e) => handleChange('descripcion', e.target.value)}
+                  {...register('descripcion')}
                   rows={2}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
                   placeholder="Descripción del producto..."
+                  className={`${fieldCls(false)} resize-none`}
                 />
               </div>
 
@@ -471,31 +374,24 @@ const ProductoForm = ({
                   Notas Internas
                 </label>
                 <textarea
-                  value={formData.notas}
-                  onChange={(e) => handleChange('notas', e.target.value)}
+                  {...register('notas')}
                   rows={2}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
                   placeholder="Notas internas..."
+                  className={`${fieldCls(false)} resize-none`}
                 />
               </div>
             </div>
 
-            {/* Actions */}
+            {/* Acciones */}
             <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-slate-700">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={onClose} 
-                className="flex-1" 
-                disabled={loading}
-              >
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1" disabled={loading}>
                 Cancelar
               </Button>
-              <Button 
-                type="submit" 
-                variant="primary" 
-                icon={Package} 
-                className="flex-1" 
+              <Button
+                type="submit"
+                variant="primary"
+                icon={Package}
+                className="flex-1"
                 loading={loading}
                 disabled={loadingClientes}
               >

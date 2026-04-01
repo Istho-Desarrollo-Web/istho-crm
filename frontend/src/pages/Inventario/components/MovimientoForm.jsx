@@ -1,21 +1,21 @@
 /**
  * ============================================================================
- * ISTHO CRM - MovimientoForm (Versión Corregida)
+ * ISTHO CRM - MovimientoForm
  * ============================================================================
  * Formulario para registrar movimientos de inventario.
- * Usa snake_case para campos del backend.
- * 
- * CORRECCIONES:
- * - Corregidos errores de sintaxis en template literals
- * 
+ * Validación con React Hook Form + Yup.
+ *
  * @author Coordinación TI ISTHO
- * @version 2.1.0
- * @date Enero 2026
+ * @version 3.0.0
+ * @date Abril 2026
  */
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { X, PackagePlus, PackageMinus, Layers, AlertTriangle } from 'lucide-react';
 import { Button } from '../../../components/common';
+import { movimientoInventarioSchema } from '../../../utils/validationSchemas';
 
 // ════════════════════════════════════════════════════════════════════════════
 // CONFIGURACIÓN POR TIPO
@@ -71,112 +71,85 @@ const MOTIVOS_SALIDA = [
 // COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════════════════════════════════════
 
-const MovimientoForm = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
+const MovimientoForm = ({
+  isOpen,
+  onClose,
+  onSubmit,
   tipo = 'entrada',
-  producto, 
-  loading = false 
+  producto,
+  loading = false,
 }) => {
-  const [formData, setFormData] = useState({
-    cantidad: '',
-    motivo: '',
-    documento_referencia: '',
-    observaciones: '',
-  });
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-
   const config = TIPO_CONFIG[tipo] || TIPO_CONFIG.entrada;
   const Icon = config.icon;
   const motivos = tipo === 'entrada' ? MOTIVOS_ENTRADA : MOTIVOS_SALIDA;
 
-  // Extraer datos del producto con snake_case (compatible con ambos formatos)
   const stockActual = producto?.stock_actual ?? producto?.stockActual ?? producto?.cantidad ?? 0;
   const unidadMedida = producto?.unidad_medida ?? producto?.unidadMedida ?? 'UND';
   const productoNombre = producto?.nombre ?? producto?.producto ?? 'Producto';
   const productoCodigo = producto?.codigo ?? producto?.sku ?? '-';
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(movimientoInventarioSchema),
+    defaultValues: { cantidad: '', motivo: '', documento_referencia: '', observaciones: '' },
+  });
+
+  const watchCantidad = watch('cantidad');
+
   // ──────────────────────────────────────────────────────────────────────────
-  // RESET FORM AL ABRIR
+  // RESET AL ABRIR
   // ──────────────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     if (isOpen) {
-      setFormData({ 
-        cantidad: '', 
-        motivo: '', 
-        documento_referencia: '', 
-        observaciones: '' 
+      reset({ cantidad: '', motivo: '', documento_referencia: '', observaciones: '' });
+    }
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SUBMIT
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const submitForm = (data) => {
+    if (tipo === 'salida' && data.cantidad > stockActual) {
+      setError('cantidad', {
+        message: `Stock insuficiente. Disponible: ${stockActual} ${unidadMedida}`,
       });
-      setErrors({});
-      setTouched({});
+      return;
     }
-  }, [isOpen]);
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // VALIDACIÓN
-  // ──────────────────────────────────────────────────────────────────────────
-  const validate = () => {
-    const newErrors = {};
-    const cantidad = parseFloat(formData.cantidad);
-    
-    if (!formData.cantidad) {
-      newErrors.cantidad = 'La cantidad es requerida';
-    } else if (isNaN(cantidad) || cantidad <= 0) {
-      newErrors.cantidad = 'La cantidad debe ser mayor a 0';
-    } else if (tipo === 'salida' && cantidad > stockActual) {
-      newErrors.cantidad = `Stock insuficiente. Disponible: ${stockActual} ${unidadMedida}`;
-    }
-
-    if (!formData.motivo) {
-      newErrors.motivo = 'Selecciona un motivo';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // HANDLERS
-  // ──────────────────────────────────────────────────────────────────────────
-  const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: null }));
-  };
-
-  const handleBlur = (field) => setTouched(prev => ({ ...prev, [field]: true }));
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setTouched({ cantidad: true, motivo: true });
-    
-    if (validate()) {
-      onSubmit({
-        cantidad: parseFloat(formData.cantidad),
-        motivo: formData.motivo,
-        documento_referencia: formData.documento_referencia,
-        observaciones: formData.observaciones,
-      });
-    }
+    onSubmit({
+      cantidad: data.cantidad,
+      motivo: data.motivo,
+      documento_referencia: data.documento_referencia || '',
+      observaciones: data.observaciones || '',
+    });
   };
 
   // ──────────────────────────────────────────────────────────────────────────
   // RENDER
   // ──────────────────────────────────────────────────────────────────────────
+
   if (!isOpen) return null;
+
+  const parsedCantidad = parseFloat(watchCantidad);
+  const showPreview = watchCantidad && !isNaN(parsedCantidad) && !errors.cantidad;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      
+
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative bg-white dark:bg-[#1A1B3A] rounded-2xl shadow-xl w-full max-w-md">
-          
-          {/* ══════════════════════════════════════════════════════════════ */}
+
           {/* HEADER */}
-          {/* ══════════════════════════════════════════════════════════════ */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${config.bg}`}>
@@ -184,17 +157,15 @@ const MovimientoForm = ({
               </div>
               <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{config.title}</h2>
             </div>
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30 rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* ══════════════════════════════════════════════════════════════ */}
-          {/* PRODUCT INFO */}
-          {/* ══════════════════════════════════════════════════════════════ */}
+          {/* INFO PRODUCTO */}
           {producto && (
             <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-700">
               <div className="flex items-center justify-between">
@@ -212,11 +183,9 @@ const MovimientoForm = ({
             </div>
           )}
 
-          {/* ══════════════════════════════════════════════════════════════ */}
           {/* FORM */}
-          {/* ══════════════════════════════════════════════════════════════ */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            
+          <form onSubmit={handleSubmit(submitForm)} className="p-6 space-y-4" noValidate>
+
             {/* Cantidad */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
@@ -224,12 +193,10 @@ const MovimientoForm = ({
               </label>
               <div className="relative">
                 <input
+                  {...register('cantidad')}
                   type="number"
-                  value={formData.cantidad}
-                  onChange={(e) => handleChange('cantidad', e.target.value)}
-                  onBlur={() => handleBlur('cantidad')}
                   className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 ${
-                    errors.cantidad && touched.cantidad ? 'border-red-300 bg-red-50' : 'border-gray-200 dark:border-slate-700'
+                    errors.cantidad ? 'border-red-300 bg-red-50 dark:bg-red-900/10' : 'border-gray-200 dark:border-slate-700'
                   }`}
                   placeholder="0"
                   min="0.001"
@@ -239,23 +206,23 @@ const MovimientoForm = ({
                   {unidadMedida}
                 </span>
               </div>
-              {errors.cantidad && touched.cantidad && (
+              {errors.cantidad && (
                 <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3" />
-                  {errors.cantidad}
+                  {errors.cantidad.message}
                 </p>
               )}
-              
-              {/* Quick select buttons for salida */}
+
+              {/* Quick select para salida */}
               {tipo === 'salida' && stockActual > 0 && (
                 <div className="flex gap-2 mt-2">
                   {[25, 50, 75, 100].map((percent) => {
                     const value = Math.floor(stockActual * (percent / 100));
                     return (
-                      <button 
-                        key={percent} 
-                        type="button" 
-                        onClick={() => handleChange('cantidad', value.toString())}
+                      <button
+                        key={percent}
+                        type="button"
+                        onClick={() => setValue('cantidad', value.toString())}
                         className="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors"
                       >
                         {percent}% ({value})
@@ -272,11 +239,9 @@ const MovimientoForm = ({
                 Motivo *
               </label>
               <select
-                value={formData.motivo}
-                onChange={(e) => handleChange('motivo', e.target.value)}
-                onBlur={() => handleBlur('motivo')}
+                {...register('motivo')}
                 className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 ${
-                  errors.motivo && touched.motivo ? 'border-red-300 bg-red-50' : 'border-gray-200 dark:border-slate-700'
+                  errors.motivo ? 'border-red-300 bg-red-50 dark:bg-red-900/10' : 'border-gray-200 dark:border-slate-700'
                 }`}
               >
                 <option value="">Seleccionar motivo...</option>
@@ -284,10 +249,10 @@ const MovimientoForm = ({
                   <option key={motivo} value={motivo}>{motivo}</option>
                 ))}
               </select>
-              {errors.motivo && touched.motivo && (
+              {errors.motivo && (
                 <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3" />
-                  {errors.motivo}
+                  {errors.motivo.message}
                 </p>
               )}
             </div>
@@ -298,9 +263,8 @@ const MovimientoForm = ({
                 Documento de Referencia
               </label>
               <input
+                {...register('documento_referencia')}
                 type="text"
-                value={formData.documento_referencia}
-                onChange={(e) => handleChange('documento_referencia', e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100"
                 placeholder="Ej: OC-2026-001, FAC-12345"
               />
@@ -315,53 +279,40 @@ const MovimientoForm = ({
                 Observaciones
               </label>
               <textarea
-                value={formData.observaciones}
-                onChange={(e) => handleChange('observaciones', e.target.value)}
+                {...register('observaciones')}
                 rows={3}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
+                className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 resize-none"
                 placeholder="Información adicional..."
               />
             </div>
 
-            {/* Preview del resultado */}
-            {formData.cantidad && !errors.cantidad && (
+            {/* Preview resultado */}
+            {showPreview && (
               <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Resultado del movimiento:</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-slate-600 dark:text-slate-300">{stockActual.toLocaleString()}</span>
                     <span className={tipo === 'entrada' ? 'text-emerald-600' : 'text-red-600'}>
-                      {tipo === 'entrada' ? '+' : '-'} {parseFloat(formData.cantidad).toLocaleString()}
+                      {tipo === 'entrada' ? '+' : '-'} {parsedCantidad.toLocaleString()}
                     </span>
                   </div>
                   <span className="text-lg font-bold text-slate-800 dark:text-slate-100">
-                    = {(tipo === 'entrada' 
-                      ? stockActual + parseFloat(formData.cantidad)
-                      : stockActual - parseFloat(formData.cantidad)
+                    = {(tipo === 'entrada'
+                      ? stockActual + parsedCantidad
+                      : stockActual - parsedCantidad
                     ).toLocaleString()} {unidadMedida}
                   </span>
                 </div>
               </div>
             )}
 
-            {/* Actions */}
+            {/* Acciones */}
             <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-slate-700">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={onClose} 
-                className="flex-1" 
-                disabled={loading}
-              >
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1" disabled={loading}>
                 Cancelar
               </Button>
-              <Button 
-                type="submit" 
-                variant={config.buttonVariant} 
-                icon={Icon} 
-                className="flex-1" 
-                loading={loading}
-              >
+              <Button type="submit" variant={config.buttonVariant} icon={Icon} className="flex-1" loading={loading}>
                 {config.buttonText}
               </Button>
             </div>

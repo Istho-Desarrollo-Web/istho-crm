@@ -4,20 +4,22 @@
  * ============================================================================
  * Formulario modal para crear y editar cajas menores.
  * Soporta traslado de saldo desde cajas cerradas anteriores.
- * Sigue el mismo patrón de diseño que ClienteForm y VehiculoForm.
+ * Validación con React Hook Form + Yup.
  *
  * @author Coordinacion TI ISTHO
- * @version 2.0.0
- * @date Marzo 2026
+ * @version 3.0.0
+ * @date Abril 2026
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import PropTypes from 'prop-types';
 import { Wallet, User, DollarSign, FileText, ArrowLeftRight, Info } from 'lucide-react';
 import { Button, Modal } from '../../../components/common/index';
 import { cajasMenoresService } from '../../../api/viajes.service';
-// adminService removido — usar cajasMenoresService.getUsuariosAsignables() (no requiere admin)
 import useNotification from '../../../hooks/useNotification';
+import { cajaMenorSchema } from '../../../utils/validationSchemas';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -34,7 +36,6 @@ const formatMoney = (value) => {
   }).format(num);
 };
 
-/** Formatea número con separadores de miles para input visual */
 const formatThousands = (value) => {
   if (!value && value !== 0) return '';
   const parsed = parseFloat(value);
@@ -42,14 +43,13 @@ const formatThousands = (value) => {
   return Math.round(parsed).toLocaleString('es-CO');
 };
 
-/** Extrae número limpio de string formateado */
 const parseThousands = (formatted) => {
   const clean = String(formatted).replace(/[^\d]/g, '');
   return clean ? Number(clean) : '';
 };
 
 // ════════════════════════════════════════════════════════════════════════════
-// INPUT FIELD (mismo patrón que ClienteForm / VehiculoForm)
+// INPUT FIELD
 // ════════════════════════════════════════════════════════════════════════════
 
 const InputField = ({ label, icon: Icon, required, error, children }) => (
@@ -66,9 +66,19 @@ const InputField = ({ label, icon: Icon, required, error, children }) => (
       )}
       {children}
     </div>
-    {error && <p className="text-xs text-red-500">{error}</p>}
+    {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
   </div>
 );
+
+const inputClasses = (hasIcon, hasError) => `
+  w-full px-4 py-2.5
+  bg-white dark:bg-slate-800 border rounded-xl
+  text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
+  focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
+  transition-all duration-200
+  ${hasError ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'}
+  ${hasIcon ? 'pl-10' : ''}
+`.trim();
 
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
@@ -77,21 +87,32 @@ const InputField = ({ label, icon: Icon, required, error, children }) => (
 const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
   const { success: notifySuccess, error: notifyError, apiError } = useNotification();
 
-  const [formData, setFormData] = useState({
-    asignado_a: '',
-    saldo_inicial: '',
-    caja_anterior_id: '',
-    observaciones: '',
-  });
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
-
-  // Datos para selects
   const [usuarios, setUsuarios] = useState([]);
   const [cajasCerradas, setCajasCerradas] = useState([]);
 
   const isEditing = !!cajaId;
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: yupResolver(cajaMenorSchema),
+    defaultValues: {
+      asignado_a: '',
+      saldo_inicial: '',
+      caja_anterior_id: '',
+      observaciones: '',
+    },
+  });
+
+  const watchAsignado = watch('asignado_a');
+  const watchCajaAnterior = watch('caja_anterior_id');
+  const watchSaldoInicial = watch('saldo_inicial');
 
   // ──────────────────────────────────────────────────────────────────────────
   // CARGA DE DATOS
@@ -100,7 +121,6 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
   useEffect(() => {
     if (!open) return;
 
-    setErrors({});
     setLoadingData(true);
 
     const fetchData = async () => {
@@ -120,13 +140,12 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
         notifyError('No se pudieron cargar los datos del formulario');
       }
 
-      // Cargar caja existente en modo edición
       if (cajaId) {
         try {
           const response = await cajasMenoresService.getById(cajaId);
           if (response.success || response.data) {
             const caja = response.data;
-            setFormData({
+            reset({
               asignado_a: caja.asignado_a || '',
               saldo_inicial: caja.saldo_inicial || '',
               caja_anterior_id: caja.caja_anterior_id || '',
@@ -138,12 +157,7 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
           apiError(err);
         }
       } else {
-        setFormData({
-          asignado_a: '',
-          saldo_inicial: '',
-          caja_anterior_id: '',
-          observaciones: '',
-        });
+        reset({ asignado_a: '', saldo_inicial: '', caja_anterior_id: '', observaciones: '' });
       }
 
       setLoadingData(false);
@@ -153,99 +167,50 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
   }, [open, cajaId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ──────────────────────────────────────────────────────────────────────────
-  // CALCULOS
+  // CÁLCULOS
   // ──────────────────────────────────────────────────────────────────────────
 
   const cajaAnteriorSeleccionada = useMemo(() => {
-    if (!formData.caja_anterior_id) return null;
-    return cajasCerradas.find((c) => c.id === Number(formData.caja_anterior_id)) || null;
-  }, [formData.caja_anterior_id, cajasCerradas]);
+    if (!watchCajaAnterior) return null;
+    return cajasCerradas.find((c) => c.id === Number(watchCajaAnterior)) || null;
+  }, [watchCajaAnterior, cajasCerradas]);
 
   const saldoTrasladado = useMemo(() => {
     if (!cajaAnteriorSeleccionada) return 0;
     return parseFloat(cajaAnteriorSeleccionada.saldo_actual) || 0;
   }, [cajaAnteriorSeleccionada]);
 
-  // Saldo total = saldo_inicial (manual) + saldo_trasladado (de caja anterior)
-  // El saldo_inicial es lo que el usuario escribe, NO se auto-rellena
   const saldoTotal = useMemo(() => {
-    const inicial = parseFloat(formData.saldo_inicial) || 0;
+    const inicial = parseFloat(watchSaldoInicial) || 0;
     return inicial + saldoTrasladado;
-  }, [formData.saldo_inicial, saldoTrasladado]);
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // HANDLERS
-  // ──────────────────────────────────────────────────────────────────────────
-
-  const handleChange = (field, value) => {
-    setFormData((prev) => {
-      const updated = { ...prev, [field]: value };
-      // Si cambia el usuario, limpiar caja anterior (pertenece a otro usuario)
-      if (field === 'asignado_a') {
-        updated.caja_anterior_id = '';
-      }
-      return updated;
-    });
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: null }));
-    }
-  };
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // VALIDACION
-  // ──────────────────────────────────────────────────────────────────────────
-
-  const validate = () => {
-    const newErrors = {};
-
-    if (!formData.asignado_a) {
-      newErrors.asignado_a = 'El usuario asignado es requerido';
-    }
-
-    if (!formData.saldo_inicial && formData.saldo_inicial !== 0) {
-      newErrors.saldo_inicial = 'El saldo inicial es requerido';
-    } else if (parseFloat(formData.saldo_inicial) < 0) {
-      newErrors.saldo_inicial = 'El saldo inicial no puede ser negativo';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  }, [watchSaldoInicial, saldoTrasladado]);
 
   // ──────────────────────────────────────────────────────────────────────────
   // SUBMIT
   // ──────────────────────────────────────────────────────────────────────────
 
-  const handleSubmit = async () => {
-    if (!validate()) return;
-
-    setLoading(true);
+  const onSubmit = async (data) => {
     try {
       const payload = isEditing
         ? {
-            asignado_a: formData.asignado_a ? Number(formData.asignado_a) : null,
-            saldo_inicial: parseFloat(formData.saldo_inicial) || 0,
-            observaciones: formData.observaciones || null,
+            asignado_a: data.asignado_a ? Number(data.asignado_a) : null,
+            saldo_inicial: parseFloat(data.saldo_inicial) || 0,
+            observaciones: data.observaciones || null,
           }
         : {
-            asignado_a: formData.asignado_a ? Number(formData.asignado_a) : null,
-            saldo_inicial: parseFloat(formData.saldo_inicial) || 0,
-            caja_anterior_id: formData.caja_anterior_id ? Number(formData.caja_anterior_id) : null,
-            observaciones: formData.observaciones || null,
+            asignado_a: data.asignado_a ? Number(data.asignado_a) : null,
+            saldo_inicial: parseFloat(data.saldo_inicial) || 0,
+            caja_anterior_id: data.caja_anterior_id ? Number(data.caja_anterior_id) : null,
+            observaciones: data.observaciones || null,
           };
 
-      let response;
-      if (isEditing) {
-        response = await cajasMenoresService.update(cajaId, payload);
-      } else {
-        response = await cajasMenoresService.create(payload);
-      }
+      const response = isEditing
+        ? await cajasMenoresService.update(cajaId, payload)
+        : await cajasMenoresService.create(payload);
 
       if (response.success !== false) {
         notifySuccess(
-          isEditing
-            ? 'Caja menor actualizada correctamente'
-            : 'Caja menor creada correctamente'
+          isEditing ? 'Caja menor actualizada correctamente' : 'Caja menor creada correctamente'
         );
         onSuccess?.();
         onClose();
@@ -253,24 +218,8 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
     } catch (err) {
       console.error('Error guardando caja menor:', err);
       apiError(err);
-    } finally {
-      setLoading(false);
     }
   };
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // CLASES COMPARTIDAS
-  // ──────────────────────────────────────────────────────────────────────────
-
-  const baseInputClasses = (hasIcon, hasError) => `
-    w-full px-4 py-2.5
-    bg-white dark:bg-slate-800 border rounded-xl
-    text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
-    focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
-    transition-all duration-200
-    ${hasError ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'}
-    ${hasIcon ? 'pl-10' : ''}
-  `;
 
   // ──────────────────────────────────────────────────────────────────────────
   // RENDER
@@ -285,10 +234,10 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
       size="lg"
       footer={
         <>
-          <Button variant="outline" onClick={onClose} disabled={loading}>
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             Cancelar
           </Button>
-          <Button variant="primary" onClick={handleSubmit} loading={loading} disabled={loadingData}>
+          <Button variant="primary" onClick={handleSubmit(onSubmit)} loading={isSubmitting} disabled={loadingData}>
             {isEditing ? 'Guardar Cambios' : 'Crear Caja Menor'}
           </Button>
         </>
@@ -300,137 +249,129 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
           <span className="ml-3 text-sm text-slate-500 dark:text-slate-400">Cargando datos...</span>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Usuario Asignado */}
-          <InputField
-            label="Usuario Asignado"
-            icon={User}
-            required
-            error={errors.asignado_a}
-          >
-            <select
-              name="asignado_a"
-              value={formData.asignado_a}
-              onChange={(e) => handleChange('asignado_a', e.target.value)}
-              className={baseInputClasses(true, errors.asignado_a)}
-              disabled={loadingData}
-            >
-              <option value="">Seleccionar usuario...</option>
-              {usuarios.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.nombre_completo || `${u.nombre || ''} ${u.apellido || ''}`.trim() || u.username}
-                </option>
-              ))}
-            </select>
-          </InputField>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          {/* Saldo Inicial */}
-          <InputField
-            label={saldoTrasladado > 0 && !isEditing ? 'Saldo Inicial (Heredado)' : 'Saldo Inicial'}
-            icon={DollarSign}
-            required
-            error={errors.saldo_inicial}
-          >
-            <input
-              type="text"
-              name="saldo_inicial"
-              value={formatThousands(formData.saldo_inicial)}
-              onChange={(e) => handleChange('saldo_inicial', parseThousands(e.target.value))}
-              placeholder="0"
-              disabled={loadingData}
-              className={baseInputClasses(true, errors.saldo_inicial)}
-            />
-            {saldoTrasladado > 0 && !isEditing && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
-                <ArrowLeftRight className="w-3 h-3" />
-                Saldo heredado de caja anterior: {formatMoney(saldoTrasladado)}
-              </p>
-            )}
-          </InputField>
-
-          {/* Caja Anterior (traslado de saldo) - solo en creación */}
-          {!isEditing && (
-            <InputField
-              label="Caja Anterior (Traslado de saldo)"
-              icon={ArrowLeftRight}
-              error={null}
-            >
+            {/* Usuario Asignado */}
+            <InputField label="Usuario Asignado" icon={User} required error={errors.asignado_a?.message}>
               <select
-                name="caja_anterior_id"
-                value={formData.caja_anterior_id}
-                onChange={(e) => handleChange('caja_anterior_id', e.target.value)}
-                className={baseInputClasses(true, false)}
+                {...register('asignado_a')}
                 disabled={loadingData}
+                className={inputClasses(true, !!errors.asignado_a)}
               >
-                <option value="">Sin traslado (opcional)</option>
-                {cajasCerradas
-                  .filter((c) => parseFloat(c.saldo_actual) > 0 && (!formData.asignado_a || String(c.asignado_a) === String(formData.asignado_a)))
-                  .map((c) => (
-                    <option key={c.id} value={c.id}>
-                      Caja #{c.numero || c.id} - {c.asignado_nombre || c.asignado?.nombre_completo || 'Sin asignar'} - {formatMoney(c.saldo_actual)}
-                    </option>
-                  ))}
+                <option value="">Seleccionar usuario...</option>
+                {usuarios.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.nombre_completo || `${u.nombre || ''} ${u.apellido || ''}`.trim() || u.username}
+                  </option>
+                ))}
               </select>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Opcional. Seleccione una caja cerrada para trasladar su saldo.
-              </p>
             </InputField>
-          )}
 
-          {/* Observaciones - ocupa 2 columnas */}
-          <div className="md:col-span-2">
+            {/* Saldo Inicial — input con formato miles */}
             <InputField
-              label="Observaciones"
-              icon={FileText}
-              error={null}
+              label={saldoTrasladado > 0 && !isEditing ? 'Saldo Inicial (Heredado)' : 'Saldo Inicial'}
+              icon={DollarSign}
+              required
+              error={errors.saldo_inicial?.message}
             >
-              <textarea
-                name="observaciones"
-                value={formData.observaciones}
-                onChange={(e) => handleChange('observaciones', e.target.value)}
-                placeholder="Notas adicionales sobre la caja menor..."
-                rows={3}
-                disabled={loadingData}
-                className={baseInputClasses(true, false)}
-              />
-            </InputField>
-          </div>
-
-          {/* Info box: Saldo a trasladar */}
-          {cajaAnteriorSeleccionada && !isEditing && (
-            <div className="md:col-span-2 flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
-              <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
-                  Saldo a trasladar: <strong>{formatMoney(saldoTrasladado)}</strong>
-                </p>
-                <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
-                  De la caja #{cajaAnteriorSeleccionada.id}
-                  {cajaAnteriorSeleccionada.asignado_nombre
-                    ? ` (${cajaAnteriorSeleccionada.asignado_nombre})`
-                    : ''}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Info box: Saldo total calculado */}
-          {!isEditing && (parseFloat(formData.saldo_inicial) > 0 || saldoTrasladado > 0) && (
-            <div className="md:col-span-2 flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-              <Wallet className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
-                  <strong>Saldo total de la caja:</strong> {formatMoney(saldoTotal)}
-                </p>
-                {saldoTrasladado > 0 && (
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
-                    ({formatMoney(formData.saldo_inicial || 0)} inicial + {formatMoney(saldoTrasladado)} trasladado)
-                  </p>
+              <Controller
+                name="saldo_inicial"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    type="text"
+                    value={formatThousands(field.value)}
+                    onChange={(e) => field.onChange(parseThousands(e.target.value))}
+                    placeholder="0"
+                    disabled={loadingData}
+                    className={inputClasses(true, !!errors.saldo_inicial)}
+                  />
                 )}
-              </div>
+              />
+              {saldoTrasladado > 0 && !isEditing && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                  <ArrowLeftRight className="w-3 h-3" />
+                  Saldo heredado de caja anterior: {formatMoney(saldoTrasladado)}
+                </p>
+              )}
+            </InputField>
+
+            {/* Caja Anterior (traslado de saldo) - solo en creación */}
+            {!isEditing && (
+              <InputField label="Caja Anterior (Traslado de saldo)" icon={ArrowLeftRight} error={null}>
+                <select
+                  {...register('caja_anterior_id')}
+                  disabled={loadingData}
+                  className={inputClasses(true, false)}
+                >
+                  <option value="">Sin traslado (opcional)</option>
+                  {cajasCerradas
+                    .filter((c) =>
+                      parseFloat(c.saldo_actual) > 0 &&
+                      (!watchAsignado || String(c.asignado_a) === String(watchAsignado))
+                    )
+                    .map((c) => (
+                      <option key={c.id} value={c.id}>
+                        Caja #{c.numero || c.id} - {c.asignado_nombre || c.asignado?.nombre_completo || 'Sin asignar'} - {formatMoney(c.saldo_actual)}
+                      </option>
+                    ))}
+                </select>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Opcional. Seleccione una caja cerrada para trasladar su saldo.
+                </p>
+              </InputField>
+            )}
+
+            {/* Observaciones */}
+            <div className="md:col-span-2">
+              <InputField label="Observaciones" icon={FileText} error={errors.observaciones?.message}>
+                <textarea
+                  {...register('observaciones')}
+                  placeholder="Notas adicionales sobre la caja menor..."
+                  rows={3}
+                  disabled={loadingData}
+                  className={inputClasses(true, !!errors.observaciones)}
+                />
+              </InputField>
             </div>
-          )}
-        </div>
+
+            {/* Info: saldo a trasladar */}
+            {cajaAnteriorSeleccionada && !isEditing && (
+              <div className="md:col-span-2 flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+                <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                    Saldo a trasladar: <strong>{formatMoney(saldoTrasladado)}</strong>
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                    De la caja #{cajaAnteriorSeleccionada.id}
+                    {cajaAnteriorSeleccionada.asignado_nombre
+                      ? ` (${cajaAnteriorSeleccionada.asignado_nombre})`
+                      : ''}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Info: saldo total calculado */}
+            {!isEditing && (parseFloat(watchSaldoInicial) > 0 || saldoTrasladado > 0) && (
+              <div className="md:col-span-2 flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                <Wallet className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                    <strong>Saldo total de la caja:</strong> {formatMoney(saldoTotal)}
+                  </p>
+                  {saldoTrasladado > 0 && (
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
+                      ({formatMoney(watchSaldoInicial || 0)} inicial + {formatMoney(saldoTrasladado)} trasladado)
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </form>
       )}
     </Modal>
   );

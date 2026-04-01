@@ -1,161 +1,51 @@
 /**
  * ISTHO CRM - VehiculoForm Component
  * Formulario modal para crear y editar vehículos.
- * Sigue el mismo patrón de diseño que ClienteForm.
- * @version 2.0.0
+ * Validación con React Hook Form + Yup.
+ * @version 3.0.0
  */
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { Truck, FileText, User, Calendar, Shield, Cog } from 'lucide-react';
 import { Button, Modal } from '../../../components/common/index';
 import { vehiculosService } from '../../../api/viajes.service';
 import useNotification from '../../../hooks/useNotification';
+import { vehiculoSchema, TIPOS_VEHICULO, ESTADOS_VEHICULO } from '../../../utils/validationSchemas';
+import { useState } from 'react';
 
 // ════════════════════════════════════════════════════════════════════════════
-// OPCIONES
+// INPUT FIELD
 // ════════════════════════════════════════════════════════════════════════════
 
-const TIPOS_VEHICULO = [
-  { value: 'sencillo', label: 'Sencillo' },
-  { value: 'tractomula', label: 'Tractomula' },
-  { value: 'turbo', label: 'Turbo' },
-  { value: 'dobletroque', label: 'Doble Troque' },
-  { value: 'minimula', label: 'Minimula' },
-  { value: 'otro', label: 'Otro' },
-];
-
-const ESTADOS_VEHICULO = [
-  { value: 'activo', label: 'Activo' },
-  { value: 'inactivo', label: 'Inactivo' },
-  { value: 'mantenimiento', label: 'En Mantenimiento' },
-];
-
-// ════════════════════════════════════════════════════════════════════════════
-// CONFIGURACIÓN DE CAMPOS POR TAB
-// ════════════════════════════════════════════════════════════════════════════
-
-const FORM_FIELDS = {
-  basico: [
-    { name: 'placa', label: 'Placa', type: 'text', required: true, icon: Truck, placeholder: 'ABC123', maxLength: 10, uppercase: true },
-    { name: 'tipo_vehiculo', label: 'Tipo de Vehículo', type: 'select', required: true, options: TIPOS_VEHICULO },
-    { name: 'capacidad_ton', label: 'Capacidad (Toneladas)', type: 'number', placeholder: '10.00', min: 0, step: '0.1' },
-    { name: 'marca', label: 'Marca', type: 'text', placeholder: 'Chevrolet, Kenworth...' },
-    { name: 'modelo', label: 'Modelo (Año)', type: 'text', placeholder: '2024' },
-    { name: 'color', label: 'Color', type: 'text', placeholder: 'Blanco' },
-  ],
-  documentos: [
-    { name: 'vencimiento_soat', label: 'Vencimiento SOAT', type: 'date', icon: Calendar },
-    { name: 'vencimiento_tecnicomecanica', label: 'Vencimiento Tecnomecánica', type: 'date', icon: Calendar },
-    { name: 'poliza_responsabilidad', label: 'Póliza de Responsabilidad', type: 'text', icon: Shield, placeholder: 'Número de póliza' },
-    { name: 'numero_motor', label: 'Número de Motor', type: 'text', icon: Cog, placeholder: 'Número de motor' },
-    { name: 'numero_chasis', label: 'Número de Chasis', type: 'text', icon: FileText, placeholder: 'Número de chasis' },
-  ],
-  asignacion: [
-    { name: 'conductor_id', label: 'Conductor Asignado', type: 'select_conductor', icon: User },
-    { name: 'descripcion', label: 'Descripción / Observaciones', type: 'textarea', placeholder: 'Notas adicionales sobre el vehículo...' },
-  ],
-};
-
-// ════════════════════════════════════════════════════════════════════════════
-// INPUT FIELD (mismo patrón que ClienteForm)
-// ════════════════════════════════════════════════════════════════════════════
-
-const InputField = ({ field, value, onChange, error, conductores, disabled }) => {
-  const Icon = field.icon;
-
-  const baseInputClasses = `
-    w-full px-4 py-2.5
-    bg-white dark:bg-slate-800 border rounded-xl
-    text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
-    focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
-    transition-all duration-200
-    ${error ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'}
-    ${Icon ? 'pl-10' : ''}
-    ${field.uppercase ? 'uppercase' : ''}
-    ${disabled ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-900' : ''}
-  `;
-
-  const handleChange = (e) => {
-    let newValue = e.target.value;
-    if (field.type === 'number') {
-      newValue = newValue === '' ? null : Number(newValue);
-    }
-    if (field.uppercase) {
-      newValue = typeof newValue === 'string' ? newValue.toUpperCase() : newValue;
-    }
-    onChange(field.name, newValue);
-  };
-
-  return (
-    <div className="space-y-1">
-      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-        {field.label}
-        {field.required && <span className="text-red-500 ml-1">*</span>}
-      </label>
-
-      <div className="relative">
-        {Icon && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Icon className="h-5 w-5 text-slate-400" />
-          </div>
-        )}
-
-        {field.type === 'select' ? (
-          <select
-            name={field.name}
-            value={value || ''}
-            onChange={handleChange}
-            disabled={disabled}
-            className={baseInputClasses}
-          >
-            <option value="">Seleccionar...</option>
-            {field.options?.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        ) : field.type === 'select_conductor' ? (
-          <select
-            name={field.name}
-            value={value || ''}
-            onChange={handleChange}
-            disabled={disabled}
-            className={baseInputClasses}
-          >
-            <option value="">Sin asignar</option>
-            {conductores?.map((c) => (
-              <option key={c.id} value={c.id}>{c.nombre_completo || `${c.nombre || ''} ${c.apellido || ''}`.trim() || c.username}</option>
-            ))}
-          </select>
-        ) : field.type === 'textarea' ? (
-          <textarea
-            name={field.name}
-            value={value || ''}
-            onChange={handleChange}
-            placeholder={field.placeholder}
-            rows={3}
-            disabled={disabled}
-            className={baseInputClasses}
-          />
-        ) : (
-          <input
-            type={field.type}
-            name={field.name}
-            value={value ?? ''}
-            onChange={handleChange}
-            placeholder={field.placeholder}
-            maxLength={field.maxLength}
-            min={field.min}
-            step={field.step}
-            disabled={disabled}
-            className={`${baseInputClasses}${field.type === 'date' ? ' min-w-0' : ''}`}
-          />
-        )}
-      </div>
-
-      {error && <p className="text-xs text-red-500">{error}</p>}
+const InputField = ({ label, icon: Icon, required, error, children }) => (
+  <div className="space-y-1">
+    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+      {label}
+      {required && <span className="text-red-500 ml-1">*</span>}
+    </label>
+    <div className="relative">
+      {Icon && (
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Icon className="h-5 w-5 text-slate-400" />
+        </div>
+      )}
+      {children}
     </div>
-  );
-};
+    {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
+  </div>
+);
+
+const inputClasses = (hasIcon, hasError) => `
+  w-full px-4 py-2.5
+  bg-white dark:bg-slate-800 border rounded-xl
+  text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
+  focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
+  transition-all duration-200
+  ${hasError ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'}
+  ${hasIcon ? 'pl-10' : ''}
+`.trim();
 
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
@@ -163,23 +53,31 @@ const InputField = ({ field, value, onChange, error, conductores, disabled }) =>
 
 const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }) => {
   const { success: notifySuccess, error: notifyError } = useNotification();
-  const [formData, setFormData] = useState({});
   const [conductores, setConductores] = useState([]);
-  const [errors, setErrors] = useState({});
   const [activeTab, setActiveTab] = useState('basico');
-  const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
 
   const isEditing = !!vehiculoId;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: yupResolver(vehiculoSchema),
+    defaultValues: {
+      tipo_vehiculo: 'sencillo',
+      estado: 'activo',
+    },
+  });
 
   // Cargar conductores y datos del vehículo
   useEffect(() => {
     if (!open) return;
 
     setActiveTab('basico');
-    setErrors({});
 
-    // Cargar conductores
     vehiculosService.getConductores()
       .then(res => { if (res.success) setConductores(res.data || []); })
       .catch(() => {});
@@ -190,9 +88,9 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
         .then(res => {
           if (res.success && res.data) {
             const v = res.data;
-            setFormData({
+            reset({
               placa: v.placa || '',
-              tipo_vehiculo: v.tipo_vehiculo || '',
+              tipo_vehiculo: v.tipo_vehiculo || 'sencillo',
               capacidad_ton: v.capacidad_ton ?? '',
               marca: v.marca || '',
               modelo: v.modelo || '',
@@ -211,34 +109,19 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
         .catch(() => notifyError('Error al cargar vehículo'))
         .finally(() => setLoadingData(false));
     } else {
-      setFormData({ tipo_vehiculo: 'sencillo', estado: 'activo' });
+      reset({ tipo_vehiculo: 'sencillo', estado: 'activo' });
     }
   }, [open, vehiculoId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleChange = (name, value) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.placa?.trim()) newErrors.placa = 'La placa es requerida';
-    if (!formData.tipo_vehiculo) newErrors.tipo_vehiculo = 'El tipo es requerido';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
-
-    setLoading(true);
+  const onSubmit = async (data) => {
     try {
       const payload = {
-        ...formData,
-        capacidad_ton: formData.capacidad_ton ? parseFloat(formData.capacidad_ton) : null,
-        conductor_id: formData.conductor_id || null,
-        vencimiento_soat: formData.vencimiento_soat || null,
-        vencimiento_tecnicomecanica: formData.vencimiento_tecnicomecanica || null,
+        ...data,
+        placa: data.placa?.toUpperCase(),
+        capacidad_ton: data.capacidad_ton !== '' && data.capacidad_ton != null ? parseFloat(data.capacidad_ton) : null,
+        conductor_id: data.conductor_id || null,
+        vencimiento_soat: data.vencimiento_soat || null,
+        vencimiento_tecnicomecanica: data.vencimiento_tecnicomecanica || null,
       };
 
       const response = isEditing
@@ -254,14 +137,8 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
       }
     } catch (err) {
       notifyError(err.message || 'Error al guardar el vehículo');
-    } finally {
-      setLoading(false);
     }
   };
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // RENDER
-  // ──────────────────────────────────────────────────────────────────────────
 
   const tabs = [
     { id: 'basico', label: 'Datos Básicos' },
@@ -274,17 +151,17 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
       isOpen={open}
       onClose={onClose}
       title={readOnly ? 'Detalle Vehículo' : (isEditing ? 'Editar Vehículo' : 'Nuevo Vehículo')}
-      subtitle={isEditing ? `${readOnly ? 'Viendo' : 'Editando'}: ${formData.placa || ''}` : 'Complete la información del vehículo'}
+      subtitle={isEditing ? `${readOnly ? 'Viendo' : 'Editando'} vehículo` : 'Complete la información del vehículo'}
       size="lg"
       footer={
         readOnly ? (
           <Button variant="outline" onClick={onClose}>Cerrar</Button>
         ) : (
           <>
-            <Button variant="outline" onClick={onClose} disabled={loading}>
+            <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button variant="primary" onClick={handleSubmit} loading={loading} disabled={loadingData}>
+            <Button variant="primary" onClick={handleSubmit(onSubmit)} loading={isSubmitting} disabled={loadingData}>
               {isEditing ? 'Guardar Cambios' : 'Crear Vehículo'}
             </Button>
           </>
@@ -303,6 +180,7 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
+                  type="button"
                   onClick={() => setActiveTab(tab.id)}
                   className={`
                     pb-3 px-1 text-sm font-medium transition-colors relative
@@ -321,48 +199,188 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
             </nav>
           </div>
 
-          {/* Form Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {FORM_FIELDS[activeTab]?.map((field) => (
-              <div
-                key={field.name}
-                className={field.type === 'textarea' ? 'md:col-span-2' : ''}
-              >
-                <InputField
-                  field={field}
-                  value={formData[field.name]}
-                  onChange={handleChange}
-                  error={errors[field.name]}
-                  conductores={conductores}
-                  disabled={readOnly}
-                />
-              </div>
-            ))}
-          </div>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          {/* Estado (solo en edición) */}
-          {isEditing && activeTab === 'basico' && !readOnly && (
-            <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Estado del Vehículo
-              </label>
-              <div className="flex gap-4">
-                {ESTADOS_VEHICULO.map((estado) => (
-                  <label key={estado.value} className="flex items-center gap-2 cursor-pointer">
+              {/* ── TAB BÁSICO ── */}
+              {activeTab === 'basico' && (
+                <>
+                  <InputField label="Placa" icon={Truck} required error={errors.placa?.message}>
                     <input
-                      type="radio"
-                      name="estado"
-                      value={estado.value}
-                      checked={formData.estado === estado.value}
-                      onChange={(e) => handleChange('estado', e.target.value)}
-                      className="w-4 h-4 text-orange-500 focus:ring-orange-500"
+                      {...register('placa')}
+                      type="text"
+                      placeholder="ABC123"
+                      maxLength={10}
+                      disabled={readOnly}
+                      className={`${inputClasses(true, !!errors.placa)} uppercase`}
                     />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">{estado.label}</span>
-                  </label>
-                ))}
-              </div>
+                  </InputField>
+
+                  <InputField label="Tipo de Vehículo" required error={errors.tipo_vehiculo?.message}>
+                    <select
+                      {...register('tipo_vehiculo')}
+                      disabled={readOnly}
+                      className={inputClasses(false, !!errors.tipo_vehiculo)}
+                    >
+                      <option value="">Seleccionar...</option>
+                      {TIPOS_VEHICULO.map(t => (
+                        <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                      ))}
+                    </select>
+                  </InputField>
+
+                  <InputField label="Capacidad (Toneladas)" error={errors.capacidad_ton?.message}>
+                    <input
+                      {...register('capacidad_ton')}
+                      type="number"
+                      placeholder="10.00"
+                      min={0}
+                      step="0.1"
+                      disabled={readOnly}
+                      className={inputClasses(false, !!errors.capacidad_ton)}
+                    />
+                  </InputField>
+
+                  <InputField label="Marca" error={errors.marca?.message}>
+                    <input
+                      {...register('marca')}
+                      type="text"
+                      placeholder="Chevrolet, Kenworth..."
+                      disabled={readOnly}
+                      className={inputClasses(false, !!errors.marca)}
+                    />
+                  </InputField>
+
+                  <InputField label="Modelo (Año)" error={errors.modelo?.message}>
+                    <input
+                      {...register('modelo')}
+                      type="text"
+                      placeholder="2024"
+                      disabled={readOnly}
+                      className={inputClasses(false, !!errors.modelo)}
+                    />
+                  </InputField>
+
+                  <InputField label="Color" error={errors.color?.message}>
+                    <input
+                      {...register('color')}
+                      type="text"
+                      placeholder="Blanco"
+                      disabled={readOnly}
+                      className={inputClasses(false, !!errors.color)}
+                    />
+                  </InputField>
+
+                  {/* Estado (solo edición) */}
+                  {isEditing && !readOnly && (
+                    <div className="md:col-span-2 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Estado del Vehículo
+                      </label>
+                      <div className="flex gap-4">
+                        {ESTADOS_VEHICULO.map((estado) => (
+                          <label key={estado} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              {...register('estado')}
+                              type="radio"
+                              value={estado}
+                              className="w-4 h-4 text-orange-500 focus:ring-orange-500"
+                            />
+                            <span className="text-sm text-slate-700 dark:text-slate-300 capitalize">{estado}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* ── TAB DOCUMENTOS ── */}
+              {activeTab === 'documentos' && (
+                <>
+                  <InputField label="Vencimiento SOAT" icon={Calendar} error={errors.vencimiento_soat?.message}>
+                    <input
+                      {...register('vencimiento_soat')}
+                      type="date"
+                      disabled={readOnly}
+                      className={`${inputClasses(true, !!errors.vencimiento_soat)} min-w-0`}
+                    />
+                  </InputField>
+
+                  <InputField label="Vencimiento Tecnomecánica" icon={Calendar} error={errors.vencimiento_tecnicomecanica?.message}>
+                    <input
+                      {...register('vencimiento_tecnicomecanica')}
+                      type="date"
+                      disabled={readOnly}
+                      className={`${inputClasses(true, !!errors.vencimiento_tecnicomecanica)} min-w-0`}
+                    />
+                  </InputField>
+
+                  <InputField label="Póliza de Responsabilidad" icon={Shield} error={errors.poliza_responsabilidad?.message}>
+                    <input
+                      {...register('poliza_responsabilidad')}
+                      type="text"
+                      placeholder="Número de póliza"
+                      disabled={readOnly}
+                      className={inputClasses(true, !!errors.poliza_responsabilidad)}
+                    />
+                  </InputField>
+
+                  <InputField label="Número de Motor" icon={Cog} error={errors.numero_motor?.message}>
+                    <input
+                      {...register('numero_motor')}
+                      type="text"
+                      placeholder="Número de motor"
+                      disabled={readOnly}
+                      className={inputClasses(true, !!errors.numero_motor)}
+                    />
+                  </InputField>
+
+                  <InputField label="Número de Chasis" icon={FileText} error={errors.numero_chasis?.message}>
+                    <input
+                      {...register('numero_chasis')}
+                      type="text"
+                      placeholder="Número de chasis"
+                      disabled={readOnly}
+                      className={inputClasses(true, !!errors.numero_chasis)}
+                    />
+                  </InputField>
+                </>
+              )}
+
+              {/* ── TAB ASIGNACIÓN ── */}
+              {activeTab === 'asignacion' && (
+                <>
+                  <InputField label="Conductor Asignado" icon={User} error={errors.conductor_id?.message}>
+                    <select
+                      {...register('conductor_id')}
+                      disabled={readOnly}
+                      className={inputClasses(true, !!errors.conductor_id)}
+                    >
+                      <option value="">Sin asignar</option>
+                      {conductores.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.nombre_completo || `${c.nombre || ''} ${c.apellido || ''}`.trim() || c.username}
+                        </option>
+                      ))}
+                    </select>
+                  </InputField>
+
+                  <div className="md:col-span-2">
+                    <InputField label="Descripción / Observaciones" error={errors.descripcion?.message}>
+                      <textarea
+                        {...register('descripcion')}
+                        placeholder="Notas adicionales sobre el vehículo..."
+                        rows={3}
+                        disabled={readOnly}
+                        className={inputClasses(false, !!errors.descripcion)}
+                      />
+                    </InputField>
+                  </div>
+                </>
+              )}
             </div>
-          )}
+          </form>
         </>
       )}
     </Modal>
