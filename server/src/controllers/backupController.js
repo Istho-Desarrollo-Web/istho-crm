@@ -124,7 +124,7 @@ const ejecutarBackup = async (req, res) => {
           'Content-Type': 'application/json',
           'User-Agent': 'ISTHO-CRM',
         },
-        body: JSON.stringify({ ref: 'main' }),
+        body: JSON.stringify({ ref: 'main', inputs: { origen: 'manual' } }),
       }
     );
 
