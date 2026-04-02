@@ -49,6 +49,8 @@ import { formatDate } from '../../utils/formatDate';
 import usuarioService from '../../api/usuarioService';
 import PageFooter from '@components/common/PageFooter';
 import { getServerFileUrl } from '../../api/client';
+import { sanitizeField, SANITIZE } from '../../utils/sanitizeForms';
+import { comprimirImagen, COMPRESS_PRESETS } from '../../utils/compressImage';
 
 // ════════════════════════════════════════════════════════════════════════════
 // MODAL EDITAR PERFIL
@@ -101,7 +103,8 @@ const EditProfileModal = ({ isOpen, onClose, usuario, onSave, loading }) => {
             <input
               type="text"
               value={formData.nombre || ''}
-              onChange={(e) => handleChange('nombre', e.target.value)}
+              maxLength={50}
+              onChange={(e) => handleChange('nombre', sanitizeField(SANITIZE.TEXTO_LETRAS, e.target.value, 50))}
               className={inputClasses}
             />
           </div>
@@ -110,7 +113,8 @@ const EditProfileModal = ({ isOpen, onClose, usuario, onSave, loading }) => {
             <input
               type="text"
               value={formData.apellido || ''}
-              onChange={(e) => handleChange('apellido', e.target.value)}
+              maxLength={50}
+              onChange={(e) => handleChange('apellido', sanitizeField(SANITIZE.TEXTO_LETRAS, e.target.value, 50))}
               className={inputClasses}
             />
           </div>
@@ -121,7 +125,8 @@ const EditProfileModal = ({ isOpen, onClose, usuario, onSave, loading }) => {
           <input
             type="tel"
             value={formData.telefono || ''}
-            onChange={(e) => handleChange('telefono', e.target.value)}
+            maxLength={10}
+            onChange={(e) => handleChange('telefono', sanitizeField(SANITIZE.SOLO_DIGITOS, e.target.value, 10))}
             className={inputClasses}
           />
         </div>
@@ -453,7 +458,8 @@ const PerfilUsuario = () => {
 
     setAvatarLoading(true);
     try {
-      const response = await usuarioService.subirAvatar(file);
+      const fileComprimido = await comprimirImagen(file, COMPRESS_PRESETS.AVATAR);
+      const response = await usuarioService.subirAvatar(fileComprimido);
       if (response.success) {
         // Actualizar avatar en contexto
         const avatarUrl = response.data.avatar_url;

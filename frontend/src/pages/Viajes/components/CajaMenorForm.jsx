@@ -20,6 +20,7 @@ import { Button, Modal } from '../../../components/common/index';
 import { cajasMenoresService } from '../../../api/viajes.service';
 import useNotification from '../../../hooks/useNotification';
 import { cajaMenorSchema } from '../../../utils/validationSchemas';
+import { makeSanitizeHandler, SANITIZE } from '../../../utils/sanitizeForms';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -99,6 +100,7 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
     control,
     reset,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(cajaMenorSchema),
@@ -330,7 +332,9 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
                   {...register('observaciones')}
                   placeholder="Notas adicionales sobre la caja menor..."
                   rows={3}
+                  maxLength={500}
                   disabled={loadingData}
+                  onChange={makeSanitizeHandler(setValue, 'observaciones', SANITIZE.TEXTO_LIBRE, 500)}
                   className={inputClasses(true, !!errors.observaciones)}
                 />
               </InputField>

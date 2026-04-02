@@ -20,6 +20,7 @@ import useNotification from '../../../hooks/useNotification';
 import { useAuth } from '../../../context/AuthContext';
 import { getServerFileUrl } from '../../../api/client';
 import { movimientoSchema } from '../../../utils/validationSchemas';
+import { makeSanitizeHandler, SANITIZE } from '../../../utils/sanitizeForms';
 
 // ════════════════════════════════════════════════════════════════════════════
 // OPCIONES ESTÁTICAS
@@ -433,6 +434,8 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                       {...register('concepto_otro')}
                       type="text"
                       placeholder="Describa el concepto..."
+                      maxLength={100}
+                      onChange={makeSanitizeHandler(setValue, 'concepto_otro', SANITIZE.TEXTO_UPPER, 100)}
                       className={inputCls(true, !!errors.concepto_otro)}
                     />
                   </InputField>
@@ -465,6 +468,8 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                     {...register('descripcion')}
                     placeholder="Notas adicionales sobre el movimiento..."
                     rows={4}
+                    maxLength={500}
+                    onChange={makeSanitizeHandler(setValue, 'descripcion', SANITIZE.TEXTO_LIBRE, 500)}
                     className={inputCls(true, !!errors.descripcion)}
                   />
                 </InputField>

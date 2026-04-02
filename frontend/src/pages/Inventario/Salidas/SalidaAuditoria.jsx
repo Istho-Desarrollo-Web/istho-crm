@@ -48,6 +48,7 @@ import { useAuth } from '../../../context/AuthContext';
 import CierreAuditoriaModal from '../../../components/common/CierreAuditoriaModal';
 import { formatDateShort } from '../../../utils/formatDate';
 import { getServerFileUrl } from '../../../api/client';
+import { comprimirImagen, COMPRESS_PRESETS } from '../../../utils/compressImage';
 
 const SERVER_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/api\/v1\/?$/, '');
 const resolveFileUrl = (url) => {
@@ -571,8 +572,8 @@ const SalidaAuditoria = () => {
       case 'telefono':  return value.replace(/\D/g, '').slice(0, 10);
       case 'conductor': return value.replace(/[^A-Za-záéíóúÁÉÍÓÚñÑüÜ\s]/g, '').slice(0, 100);
       case 'origen':
-      case 'destino':   return value.toUpperCase().slice(0, 100);
-      case 'observaciones': return value.slice(0, 500);
+      case 'destino':   return value.toUpperCase().slice(0, 55);
+      case 'observaciones': return value.slice(0, 255);
       default: return value;
     }
   };
@@ -610,7 +611,10 @@ const SalidaAuditoria = () => {
 
     setUploadingFiles(true);
     try {
-      await auditoriasService.subirEvidencias(id, newFiles);
+      const filesParaSubir = await Promise.all(
+        newFiles.map(f => comprimirImagen(f, COMPRESS_PRESETS.EVIDENCIA))
+      );
+      await auditoriasService.subirEvidencias(id, filesParaSubir);
       setFiles((prev) => prev.map(f => f instanceof File ? { ...f, isUploaded: true, type: f.type, name: f.name, size: f.size, _nativeFile: f } : f));
     } catch {
       showAlert({

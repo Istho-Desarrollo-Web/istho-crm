@@ -59,6 +59,7 @@ import { formatDateShort } from '../../utils/formatDate';
 import inventarioService from '../../api/inventario.service';
 import clientesService from '../../api/clientes.service';
 import PageFooter from '@components/common/PageFooter';
+import { comprimirImagen, COMPRESS_PRESETS } from '../../utils/compressImage';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -483,7 +484,8 @@ const ClienteDetail = () => {
     if (!file) return;
 
     try {
-      const response = await clientesService.uploadLogo(id, file);
+      const fileComprimido = await comprimirImagen(file, COMPRESS_PRESETS.AVATAR);
+      const response = await clientesService.uploadLogo(id, fileComprimido);
       if (response?.success) {
         success('Logo actualizado correctamente');
         fetchCliente(id);

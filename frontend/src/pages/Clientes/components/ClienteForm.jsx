@@ -13,6 +13,7 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { makeSanitizeHandler, SANITIZE } from '../../../utils/sanitizeForms';
 import PropTypes from 'prop-types';
 import {
   Building2,
@@ -105,6 +106,7 @@ const ClienteForm = ({
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(clienteSchema),
@@ -211,6 +213,7 @@ const ClienteForm = ({
                   type="text"
                   placeholder="Nombre de la empresa o persona"
                   maxLength={200}
+                  onChange={makeSanitizeHandler(setValue, 'razon_social', SANITIZE.TEXTO_UPPER, 200)}
                   className={inputCls(true, !!errors.razon_social)}
                 />
               </InputField>
@@ -221,6 +224,7 @@ const ClienteForm = ({
                   type="text"
                   placeholder="900123456-7"
                   maxLength={20}
+                  onChange={makeSanitizeHandler(setValue, 'nit', SANITIZE.ALFANUM_UPPER, 20)}
                   className={inputCls(true, !!errors.nit)}
                 />
               </InputField>
@@ -302,6 +306,7 @@ const ClienteForm = ({
                   type="text"
                   placeholder="Ciudad"
                   maxLength={100}
+                  onChange={makeSanitizeHandler(setValue, 'ciudad', SANITIZE.TEXTO_UPPER, 100)}
                   className={inputCls(false, !!errors.ciudad)}
                 />
               </InputField>
@@ -312,6 +317,7 @@ const ClienteForm = ({
                   type="text"
                   placeholder="Departamento"
                   maxLength={100}
+                  onChange={makeSanitizeHandler(setValue, 'departamento', SANITIZE.TEXTO_UPPER, 100)}
                   className={inputCls(false, !!errors.departamento)}
                 />
               </InputField>
@@ -321,7 +327,8 @@ const ClienteForm = ({
                   {...register('telefono')}
                   type="tel"
                   placeholder="+57 604 123 4567"
-                  maxLength={50}
+                  maxLength={10}
+                  onChange={makeSanitizeHandler(setValue, 'telefono', SANITIZE.SOLO_DIGITOS, 10)}
                   className={inputCls(true, !!errors.telefono)}
                 />
               </InputField>

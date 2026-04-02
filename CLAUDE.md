@@ -103,8 +103,8 @@ Los 3 formularios de auditoría (Entrada, Salida, Kardex) aplican sanitización 
 | cedula | Solo dígitos, mín 5 | 15 |
 | placa | Alfanumérico auto-MAYÚSCULAS, formato `ABC123` o `ABC12D`, mín 6 | 6 |
 | telefono | Solo dígitos, mín 7 | 10 |
-| origen / destino | Auto-MAYÚSCULAS | 100 |
-| observaciones | Texto libre | 500 |
+| origen / destino | Auto-MAYÚSCULAS | 55 |
+| observaciones | Texto libre | 255 |
 
 ## Caja Menor (Petty Cash)
 - **Assignable to ANY user** (not just conductors). Field: `asignado_a` (FK to Usuario)

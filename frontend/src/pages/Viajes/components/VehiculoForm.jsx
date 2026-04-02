@@ -13,6 +13,7 @@ import { Button, Modal } from '../../../components/common/index';
 import { vehiculosService } from '../../../api/viajes.service';
 import useNotification from '../../../hooks/useNotification';
 import { vehiculoSchema, TIPOS_VEHICULO, ESTADOS_VEHICULO } from '../../../utils/validationSchemas';
+import { makeSanitizeHandler, SANITIZE } from '../../../utils/sanitizeForms';
 import { useState } from 'react';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -63,6 +64,7 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(vehiculoSchema),
@@ -212,6 +214,7 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                       placeholder="ABC123"
                       maxLength={10}
                       disabled={readOnly}
+                      onChange={makeSanitizeHandler(setValue, 'placa', SANITIZE.ALFANUM_UPPER, 10)}
                       className={`${inputClasses(true, !!errors.placa)} uppercase`}
                     />
                   </InputField>
@@ -246,7 +249,9 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                       {...register('marca')}
                       type="text"
                       placeholder="Chevrolet, Kenworth..."
+                      maxLength={50}
                       disabled={readOnly}
+                      onChange={makeSanitizeHandler(setValue, 'marca', SANITIZE.TEXTO_UPPER, 50)}
                       className={inputClasses(false, !!errors.marca)}
                     />
                   </InputField>
@@ -256,7 +261,9 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                       {...register('modelo')}
                       type="text"
                       placeholder="2024"
+                      maxLength={10}
                       disabled={readOnly}
+                      onChange={makeSanitizeHandler(setValue, 'modelo', SANITIZE.ALFANUM_UPPER, 10)}
                       className={inputClasses(false, !!errors.modelo)}
                     />
                   </InputField>
@@ -266,7 +273,9 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                       {...register('color')}
                       type="text"
                       placeholder="Blanco"
+                      maxLength={30}
                       disabled={readOnly}
+                      onChange={makeSanitizeHandler(setValue, 'color', SANITIZE.TEXTO_UPPER, 30)}
                       className={inputClasses(false, !!errors.color)}
                     />
                   </InputField>
@@ -321,7 +330,9 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                       {...register('poliza_responsabilidad')}
                       type="text"
                       placeholder="Número de póliza"
+                      maxLength={50}
                       disabled={readOnly}
+                      onChange={makeSanitizeHandler(setValue, 'poliza_responsabilidad', SANITIZE.ALFANUM_UPPER, 50)}
                       className={inputClasses(true, !!errors.poliza_responsabilidad)}
                     />
                   </InputField>
@@ -331,7 +342,9 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                       {...register('numero_motor')}
                       type="text"
                       placeholder="Número de motor"
+                      maxLength={50}
                       disabled={readOnly}
+                      onChange={makeSanitizeHandler(setValue, 'numero_motor', SANITIZE.ALFANUM_UPPER, 50)}
                       className={inputClasses(true, !!errors.numero_motor)}
                     />
                   </InputField>
@@ -341,7 +354,9 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                       {...register('numero_chasis')}
                       type="text"
                       placeholder="Número de chasis"
+                      maxLength={50}
                       disabled={readOnly}
+                      onChange={makeSanitizeHandler(setValue, 'numero_chasis', SANITIZE.ALFANUM_UPPER, 50)}
                       className={inputClasses(true, !!errors.numero_chasis)}
                     />
                   </InputField>

@@ -754,16 +754,33 @@ const subirLogo = async (req, res) => {
       return notFound(res, 'Cliente no encontrado');
     }
 
-    // Construir URL relativa del logo
-    const logo_url = `/uploads/logos/${req.file.filename}`;
+    const cloudinaryService = require('../services/cloudinaryService');
+    const fs = require('fs');
+    let logo_url;
 
-    // Si ya tenía logo, eliminar el anterior
-    if (cliente.logo_url) {
-      const fs = require('fs');
-      const path = require('path');
-      const oldPath = path.join(__dirname, '../../', cliente.logo_url);
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath);
+    if (cloudinaryService.isConfigured()) {
+      // Eliminar logo anterior de Cloudinary si existe
+      if (cliente.logo_url?.includes('cloudinary.com')) {
+        try {
+          await cloudinaryService.eliminar(`istho-crm/logos/cliente_${id}`, 'image');
+        } catch { /* ignorar si no existe */ }
+      }
+      // Subir a Cloudinary con compresión automática
+      const resultado = await cloudinaryService.subirImagen(req.file.path, {
+        folder: 'istho-crm/logos',
+        publicId: `cliente_${id}`,
+      });
+      logo_url = resultado.url;
+      try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+      logger.info('Logo subido a Cloudinary:', { clienteId: id, url: logo_url });
+    } else {
+      // Fallback: URL local (desarrollo sin Cloudinary)
+      logo_url = `/uploads/logos/${req.file.filename}`;
+      // Eliminar logo anterior local si existe
+      if (cliente.logo_url?.startsWith('/uploads/')) {
+        const path = require('path');
+        const oldPath = path.join(__dirname, '../../', cliente.logo_url);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
     }
 

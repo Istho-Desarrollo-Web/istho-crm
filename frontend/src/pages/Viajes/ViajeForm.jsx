@@ -18,6 +18,7 @@ import clientesService from '../../api/clientes.service';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
 import { viajeSchema } from '../../utils/validationSchemas';
+import { makeSanitizeHandler, SANITIZE } from '../../utils/sanitizeForms';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -409,6 +410,8 @@ const ViajeForm = () => {
                   {...register('documento_cliente')}
                   type="text"
                   placeholder="Remisión o documento"
+                  maxLength={50}
+                  onChange={makeSanitizeHandler(setValue, 'documento_cliente', SANITIZE.ALFANUM_UPPER, 50)}
                   className={inputCls(true, !!errors.documento_cliente)}
                 />
               </FormField>
@@ -417,8 +420,9 @@ const ViajeForm = () => {
                 <input
                   {...register('origen')}
                   type="text"
+                  maxLength={100}
+                  onChange={makeSanitizeHandler(setValue, 'origen', SANITIZE.TEXTO_UPPER, 100)}
                   className={inputCls(true, !!errors.origen)}
-                  onChange={e => setValue('origen', e.target.value.toUpperCase())}
                 />
               </FormField>
 
@@ -427,6 +431,8 @@ const ViajeForm = () => {
                   {...register('destino')}
                   type="text"
                   placeholder="Ciudad destino"
+                  maxLength={100}
+                  onChange={makeSanitizeHandler(setValue, 'destino', SANITIZE.TEXTO_UPPER, 100)}
                   className={inputCls(true, !!errors.destino)}
                 />
               </FormField>
@@ -521,6 +527,8 @@ const ViajeForm = () => {
                   {...register('no_factura')}
                   type="text"
                   placeholder="Número de factura"
+                  maxLength={50}
+                  onChange={makeSanitizeHandler(setValue, 'no_factura', SANITIZE.ALFANUM_UPPER, 50)}
                   className={inputCls(true, !!errors.no_factura)}
                 />
               </FormField>
