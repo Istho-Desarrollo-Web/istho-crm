@@ -1,4 +1,4 @@
-name: Backup MySQL → Google Drive
+name: Backup MySQL → Backblaze B2
 
 on:
   schedule:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   backup:
-    name: Dump y subir a Google Drive
+    name: Dump y subir a Backblaze B2
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -63,29 +63,31 @@ jobs:
       - name: Instalar rclone
         run: curl https://rclone.org/install.sh | sudo bash
 
-      - name: Configurar rclone con Google Drive
+      - name: Configurar rclone con Backblaze B2
         env:
-          GDRIVE_SA: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
-          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          B2_APP_KEY: ${{ secrets.B2_APP_KEY }}
         run: |
           mkdir -p ~/.config/rclone
-          echo "$GDRIVE_SA" > /tmp/gdrive-sa.json
-
           cat > ~/.config/rclone/rclone.conf << EOF
-          [gdrive]
-          type = drive
-          service_account_file = /tmp/gdrive-sa.json
-          root_folder_id = ${GDRIVE_FOLDER_ID}
+          [b2]
+          type = b2
+          account = ${B2_KEY_ID}
+          key = ${B2_APP_KEY}
           EOF
 
-      - name: Subir backup a Google Drive
+      - name: Subir backup a Backblaze B2
+        env:
+          B2_BUCKET: ${{ secrets.B2_BUCKET }}
         run: |
-          rclone copy "${{ env.BACKUP_FILE }}" gdrive: --progress
+          rclone copy "${{ env.BACKUP_FILE }}" b2:${B2_BUCKET} --progress
           echo "Backup subido: ${{ env.BACKUP_FILE }}"
 
-      - name: Eliminar backups con más de 30 días en Google Drive
+      - name: Eliminar backups con más de 30 días en Backblaze B2
+        env:
+          B2_BUCKET: ${{ secrets.B2_BUCKET }}
         run: |
-          rclone delete gdrive: \
+          rclone delete b2:${B2_BUCKET} \
             --min-age 30d \
             --include "istho_crm_backup_*.sql.gz" \
             --verbose || true
@@ -109,7 +111,7 @@ jobs:
 
       - name: Limpiar archivos temporales
         if: always()
-        run: rm -f "${{ env.BACKUP_FILE }}" /tmp/gdrive-sa.json || true
+        run: rm -f "${{ env.BACKUP_FILE }}" || true
 
       # ─────────────────────────────────────────────────────────────
       # MANEJO DE FALLOS: registrar error + enviar email de alerta
