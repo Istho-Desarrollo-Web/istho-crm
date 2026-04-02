@@ -133,7 +133,7 @@ const ejecutarBackup = async (req, res) => {
       await Auditoria.registrar({
         tabla: 'backup_registros',
         registro_id: null,
-        accion: 'ejecutar',
+        accion: 'crear',
         usuario_id: req.user.id,
         usuario_nombre: `${req.user.nombre} ${req.user.apellido}`,
         datos_anteriores: null,
