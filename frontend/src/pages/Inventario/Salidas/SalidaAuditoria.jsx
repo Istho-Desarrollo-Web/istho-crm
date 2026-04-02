@@ -151,7 +151,7 @@ const Section = ({ title, icon: Icon, children, badge, color = 'blue' }) => {
 // INPUT FIELD
 // ════════════════════════════════════════════════════════════════════════════
 
-const FormField = ({ icon: Icon, label, value, onChange, placeholder, required, type = 'text', disabled }) => (
+const FormField = ({ icon: Icon, label, value, onChange, placeholder, required, type = 'text', disabled, error }) => (
   <div>
     <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
       <Icon className="w-4 h-4 text-slate-400" />
@@ -165,7 +165,7 @@ const FormField = ({ icon: Icon, label, value, onChange, placeholder, required, 
         placeholder={placeholder}
         disabled={disabled}
         rows={3}
-        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+        className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed resize-none ${error ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-600'}`}
       />
     ) : (
       <input
@@ -174,9 +174,10 @@ const FormField = ({ icon: Icon, label, value, onChange, placeholder, required, 
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${error ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-600'}`}
       />
     )}
+    {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
   </div>
 );
 
@@ -480,6 +481,7 @@ const SalidaAuditoria = () => {
     destino: '',
     observaciones: '',
   });
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const [files, setFiles] = useState([]);
   const [closing, setClosing] = useState(false);
@@ -562,8 +564,38 @@ const SalidaAuditoria = () => {
     }
   };
 
+  const sanitizeLogisticaField = (field, value) => {
+    switch (field) {
+      case 'cedula':    return value.replace(/\D/g, '').slice(0, 15);
+      case 'placa':     return value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6);
+      case 'telefono':  return value.replace(/\D/g, '').slice(0, 10);
+      case 'conductor': return value.replace(/[^A-Za-záéíóúÁÉÍÓÚñÑüÜ\s]/g, '').slice(0, 100);
+      case 'origen':
+      case 'destino':   return value.toUpperCase().slice(0, 100);
+      case 'observaciones': return value.slice(0, 500);
+      default: return value;
+    }
+  };
+
+  const validateLogisticaField = (field, value) => {
+    if (!value) return null;
+    switch (field) {
+      case 'cedula':
+        return value.length < 5 ? 'Mínimo 5 dígitos' : null;
+      case 'placa':
+        return value.length === 6 && !/^[A-Z]{3}[0-9]{2}[A-Z0-9]$/.test(value)
+          ? 'Formato inválido (ej: ABC123 o ABC12D)' : null;
+      case 'telefono':
+        return value.length < 7 ? 'Mínimo 7 dígitos' : null;
+      default:
+        return null;
+    }
+  };
+
   const handleFieldChange = (field) => (e) => {
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    const sanitized = sanitizeLogisticaField(field, e.target.value);
+    setFormData((prev) => ({ ...prev, [field]: sanitized }));
+    setFieldErrors((prev) => ({ ...prev, [field]: validateLogisticaField(field, sanitized) }));
     setLogisticaSaved(false);
 
     if (logisticaTimerRef.current) clearTimeout(logisticaTimerRef.current);
@@ -999,12 +1031,12 @@ const SalidaAuditoria = () => {
             }
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField icon={User} label="Nombre del Conductor" value={formData.conductor} onChange={handleFieldChange('conductor')} placeholder="Ej: Juan Pérez" required disabled={isCerrado} />
-              <FormField icon={CreditCard} label="Cédula del Conductor" value={formData.cedula} onChange={handleFieldChange('cedula')} placeholder="Ej: 1.234.567.890" required disabled={isCerrado} />
-              <FormField icon={Truck} label="Placa del Vehículo" value={formData.placa} onChange={handleFieldChange('placa')} placeholder="Ej: ABC-123" required disabled={isCerrado} />
-              <FormField icon={Phone} label="Teléfono del Conductor" value={formData.telefono} onChange={handleFieldChange('telefono')} placeholder="Ej: 300 123 4567" required disabled={isCerrado} />
-              <FormField icon={MapPin} label="Origen" value={formData.origen} onChange={handleFieldChange('origen')} placeholder="Ej: CEDI Girardota" required disabled={isCerrado} />
-              <FormField icon={MapPin} label="Destino" value={formData.destino} onChange={handleFieldChange('destino')} placeholder="Ej: Tienda Cañaveral" required disabled={isCerrado} />
+              <FormField icon={User} label="Nombre del Conductor" value={formData.conductor} onChange={handleFieldChange('conductor')} placeholder="Ej: Juan Pérez" required disabled={isCerrado} error={fieldErrors.conductor} />
+              <FormField icon={CreditCard} label="Cédula del Conductor" value={formData.cedula} onChange={handleFieldChange('cedula')} placeholder="Ej: 1066601726" required disabled={isCerrado} error={fieldErrors.cedula} />
+              <FormField icon={Truck} label="Placa del Vehículo" value={formData.placa} onChange={handleFieldChange('placa')} placeholder="Ej: ABC123" required disabled={isCerrado} error={fieldErrors.placa} />
+              <FormField icon={Phone} label="Teléfono del Conductor" value={formData.telefono} onChange={handleFieldChange('telefono')} placeholder="Ej: 3001234567" required disabled={isCerrado} error={fieldErrors.telefono} />
+              <FormField icon={MapPin} label="Origen" value={formData.origen} onChange={handleFieldChange('origen')} placeholder="Ej: CEDI GIRARDOTA" required disabled={isCerrado} error={fieldErrors.origen} />
+              <FormField icon={MapPin} label="Destino" value={formData.destino} onChange={handleFieldChange('destino')} placeholder="Ej: TIENDA CAÑAVERAL" required disabled={isCerrado} error={fieldErrors.destino} />
               <div className="md:col-span-2">
                 <FormField icon={MessageSquare} label="Observaciones" value={formData.observaciones} onChange={handleFieldChange('observaciones')} placeholder="Novedades de la operación (opcional)..." type="textarea" disabled={isCerrado} />
               </div>
