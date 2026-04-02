@@ -886,3 +886,78 @@ Login → access_token (24h) + refresh_token (7d)
 - Endpoint `/auth/refresh` NO usa `verificarToken` middleware (acepta refresh token expirado en access)
 - Cada refresh genera par nuevo (token rotation)
 - Validacion de contraseña: 8 chars + mayuscula + numero + caracter especial (frontend + backend)
+
+---
+
+## 13. Sistema de Backup Automático
+
+### Arquitectura
+
+```
+GitHub Actions (cron 2AM Colombia)
+       │
+       ├── mysqldump → Railway MySQL (SSL, puerto público)
+       ├── gzip -9 → compresión ~70%
+       ├── rclone copy → Backblaze B2
+       ├── rclone delete → limpia backups > 30 días
+       │
+       ├── POST /backup/registrar (X-Backup-Token)
+       │       └── Crea registro en backup_registros
+       │
+       └── En fallo → Resend email de alerta al admin
+```
+
+### Flujo de Backup Manual (desde CRM)
+
+```
+Admin hace clic en "Backup Manual"
+       │
+       ├── POST /backup/ejecutar (JWT + rol admin)
+       │       ├── Llama GitHub API workflow_dispatch
+       │       │     Body: { ref: 'main', inputs: { origen: 'manual' } }
+       │       ├── GitHub responde 204 → acepta dispatch
+       │       └── Registra en tabla auditoria (accion: crear)
+       │
+       └── GitHub Actions ejecuta el mismo workflow
+               └── Al terminar → POST /backup/registrar
+                       └── origen: 'manual' (pasado como input)
+```
+
+### Modelo backup_registros
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| id | INT | PK autoincrement |
+| fecha | DATETIME | Momento del backup |
+| archivo | STRING | Nombre del archivo .sql.gz |
+| tamano_bytes | BIGINT | Tamaño comprimido |
+| estado | ENUM | `exitoso` / `fallido` |
+| duracion_segundos | INT | Tiempo del dump+compresión |
+| error_mensaje | TEXT | Mensaje si falló |
+| origen | ENUM | `automatico` / `manual` |
+
+### Autenticación sistema-a-sistema
+
+El endpoint `POST /backup/registrar` no usa JWT. Se autentica con header `X-Backup-Token` comparado contra la variable de entorno `BACKUP_API_KEY`. Si no coincide → 401.
+
+### Retención
+
+Backblaze B2 conserva los últimos 30 días. El paso `rclone delete --min-age 30d` elimina automáticamente archivos más antiguos en cada ejecución.
+
+### Variables de Entorno Requeridas
+
+**Railway (backend):**
+```
+BACKUP_API_KEY          # Clave secreta compartida con GitHub Actions
+GITHUB_TOKEN_BACKUP     # PAT de GitHub con scope workflow
+GITHUB_REPO             # owner/repo (ej: gallego2022/istho-crm)
+```
+
+**GitHub Secrets:**
+```
+DB_HOST / DB_PORT / DB_USER / DB_PASS / DB_NAME   # Railway MySQL público
+B2_KEY_ID / B2_APP_KEY / B2_BUCKET                # Backblaze B2
+CRM_API_URL                                        # URL backend Railway + /api/v1
+BACKUP_API_KEY                                     # Misma que Railway
+RESEND_API_KEY / BACKUP_ALERT_EMAIL / BACKUP_FROM_EMAIL  # Alertas email
+```
