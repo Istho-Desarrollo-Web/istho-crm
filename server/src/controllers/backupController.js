@@ -132,7 +132,7 @@ const ejecutarBackup = async (req, res) => {
     if (githubRes.status === 204) {
       await Auditoria.registrar({
         tabla: 'backup_registros',
-        registro_id: null,
+        registro_id: 0,
         accion: 'crear',
         usuario_id: req.user.id,
         usuario_nombre: `${req.user.nombre} ${req.user.apellido}`,
