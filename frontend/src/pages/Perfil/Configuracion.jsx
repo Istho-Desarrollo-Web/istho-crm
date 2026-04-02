@@ -7,7 +7,7 @@
  * @date Marzo 2026
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Settings,
   Bell,
@@ -17,15 +17,20 @@ import {
   Shield,
   Clock,
   Calendar,
-  Check,
-  Loader2,
   Save,
+  Database,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  Play,
+  AlertTriangle,
 } from 'lucide-react';
 
 import { Button } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeContext } from '../../context/ThemeContext';
 import usuarioService from '../../api/usuarioService';
+import backupService from '../../api/backupService';
 import useNotification from '../../hooks/useNotification';
 import PageFooter from '@components/common/PageFooter';
 
@@ -109,6 +114,221 @@ const SectionCard = ({ icon: Icon, title, children }) => (
     </div>
   </div>
 );
+
+// ════════════════════════════════════════════════════════════════════════════
+// HELPERS DE BACKUP
+// ════════════════════════════════════════════════════════════════════════════
+
+const formatBytes = (bytes) => {
+  if (!bytes) return '—';
+  const mb = Number(bytes) / (1024 * 1024);
+  return mb >= 1 ? `${mb.toFixed(1)} MB` : `${(Number(bytes) / 1024).toFixed(0)} KB`;
+};
+
+const formatFecha = (fecha) => {
+  if (!fecha) return '—';
+  return new Intl.DateTimeFormat('es-CO', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+    timeZone: 'America/Bogota',
+  }).format(new Date(fecha));
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+// SECCIÓN DE BACKUP (solo admin)
+// ════════════════════════════════════════════════════════════════════════════
+
+const SeccionBackup = () => {
+  const { success: showSuccess, error: showError } = useNotification();
+  const [data, setData] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [ejecutando, setEjecutando] = useState(false);
+
+  const cargarHistorial = useCallback(async () => {
+    setCargando(true);
+    try {
+      const res = await backupService.obtenerHistorial();
+      setData(res.data ?? res);
+    } catch {
+      showError('Error al cargar historial de backups');
+    } finally {
+      setCargando(false);
+    }
+  }, []); // eslint-disable-line
+
+  useEffect(() => { cargarHistorial(); }, [cargarHistorial]);
+
+  const handleEjecutar = async () => {
+    setEjecutando(true);
+    try {
+      await backupService.ejecutarBackup();
+      showSuccess('Backup iniciado. Estará listo en 2-5 minutos.');
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Error al iniciar el backup';
+      showError(msg);
+    } finally {
+      setEjecutando(false);
+    }
+  };
+
+  const ultimoBackup = data?.registros?.[0] ?? null;
+  const stats = data?.stats ?? {};
+  const proximoBackup = data?.proximo_backup;
+
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-700">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+            <Database className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          </div>
+          <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">Backups de Base de Datos</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={cargarHistorial}
+            disabled={cargando}
+            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            title="Actualizar"
+          >
+            <RefreshCw className={`w-4 h-4 ${cargando ? 'animate-spin' : ''}`} />
+          </button>
+          <Button
+            variant="primary"
+            icon={Play}
+            onClick={handleEjecutar}
+            loading={ejecutando}
+            size="sm"
+          >
+            Backup Manual
+          </Button>
+        </div>
+      </div>
+
+      <div className="p-5 space-y-5">
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            {
+              label: 'Último estado',
+              value: ultimoBackup
+                ? ultimoBackup.estado === 'exitoso' ? 'Exitoso' : 'Fallido'
+                : 'Sin datos',
+              icon: ultimoBackup?.estado === 'exitoso' ? CheckCircle2 : ultimoBackup?.estado === 'fallido' ? XCircle : AlertTriangle,
+              color: ultimoBackup?.estado === 'exitoso'
+                ? 'text-emerald-600 dark:text-emerald-400'
+                : ultimoBackup?.estado === 'fallido'
+                  ? 'text-red-500 dark:text-red-400'
+                  : 'text-slate-400',
+              bg: ultimoBackup?.estado === 'exitoso'
+                ? 'bg-emerald-50 dark:bg-emerald-900/20'
+                : ultimoBackup?.estado === 'fallido'
+                  ? 'bg-red-50 dark:bg-red-900/20'
+                  : 'bg-slate-50 dark:bg-slate-700/40',
+            },
+            {
+              label: 'Tasa de éxito',
+              value: stats.total > 0 ? `${stats.tasa_exito}%` : '—',
+              icon: CheckCircle2,
+              color: 'text-blue-600 dark:text-blue-400',
+              bg: 'bg-blue-50 dark:bg-blue-900/20',
+            },
+            {
+              label: 'Tamaño promedio',
+              value: formatBytes(stats.tamano_promedio_bytes),
+              icon: Database,
+              color: 'text-purple-600 dark:text-purple-400',
+              bg: 'bg-purple-50 dark:bg-purple-900/20',
+            },
+            {
+              label: 'Total registros',
+              value: stats.total ?? '—',
+              icon: Database,
+              color: 'text-slate-600 dark:text-slate-300',
+              bg: 'bg-slate-50 dark:bg-slate-700/40',
+            },
+          ].map(({ label, value, icon: Icon, color, bg }) => (
+            <div key={label} className={`rounded-xl p-3 ${bg}`}>
+              <div className={`flex items-center gap-1.5 mb-1 ${color}`}>
+                <Icon className="w-3.5 h-3.5" />
+                <span className="text-xs font-medium">{label}</span>
+              </div>
+              <p className={`text-lg font-bold ${color}`}>{value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Próximo backup */}
+        {proximoBackup && (
+          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/40 rounded-xl px-4 py-2.5">
+            <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+            <span>Próximo backup automático: <strong className="text-slate-700 dark:text-slate-200">{formatFecha(proximoBackup)}</strong> · Diario a las 2:00 AM</span>
+          </div>
+        )}
+
+        {/* Historial */}
+        {cargando ? (
+          <div className="flex justify-center py-6">
+            <RefreshCw className="w-5 h-5 animate-spin text-slate-400" />
+          </div>
+        ) : data?.registros?.length > 0 ? (
+          <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-700">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 dark:bg-slate-700/50">
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Fecha</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Estado</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tamaño</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Duración</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Origen</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                {data.registros.map((r) => (
+                  <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">{formatFecha(r.fecha)}</td>
+                    <td className="px-4 py-3">
+                      {r.estado === 'exitoso' ? (
+                        <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Exitoso
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-red-500 dark:text-red-400 font-medium" title={r.error_mensaje ?? ''}>
+                          <XCircle className="w-3.5 h-3.5" /> Fallido
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{formatBytes(r.tamano_bytes)}</td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                      {r.duracion_segundos ? `${r.duracion_segundos}s` : '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        r.origen === 'manual'
+                          ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                          : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
+                      }`}>
+                        {r.origen === 'manual' ? 'Manual' : 'Automático'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-slate-400 dark:text-slate-500">
+            <Database className="w-8 h-8 mx-auto mb-2 opacity-40" />
+            <p className="text-sm">No hay backups registrados aún</p>
+            <p className="text-xs mt-1">El primer backup automático se ejecutará esta noche a las 2:00 AM</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // ════════════════════════════════════════════════════════════════════════════
 // DEFAULTS
@@ -328,6 +548,9 @@ const Configuracion = () => {
               </SettingRow>
             </SectionCard>
           )}
+
+          {/* ═══ BACKUPS (solo admin) ═══ */}
+          {user?.rol === 'admin' && <SeccionBackup />}
 
         </div>
 

@@ -33,6 +33,7 @@ const VehiculoModel = require('./Vehiculo');
 const CajaMenorModel = require('./CajaMenor');
 const ViajeModel = require('./Viaje');
 const MovimientoCajaMenorModel = require('./MovimientoCajaMenor');
+const BackupRegistroModel = require('./BackupRegistro');
 const Notificacion = require('./Notificacion')(sequelize);
 
 // Inicializar modelos
@@ -58,6 +59,7 @@ const Vehiculo = VehiculoModel(sequelize);
 const CajaMenor = CajaMenorModel(sequelize);
 const Viaje = ViajeModel(sequelize);
 const MovimientoCajaMenor = MovimientoCajaMenorModel(sequelize);
+const BackupRegistro = BackupRegistroModel(sequelize);
 
 // ============================================
 // DEFINIR ASOCIACIONES
@@ -390,7 +392,8 @@ const db = {
   Vehiculo,
   CajaMenor,
   Viaje,
-  MovimientoCajaMenor
+  MovimientoCajaMenor,
+  BackupRegistro,
 };
 
 /**

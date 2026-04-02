@@ -313,6 +313,15 @@ export const MOVIMIENTOS_ENDPOINTS = {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
+// BACKUP
+// ════════════════════════════════════════════════════════════════════════════
+
+export const BACKUP_ENDPOINTS = {
+  HISTORIAL: '/backup/historial',
+  EJECUTAR:  '/backup/ejecutar',
+};
+
+// ════════════════════════════════════════════════════════════════════════════
 // EXPORT UNIFICADO
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -335,6 +344,7 @@ export const ENDPOINTS = {
   CAJAS_MENORES: CAJAS_MENORES_ENDPOINTS,
   VIAJES: VIAJES_ENDPOINTS,
   MOVIMIENTOS: MOVIMIENTOS_ENDPOINTS,
+  BACKUP: BACKUP_ENDPOINTS,
 };
 
 export default ENDPOINTS;
