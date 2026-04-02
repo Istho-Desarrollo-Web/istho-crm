@@ -273,8 +273,15 @@ Operador hace clic en "Completar Auditoría"
 │                                     │
 │  ☐ Enviar correo de notificación    │
 │                                     │
-│  Plantilla: [Dropdown]             │
-│  ├── ⭐ Cierre Entrada (defecto)   │
+│  Plantilla: [Dropdown]              │
+│  ├── ⭐ Cierre Entrada (defecto)    │
+│                                     │
+│  Destinatarios (informativo):       │
+│  ├── Juan Pérez · Logística         │
+│  │   juan@empresa.com               │
+│  └── (solo los que tienen           │
+│       tipos_notificacion compatibles│
+│       con el tipo de operación)     │
 │  ├── Cierre Personalizado          │
 │  └── Cierre General                │
 │                                     │
@@ -331,7 +338,11 @@ Body: {
 │     └── Enviar email:               │
 │         Para: correos_destino       │
 │         + contactos con             │
-│           recibe_notificaciones     │
+│           recibe_notificaciones=true│
+│           Y tipos_notificacion      │
+│           incluye tipo de operación │
+│           ('ingreso','salida',      │
+│           'kardex') o 'todas'       │
 │                                     │
 │  3. Registrar auditoría             │
 │  4. Crear notificación              │
@@ -360,6 +371,52 @@ El sistema selecciona la plantilla en este orden de prioridad:
 ```
 
 ---
+
+## 3bis. Contactos y Tipos de Notificación
+
+### Modelo Contacto — Campo `tipos_notificacion`
+
+Cada contacto de un cliente tiene un campo JSON `tipos_notificacion` que determina qué correos de cierre recibe.
+
+| Valor almacenado | Recibe |
+|---|---|
+| `['todas']` (default) | Todas las operaciones (ingreso, salida, kardex) |
+| `['ingreso']` | Solo cierres de Entradas |
+| `['salida']` | Solo cierres de Salidas |
+| `['kardex']` | Solo cierres de Kardex |
+| `['ingreso','salida']` | Entradas y Salidas |
+| Cualquier combinación | Solo los tipos indicados |
+
+**Backward compatibility:** contactos existentes con `tipos_notificacion = NULL` son tratados como `['todas']` tanto en el filtro de `cerrarAuditoria` como en el endpoint `GET /auditorias/:id/destinatarios`.
+
+### Endpoints relacionados
+
+- `GET /auditorias/:id/destinatarios` — retorna lista `[{nombre, cargo, email}]` de contactos que recibirán el correo de cierre según el tipo de operación. Usado por `CierreAuditoriaModal` para la sección informativa.
+- `POST /clientes/:id/contactos` / `PUT /clientes/:id/contactos/:contactoId` — acepta `tipos_notificacion` en el body.
+
+### Lógica de filtrado (backend)
+
+```javascript
+// En cerrarAuditoria y obtenerDestinatarios
+const tipoOp = operacion.tipo; // 'ingreso' | 'salida' | 'kardex'
+const contactosFiltrados = contactos.filter(c => {
+  const tipos = c.tipos_notificacion || ['todas'];
+  return tipos.includes('todas') || tipos.includes(tipoOp);
+});
+```
+
+### UX en ContactoFormModal
+
+Al marcar "Recibe notificaciones" aparece un bloque con 4 checkboxes:
+- **Todas las operaciones** — equivale a `['todas']`
+- **Entradas de inventario** — `ingreso`
+- **Salidas de inventario** — `salida`
+- **Ajustes de Kardex** — `kardex`
+
+Reglas:
+- Seleccionar "Todas" marca los 3 individuales visualmente y guarda `['todas']`
+- Desmarcar "Todas" expande a los 3 individuales activos
+- Si los 3 individuales quedan seleccionados → se normaliza a `['todas']`
 
 ## 4. Sistema de Permisos
 

@@ -84,6 +84,28 @@ set CRM_API_URL=https://backend.up.railway.app/api/v1&& set WMS_API_KEY=key&& no
 5. **conductor** (nivel 30) — Trips, expenses, own vehicles, petty cash (own)
 6. **cliente** (nivel 10) — Portal filtered by `cliente_id`
 
+## Contactos y Notificaciones por Tipo
+
+- **`tipos_notificacion`** (JSON, default `['todas']`) en modelo `Contacto` determina qué cierres de auditoría recibe el contacto
+- Valores válidos: `'todas'` | `'ingreso'` | `'salida'` | `'kardex'` (combinaciones en array)
+- Filtro backend: `tipos.includes('todas') || tipos.includes(operacion.tipo)` — `NULL` se trata como `['todas']` (backward compatible)
+- **`GET /auditorias/:id/destinatarios`** — preview de contactos que recibirán el correo; usado por `CierreAuditoriaModal` antes de cerrar
+- `CierreAuditoriaModal` recibe prop `auditoriaId` para cargar destinatarios en tiempo real
+- Formulario de contacto: al activar "Recibe notificaciones" aparece selector de tipos (Todas / Entradas / Salidas / Kardex)
+
+## Datos Logísticos — Validaciones de Formato
+
+Los 3 formularios de auditoría (Entrada, Salida, Kardex) aplican sanitización y validación en tiempo real vía `sanitizeLogisticaField` y `validateLogisticaField`:
+
+| Campo | Restricción | Máx |
+|---|---|---|
+| conductor | Solo letras, espacios y acentos | 100 |
+| cedula | Solo dígitos, mín 5 | 15 |
+| placa | Alfanumérico auto-MAYÚSCULAS, formato `ABC123` o `ABC12D`, mín 6 | 6 |
+| telefono | Solo dígitos, mín 7 | 10 |
+| origen / destino | Auto-MAYÚSCULAS | 100 |
+| observaciones | Texto libre | 500 |
+
 ## Caja Menor (Petty Cash)
 - **Assignable to ANY user** (not just conductors). Field: `asignado_a` (FK to Usuario)
 - **Movements:** Field `usuario_id` (FK to Usuario). Viaje association only visible if assigned user is conductor
