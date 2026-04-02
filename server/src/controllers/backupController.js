@@ -135,11 +135,11 @@ const ejecutarBackup = async (req, res) => {
         registro_id: 0,
         accion: 'crear',
         usuario_id: req.user.id,
-        usuario_nombre: `${req.user.nombre} ${req.user.apellido}`,
+        usuario_nombre: req.user.nombre_completo || req.user.username,
         datos_anteriores: null,
         datos_nuevos: { origen: 'manual', disparado_por: req.user.email },
         ip_address: getClientIP(req),
-        descripcion: `Backup manual disparado por ${req.user.nombre} ${req.user.apellido}`,
+        descripcion: `Backup manual disparado por ${req.user.nombre_completo || req.user.username}`,
       });
 
       return success(res, null, 'Backup iniciado. Estará listo en 2-5 minutos.');
