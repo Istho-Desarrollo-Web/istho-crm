@@ -42,6 +42,7 @@ jobs:
             --routines \
             --triggers \
             --set-gtid-purged=OFF \
+            --ssl-mode=REQUIRED \
             > "$ARCHIVO"
 
           echo "Dump completado. Comprimiendo..."
