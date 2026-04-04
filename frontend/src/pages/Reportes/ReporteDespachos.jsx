@@ -65,8 +65,12 @@ const ReporteDespachos = () => {
     setLoading(true);
     setError(null);
     try {
+      const params = {};
+      if (filters.fecha_desde) params.fecha_desde = filters.fecha_desde;
+      if (filters.fecha_hasta) params.fecha_hasta = filters.fecha_hasta;
+      if (filters.cliente_id) params.cliente_id = filters.cliente_id;
       const [dashRes, compRes] = await Promise.all([
-        reportesService.getDashboard(),
+        reportesService.getDashboard(params),
         reportesService.getComparativo({ meses: 6 }),
       ]);
       if (dashRes?.success && dashRes.data) setStats(dashRes.data);
@@ -76,7 +80,7 @@ const ReporteDespachos = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filters]);
 
   useEffect(() => {
     fetchData();

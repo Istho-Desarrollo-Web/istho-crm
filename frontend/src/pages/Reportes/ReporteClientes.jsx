@@ -65,8 +65,11 @@ const ReporteClientes = () => {
     setLoading(true);
     setError(null);
     try {
+      const params = {};
+      if (filters.fecha_desde) params.fecha_desde = filters.fecha_desde;
+      if (filters.fecha_hasta) params.fecha_hasta = filters.fecha_hasta;
       const [dashResponse, clientesResponse] = await Promise.all([
-        reportesService.getDashboard(),
+        reportesService.getDashboard(params),
         clientesService.getAll({ limit: 50, sort: 'created_at', order: 'DESC' }).catch((err) => {
           console.warn('Error al cargar clientes:', err);
           return { success: false, error: err.message || 'Error al cargar clientes' };
@@ -88,7 +91,7 @@ const ReporteClientes = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filters]);
 
   useEffect(() => {
     fetchData();

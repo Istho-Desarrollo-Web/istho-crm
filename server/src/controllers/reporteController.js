@@ -418,11 +418,21 @@ const getDashboard = async (req, res) => {
   try {
     const hoy = new Date();
 
-    // Filtro de mes/año — si no se envían, usa el mes actual
-    const mes = req.query.mes ? parseInt(req.query.mes) - 1 : hoy.getMonth(); // 0-indexed
-    const anio = req.query.anio ? parseInt(req.query.anio) : hoy.getFullYear();
-    const inicioMes = new Date(anio, mes, 1);
-    const finMes = new Date(anio, mes + 1, 0, 23, 59, 59);
+    // Rango de fechas: prioridad fecha_desde/fecha_hasta, sino mes/año, sino mes actual
+    let inicioMes, finMes;
+    if (req.query.fecha_desde || req.query.fecha_hasta) {
+      inicioMes = req.query.fecha_desde
+        ? new Date(req.query.fecha_desde + 'T00:00:00')
+        : new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+      finMes = req.query.fecha_hasta
+        ? new Date(req.query.fecha_hasta + 'T23:59:59')
+        : new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0, 23, 59, 59);
+    } else {
+      const mes = req.query.mes ? parseInt(req.query.mes) - 1 : hoy.getMonth();
+      const anio = req.query.anio ? parseInt(req.query.anio) : hoy.getFullYear();
+      inicioMes = new Date(anio, mes, 1);
+      finMes = new Date(anio, mes + 1, 0, 23, 59, 59);
+    }
 
     const inicioSemana = new Date(hoy);
     inicioSemana.setDate(hoy.getDate() - hoy.getDay());

@@ -251,6 +251,11 @@ const Dashboard = () => {
   const { user } = useAuth();
   const { inventoryAlert, info } = useNotification();
 
+  // ── FILTRO MES GRÁFICA ── (debe ir antes de useDashboard)
+  const hoyDash = new Date();
+  const [mesFiltro, setMesFiltro] = useState(hoyDash.getMonth() + 1); // 1-12
+  const [anioFiltro, setAnioFiltro] = useState(hoyDash.getFullYear());
+
   const {
     loading,
     error,
@@ -273,11 +278,6 @@ const Dashboard = () => {
   const [realAlertas, setRealAlertas] = useState([]);
   const [loadingAlertas, setLoadingAlertas] = useState(true);
   const [alertasCounts, setAlertasCounts] = useState({ agotado: 0, stock_bajo: 0, vencimiento: 0 });
-
-  // ── FILTRO MES GRÁFICA ──
-  const hoyDash = new Date();
-  const [mesFiltro, setMesFiltro] = useState(hoyDash.getMonth() + 1); // 1-12
-  const [anioFiltro, setAnioFiltro] = useState(hoyDash.getFullYear());
 
   const fetchAlertas = useCallback(async () => {
     try {
