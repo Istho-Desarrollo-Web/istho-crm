@@ -191,7 +191,7 @@ const PieChart = ({
               x={centerX}
               y={centerY - 8}
               textAnchor="middle"
-              className="text-lg font-bold fill-slate-800"
+              className="text-lg font-bold fill-slate-800 dark:fill-slate-100"
             >
               {total.toLocaleString()}
             </text>
