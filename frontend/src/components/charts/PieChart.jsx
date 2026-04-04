@@ -25,12 +25,13 @@ const COLORS = [
   '#f97316', // orange
 ];
 
-const PieChart = ({ 
-  data = [], 
-  title, 
+const PieChart = ({
+  data = [],
+  title,
   subtitle,
   size = 200,
   showLegend = true,
+  headerActions = null,
 }) => {
   const [hoveredSlice, setHoveredSlice] = useState(null);
 
@@ -47,10 +48,13 @@ const PieChart = ({
   // Si no hay datos válidos, mostrar estado vacío
   if (validData.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
-          {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
+            {subtitle && <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>}
+          </div>
+          {headerActions && <div className="flex-shrink-0">{headerActions}</div>}
         </div>
         <div className="flex items-center justify-center" style={{ height: size }}>
           <div className="text-center">
@@ -146,11 +150,14 @@ const PieChart = ({
   // ══════════════════════════════════════════════════════════════════════════
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
       {/* Header */}
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
-        {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
+          {subtitle && <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>}
+        </div>
+        {headerActions && <div className="flex-shrink-0">{headerActions}</div>}
       </div>
 
       <div className="flex items-center gap-6">
@@ -176,7 +183,7 @@ const PieChart = ({
               cx={centerX}
               cy={centerY}
               r={radius * 0.5}
-              fill="white"
+              className="fill-white dark:fill-slate-800"
             />
             
             {/* Center text */}
@@ -224,7 +231,7 @@ const PieChart = ({
                 className={`
                   flex items-center justify-between p-2 rounded-lg cursor-pointer
                   transition-colors duration-200
-                  ${hoveredSlice === idx ? 'bg-slate-50' : ''}
+                  ${hoveredSlice === idx ? 'bg-slate-50 dark:bg-slate-700/50' : ''}
                 `}
               >
                 <div className="flex items-center gap-3">
@@ -232,12 +239,12 @@ const PieChart = ({
                     className="w-3 h-3 rounded-full" 
                     style={{ backgroundColor: slice.color }}
                   />
-                  <span className="text-sm text-slate-700">
+                  <span className="text-sm text-slate-700 dark:text-slate-300">
                     {slice.label || slice.name || `Segmento ${idx + 1}`}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-sm font-semibold text-slate-800">
+                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                     {slice.percentage.toFixed(1)}%
                   </span>
                 </div>
@@ -268,6 +275,8 @@ PieChart.propTypes = {
   size: PropTypes.number,
   /** Mostrar leyenda */
   showLegend: PropTypes.bool,
+  /** Contenido adicional en la cabecera (p.ej. selectores de filtro) */
+  headerActions: PropTypes.node,
 };
 
 export default PieChart;

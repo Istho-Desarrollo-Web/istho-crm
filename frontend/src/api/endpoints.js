@@ -170,6 +170,7 @@ export const REPORTES_ENDPOINTS = {
 
   // Comparativos
   COMPARATIVO: '/reportes/comparativo',
+  PERIODOS_DISPONIBLES: '/reportes/periodos-disponibles',
 
   // Viajes
   VIAJES_EXCEL: '/reportes/viajes/excel',

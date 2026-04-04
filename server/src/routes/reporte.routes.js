@@ -21,6 +21,7 @@ router.use(filtrarPorCliente);
 // =============================================
 
 router.get('/dashboard', reporteController.getDashboard);
+router.get('/periodos-disponibles', reporteController.getPeriodosDisponibles);
 
 // =============================================
 // REPORTES DE OPERACIONES

@@ -159,6 +159,15 @@ const reportesService = {
     }
   },
 
+  // Periodos con datos reales (para filtros dinámicos)
+  getPeriodosDisponibles: async (params = {}) => {
+    try {
+      return await apiClient.get(REPORTES_ENDPOINTS.PERIODOS_DISPONIBLES, { params });
+    } catch {
+      return { success: false, data: { periodos: [], anios: [] } };
+    }
+  },
+
   // Reportes comparativos
   getComparativo: async (params = {}) => {
     try {

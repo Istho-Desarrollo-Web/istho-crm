@@ -845,6 +845,52 @@ const getComparativo = async (req, res) => {
 };
 
 // =============================================
+// #11 - PERIODOS DISPONIBLES
+// =============================================
+
+const getPeriodosDisponibles = async (req, res) => {
+  try {
+    const clienteId = req.query.cliente_id;
+
+    const rows = await sequelize.query(
+      `SELECT YEAR(created_at) AS anio, MONTH(created_at) AS mes, COUNT(*) AS total
+       FROM operaciones
+       ${clienteId ? 'WHERE cliente_id = :clienteId' : ''}
+       GROUP BY YEAR(created_at), MONTH(created_at)
+       ORDER BY anio DESC, mes DESC`,
+      {
+        replacements: clienteId ? { clienteId } : {},
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    const hoy = new Date();
+    const mesActual = hoy.getMonth() + 1;
+    const anioActual = hoy.getFullYear();
+
+    const periodos = (Array.isArray(rows) ? rows : []).map(r => ({
+      mes: parseInt(r.mes),
+      anio: parseInt(r.anio),
+      total: parseInt(r.total),
+    }));
+
+    // Siempre incluir el mes actual aunque no tenga datos
+    if (!periodos.some(p => p.mes === mesActual && p.anio === anioActual)) {
+      periodos.unshift({ mes: mesActual, anio: anioActual, total: 0 });
+    }
+
+    periodos.sort((a, b) => b.anio !== a.anio ? b.anio - a.anio : b.mes - a.mes);
+
+    const anios = [...new Set(periodos.map(p => p.anio))].sort((a, b) => b - a);
+
+    return res.json({ success: true, data: { periodos, anios } });
+  } catch (error) {
+    logger.error('Error al obtener periodos disponibles:', { message: error.message });
+    return serverError(res, 'Error al obtener periodos disponibles', error);
+  }
+};
+
+// =============================================
 // #9 - REPORTES PROGRAMADOS (CRUD)
 // =============================================
 
@@ -1070,7 +1116,7 @@ const exportarCajaMenorExcel = async (req, res) => {
     const caja = await CajaMenor.findByPk(id, {
       include: [
         { model: Usuario, as: 'asignado', attributes: ['id', 'nombre_completo'] },
-        { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo', 'username'] },
         {
           model: MovimientoCajaMenor, as: 'movimientos',
           include: [
@@ -1106,7 +1152,7 @@ const exportarCajaMenorExcel = async (req, res) => {
       ['Total Ingresos', `$${Number(caja.total_ingresos).toLocaleString('es-CO')}`],
       ['Total Egresos', `$${Number(caja.total_egresos).toLocaleString('es-CO')}`],
       ['Saldo Actual', `$${Number(caja.saldo_actual).toLocaleString('es-CO')}`],
-      ['Creado por', caja.creador?.nombre_completo || ''],
+      ['Creado por', caja.creador?.nombre_completo || caja.creador?.username || 'Sin registro'],
       ['Total Viajes', caja.viajes?.length || 0],
       ['Total Movimientos', caja.movimientos?.length || 0],
     ].forEach(([campo, valor]) => resumen.addRow({ campo, valor }));
@@ -1193,7 +1239,7 @@ const exportarCajasMenoresExcel = async (req, res) => {
       where,
       include: [
         { model: Usuario, as: 'asignado', attributes: ['id', 'nombre_completo'] },
-        { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo', 'username'] },
       ],
       order: [['created_at', 'DESC']],
     });
@@ -1710,6 +1756,7 @@ const getReporteGastos = async (req, res) => {
 };
 
 module.exports = {
+  getPeriodosDisponibles,
   exportarOperacionesExcel,
   exportarOperacionesPDF,
   exportarDetalleOperacionExcel,

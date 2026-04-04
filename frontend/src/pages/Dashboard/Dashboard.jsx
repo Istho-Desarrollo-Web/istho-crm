@@ -44,6 +44,7 @@ import { useAuth } from '../../context/AuthContext';
 import useDashboard from '../../hooks/useDashboard';
 import useNotification from '../../hooks/useNotification';
 import inventarioService from '../../api/inventario.service';
+import reportesService from '../../api/reportes.service';
 import { getGreeting } from '../../utils/greeting';
 import PageFooter from '@components/common/PageFooter';
 
@@ -255,6 +256,8 @@ const Dashboard = () => {
   const hoyDash = new Date();
   const [mesFiltro, setMesFiltro] = useState(hoyDash.getMonth() + 1); // 1-12
   const [anioFiltro, setAnioFiltro] = useState(hoyDash.getFullYear());
+  const [periodos, setPeriodos] = useState([]);
+  const [aniosDisponibles, setAniosDisponibles] = useState([hoyDash.getFullYear()]);
 
   const {
     loading,
@@ -304,6 +307,15 @@ const Dashboard = () => {
   }, [fetchAlertas]);
 
   useEffect(() => {
+    reportesService.getPeriodosDisponibles().then(res => {
+      if (res?.success && res.data) {
+        setPeriodos(res.data.periodos || []);
+        setAniosDisponibles(res.data.anios?.length ? res.data.anios : [hoyDash.getFullYear()]);
+      }
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
     if (!loadingAlertas && realAlertas.length > 0) {
       const porTipo = {
         agotado: realAlertas.filter(a => a.tipo === 'agotado'),
@@ -341,8 +353,31 @@ const Dashboard = () => {
   const pieData = chartData.ingresosVsSalidas || [];
 
   const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  // Meses disponibles para el año seleccionado (solo los que tienen datos + mes actual)
+  const mesesDisponibles = (() => {
+    const mesActual = hoyDash.getMonth() + 1;
+    const anioActual = hoyDash.getFullYear();
+    const mesesConDatos = periodos
+      .filter(p => p.anio === anioFiltro)
+      .map(p => p.mes);
+    if (anioFiltro === anioActual && !mesesConDatos.includes(mesActual)) {
+      mesesConDatos.push(mesActual);
+    }
+    mesesConDatos.sort((a, b) => a - b);
+    return mesesConDatos.length
+      ? mesesConDatos.map(m => ({ value: m, label: MESES[m - 1] }))
+      : [{ value: mesActual, label: MESES[mesActual - 1] }];
+  })();
+
+  // Ajustar mes si no está disponible en el año seleccionado
+  useEffect(() => {
+    if (mesesDisponibles.length && !mesesDisponibles.find(m => m.value === mesFiltro)) {
+      setMesFiltro(mesesDisponibles[mesesDisponibles.length - 1].value);
+    }
+  }, [anioFiltro]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const mesNombre = `${MESES[mesFiltro - 1]} ${anioFiltro}`;
-  const aniosDisponibles = Array.from({ length: 3 }, (_, i) => hoyDash.getFullYear() - i);
 
   // ── ALERTS FORMAT (desde alertas reales del backend) ──
   const formattedAlertas = realAlertas.slice(0, 5).map(alerta => ({
@@ -492,34 +527,34 @@ const Dashboard = () => {
             loading={loading}
           />
 
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2 justify-end">
-              <select
-                value={mesFiltro}
-                onChange={e => setMesFiltro(Number(e.target.value))}
-                className="text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1A1B3A] text-slate-700 dark:text-slate-200 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-red-500"
-              >
-                {MESES.map((m, i) => (
-                  <option key={i + 1} value={i + 1}>{m}</option>
-                ))}
-              </select>
-              <select
-                value={anioFiltro}
-                onChange={e => setAnioFiltro(Number(e.target.value))}
-                className="text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1A1B3A] text-slate-700 dark:text-slate-200 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-red-500"
-              >
-                {aniosDisponibles.map(a => (
-                  <option key={a} value={a}>{a}</option>
-                ))}
-              </select>
-            </div>
-            <PieChart
-              title="Entradas vs Salidas"
-              subtitle={`Operaciones de ${mesNombre}`}
-              data={pieData}
-              size={180}
-            />
-          </div>
+          <PieChart
+            title="Entradas vs Salidas"
+            subtitle={`Operaciones de ${mesNombre}`}
+            data={pieData}
+            size={180}
+            headerActions={
+              <div className="flex items-center gap-1.5">
+                <select
+                  value={mesFiltro}
+                  onChange={e => setMesFiltro(Number(e.target.value))}
+                  className="text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:focus:ring-blue-500 cursor-pointer"
+                >
+                  {mesesDisponibles.map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+                <select
+                  value={anioFiltro}
+                  onChange={e => setAnioFiltro(Number(e.target.value))}
+                  className="text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:focus:ring-blue-500 cursor-pointer"
+                >
+                  {aniosDisponibles.map(a => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+              </div>
+            }
+          />
         </div>
 
         {/* ════════════════════════════════════════════════════════════════ */}

@@ -957,7 +957,7 @@ const exportarCajasMenores = async (cajas) => {
       parseFloat(c.saldo_actual) || 0,
       c.fecha_apertura ? new Date(c.fecha_apertura) : null,
       c.fecha_cierre ? new Date(c.fecha_cierre) : null,
-      c.creador?.nombre_completo || '',
+      c.creador?.nombre_completo || c.creador?.username || 'Sin registro',
     ];
     vals.forEach((val, ci) => {
       const cell = row.getCell(ci + 1);
