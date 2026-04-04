@@ -265,12 +265,19 @@ const Dashboard = () => {
     autoFetch: true,
     clienteId: user?.rol === 'cliente' ? user?.cliente_id : null,
     refreshInterval: 60000,
+    mes: mesFiltro,
+    anio: anioFiltro,
   });
 
   // ── ALERTAS REALES DEL BACKEND ──
   const [realAlertas, setRealAlertas] = useState([]);
   const [loadingAlertas, setLoadingAlertas] = useState(true);
   const [alertasCounts, setAlertasCounts] = useState({ agotado: 0, stock_bajo: 0, vencimiento: 0 });
+
+  // ── FILTRO MES GRÁFICA ──
+  const hoyDash = new Date();
+  const [mesFiltro, setMesFiltro] = useState(hoyDash.getMonth() + 1); // 1-12
+  const [anioFiltro, setAnioFiltro] = useState(hoyDash.getFullYear());
 
   const fetchAlertas = useCallback(async () => {
     try {
@@ -332,6 +339,10 @@ const Dashboard = () => {
   })) || [];
 
   const pieData = chartData.ingresosVsSalidas || [];
+
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const mesNombre = `${MESES[mesFiltro - 1]} ${anioFiltro}`;
+  const aniosDisponibles = Array.from({ length: 3 }, (_, i) => hoyDash.getFullYear() - i);
 
   // ── ALERTS FORMAT (desde alertas reales del backend) ──
   const formattedAlertas = realAlertas.slice(0, 5).map(alerta => ({
@@ -481,13 +492,34 @@ const Dashboard = () => {
             loading={loading}
           />
 
-          <PieChart
-            title="Entradas vs Salidas"
-            subtitle="Operaciones del mes"
-            data={pieData}
-            size={180}
-            loading={loading}
-          />
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 justify-end">
+              <select
+                value={mesFiltro}
+                onChange={e => setMesFiltro(Number(e.target.value))}
+                className="text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1A1B3A] text-slate-700 dark:text-slate-200 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-red-500"
+              >
+                {MESES.map((m, i) => (
+                  <option key={i + 1} value={i + 1}>{m}</option>
+                ))}
+              </select>
+              <select
+                value={anioFiltro}
+                onChange={e => setAnioFiltro(Number(e.target.value))}
+                className="text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1A1B3A] text-slate-700 dark:text-slate-200 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-red-500"
+              >
+                {aniosDisponibles.map(a => (
+                  <option key={a} value={a}>{a}</option>
+                ))}
+              </select>
+            </div>
+            <PieChart
+              title="Entradas vs Salidas"
+              subtitle={`Operaciones de ${mesNombre}`}
+              data={pieData}
+              size={180}
+            />
+          </div>
         </div>
 
         {/* ════════════════════════════════════════════════════════════════ */}

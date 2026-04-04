@@ -37,9 +37,9 @@ const reportesService = {
    * //   ultimasOperaciones: [...]
    * // }
    */
-  getDashboard: async () => {
+  getDashboard: async (params = {}) => {
     try {
-      const response = await apiClient.get(REPORTES_ENDPOINTS.DASHBOARD);
+      const response = await apiClient.get(REPORTES_ENDPOINTS.DASHBOARD, { params });
       return response;
     } catch (error) {
       console.error('❌ Error obteniendo dashboard:', error);

@@ -70,9 +70,11 @@ const DEFAULT_CLIENTES = {
  * @returns {Object} Datos y funciones del dashboard
  */
 const useDashboard = (options = {}) => {
-  const { 
-    autoFetch = true, 
-    refreshInterval = 0 
+  const {
+    autoFetch = true,
+    refreshInterval = 0,
+    mes = null,
+    anio = null,
   } = options;
   
   // ──────────────────────────────────────────────────────────────────────────
@@ -96,10 +98,12 @@ const useDashboard = (options = {}) => {
     } else {
       setIsRefreshing(true);
     }
-    
+
     try {
-      // Usar el endpoint consolidado del backend
-      const response = await reportesService.getDashboard();
+      const params = {};
+      if (mes) params.mes = mes;
+      if (anio) params.anio = anio;
+      const response = await reportesService.getDashboard(params);
       
       // Validar que la respuesta existe y tiene datos
       if (response && response.success && response.data) {
@@ -144,8 +148,8 @@ const useDashboard = (options = {}) => {
     } finally {
       setIsRefreshing(false);
     }
-  }, []);
-  
+  }, [mes, anio]);
+
   // ──────────────────────────────────────────────────────────────────────────
   // REFRESH
   // ──────────────────────────────────────────────────────────────────────────
@@ -378,7 +382,7 @@ const useDashboard = (options = {}) => {
     if (autoFetch) {
       fetchDashboardData();
     }
-  }, [autoFetch, fetchDashboardData]);
+  }, [autoFetch, fetchDashboardData, mes, anio]);
   
   // ──────────────────────────────────────────────────────────────────────────
   // AUTO REFRESH

@@ -417,7 +417,13 @@ const exportarClientesPDF = async (req, res) => {
 const getDashboard = async (req, res) => {
   try {
     const hoy = new Date();
-    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+
+    // Filtro de mes/año — si no se envían, usa el mes actual
+    const mes = req.query.mes ? parseInt(req.query.mes) - 1 : hoy.getMonth(); // 0-indexed
+    const anio = req.query.anio ? parseInt(req.query.anio) : hoy.getFullYear();
+    const inicioMes = new Date(anio, mes, 1);
+    const finMes = new Date(anio, mes + 1, 0, 23, 59, 59);
+
     const inicioSemana = new Date(hoy);
     inicioSemana.setDate(hoy.getDate() - hoy.getDay());
 
@@ -447,7 +453,7 @@ const getDashboard = async (req, res) => {
       Operacion.count({ where: { ...clienteFilter, estado: { [Op.in]: ['pendiente', 'en_proceso'] } } }),
       Operacion.findAll({
         attributes: ['tipo', [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']],
-        where: { ...clienteFilter, created_at: { [Op.gte]: inicioMes } },
+        where: { ...clienteFilter, created_at: { [Op.between]: [inicioMes, finMes] } },
         group: ['tipo'],
         raw: true
       }),
