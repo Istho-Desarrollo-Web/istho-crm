@@ -15,8 +15,6 @@ import {
   Eye,
   Code,
   Star,
-  Mail,
-  Plus,
   Copy,
   Check,
   ToggleLeft,
@@ -210,7 +208,7 @@ const PlantillaEmailEditor = () => {
         setPreviewAsunto(response.data.asunto);
         setShowPreview(true);
       }
-    } catch (err) {
+    } catch (_err) {
       notifyError('Error al generar vista previa');
     }
   };
@@ -519,7 +517,7 @@ const PlantillaEmailEditor = () => {
                                 setLogoFirma(res.data.logoDataUri);
                                 success('Logo de firma actualizado');
                               }
-                            } catch (err) {
+                            } catch (_err) {
                               notifyError('Error al subir el logo');
                             } finally {
                               setLogoUploading(false);

@@ -98,7 +98,9 @@ module.exports = (sequelize) => {
     indexes: [
       { fields: ['cliente_id'] },
       { fields: ['email'] },
-      { fields: ['es_principal'] }
+      { fields: ['es_principal'] },
+      { fields: ['cliente_id', 'es_principal'] },
+      { fields: ['cliente_id', 'activo'] }
     ],
     
     hooks: {

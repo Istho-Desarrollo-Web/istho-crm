@@ -81,17 +81,12 @@ const listar = async (req, res) => {
       ];
     }
     
-    // Ejecutar consulta
+    // Ejecutar consulta principal (sin subquery por cada fila)
     const { count, rows } = await Cliente.findAndCountAll({
       where,
       order,
       limit,
       offset,
-      attributes: {
-        include: [
-          [sequelize.literal('(SELECT COUNT(*) FROM inventario WHERE inventario.cliente_id = Cliente.id)'), 'total_productos']
-        ]
-      },
       include: [{
         model: Contacto,
         as: 'contactos',
@@ -101,13 +96,33 @@ const listar = async (req, res) => {
       }]
     });
 
+    // Batch: contar productos en una sola query para todos los clientes de esta página
+    const clienteIds = rows.map(c => c.id);
+    let conteoPorCliente = {};
+    if (clienteIds.length > 0) {
+      const conteos = await sequelize.query(
+        `SELECT cliente_id, COUNT(*) AS total FROM inventario WHERE cliente_id IN (:ids) GROUP BY cliente_id`,
+        { replacements: { ids: clienteIds }, type: sequelize.QueryTypes.SELECT }
+      );
+      conteos.forEach(({ cliente_id, total }) => {
+        conteoPorCliente[cliente_id] = Number(total);
+      });
+    }
+
+    // Inyectar total_productos en cada fila
+    const rowsConProductos = rows.map(c => {
+      const plain = c.toJSON();
+      plain.total_productos = conteoPorCliente[c.id] || 0;
+      return plain;
+    });
+
     logger.debug('Clientes listados:', {
       total: count,
       page,
       filtros: req.query
     });
 
-    return paginated(res, rows, buildPaginacion(count, page, limit));
+    return paginated(res, rowsConProductos, buildPaginacion(count, page, limit));
     
   } catch (error) {
     logger.error('Error al listar clientes:', { message: error.message });
@@ -229,8 +244,11 @@ const obtenerPorId = async (req, res) => {
       }
     });
 
+    const totalProductos = await Inventario.count({ where: { cliente_id: id } });
+
     const clienteData = cliente.toJSON();
     clienteData.operaciones_mes = operacionesMes;
+    clienteData.total_productos = totalProductos;
 
     return success(res, clienteData);
     
@@ -836,6 +854,11 @@ const importarClientes = async (req, res) => {
 
     const resultados = { creados: 0, actualizados: 0, errores: [] };
 
+    // Obtener el último ID para generar códigos consecutivos sin depender del hook
+    // (el hook falla dentro de transacciones por snapshot REPEATABLE READ de MySQL)
+    const ultimoCliente = await Cliente.findOne({ order: [['id', 'DESC']], paranoid: false });
+    let nextCodigoNum = ultimoCliente ? ultimoCliente.id + 1 : 1;
+
     for (let rowNum = 2; rowNum <= sheet.rowCount; rowNum++) {
       const row = sheet.getRow(rowNum);
       const datos = {};
@@ -854,19 +877,22 @@ const importarClientes = async (req, res) => {
       }
 
       try {
+        const codigoCliente = `CLI-${String(nextCodigoNum).padStart(4, '0')}`;
+
         const [cliente, created] = await Cliente.findOrCreate({
           where: { nit },
           defaults: {
+            codigo_cliente: codigoCliente,
             razon_social: razonSocial,
             nit,
-            tipo: datos.tipo || 'Corporativo',
+            tipo_cliente: datos.tipo_cliente || datos.tipo || 'corporativo',
             sector: datos.sector || null,
             direccion: datos.direccion || null,
             ciudad: datos.ciudad || null,
             departamento: datos.departamento || null,
             telefono: datos.telefono ? String(datos.telefono) : null,
             email: datos.email || datos.correo || null,
-            fecha_inicio_relacion: datos.fecha_inicio_relacion || new Date(),
+            fecha_inicio_relacion: datos.fecha_inicio_relacion || null,
             estado: 'activo',
           },
           transaction,
@@ -874,6 +900,7 @@ const importarClientes = async (req, res) => {
 
         if (created) {
           resultados.creados++;
+          nextCodigoNum++;
         } else {
           // Actualizar datos existentes si vienen
           const updates = {};
@@ -908,6 +935,58 @@ const importarClientes = async (req, res) => {
   }
 };
 
+/**
+ * Descargar plantilla Excel para importación de clientes
+ */
+const descargarPlantillaImportacion = async (req, res) => {
+  try {
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Clientes');
+
+    sheet.addTable({
+      name: 'PlantillaClientes',
+      ref: 'A1',
+      headerRow: true,
+      totalsRow: false,
+      style: {
+        theme: 'TableStyleMedium9',
+        showRowStripes: true,
+      },
+      columns: [
+        { name: 'nit', filterButton: true },
+        { name: 'razon_social', filterButton: true },
+        { name: 'tipo_cliente', filterButton: true },
+        { name: 'sector', filterButton: true },
+        { name: 'direccion', filterButton: true },
+        { name: 'ciudad', filterButton: true },
+        { name: 'departamento', filterButton: true },
+        { name: 'telefono', filterButton: true },
+        { name: 'email', filterButton: true },
+        { name: 'fecha_inicio_relacion', filterButton: true },
+        { name: 'notas', filterButton: true },
+      ],
+      rows: [
+        ['800245795-0', 'EMPRESA EJEMPLO S.A.S.', 'corporativo', 'manufactura', 'Calle 46A # 53C-15', 'MEDELLÍN', 'ANTIOQUIA', '6042341234', 'contacto@empresa.com', '2024-01-15', ''],
+        ['900123456-7', 'COMERCIAL DEMO LTDA', 'pyme', 'retail', 'Carrera 70 # 45-30', 'BOGOTÁ', 'CUNDINAMARCA', '3001234567', 'ventas@demo.com', '2023-06-01', ''],
+      ],
+    });
+
+    // Ajustar anchos de columna
+    const anchos = [18, 35, 18, 16, 35, 20, 20, 14, 30, 22, 35];
+    sheet.columns.forEach((col, i) => { col.width = anchos[i] || 18; });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="plantilla_importacion_clientes.xlsx"');
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    logger.error('Error al generar plantilla:', { message: err.message });
+    return serverError(res, 'Error al generar plantilla', err);
+  }
+};
+
 module.exports = {
   // Clientes
   listar,
@@ -918,6 +997,7 @@ module.exports = {
   eliminar,
   subirLogo,
   importarClientes,
+  descargarPlantillaImportacion,
   // Contactos
   listarContactos,
   crearContacto,

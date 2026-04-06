@@ -15,14 +15,13 @@
  * @date Enero 2026
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Plus,
   Filter,
   Download,
-  Upload,
   MoreVertical,
   Eye,
   Pencil,
@@ -35,6 +34,13 @@ import {
   RefreshCw,
   List,
   LayoutGrid,
+  Upload,
+  FileDown,
+  CheckCircle,
+  XCircle,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
 } from 'lucide-react';
 
 // Layout
@@ -43,6 +49,7 @@ import {
 // Components
 import {
   Button,
+  Modal,
   SearchBar,
   FilterDropdown,
   StatusChip,
@@ -50,6 +57,9 @@ import {
   ConfirmDialog,
   KpiCard,
 } from '../../components/common';
+
+// Service
+import inventarioService from '../../api/inventario.service';
 
 // Local Components
 import ProductoForm from './components/ProductoForm';
@@ -59,6 +69,8 @@ import MovimientoForm from './components/MovimientoForm';
 import useInventario from '../../hooks/useInventario';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
+import apiClient from '../../api/client';
+import { CLIENTES_ENDPOINTS } from '../../api/endpoints';
 import PageFooter from '@components/common/PageFooter';
 import useSort from '@hooks/useSort';
 import SortIcon from '@components/common/SortIcon';
@@ -248,7 +260,7 @@ const InventarioList = () => {
     productos,
     pagination,
     loading,
-    error,
+    error: _error,
     // KPIs
     kpis,
     // Estado
@@ -263,7 +275,7 @@ const InventarioList = () => {
     deleteProducto,
     registrarMovimiento,
     // Stats
-    fetchStats,
+    fetchStats: _fetchStats,
   } = useInventario({
     autoFetch: true,
     autoFetchStats: true,
@@ -284,12 +296,45 @@ const InventarioList = () => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, producto: null });
   const [formLoading, setFormLoading] = useState(false);
 
+  // Clientes para filtro
+  const [clienteOptions, setClienteOptions] = useState([]);
+
+  useEffect(() => {
+    if (user?.rol === 'cliente') return;
+    const cargarTodosLosClientes = async () => {
+      let todos = [];
+      let pagina = 1;
+      const porPagina = 100;
+      while (true) {
+        const data = await apiClient.get(CLIENTES_ENDPOINTS.BASE, {
+          params: { limit: porPagina, page: pagina, estado: 'activo' },
+        });
+        const clientes = data?.clientes || data?.data || [];
+        todos = [...todos, ...clientes];
+        const total = data?.paginacion?.total ?? data?.total ?? clientes.length;
+        if (todos.length >= total || clientes.length < porPagina) break;
+        pagina++;
+      }
+      setClienteOptions(todos.map(c => ({ value: String(c.id), label: c.razon_social })));
+    };
+    cargarTodosLosClientes().catch(() => {});
+  }, [user?.rol]);
+
+  // Modal de importación
+  const [importModal, setImportModal] = useState({ isOpen: false });
+  const [importFile, setImportFile] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResultados, setImportResultados] = useState(null);
+  const [importErroresExpanded, setImportErroresExpanded] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef(null);
+
   // Permisos dinámicos desde la BD
   const canCreate = hasPermission('inventario', 'crear');
   const canEdit = hasPermission('inventario', 'editar');
   const canDelete = hasPermission('inventario', 'eliminar');
   const canExport = hasPermission('inventario', 'exportar');
-  const canImport = hasPermission('inventario', 'importar');
+  const _canImport = hasPermission('inventario', 'importar');
 
   // ──────────────────────────────────────────────────────────────────────────
   // ORDENAMIENTO
@@ -428,6 +473,70 @@ const InventarioList = () => {
   };
 
   // ──────────────────────────────────────────────────────────────────────────
+  // HANDLERS DE IMPORTACIÓN
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const handleOpenImport = () => {
+    setImportFile(null);
+    setImportResultados(null);
+    setImportErroresExpanded(false);
+    setImportModal({ isOpen: true });
+  };
+
+  const handleCloseImport = () => {
+    if (importLoading) return;
+    setImportModal({ isOpen: false });
+    // Si hubo productos creados/actualizados, refrescar la lista
+    if (importResultados && (importResultados.creados > 0 || importResultados.actualizados > 0)) {
+      refresh();
+    }
+  };
+
+  const handleImportFileChange = (file) => {
+    if (!file) return;
+    if (!file.name.endsWith('.xlsx')) {
+      notifyError('Solo se permiten archivos Excel (.xlsx)');
+      return;
+    }
+    setImportFile(file);
+    setImportResultados(null);
+  };
+
+  const handleImportDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files[0];
+    handleImportFileChange(file);
+  };
+
+  const handleImportSubmit = async () => {
+    if (!importFile) return;
+    setImportLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('archivo', importFile);
+      const response = await inventarioService.importarProductos(formData);
+      const resultados = response.data || response;
+      setImportResultados(resultados);
+      if (resultados.errores?.length === 0) {
+        success(`Importación completada: ${resultados.creados} creados, ${resultados.actualizados} actualizados`);
+      } else {
+        notifyError(`Importación con ${resultados.errores.length} error(es). Revisa los detalles.`);
+      }
+    } catch (err) {
+      notifyError(err.message || 'Error al importar productos');
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const handleDescargarPlantilla = () => {
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+    const token = localStorage.getItem('istho_token');
+    inventarioService.descargarPlantilla(apiBaseUrl, token);
+  };
+
+  // ──────────────────────────────────────────────────────────────────────────
   // FORMATTERS
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -440,14 +549,6 @@ const InventarioList = () => {
     }).format(value);
   };
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // OPCIONES DINÁMICAS DE FILTRO (CLIENTES)
-  // ──────────────────────────────────────────────────────────────────────────
-  const clienteOptions = [...new Map(
-    productos
-      .filter(p => p.cliente_nombre && p.cliente_id)
-      .map(p => [p.cliente_id, { value: String(p.cliente_id), label: p.cliente_nombre }])
-  ).values()];
 
   // ──────────────────────────────────────────────────────────────────────────
   // KPIs PARA DISPLAY
@@ -492,17 +593,13 @@ const InventarioList = () => {
               title="Actualizar datos"
             />
 
-            {canExport && (
-              <Button variant="outline" icon={Download} size="md">
-                Exportar
+            {canCreate && (
+              <Button variant="outline" icon={Upload} onClick={handleOpenImport}>
+                <span className="hidden sm:inline">Importar</span>
+                <span className="sm:hidden">Imp.</span>
               </Button>
             )}
 
-            {canCreate && (
-              <Button variant="primary" icon={Plus} onClick={handleCreate}>
-                Nuevo Producto
-              </Button>
-            )}
           </div>
         </div>
 
@@ -583,6 +680,15 @@ const InventarioList = () => {
                 </span>
               )}
             </Button>
+
+           
+
+            {canCreate && (
+              <Button variant="primary" icon={Plus} onClick={handleCreate}>
+                <span className="hidden sm:inline">Nuevo Producto</span>
+                <span className="sm:hidden">Nuevo</span>
+              </Button>
+            )}
           </div>
 
           {showFilters && (
@@ -923,6 +1029,167 @@ const InventarioList = () => {
         type="danger"
         loading={formLoading}
       />
+
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* MODAL DE IMPORTACIÓN MASIVA */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      <Modal
+        isOpen={importModal.isOpen}
+        onClose={handleCloseImport}
+        title="Importar Productos"
+        subtitle="Carga masiva desde archivo Excel (.xlsx)"
+        size="lg"
+      >
+        <div className="space-y-5">
+
+          {/* Paso 1 — Descargar plantilla */}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                <FileDown className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Plantilla de importación</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Descarga el formato correcto con columnas y ejemplos</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" icon={FileDown} onClick={handleDescargarPlantilla}>
+              Descargar
+            </Button>
+          </div>
+
+          {/* Paso 2 — Dropzone */}
+          {!importResultados && (
+            <div>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Selecciona el archivo Excel
+              </p>
+              <div
+                className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer
+                  ${isDragOver
+                    ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/10'
+                    : importFile
+                      ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/10'
+                      : 'border-slate-300 dark:border-slate-600 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/10'
+                  }`}
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                onDragLeave={() => setIsDragOver(false)}
+                onDrop={handleImportDrop}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx"
+                  className="hidden"
+                  onChange={(e) => handleImportFileChange(e.target.files[0])}
+                />
+                {importFile ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <CheckCircle className="w-10 h-10 text-emerald-500" />
+                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{importFile.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {(importFile.size / 1024).toFixed(1)} KB · Haz clic para cambiar el archivo
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <Upload className="w-10 h-10 text-slate-400" />
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                      Arrastra y suelta el archivo aquí
+                    </p>
+                    <p className="text-xs text-slate-400">o haz clic para seleccionarlo · Solo .xlsx</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Paso 3 — Resultados */}
+          {importResultados && (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Resultado de la importación</p>
+
+              {/* Resumen KPIs */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-xl p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 text-center">
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{importResultados.creados}</p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">Creados</p>
+                </div>
+                <div className="rounded-xl p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 text-center">
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{importResultados.actualizados}</p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">Actualizados</p>
+                </div>
+                <div className={`rounded-xl p-3 border text-center ${importResultados.errores?.length > 0 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                  <p className={`text-2xl font-bold ${importResultados.errores?.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}`}>
+                    {importResultados.errores?.length || 0}
+                  </p>
+                  <p className={`text-xs mt-0.5 ${importResultados.errores?.length > 0 ? 'text-red-700 dark:text-red-300' : 'text-slate-500'}`}>
+                    Errores
+                  </p>
+                </div>
+              </div>
+
+              {/* Lista de errores colapsable */}
+              {importResultados.errores?.length > 0 && (
+                <div className="rounded-xl border border-red-200 dark:border-red-800 overflow-hidden">
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-sm font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                    onClick={() => setImportErroresExpanded(!importErroresExpanded)}
+                  >
+                    <span className="flex items-center gap-2">
+                      <XCircle className="w-4 h-4" />
+                      Ver {importResultados.errores.length} error(es)
+                    </span>
+                    {importErroresExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                  {importErroresExpanded && (
+                    <div className="max-h-48 overflow-y-auto divide-y divide-red-100 dark:divide-red-900/30">
+                      {importResultados.errores.map((err, idx) => (
+                        <div key={idx} className="px-4 py-2 flex items-start gap-3 bg-white dark:bg-slate-800">
+                          <span className="text-xs text-slate-400 shrink-0 mt-0.5">Fila {err.fila}</span>
+                          {err.sku && (
+                            <span className="text-xs font-mono text-slate-500 dark:text-slate-400 shrink-0 mt-0.5">{err.sku}</span>
+                          )}
+                          <span className="text-xs text-red-600 dark:text-red-400">{err.mensaje}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Opción de reimportar */}
+              <button
+                type="button"
+                onClick={() => { setImportResultados(null); setImportFile(null); }}
+                className="text-xs text-slate-500 hover:text-orange-600 dark:text-slate-400 dark:hover:text-orange-400 underline underline-offset-2"
+              >
+                Importar otro archivo
+              </button>
+            </div>
+          )}
+
+          {/* Footer del modal */}
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-700">
+            <Button variant="ghost" onClick={handleCloseImport} disabled={importLoading}>
+              {importResultados ? 'Cerrar' : 'Cancelar'}
+            </Button>
+            {!importResultados && (
+              <Button
+                variant="primary"
+                icon={importLoading ? Loader2 : Upload}
+                onClick={handleImportSubmit}
+                disabled={!importFile || importLoading}
+                loading={importLoading}
+              >
+                {importLoading ? 'Importando...' : 'Importar'}
+              </Button>
+            )}
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

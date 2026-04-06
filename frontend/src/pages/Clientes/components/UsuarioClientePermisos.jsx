@@ -356,7 +356,7 @@ const UsuarioClientePermisos = ({
     setLoading(true);
     try {
       await onSubmit(permisos);
-    } catch (err) {
+    } catch (_err) {
       // Error manejado por componente padre
     } finally {
       setLoading(false);

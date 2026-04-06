@@ -22,10 +22,8 @@ import {
   DollarSign,
   Plus,
   ChevronRight,
-  Clock,
 } from 'lucide-react';
 
-import { Button } from '../../components/common';
 import { formatDateShort } from '../../utils/formatDate';
 import { getGreeting } from '../../utils/greeting';
 import { cajasMenoresService, viajesService, movimientosService } from '../../api/viajes.service';
@@ -165,7 +163,7 @@ const DashboardConductor = () => {
       const res = await cajasMenoresService.getAll({ estado: 'abierta', limit: 1 });
       const cajas = res?.data?.data || res?.data || [];
       setCajaActiva(Array.isArray(cajas) ? cajas[0] || null : null);
-    } catch {}
+    } catch { /* ignorado intencionalmente */ }
   }, []);
 
   const refetchGastos = useCallback(async () => {
@@ -173,7 +171,7 @@ const DashboardConductor = () => {
       const res = await movimientosService.getAll({ limit: 5 });
       const g = res?.data?.data || res?.data?.rows || res?.data || [];
       setGastos(Array.isArray(g) ? g : []);
-    } catch {}
+    } catch { /* ignorado intencionalmente */ }
   }, []);
 
   // ──────────────────────────────────────────────────────────────────────
@@ -233,7 +231,7 @@ const DashboardConductor = () => {
         const res = await viajesService.getAll({ limit: 5, sort: '-fecha' });
         const v = res?.data?.data || res?.data || [];
         setViajes(Array.isArray(v) ? v : []);
-      } catch {}
+      } catch { /* ignorado intencionalmente */ }
     };
     const handleViajeActualizado = (data) => {
       setViajes((prev) => prev.map((v) => (v.id === data.id ? { ...v, ...data } : v)));
@@ -263,7 +261,7 @@ const DashboardConductor = () => {
       socket.off('viaje:actualizado', handleViajeActualizado);
       socket.off('viaje:eliminado', handleViajeEliminado);
     };
-  }, [socket, refetchCaja, refetchGastos]);
+  }, [socket, refetchCaja, refetchGastos, user?.id]);
 
   // ──────────────────────────────────────────────────────────────────────
   // DATOS DEL USUARIO

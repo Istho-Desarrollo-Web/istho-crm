@@ -7,14 +7,12 @@
  * @date Marzo 2026
  */
 
-import React from 'react';
 import PropTypes from 'prop-types';
-import { 
-  CheckCircle2, 
-  XCircle, 
-  AlertTriangle, 
-  Info, 
-  X,
+import {
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Info,
   Loader2
 } from 'lucide-react';
 

@@ -10,8 +10,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Search, RefreshCw, ChevronLeft, ChevronRight, Filter,
-  Activity, LogIn, Plus, Pencil, Trash2, Eye, Clock,
-  Users, Database, BarChart3, X, ChevronDown
+  Activity, LogIn, Plus, Pencil, Trash2, Clock,
+  X, ChevronDown
 } from 'lucide-react';
 import auditoriaAccionesService from '../../api/auditoriaAcciones.service';
 import PageFooter from '@components/common/PageFooter';

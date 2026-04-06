@@ -158,7 +158,7 @@ const PlantillasEmailList = () => {
           asunto: response.data.asunto,
         });
       }
-    } catch (err) {
+    } catch (_err) {
       notifyError('Error al generar vista previa');
     }
   };

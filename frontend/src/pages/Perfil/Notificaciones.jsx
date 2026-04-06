@@ -217,7 +217,7 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 const Notificaciones = () => {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { success, apiError } = useNotification();
   const { fetchCount } = useNotificaciones();
 

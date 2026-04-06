@@ -35,8 +35,6 @@ import {
   AlertCircle,
   AlertTriangle,
   ChevronDown,
-  ChevronRight,
-  Download,
   Eye,
   Plus,
   Shield,
@@ -81,7 +79,7 @@ const StatusStepper = ({ currentStatus }) => {
         const Icon = step.icon;
         const isCompleted = idx < currentIdx;
         const isCurrent = idx === currentIdx;
-        const isFuture = idx > currentIdx;
+        const _isFuture = idx > currentIdx;
 
         return (
           <div key={step.key} className="flex items-center flex-1 last:flex-none">
@@ -653,7 +651,7 @@ const KardexAuditoria = () => {
   };
 
   // Subir evidencias inmediatamente al agregarlas
-  const handleUploadEvidencias = async (newFiles) => {
+  const handleUploadEvidencias = useCallback(async (newFiles) => {
     setFiles((prev) => [...prev, ...newFiles]);
     if (estado === 'pendiente') setEstado('en_proceso');
 
@@ -674,7 +672,7 @@ const KardexAuditoria = () => {
     } finally {
       setUploadingFiles(false);
     }
-  };
+  }, [id, estado, showAlert]);
 
   // Limpiar timer al desmontar
   useEffect(() => {
@@ -726,7 +724,7 @@ const KardexAuditoria = () => {
 
   const handleAddFiles = useCallback((newFiles) => {
     handleUploadEvidencias(newFiles);
-  }, [id, estado]);
+  }, [handleUploadEvidencias]);
 
   const handleRemoveFile = async (idx) => {
     const file = files[idx];

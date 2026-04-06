@@ -63,6 +63,9 @@ const parsearFiltrosFecha = (query) => {
   return where;
 };
 
+// Límite máximo de registros por exportación para proteger memoria y evitar timeouts
+const MAX_EXPORT_ROWS = 5000;
+
 // =============================================
 // REPORTES DE OPERACIONES
 // =============================================
@@ -80,9 +83,10 @@ const exportarOperacionesExcel = async (req, res) => {
       include: [
         { model: Cliente, as: 'cliente', attributes: ['id', 'codigo_cliente', 'razon_social'] }
       ],
-      order: [['fecha_operacion', 'DESC']]
+      order: [['fecha_operacion', 'DESC']],
+      limit: MAX_EXPORT_ROWS
     });
-    
+
     const buffer = await excelService.exportarOperaciones(operaciones, req.query);
     
     const filename = `operaciones_${new Date().toISOString().split('T')[0]}.xlsx`;
@@ -110,9 +114,10 @@ const exportarOperacionesPDF = async (req, res) => {
       include: [
         { model: Cliente, as: 'cliente', attributes: ['id', 'codigo_cliente', 'razon_social'] }
       ],
-      order: [['fecha_operacion', 'DESC']]
+      order: [['fecha_operacion', 'DESC']],
+      limit: MAX_EXPORT_ROWS
     });
-    
+
     const buffer = await pdfService.generarPDFOperaciones(operaciones, req.query);
     
     const filename = `operaciones_${new Date().toISOString().split('T')[0]}.pdf`;
@@ -232,9 +237,10 @@ const exportarInventarioExcel = async (req, res) => {
       include: [
         { model: Cliente, as: 'cliente', attributes: ['id', 'codigo_cliente', 'razon_social'] }
       ],
-      order: [['producto', 'ASC']]
+      order: [['producto', 'ASC']],
+      limit: MAX_EXPORT_ROWS
     });
-    
+
     const buffer = await excelService.exportarInventario(inventario, req.query);
     
     const filename = `inventario_${new Date().toISOString().split('T')[0]}.xlsx`;
@@ -280,9 +286,10 @@ const exportarInventarioPDF = async (req, res) => {
       include: [
         { model: Cliente, as: 'cliente', attributes: ['id', 'codigo_cliente', 'razon_social'] }
       ],
-      order: [['producto', 'ASC']]
+      order: [['producto', 'ASC']],
+      limit: MAX_EXPORT_ROWS
     });
-    
+
     const buffer = await pdfService.generarPDFInventario(inventario, req.query);
     
     const filename = `inventario_${new Date().toISOString().split('T')[0]}.pdf`;
@@ -337,7 +344,8 @@ const exportarClientesExcel = async (req, res) => {
       include: [
         { model: Contacto, as: 'contactos', where: { activo: true }, required: false }
       ],
-      order: [['razon_social', 'ASC']]
+      order: [['razon_social', 'ASC']],
+      limit: MAX_EXPORT_ROWS
     });
 
     const buffer = await excelService.exportarClientes(clientes);
@@ -387,7 +395,8 @@ const exportarClientesPDF = async (req, res) => {
       include: [
         { model: Contacto, as: 'contactos', where: { activo: true }, required: false }
       ],
-      order: [['razon_social', 'ASC']]
+      order: [['razon_social', 'ASC']],
+      limit: MAX_EXPORT_ROWS
     });
 
     const buffer = await pdfService.generarPDFClientes(clientes);
@@ -687,7 +696,8 @@ const enviarReportePorEmail = async (req, res) => {
         datos = await Operacion.findAll({
           where,
           include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
-          order: [['created_at', 'DESC']]
+          order: [['created_at', 'DESC']],
+          limit: MAX_EXPORT_ROWS
         });
         break;
       }
@@ -695,7 +705,8 @@ const enviarReportePorEmail = async (req, res) => {
         datos = await Inventario.findAll({
           where,
           include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
-          order: [['producto', 'ASC']]
+          order: [['producto', 'ASC']],
+          limit: MAX_EXPORT_ROWS
         });
         break;
       }
@@ -705,7 +716,8 @@ const enviarReportePorEmail = async (req, res) => {
             include: [[sequelize.literal('(SELECT COUNT(*) FROM inventario WHERE inventario.cliente_id = Cliente.id)'), 'total_productos']]
           },
           include: [{ model: Contacto, as: 'contactos', where: { activo: true }, required: false }],
-          order: [['razon_social', 'ASC']]
+          order: [['razon_social', 'ASC']],
+          limit: MAX_EXPORT_ROWS
         });
         break;
       }
@@ -1090,7 +1102,8 @@ const exportarViajesExcel = async (req, res) => {
         { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
         { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] }
       ],
-      order: [['fecha', 'DESC']]
+      order: [['fecha', 'DESC']],
+      limit: MAX_EXPORT_ROWS
     });
 
     const buffer = await excelService.exportarViajes(viajes, req.query);
@@ -1242,6 +1255,7 @@ const exportarCajasMenoresExcel = async (req, res) => {
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo', 'username'] },
       ],
       order: [['created_at', 'DESC']],
+      limit: MAX_EXPORT_ROWS
     });
 
     const buffer = await excelService.exportarCajasMenores(cajas);
@@ -1279,6 +1293,7 @@ const exportarVehiculosExcel = async (req, res) => {
         { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
       ],
       order: [['placa', 'ASC']],
+      limit: MAX_EXPORT_ROWS
     });
 
     const buffer = await excelService.exportarVehiculos(vehiculos);
@@ -1324,6 +1339,7 @@ const exportarMovimientosExcel = async (req, res) => {
         { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
       ],
       order: [['created_at', 'DESC']],
+      limit: MAX_EXPORT_ROWS
     });
 
     const buffer = await excelService.exportarMovimientos(movimientos);

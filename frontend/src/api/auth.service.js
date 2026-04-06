@@ -54,7 +54,7 @@ const authService = {
         // Guardar usuario en localStorage
         localStorage.setItem(USER_KEY, JSON.stringify(user));
 
-        console.log('✅ Login exitoso, tokens guardados');
+        console.warn('✅ Login exitoso, tokens guardados');
 
         return {
           success: true,
@@ -93,16 +93,14 @@ const authService = {
     } catch (error) {
       // Ignorar error si el token ya expiró
       console.warn('⚠️ Error al notificar logout al servidor:', error);
-    } finally {
-      // Limpiar tokens y datos locales
-      clearAuthToken();
-      localStorage.removeItem(USER_KEY);
-
-      return {
-        success: true,
-        message: 'Sesión cerrada correctamente',
-      };
     }
+    // Limpiar tokens y datos locales siempre (éxito o error)
+    clearAuthToken();
+    localStorage.removeItem(USER_KEY);
+    return {
+      success: true,
+      message: 'Sesión cerrada correctamente',
+    };
   },
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -271,7 +269,7 @@ const authService = {
         success: false,
         message: 'Error al refrescar token',
       };
-    } catch (error) {
+    } catch (_error) {
       // Si falla el refresh, limpiar sesión
       clearAuthToken();
       localStorage.removeItem(USER_KEY);

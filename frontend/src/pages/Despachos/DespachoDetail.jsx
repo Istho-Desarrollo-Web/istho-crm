@@ -61,7 +61,7 @@ import { formatDateShort } from '../../utils/formatDate';
 /**
  * Item del timeline
  */
-const TimelineItem = ({ item, isLast }) => {
+const _TimelineItem = ({ item, isLast }) => {
   const iconConfig = {
     crear: { icon: FileText, bg: 'bg-slate-100', color: 'text-slate-600' },
     actualizar: { icon: Pencil, bg: 'bg-blue-100', color: 'text-blue-600' },
@@ -243,11 +243,11 @@ const DespachoDetail = () => {
     loading,
     error,
     puedeCerrar,
-    operationLoading,
+    operationLoading: _operationLoading,
     refresh,
     actualizarTransporte,
-    registrarAveria,
-    subirDocumento,
+    registrarAveria: _registrarAveria,
+    subirDocumento: _subirDocumento,
     cerrar,
     anular,
   } = useDespachoDetail(id, true);  // true = autoFetch

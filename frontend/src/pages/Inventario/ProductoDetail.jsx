@@ -341,7 +341,7 @@ const MovimientoItem = ({ movimiento }) => {
 const ProductoDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, hasPermission } = useAuth();
+  const { user: _user, hasPermission } = useAuth();
   const { success, error: notifyError, saved, deleted } = useNotification();
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -396,7 +396,7 @@ const ProductoDetail = () => {
   const clienteNombre = producto.cliente_nombre || producto.cliente?.razon_social || '-';
   const bodegaNombre = producto.bodega_nombre || producto.zona || producto.bodega || '-';
   const unidadMedida = producto.unidad_medida || 'UND';
-  const fechaVencimiento = producto.fecha_vencimiento || null;
+  const _fechaVencimiento = producto.fecha_vencimiento || null;
 
   // ──────────────────────────────────────────────────────────────────────────
   // MEMOS (SIEMPRE se ejecutan)

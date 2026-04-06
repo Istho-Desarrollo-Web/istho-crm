@@ -605,7 +605,7 @@ const SalidaAuditoria = () => {
     }, 2000);
   };
 
-  const handleUploadEvidencias = async (newFiles) => {
+  const handleUploadEvidencias = useCallback(async (newFiles) => {
     setFiles((prev) => [...prev, ...newFiles]);
     if (estado === 'pendiente') setEstado('en_proceso');
 
@@ -626,7 +626,7 @@ const SalidaAuditoria = () => {
     } finally {
       setUploadingFiles(false);
     }
-  };
+  }, [id, estado, showAlert]);
 
   useEffect(() => {
     return () => {
@@ -671,7 +671,7 @@ const SalidaAuditoria = () => {
 
   const handleAddFiles = useCallback((newFiles) => {
     handleUploadEvidencias(newFiles);
-  }, [id, estado]);
+  }, [handleUploadEvidencias]);
 
   const handleRemoveFile = async (idx) => {
     const file = files[idx];

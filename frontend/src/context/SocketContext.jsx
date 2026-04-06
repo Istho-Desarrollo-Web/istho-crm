@@ -19,6 +19,7 @@ export const useSocket = () => useContext(SocketContext);
 export const SocketProvider = ({ children }) => {
   const { isAuthenticated, logout } = useAuth();
   const [connected, setConnected] = useState(false);
+  const [socketInstance, setSocketInstance] = useState(null);
   const socketRef = useRef(null);
   const listenersRef = useRef(new Map());
 
@@ -53,14 +54,14 @@ export const SocketProvider = ({ children }) => {
     socket.on('connect', () => {
       setConnected(true);
       if (import.meta.env.DEV) {
-        console.log('[WS] Conectado:', socket.id);
+        console.warn('[WS] Conectado:', socket.id);
       }
     });
 
     socket.on('disconnect', (reason) => {
       setConnected(false);
       if (import.meta.env.DEV) {
-        console.log('[WS] Desconectado:', reason);
+        console.warn('[WS] Desconectado:', reason);
       }
     });
 
@@ -80,13 +81,15 @@ export const SocketProvider = ({ children }) => {
     });
 
     socketRef.current = socket;
+    setSocketInstance(socket);
 
     return () => {
       socket.disconnect();
       socketRef.current = null;
+      setSocketInstance(null);
       setConnected(false);
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, logout]);
 
   /**
    * Suscribirse a un evento
@@ -115,7 +118,7 @@ export const SocketProvider = ({ children }) => {
   };
 
   return (
-    <SocketContext.Provider value={{ connected, on, off, socket: socketRef.current }}>
+    <SocketContext.Provider value={{ connected, on, off, socket: socketInstance }}>
       {children}
     </SocketContext.Provider>
   );

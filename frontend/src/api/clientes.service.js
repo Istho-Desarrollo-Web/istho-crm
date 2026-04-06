@@ -89,7 +89,7 @@ const clientesService = {
    */
   create: async (clienteData) => {
     try {
-      console.log('📤 [Clientes] Creando:', clienteData);
+      console.warn('📤 [Clientes] Creando:', clienteData);
       
       const response = await apiClient.post(CLIENTES_ENDPOINTS.BASE, clienteData);
       return response; // ✅ Sin .data adicional
@@ -117,7 +117,7 @@ const clientesService = {
    */
   update: async (id, clienteData) => {
     try {
-      console.log('📤 [Clientes] Actualizando:', { id, data: clienteData });
+      console.warn('📤 [Clientes] Actualizando:', { id, data: clienteData });
       
       const response = await apiClient.put(CLIENTES_ENDPOINTS.BY_ID(id), clienteData);
       return response; // ✅ Sin .data adicional

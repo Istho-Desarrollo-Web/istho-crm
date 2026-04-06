@@ -151,7 +151,7 @@ const crearAdminPorDefecto = async () => {
       await Usuario.crearConPassword({
         username: 'admin',
         email: 'admin@istho.com.co',
-        password: 'Admin2026*',
+        password: process.env.SEED_PASSWORD_ADMIN || 'Admin2026*',
         nombre_completo: 'Administrador ISTHO',
         rol: 'admin'
       });
@@ -171,7 +171,7 @@ const crearSupervisorPorDefecto = async () => {
       await Usuario.crearConPassword({
         username: 'supervisor',
         email: 'supervisor@istho.com.co',
-        password: 'Supervisor2026*',
+        password: process.env.SEED_PASSWORD_SUPERVISOR || 'Supervisor2026*',
         nombre_completo: 'Supervisor ISTHO',
         rol: 'supervisor'
       });
@@ -190,7 +190,7 @@ const crearOperadorPorDefecto = async () => {
       await Usuario.crearConPassword({
         username: 'operador',
         email: 'operador@istho.com.co',
-        password: 'Operador2026*',
+        password: process.env.SEED_PASSWORD_OPERADOR || 'Operador2026*',
         nombre_completo: 'Operador ISTHO',
         rol: 'operador'
       });

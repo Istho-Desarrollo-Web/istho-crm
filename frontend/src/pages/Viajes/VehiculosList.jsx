@@ -270,9 +270,9 @@ const RowActions = ({ vehiculo, onView, onEdit, onDelete }) => {
 const PAGE_SIZE = 20;
 
 const VehiculosList = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [_searchParams, _setSearchParams] = useSearchParams();
   const { user } = useAuth();
-  const { success, apiError, saved, deleted } = useNotification();
+  const { success: _success, apiError, saved: _saved, deleted } = useNotification();
 
   // ──────────────────────────────────────────────────────────────────────────
   // ESTADOS
@@ -317,7 +317,7 @@ const VehiculosList = () => {
           total: response.pagination.total || 0,
         });
       }
-    } catch (err) {
+    } catch (_err) {
       setVehiculos([]);
       setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
     } finally {
@@ -772,7 +772,6 @@ const VehiculosList = () => {
           // Pequeño delay para asegurar que la BD procesó el cambio
           await new Promise(r => setTimeout(r, 300));
           fetchVehiculos(pagination.page);
-          fetchStats?.();
         }}
         vehiculoId={formModal.vehiculo?.id}
         readOnly={user?.rol === 'conductor'}

@@ -25,7 +25,6 @@ import {
   MoreVertical,
   Eye,
   Pencil,
-  Trash2,
   Truck,
   MapPin,
   Calendar,
@@ -193,7 +192,7 @@ const RowActions = ({ despacho, onView, onEdit, onAnular, canEdit }) => {
 /**
  * Tarjeta de despacho (vista alternativa)
  */
-const DespachoCard = ({ despacho, onView, onEdit }) => {
+const DespachoCard = ({ despacho, onView, onEdit: _onEdit }) => {
   const estadoIcon = {
     pendiente: Calendar,
     en_proceso: Package,
@@ -276,7 +275,7 @@ const DespachosList = () => {
     conteoEstados,
 
     // CRUD - Nombres correctos del hook
-    fetchDespachos,
+    fetchDespachos: _fetchDespachos,
     crearDespacho,
     anularDespacho,
 
@@ -321,7 +320,7 @@ const DespachosList = () => {
   // Permisos
   const canCreate = hasPermission('despachos', 'crear');
   const canEdit = hasPermission('despachos', 'editar');
-  const canExport = hasPermission('despachos', 'exportar');
+  const _canExport = hasPermission('despachos', 'exportar');
 
   // ──────────────────────────────────────────────────────────────────────────
   // APLICAR FILTRO DE URL

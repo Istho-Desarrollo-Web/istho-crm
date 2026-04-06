@@ -14,8 +14,8 @@ const MainLayout = () => {
   const navigate = useNavigate();
   
   // Estados para modals/drawers
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [_searchOpen, setSearchOpen] = useState(false);
+  const [_notificationsOpen, setNotificationsOpen] = useState(false);
 
   // Handlers
   const handleSearchClick = () => {

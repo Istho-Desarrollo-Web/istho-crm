@@ -7,10 +7,10 @@
  * @version 1.0.0
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Plus, Search, RefreshCw, UserCheck, UserX, KeyRound,
-  MoreVertical, Pencil, Trash2, Eye, ChevronLeft, ChevronRight, Shield, Mail,
+  MoreVertical, Pencil, ChevronLeft, ChevronRight, Shield, Mail,
   List, LayoutGrid,
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';

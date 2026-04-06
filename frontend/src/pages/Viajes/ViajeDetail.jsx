@@ -37,7 +37,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
-import { Button, Modal, StatusChip } from '../../components/common';
+import { Button, Modal } from '../../components/common';
 import PageFooter from '@components/common/PageFooter';
 import { viajesService } from '../../api/viajes.service';
 import useNotification from '../../hooks/useNotification';
@@ -152,7 +152,7 @@ const InfoRow = ({ label, value }) => (
 const ViajeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { hasPermission } = useAuth();
+  const { hasPermission: _hasPermission } = useAuth();
   const { success, apiError } = useNotification();
 
   // ──────────────────────────────────────────────────────────────────────────

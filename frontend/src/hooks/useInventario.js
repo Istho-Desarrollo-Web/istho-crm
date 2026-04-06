@@ -302,30 +302,26 @@ const useInventario = (options = {}) => {
   // ──────────────────────────────────────────────────────────────────────────
   
   const createProducto = useCallback(async (data) => {
-    try {
-      const response = await inventarioService.create(data);
-      
-      if (response.success) {
-        // Agregar a la lista
-        setListState(prev => ({
-          ...prev,
-          data: [response.data, ...prev.data],
-          pagination: {
-            ...prev.pagination,
-            total: prev.pagination.total + 1,
-          },
-        }));
-        
-        // Refrescar stats
-        fetchStats();
-      } else {
-        throw new Error(response.message);
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
+    const response = await inventarioService.create(data);
+
+    if (response.success) {
+      // Agregar a la lista
+      setListState(prev => ({
+        ...prev,
+        data: [response.data, ...prev.data],
+        pagination: {
+          ...prev.pagination,
+          total: prev.pagination.total + 1,
+        },
+      }));
+
+      // Refrescar stats
+      fetchStats();
+    } else {
+      throw new Error(response.message);
     }
+
+    return response;
   }, [fetchStats]);
   
   // ──────────────────────────────────────────────────────────────────────────
@@ -333,33 +329,29 @@ const useInventario = (options = {}) => {
   // ──────────────────────────────────────────────────────────────────────────
   
   const updateProducto = useCallback(async (id, data) => {
-    try {
-      const response = await inventarioService.update(id, data);
-      
-      if (response.success) {
-        // Actualizar en la lista
-        setListState(prev => ({
-          ...prev,
-          data: prev.data.map(item => 
-            item.id === id ? { ...item, ...response.data } : item
-          ),
-        }));
-        
-        // Actualizar detalle si es el mismo
-        setDetailState(prev => {
-          if (prev.data?.id === id) {
-            return { ...prev, data: { ...prev.data, ...response.data } };
-          }
-          return prev;
-        });
-      } else {
-        throw new Error(response.message);
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
+    const response = await inventarioService.update(id, data);
+
+    if (response.success) {
+      // Actualizar en la lista
+      setListState(prev => ({
+        ...prev,
+        data: prev.data.map(item =>
+          item.id === id ? { ...item, ...response.data } : item
+        ),
+      }));
+
+      // Actualizar detalle si es el mismo
+      setDetailState(prev => {
+        if (prev.data?.id === id) {
+          return { ...prev, data: { ...prev.data, ...response.data } };
+        }
+        return prev;
+      });
+    } else {
+      throw new Error(response.message);
     }
+
+    return response;
   }, []);
   
   // ──────────────────────────────────────────────────────────────────────────
@@ -367,38 +359,34 @@ const useInventario = (options = {}) => {
   // ──────────────────────────────────────────────────────────────────────────
   
   const deleteProducto = useCallback(async (id) => {
-    try {
-      const response = await inventarioService.delete(id);
-      
-      if (response.success) {
-        // Remover de la lista
-        setListState(prev => ({
-          ...prev,
-          data: prev.data.filter(item => item.id !== id),
-          pagination: {
-            ...prev.pagination,
-            total: prev.pagination.total - 1,
-          },
-        }));
-        
-        // Limpiar detalle si es el mismo
-        setDetailState(prev => {
-          if (prev.data?.id === id) {
-            return INITIAL_DETAIL_STATE;
-          }
-          return prev;
-        });
-        
-        // Refrescar stats
-        fetchStats();
-      } else {
-        throw new Error(response.message);
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
+    const response = await inventarioService.delete(id);
+
+    if (response.success) {
+      // Remover de la lista
+      setListState(prev => ({
+        ...prev,
+        data: prev.data.filter(item => item.id !== id),
+        pagination: {
+          ...prev.pagination,
+          total: prev.pagination.total - 1,
+        },
+      }));
+
+      // Limpiar detalle si es el mismo
+      setDetailState(prev => {
+        if (prev.data?.id === id) {
+          return INITIAL_DETAIL_STATE;
+        }
+        return prev;
+      });
+
+      // Refrescar stats
+      fetchStats();
+    } else {
+      throw new Error(response.message);
     }
+
+    return response;
   }, [fetchStats]);
   
   // ──────────────────────────────────────────────────────────────────────────
@@ -406,56 +394,52 @@ const useInventario = (options = {}) => {
   // ──────────────────────────────────────────────────────────────────────────
   
   const registrarMovimiento = useCallback(async (productoId, data) => {
-    try {
-      const response = await inventarioService.ajustar(productoId, data);
-      
-      if (response.success) {
-        // Actualizar cantidad en la lista
-        setListState(prev => ({
-          ...prev,
-          data: prev.data.map(item => {
-            if (item.id === productoId) {
-              return {
-                ...item,
-                cantidad: response.data.cantidad_nueva,
-                stock_actual: response.data.cantidad_nueva,
-              };
-            }
-            return item;
-          }),
-        }));
-        
-        // Actualizar detalle si es el mismo
-        setDetailState(prev => {
-          if (prev.data?.id === productoId) {
+    const response = await inventarioService.ajustar(productoId, data);
+
+    if (response.success) {
+      // Actualizar cantidad en la lista
+      setListState(prev => ({
+        ...prev,
+        data: prev.data.map(item => {
+          if (item.id === productoId) {
             return {
-              ...prev,
-              data: {
-                ...prev.data,
-                cantidad: response.data.cantidad_nueva,
-                stock_actual: response.data.cantidad_nueva,
-              },
+              ...item,
+              cantidad: response.data.cantidad_nueva,
+              stock_actual: response.data.cantidad_nueva,
             };
           }
-          return prev;
-        });
-        
-        // Refrescar movimientos si están cargados
-        if (movimientosState.data.length > 0) {
-          fetchMovimientos(productoId);
+          return item;
+        }),
+      }));
+
+      // Actualizar detalle si es el mismo
+      setDetailState(prev => {
+        if (prev.data?.id === productoId) {
+          return {
+            ...prev,
+            data: {
+              ...prev.data,
+              cantidad: response.data.cantidad_nueva,
+              stock_actual: response.data.cantidad_nueva,
+            },
+          };
         }
-        
-        // Refrescar stats y alertas
-        fetchStats();
-        fetchAlertas();
-      } else {
-        throw new Error(response.message);
+        return prev;
+      });
+
+      // Refrescar movimientos si están cargados
+      if (movimientosState.data.length > 0) {
+        fetchMovimientos(productoId);
       }
-      
-      return response;
-    } catch (error) {
-      throw error;
+
+      // Refrescar stats y alertas
+      fetchStats();
+      fetchAlertas();
+    } else {
+      throw new Error(response.message);
     }
+
+    return response;
   }, [fetchStats, fetchAlertas, fetchMovimientos, movimientosState.data.length]);
   
   // ──────────────────────────────────────────────────────────────────────────
@@ -463,43 +447,35 @@ const useInventario = (options = {}) => {
   // ──────────────────────────────────────────────────────────────────────────
   
   const atenderAlerta = useCallback(async (alertaId, observaciones = '') => {
-    try {
-      const response = await inventarioService.atenderAlerta(alertaId, { observaciones });
-      
-      if (response.success) {
-        // Remover alerta del listado (ya fue silenciada en el backend)
-        setAlertasState(prev => ({
-          ...prev,
-          data: prev.data.filter(alerta => alerta.id !== alertaId),
-        }));
-      } else {
-        throw new Error(response.message);
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
+    const response = await inventarioService.atenderAlerta(alertaId, { observaciones });
+
+    if (response.success) {
+      // Remover alerta del listado (ya fue silenciada en el backend)
+      setAlertasState(prev => ({
+        ...prev,
+        data: prev.data.filter(alerta => alerta.id !== alertaId),
+      }));
+    } else {
+      throw new Error(response.message);
     }
+
+    return response;
   }, []);
   
   const descartarAlerta = useCallback(async (alertaId) => {
-    try {
-      const response = await inventarioService.descartarAlerta(alertaId);
-      
-      if (response.success) {
-        // Remover alerta del listado
-        setAlertasState(prev => ({
-          ...prev,
-          data: prev.data.filter(alerta => alerta.id !== alertaId),
-        }));
-      } else {
-        throw new Error(response.message);
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
+    const response = await inventarioService.descartarAlerta(alertaId);
+
+    if (response.success) {
+      // Remover alerta del listado
+      setAlertasState(prev => ({
+        ...prev,
+        data: prev.data.filter(alerta => alerta.id !== alertaId),
+      }));
+    } else {
+      throw new Error(response.message);
     }
+
+    return response;
   }, []);
   
   // ──────────────────────────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * ISTHO CRM - Configuración WMS
  *
- * Panel de administración para gestionar la integración con WMS Copérnico:
+ * Panel de administración para gestionar la integración con WMS Centhrix:
  * - Motivos de Kardex permitidos (lista blanca)
  * - Mapeo de tipos de orden (fallback)
  * - Estados válidos para procesar órdenes
@@ -226,7 +226,7 @@ const ConfiguracionWms = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Configuración WMS</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestiona cómo el CRM procesa datos del WMS Copérnico</p>
+              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestiona cómo el CRM procesa datos del WMS Centhrix</p>
             </div>
           </div>
         </div>

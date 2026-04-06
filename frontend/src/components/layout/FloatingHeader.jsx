@@ -9,8 +9,8 @@
  * @date Enero 2026
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import {
   ChevronDown,
@@ -20,16 +20,12 @@ import {
   LayoutDashboard,
   Users,
   Building2,
-  History,
   Package,
-  Warehouse,
   AlertCircle,
   AlertTriangle,
   Truck,
-  Calendar,
   FileText,
   Info,
-  Check,
   CheckCheck,
   ExternalLink,
   ClipboardList,
@@ -54,7 +50,6 @@ import {
 
 import { useAuth } from '../../context/AuthContext';
 import { useSnackbar } from 'notistack';
-import useNotification from '../../hooks/useNotification';
 import { useNotificaciones } from '../../context/NotificacionesContext';
 import { formatDateShort as formatDateSafe } from '../../utils/formatDate';
 
@@ -642,7 +637,7 @@ MobileMenuSection.propTypes = {
 /**
  * Menú lateral móvil
  */
-const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, isDark, onToggleDark, onShowShortcuts, menuItems }) => {
+const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, isDark, onToggleDark, _onShowShortcuts, menuItems }) => {
   const [expandedSection, setExpandedSection] = useState(null);
   const menuRef = useRef(null);
 

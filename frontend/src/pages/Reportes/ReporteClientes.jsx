@@ -42,6 +42,7 @@ const ReporteClientes = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { enqueueSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(true);
+  const [firstLoad, setFirstLoad] = useState(true);
   const [stats, setStats] = useState(null);
   const [clientes, setClientes] = useState([]);
   const [error, setError] = useState(null);
@@ -90,6 +91,7 @@ const ReporteClientes = () => {
       setError(err.message || 'Error al cargar datos');
     } finally {
       setLoading(false);
+      setFirstLoad(false);
     }
   }, [filters]);
 
@@ -132,7 +134,7 @@ const ReporteClientes = () => {
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   })();
 
-  if (loading) {
+  if (loading && firstLoad) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
@@ -190,7 +192,7 @@ const ReporteClientes = () => {
         )}
 
         {/* Filtros */}
-        <ReportFilters filters={filters} onChange={handleFiltersChange} showCliente={false} />
+        <ReportFilters filters={filters} onChange={handleFiltersChange} loading={loading} showCliente={false} />
 
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

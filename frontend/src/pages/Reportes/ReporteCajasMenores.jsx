@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Wallet, DollarSign, CheckCircle, Clock, FileSpreadsheet, TrendingDown, TrendingUp, ArrowLeft, RefreshCw, Mail } from 'lucide-react';
+import { Wallet, DollarSign, Clock, FileSpreadsheet, TrendingDown, ArrowLeft, RefreshCw, Mail } from 'lucide-react';
 import { KpiCard, AccionesDropdown } from '../../components/common';
 import { PieChart } from '../../components/charts';
 import reportesService from '../../api/reportes.service';
@@ -20,12 +20,12 @@ const ReporteCajasMenores = () => {
     try {
       const response = await reportesService.getCajasMenores();
       setData(response.data || response);
-    } catch (err) {
+    } catch (_err) {
       showError('Error al cargar reporte');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showError]);
 
   useEffect(() => {
     fetchData();

@@ -172,7 +172,7 @@ const reportesService = {
   getComparativo: async (params = {}) => {
     try {
       return await apiClient.get(REPORTES_ENDPOINTS.COMPARATIVO, { params });
-    } catch (error) {
+    } catch (_error) {
       return { success: false, data: { meses: [], comparacion: {} } };
     }
   },
@@ -181,7 +181,7 @@ const reportesService = {
   getProgramados: async () => {
     try {
       return await apiClient.get(REPORTES_ENDPOINTS.PROGRAMADOS);
-    } catch (error) {
+    } catch (_error) {
       return { success: false, data: [] };
     }
   },

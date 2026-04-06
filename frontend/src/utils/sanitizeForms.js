@@ -10,9 +10,10 @@
 export const SANITIZE = {
   TEXTO_UPPER:    'texto_upper',    // Mayúsculas, sin restricción de chars
   TEXTO_LETRAS:   'texto_letras',   // Solo letras, espacios y acentos (nombres)
-  ALFANUM_UPPER:  'alfanum_upper',  // Alfanumérico en mayúsculas (placa, NIT, códigos)
+  ALFANUM_UPPER:  'alfanum_upper',  // Alfanumérico en mayúsculas (placa, códigos)
   SOLO_DIGITOS:   'solo_digitos',   // Solo dígitos (teléfono, cédula)
   TEXTO_LIBRE:    'texto_libre',    // Texto libre, solo aplica maxLength
+  NIT:            'nit',            // NIT/documento: letras, dígitos, guión y punto
 };
 
 /**
@@ -35,6 +36,10 @@ export function sanitizeField(tipo, value, maxLen = null) {
       break;
     case SANITIZE.ALFANUM_UPPER:
       v = v.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      break;
+    case SANITIZE.NIT:
+      // Permite letras, dígitos, guión y punto (NIT colombiano y documentos extranjeros)
+      v = v.replace(/[^A-Za-z0-9\-.]/g, '').toUpperCase();
       break;
     case SANITIZE.SOLO_DIGITOS:
       v = v.replace(/\D/g, '');

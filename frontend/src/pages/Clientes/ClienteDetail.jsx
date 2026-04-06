@@ -34,7 +34,6 @@ import {
   Clock,
   MessageSquare,
   FileCheck,
-  Database,
   Package,
   Camera,
 } from 'lucide-react';
@@ -427,7 +426,7 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
 const ClienteDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, hasPermission } = useAuth();
+  const { _user, hasPermission } = useAuth();
   const { success, apiError, deleted } = useNotification();
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -459,6 +458,7 @@ const ClienteDetail = () => {
 
   // Estado para productos del cliente
   const [productosCliente, setProductosCliente] = useState([]);
+  const [totalProductos, setTotalProductos] = useState(0);
   const [loadingProductos, setLoadingProductos] = useState(false);
 
   // Modals
@@ -541,12 +541,15 @@ const ClienteDetail = () => {
       const response = await inventarioService.getByCliente(clienteId);
       if (response?.success) {
         setProductosCliente(response.data || []);
+        setTotalProductos(response.paginacion?.total ?? (response.data?.length || 0));
       } else {
         setProductosCliente([]);
+        setTotalProductos(0);
       }
     } catch (err) {
       console.error('Error cargando productos del cliente:', err);
       setProductosCliente([]);
+      setTotalProductos(0);
     } finally {
       setLoadingProductos(false);
     }
@@ -685,8 +688,7 @@ const ClienteDetail = () => {
     { id: 'historial', label: 'Historial', icon: Clock },
   ];
 
-  // Calcular productos en bodega desde los datos cargados
-  const productosEnBodega = productosCliente.length;
+  const productosEnBodega = cliente?.total_productos ?? totalProductos;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
@@ -846,13 +848,6 @@ const ClienteDetail = () => {
                         }
                       </span>
                     </div>
-                    {cliente.codigo_wms && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Database className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-                        <span className="text-slate-500 dark:text-slate-400 w-32">Código WMS:</span>
-                        <span className="text-slate-800 dark:text-slate-200 font-mono">{cliente.codigo_wms}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
 

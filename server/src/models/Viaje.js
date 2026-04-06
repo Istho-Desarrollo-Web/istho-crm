@@ -133,7 +133,10 @@ module.exports = (sequelize) => {
       { fields: ['caja_menor_id'] },
       { fields: ['fecha'] },
       { fields: ['estado'] },
-      { fields: ['documento_cliente'] }
+      { fields: ['documento_cliente'] },
+      { fields: ['conductor_id', 'estado'] },
+      { fields: ['caja_menor_id', 'estado'] },
+      { fields: ['fecha', 'estado'] }
     ]
   });
 

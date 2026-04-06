@@ -14,7 +14,7 @@
  */
 
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy, useEffect, Component } from 'react';
 import { SnackbarProvider } from 'notistack';
 import useNotification from './hooks/useNotification';
 
@@ -111,6 +111,49 @@ const ViajeDetail = lazy(() => import('./pages/Viajes/ViajeDetail'));
 const MovimientosList = lazy(() => import('./pages/Viajes/MovimientosList'));
 
 // ════════════════════════════════════════════════════════════════════════════
+// ERROR BOUNDARY - Captura crashes de componentes React
+// ════════════════════════════════════════════════════════════════════════════
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, info) {
+    console.error('[ErrorBoundary]', error, info.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
+          <div className="max-w-md w-full text-center">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">⚠️</span>
+            </div>
+            <h1 className="text-xl font-bold text-slate-100 mb-2">Algo salió mal</h1>
+            <p className="text-slate-400 text-sm mb-6">
+              Ocurrió un error inesperado. Por favor recarga la página.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-medium transition-colors"
+            >
+              Recargar página
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // PLACEHOLDER PARA PÁGINAS EN DESARROLLO
 // ════════════════════════════════════════════════════════════════════════════
 const ComingSoon = ({ title }) => (
@@ -205,6 +248,7 @@ function App() {
         <AlertProvider>
           {/* Provider de autenticación */}
           <AuthProvider>
+            <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* ══════════════════════════════════════════════════════════ */}
@@ -312,6 +356,7 @@ function App() {
               <Route path="*" element={<ComingSoon title="Página no encontrada" />} />
             </Routes>
           </Suspense>
+            </ErrorBoundary>
         </AuthProvider>
       </AlertProvider>
     </SnackbarProvider>

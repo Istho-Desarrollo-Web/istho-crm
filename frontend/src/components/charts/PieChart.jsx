@@ -89,32 +89,30 @@ const PieChart = ({
   const centerX = size / 2;
   const centerY = size / 2;
   
-  let currentAngle = -90; // Empezar desde arriba
-
-  const slices = validData.map((item, idx) => {
+  const slices = validData.reduce((acc, item, idx) => {
+    const angleStart = acc.currentAngle;
     const value = Number(item.value);
     const percentage = (value / total) * 100;
     const angle = (value / total) * 360;
-    const startAngle = currentAngle;
-    const endAngle = currentAngle + angle;
-    
+    const startAngle = angleStart;
+    const endAngle = angleStart + angle;
+
     // Calcular puntos del arco
     const startRad = (startAngle * Math.PI) / 180;
     const endRad = (endAngle * Math.PI) / 180;
-    
+
     const x1 = centerX + radius * Math.cos(startRad);
     const y1 = centerY + radius * Math.sin(startRad);
     const x2 = centerX + radius * Math.cos(endRad);
     const y2 = centerY + radius * Math.sin(endRad);
-    
+
     // Validar que los puntos son números válidos
     if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
-      currentAngle = endAngle;
-      return null;
+      return { ...acc, currentAngle: endAngle };
     }
-    
+
     const largeArcFlag = angle > 180 ? 1 : 0;
-    
+
     // Caso especial: si solo hay un elemento (100%), dibujar círculo completo
     let path;
     if (validData.length === 1) {
@@ -133,17 +131,17 @@ const PieChart = ({
         Z
       `;
     }
-    
-    currentAngle = endAngle;
-    
-    return {
+
+    const slice = {
       ...item,
       value,
       path,
       percentage,
       color: item.color || COLORS[idx % COLORS.length],
     };
-  }).filter(Boolean); // Filtrar nulls
+
+    return { currentAngle: endAngle, items: [...acc.items, slice] };
+  }, { currentAngle: -90, items: [] }).items; // Empezar desde arriba
 
   // ══════════════════════════════════════════════════════════════════════════
   // RENDER

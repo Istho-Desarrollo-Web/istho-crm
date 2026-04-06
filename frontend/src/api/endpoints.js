@@ -43,6 +43,7 @@ export const CLIENTES_ENDPOINTS = {
   DOCUMENTOS: (id) => `/clientes/${id}/documentos`,
   HISTORIAL: (id) => `/clientes/${id}/historial`,
   LOGO: (id) => `/clientes/${id}/logo`,
+  PLANTILLA_IMPORTACION: '/clientes/plantilla-importacion',
 };
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -70,6 +71,10 @@ export const INVENTARIO_ENDPOINTS = {
   
   // Cajas (detalle por operación)
   CAJAS: (id) => `/inventario/${id}/cajas`,
+
+  // Importación masiva
+  IMPORTAR: '/inventario/importar',
+  PLANTILLA_IMPORTACION: '/inventario/plantilla-importacion',
 
   // Integración WMS (futuro)
   SYNC_WMS: '/inventario/sync-wms',

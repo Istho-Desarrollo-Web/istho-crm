@@ -18,7 +18,6 @@ import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useThemeContext } from '../../../context/ThemeContext';
 import auditoriasService from '../../../api/auditorias.service';
 import {
-  ClipboardList,
   Eye,
   Search,
   Download,

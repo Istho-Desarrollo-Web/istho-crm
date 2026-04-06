@@ -228,7 +228,7 @@ const PAGE_SIZE = 20;
 
 const ViajesList = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const { success, apiError, deleted } = useNotification();
   const socket = useSocket();
 

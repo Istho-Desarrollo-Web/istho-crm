@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Truck, CheckCircle, DollarSign, FileSpreadsheet, Download, Calendar, ArrowLeft, RefreshCw, Mail, MoreVertical } from 'lucide-react';
+import { Truck, CheckCircle, DollarSign, FileSpreadsheet, Download, Calendar, ArrowLeft, RefreshCw, Mail, Filter, X, Search, Loader2 } from 'lucide-react';
 import { KpiCard, AccionesDropdown } from '../../components/common';
 import { BarChart, PieChart } from '../../components/charts';
 import reportesService from '../../api/reportes.service';
@@ -10,38 +10,56 @@ import PageFooter from '@components/common/PageFooter';
 const ReporteViajes = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [_firstLoad, setFirstLoad] = useState(true);
   const [data, setData] = useState(null);
-  const [fechaDesde, setFechaDesde] = useState('');
-  const [fechaHasta, setFechaHasta] = useState('');
+  // Estado local para los inputs (no dispara fetch al escribir)
+  const [inputDesde, setInputDesde] = useState('');
+  const [inputHasta, setInputHasta] = useState('');
+  // Estado aplicado (solo cambia al presionar "Aplicar")
+  const [filtrosAplicados, setFiltrosAplicados] = useState({ desde: '', hasta: '' });
   const [emailModal, setEmailModal] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
-      if (fechaDesde) params.fecha_desde = fechaDesde;
-      if (fechaHasta) params.fecha_hasta = fechaHasta;
+      if (filtrosAplicados.desde) params.fecha_desde = filtrosAplicados.desde;
+      if (filtrosAplicados.hasta) params.fecha_hasta = filtrosAplicados.hasta;
       const response = await reportesService.getViajes(params);
       setData(response.data || response);
     } catch (err) {
       console.error('Error cargando reporte viajes:', err);
     } finally {
       setLoading(false);
+      setFirstLoad(false);
     }
-  }, [fechaDesde, fechaHasta]);
+  }, [filtrosAplicados]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
+  const handleAplicar = () => {
+    setFiltrosAplicados({ desde: inputDesde, hasta: inputHasta });
+  };
+
+  const handleLimpiar = () => {
+    setInputDesde('');
+    setInputHasta('');
+    setFiltrosAplicados({ desde: '', hasta: '' });
+  };
+
   const handleExport = (format) => {
     const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
     const token = localStorage.getItem('istho_token');
     const params = new URLSearchParams({ token });
-    if (fechaDesde) params.set('fecha_desde', fechaDesde);
-    if (fechaHasta) params.set('fecha_hasta', fechaHasta);
+    if (filtrosAplicados.desde) params.set('fecha_desde', filtrosAplicados.desde);
+    if (filtrosAplicados.hasta) params.set('fecha_hasta', filtrosAplicados.hasta);
     window.open(`${baseUrl}/reportes/viajes/${format}?${params}`, '_blank');
   };
+
+  const hasPendingChanges = inputDesde !== filtrosAplicados.desde || inputHasta !== filtrosAplicados.hasta;
+  const hasActiveFilters = filtrosAplicados.desde || filtrosAplicados.hasta;
 
   const kpis = data?.kpis || {};
   const formatCOP = (v) => `$ ${(Number(v) || 0).toLocaleString('es-CO')}`;
@@ -78,14 +96,46 @@ const ReporteViajes = () => {
 
         {/* Filters */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-slate-400" />
-              <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 min-w-0" placeholder="Desde" />
+          <div className="flex items-center gap-2 mb-3">
+            <Filter className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Filtros</span>
+            {hasActiveFilters && (
+              <button onClick={handleLimpiar} className="ml-auto flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 transition-colors">
+                <X className="w-3 h-3" />
+                Limpiar
+              </button>
+            )}
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 flex flex-col sm:flex-row gap-3">
+              <div className="flex-1">
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                  <Calendar className="w-3 h-3 inline mr-1" />
+                  Desde
+                </label>
+                <input type="date" value={inputDesde} onChange={e => setInputDesde(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                  <Calendar className="w-3 h-3 inline mr-1" />
+                  Hasta
+                </label>
+                <input type="date" value={inputHasta} onChange={e => setInputHasta(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400" />
+              </div>
             </div>
-            <div className="flex-1 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-slate-400" />
-              <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 min-w-0" placeholder="Hasta" />
+            <div className="flex items-end">
+              <button
+                onClick={handleAplicar}
+                disabled={loading}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all ${
+                  hasPendingChanges && !loading
+                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                }`}
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                {loading ? 'Cargando...' : 'Aplicar'}
+              </button>
             </div>
           </div>
         </div>

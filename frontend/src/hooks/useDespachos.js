@@ -292,33 +292,29 @@ const useDespachos = (options = {}) => {
    * @param {string} motivo - Motivo de anulación
    */
   const anularDespacho = useCallback(async (id, motivo) => {
-    try {
-      const response = await despachosService.anular(id, motivo);
-      
-      if (response.success) {
-        // Actualizar estado en la lista
-        setListState(prev => ({
-          ...prev,
-          data: prev.data.map(despacho => 
-            despacho.id === id ? { ...despacho, estado: 'anulado' } : despacho
-          ),
-        }));
-        
-        // Actualizar detalle si es el mismo
-        setDetailState(prev => {
-          if (prev.data?.id === id) {
-            return { ...prev, data: { ...prev.data, estado: 'anulado' } };
-          }
-          return prev;
-        });
-      } else {
-        throw new Error(response.message);
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
+    const response = await despachosService.anular(id, motivo);
+
+    if (response.success) {
+      // Actualizar estado en la lista
+      setListState(prev => ({
+        ...prev,
+        data: prev.data.map(despacho =>
+          despacho.id === id ? { ...despacho, estado: 'anulado' } : despacho
+        ),
+      }));
+
+      // Actualizar detalle si es el mismo
+      setDetailState(prev => {
+        if (prev.data?.id === id) {
+          return { ...prev, data: { ...prev.data, estado: 'anulado' } };
+        }
+        return prev;
+      });
+    } else {
+      throw new Error(response.message);
     }
+
+    return response;
   }, []);
   
   // ════════════════════════════════════════════════════════════════════════
@@ -332,10 +328,10 @@ const useDespachos = (options = {}) => {
    */
   const actualizarTransporte = useCallback(async (id, transporteData) => {
     setOperationLoading(prev => ({ ...prev, transporte: true }));
-    
+
     try {
       const response = await despachosService.updateTransporte(id, transporteData);
-      
+
       if (response.success) {
         // Actualizar detalle
         setDetailState(prev => {
@@ -344,21 +340,19 @@ const useDespachos = (options = {}) => {
           }
           return prev;
         });
-        
+
         // Actualizar en lista
         setListState(prev => ({
           ...prev,
-          data: prev.data.map(d => 
+          data: prev.data.map(d =>
             d.id === id ? { ...d, ...response.data } : d
           ),
         }));
       } else {
         throw new Error(response.message);
       }
-      
+
       return response;
-    } catch (error) {
-      throw error;
     } finally {
       setOperationLoading(prev => ({ ...prev, transporte: false }));
     }
@@ -375,10 +369,10 @@ const useDespachos = (options = {}) => {
    */
   const registrarAveria = useCallback(async (id, averiaData) => {
     setOperationLoading(prev => ({ ...prev, averia: true }));
-    
+
     try {
       const response = await despachosService.registrarAveria(id, averiaData);
-      
+
       if (response.success) {
         // Refrescar detalle para obtener la nueva avería
         if (detailState.data?.id === id) {
@@ -387,10 +381,8 @@ const useDespachos = (options = {}) => {
       } else {
         throw new Error(response.message);
       }
-      
+
       return response;
-    } catch (error) {
-      throw error;
     } finally {
       setOperationLoading(prev => ({ ...prev, averia: false }));
     }
@@ -407,10 +399,10 @@ const useDespachos = (options = {}) => {
    */
   const subirDocumento = useCallback(async (id, documentoData) => {
     setOperationLoading(prev => ({ ...prev, documento: true }));
-    
+
     try {
       const response = await despachosService.subirDocumento(id, documentoData);
-      
+
       if (response.success) {
         // Refrescar detalle para obtener el nuevo documento
         if (detailState.data?.id === id) {
@@ -419,10 +411,8 @@ const useDespachos = (options = {}) => {
       } else {
         throw new Error(response.message);
       }
-      
+
       return response;
-    } catch (error) {
-      throw error;
     } finally {
       setOperationLoading(prev => ({ ...prev, documento: false }));
     }
@@ -439,19 +429,19 @@ const useDespachos = (options = {}) => {
    */
   const cerrarDespacho = useCallback(async (id, cierreData = {}) => {
     setOperationLoading(prev => ({ ...prev, cierre: true }));
-    
+
     try {
       const response = await despachosService.cerrar(id, cierreData);
-      
+
       if (response.success) {
         // Actualizar estado en la lista
         setListState(prev => ({
           ...prev,
-          data: prev.data.map(despacho => 
+          data: prev.data.map(despacho =>
             despacho.id === id ? { ...despacho, estado: 'cerrado', ...response.data } : despacho
           ),
         }));
-        
+
         // Actualizar detalle
         setDetailState(prev => {
           if (prev.data?.id === id) {
@@ -462,10 +452,8 @@ const useDespachos = (options = {}) => {
       } else {
         throw new Error(response.message);
       }
-      
+
       return response;
-    } catch (error) {
-      throw error;
     } finally {
       setOperationLoading(prev => ({ ...prev, cierre: false }));
     }

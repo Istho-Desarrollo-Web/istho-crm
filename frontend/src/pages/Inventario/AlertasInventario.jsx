@@ -12,7 +12,7 @@
  * @date Enero 2026
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
@@ -22,7 +22,6 @@ import {
   XCircle,
   Filter,
   RefreshCw,
-  Eye,
   Calendar,
   Building2,
   MapPin,
@@ -33,7 +32,7 @@ import {
 
 
 // Components
-import { Button, StatusChip, FilterDropdown, KpiCard, ConfirmDialog } from '../../components/common';
+import { Button, FilterDropdown, KpiCard, ConfirmDialog } from '../../components/common';
 import PageFooter from '@components/common/PageFooter';
 
 // Hooks
@@ -235,23 +234,7 @@ const AlertasInventario = () => {
   const { user, hasPermission: authHasPermission, isCliente } = useAuth();
   const { success, error: notifyError, warning } = useNotification();
 
-  // Portal clients need inventario.alertas permission
-  const isPortalUser = isCliente() || user?.rol === 'cliente';
-  if (isPortalUser && !authHasPermission('inventario', 'alertas')) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-8 h-8 text-slate-400" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">Acceso restringido</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-4">No tienes permiso para ver las alertas de inventario</p>
-          <Button variant="primary" onClick={() => navigate('/inventario')}>Volver a Inventario</Button>
-        </div>
-      </div>
-    );
-  }
-
+  // Hooks siempre antes de cualquier return condicional
   const {
     alertas,
     loadingAlertas,
@@ -286,6 +269,23 @@ const AlertasInventario = () => {
       altaPrioridad: pendientes.filter(a => a.prioridad === 'alta').length,
     };
   }, [alertas]);
+
+  // Guard de permisos después de todos los hooks
+  const isPortalUser = isCliente() || user?.rol === 'cliente';
+  if (isPortalUser && !authHasPermission('inventario', 'alertas')) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-slate-400" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">Acceso restringido</h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">No tienes permiso para ver las alertas de inventario</p>
+          <Button variant="primary" onClick={() => navigate('/inventario')}>Volver a Inventario</Button>
+        </div>
+      </div>
+    );
+  }
 
   const handleRefresh = async () => {
     setIsRefreshing(true);

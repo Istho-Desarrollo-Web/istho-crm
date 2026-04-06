@@ -234,7 +234,7 @@ const DashboardFinanciera = () => {
       const res = await cajasMenoresService.getStats();
       setStats(res?.data || res || {});
       setLastUpdated(new Date());
-    } catch {}
+    } catch { /* ignorado intencionalmente */ }
   }, []);
 
   useEffect(() => {
@@ -247,7 +247,7 @@ const DashboardFinanciera = () => {
         const res = await movimientosService.getAll({ aprobado: 'pendiente', limit: 20 });
         const data = res?.data?.rows || res?.data || [];
         setPendientes(Array.isArray(data) ? data : []);
-      } catch {}
+      } catch { /* ignorado intencionalmente */ }
     };
     const handleMovimientoActualizado = (data) => {
       // Si fue aprobado o rechazado, sacar de pendientes y actualizar saldo en caja
@@ -282,7 +282,7 @@ const DashboardFinanciera = () => {
         const res = await cajasMenoresService.getAll({ estado: 'abierta', limit: 10 });
         const data = res?.data?.rows || res?.data || [];
         setCajasAbiertas(Array.isArray(data) ? data : []);
-      } catch {}
+      } catch { /* ignorado intencionalmente */ }
       refetchStats();
     };
     const handleCajaActualizada = (data) => {

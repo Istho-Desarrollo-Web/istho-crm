@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 // Components
-import { Button, KpiCard, ReportFilters, AccionesDropdown } from '../../components/common';
+import { KpiCard, ReportFilters, AccionesDropdown } from '../../components/common';
 import { BarChart, PieChart } from '../../components/charts';
 import EnviarReporteModal from '../../components/common/EnviarReporteModal';
 
@@ -43,6 +43,7 @@ const ReporteDespachos = () => {
   const canDownload = hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
   const { enqueueSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(true);
+  const [firstLoad, setFirstLoad] = useState(true);
   const [stats, setStats] = useState(null);
   const [comparativo, setComparativo] = useState(null);
   const [error, setError] = useState(null);
@@ -79,6 +80,7 @@ const ReporteDespachos = () => {
       setError(err.message || 'Error al cargar datos');
     } finally {
       setLoading(false);
+      setFirstLoad(false);
     }
   }, [filters]);
 
@@ -105,7 +107,7 @@ const ReporteDespachos = () => {
     window.open(`${baseUrl}${endpoint}?${buildFilterParams()}`, '_blank');
   };
 
-  if (loading) {
+  if (loading && firstLoad) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
@@ -179,7 +181,7 @@ const ReporteDespachos = () => {
         )}
 
         {/* Filtros */}
-        <ReportFilters filters={filters} onChange={handleFiltersChange} />
+        <ReportFilters filters={filters} onChange={handleFiltersChange} loading={loading} />
 
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

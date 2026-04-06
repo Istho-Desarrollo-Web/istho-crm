@@ -29,7 +29,6 @@ import {
   Clock,
   Award,
   Activity,
-  FileText,
   Settings,
   LogOut,
   CheckCircle,
@@ -360,7 +359,7 @@ const calcularAntiguedad = (fecha) => {
 // ════════════════════════════════════════════════════════════════════════════
 const PerfilUsuario = () => {
   const navigate = useNavigate();
-  const { user, logout, updateUser, hasPermission, isCliente, checkPermission } = useAuth();
+  const { user, logout, updateUser, hasPermission, isCliente: _isCliente, checkPermission: _checkPermission } = useAuth();
   const { success, error: apiError } = useNotification();
 
   // Estados

@@ -7,7 +7,7 @@
  * @date Marzo 2026
  */
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 import CustomAlert from '../components/common/SweetAlert/CustomAlert';
 
 const AlertContext = createContext();

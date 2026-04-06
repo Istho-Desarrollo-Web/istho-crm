@@ -16,7 +16,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Users,
   Package,
-  TrendingUp,
   AlertTriangle,
   RefreshCw,
   CheckCircle,
@@ -31,7 +30,7 @@ import {
 } from 'lucide-react';
 
 // Common Components
-import { KpiCard, DataTable, AlertWidget } from '../../components/common';
+import { KpiCard, AlertWidget } from '../../components/common';
 import { formatDateShort } from '../../utils/formatDate';
 
 // Charts

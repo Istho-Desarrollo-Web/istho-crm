@@ -31,7 +31,6 @@ import {
   XCircle,
   Clock,
   DollarSign,
-  Wallet,
   FileSpreadsheet,
   Download,
   Loader2,
@@ -41,7 +40,7 @@ import {
   ChevronDown,
   ChevronsUpDown,
 } from 'lucide-react';
-import { Button, Modal, Pagination, ConfirmDialog } from '../../components/common';
+import { Modal, Pagination, ConfirmDialog } from '../../components/common';
 import PageFooter from '@components/common/PageFooter';
 import MovimientoForm from './components/MovimientoForm';
 
@@ -336,8 +335,8 @@ const AprobarMovimientoDialog = ({ isOpen, onClose, movimiento, onAprobar, onRec
 
 const MovimientosList = () => {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { user, hasPermission } = useAuth();
+  const [searchParams, _setSearchParams] = useSearchParams();
+  const { user: _user, hasPermission } = useAuth();
   const canAprobar = hasPermission('movimientos', 'aprobar');
   const { isDark } = useThemeContext();
   const socket = useSocket();
@@ -389,7 +388,7 @@ const MovimientosList = () => {
       if (response.pagination) {
         setPagination(response.pagination);
       }
-    } catch (err) {
+    } catch (_err) {
       if (!silencioso) {
         setMovimientos([]);
         setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');

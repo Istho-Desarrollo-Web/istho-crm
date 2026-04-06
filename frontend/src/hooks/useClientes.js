@@ -193,33 +193,29 @@ const useClientes = (options = {}) => {
    * @param {Object} clienteData - Datos a actualizar
    */
   const updateCliente = useCallback(async (id, clienteData) => {
-    try {
-      const response = await clientesService.update(id, clienteData);
-      
-      if (response.success) {
-        // Actualizar en la lista
-        setListState(prev => ({
-          ...prev,
-          data: prev.data.map(cliente => 
-            cliente.id === id ? { ...cliente, ...response.data } : cliente
-          ),
-        }));
-        
-        // Actualizar en detalle si es el mismo
-        setDetailState(prev => {
-          if (prev.data?.id === id) {
-            return { ...prev, data: { ...prev.data, ...response.data } };
-          }
-          return prev;
-        });
-      } else {
-        throw new Error(response.message);
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
+    const response = await clientesService.update(id, clienteData);
+
+    if (response.success) {
+      // Actualizar en la lista
+      setListState(prev => ({
+        ...prev,
+        data: prev.data.map(cliente =>
+          cliente.id === id ? { ...cliente, ...response.data } : cliente
+        ),
+      }));
+
+      // Actualizar en detalle si es el mismo
+      setDetailState(prev => {
+        if (prev.data?.id === id) {
+          return { ...prev, data: { ...prev.data, ...response.data } };
+        }
+        return prev;
+      });
+    } else {
+      throw new Error(response.message);
     }
+
+    return response;
   }, []);
   
   // ──────────────────────────────────────────────────────────────────────────
@@ -231,35 +227,31 @@ const useClientes = (options = {}) => {
    * @param {number|string} id - ID del cliente
    */
   const deleteCliente = useCallback(async (id) => {
-    try {
-      const response = await clientesService.delete(id);
-      
-      if (response.success) {
-        // Remover de la lista
-        setListState(prev => ({
-          ...prev,
-          data: prev.data.filter(cliente => cliente.id !== id),
-          pagination: {
-            ...prev.pagination,
-            total: prev.pagination.total - 1,
-          },
-        }));
-        
-        // Limpiar detalle si es el mismo
-        setDetailState(prev => {
-          if (prev.data?.id === id) {
-            return INITIAL_DETAIL_STATE;
-          }
-          return prev;
-        });
-      } else {
-        throw new Error(response.message);
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
+    const response = await clientesService.delete(id);
+
+    if (response.success) {
+      // Remover de la lista
+      setListState(prev => ({
+        ...prev,
+        data: prev.data.filter(cliente => cliente.id !== id),
+        pagination: {
+          ...prev.pagination,
+          total: prev.pagination.total - 1,
+        },
+      }));
+
+      // Limpiar detalle si es el mismo
+      setDetailState(prev => {
+        if (prev.data?.id === id) {
+          return INITIAL_DETAIL_STATE;
+        }
+        return prev;
+      });
+    } else {
+      throw new Error(response.message);
     }
+
+    return response;
   }, []);
   
   // ──────────────────────────────────────────────────────────────────────────
@@ -319,12 +311,8 @@ const useClientes = (options = {}) => {
    * @param {number|string} clienteId - ID del cliente
    */
   const fetchContactos = useCallback(async (clienteId) => {
-    try {
-      const response = await clientesService.getContactos(clienteId);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await clientesService.getContactos(clienteId);
+    return response;
   }, []);
   
   /**
@@ -333,12 +321,8 @@ const useClientes = (options = {}) => {
    * @param {Object} contactoData - Datos del contacto
    */
   const createContacto = useCallback(async (clienteId, contactoData) => {
-    try {
-      const response = await clientesService.createContacto(clienteId, contactoData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await clientesService.createContacto(clienteId, contactoData);
+    return response;
   }, []);
   
   /**
@@ -348,12 +332,8 @@ const useClientes = (options = {}) => {
    * @param {Object} contactoData - Datos a actualizar
    */
   const updateContacto = useCallback(async (clienteId, contactoId, contactoData) => {
-    try {
-      const response = await clientesService.updateContacto(clienteId, contactoId, contactoData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await clientesService.updateContacto(clienteId, contactoId, contactoData);
+    return response;
   }, []);
   
   /**
@@ -362,12 +342,8 @@ const useClientes = (options = {}) => {
    * @param {number|string} contactoId - ID del contacto
    */
   const deleteContacto = useCallback(async (clienteId, contactoId) => {
-    try {
-      const response = await clientesService.deleteContacto(clienteId, contactoId);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await clientesService.deleteContacto(clienteId, contactoId);
+    return response;
   }, []);
   
   // ──────────────────────────────────────────────────────────────────────────

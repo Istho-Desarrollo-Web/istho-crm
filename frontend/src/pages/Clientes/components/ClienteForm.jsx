@@ -224,7 +224,7 @@ const ClienteForm = ({
                   type="text"
                   placeholder="900123456-7"
                   maxLength={20}
-                  onChange={makeSanitizeHandler(setValue, 'nit', SANITIZE.ALFANUM_UPPER, 20)}
+                  onChange={makeSanitizeHandler(setValue, 'nit', SANITIZE.NIT, 20)}
                   className={inputCls(true, !!errors.nit)}
                 />
               </InputField>
@@ -294,8 +294,9 @@ const ClienteForm = ({
                 <input
                   {...register('direccion')}
                   type="text"
-                  placeholder="Calle, número, barrio"
+                  placeholder="Calle 45 # 23-56, Barrio"
                   maxLength={255}
+                  onChange={makeSanitizeHandler(setValue, 'direccion', SANITIZE.TEXTO_LIBRE, 255)}
                   className={inputCls(true, !!errors.direccion)}
                 />
               </InputField>

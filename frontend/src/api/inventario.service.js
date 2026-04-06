@@ -16,7 +16,7 @@
  * @date Enero 2026
  */
 
-import apiClient from './client';
+import apiClient, { createUploadClient } from './client';
 import { INVENTARIO_ENDPOINTS } from './endpoints';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -371,6 +371,42 @@ const inventarioService = {
         code: 'GET_CAJAS_ERROR',
       };
     }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // IMPORTACIÓN MASIVA
+  // ──────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Importar productos desde un archivo Excel (.xlsx)
+   *
+   * @param {FormData} formData - FormData con campo "archivo" (File)
+   * @returns {Promise<Object>} { creados, actualizados, errores, total }
+   */
+  importarProductos: async (formData) => {
+    try {
+      const uploadClient = createUploadClient();
+      const response = await uploadClient.post(INVENTARIO_ENDPOINTS.IMPORTAR, formData);
+      return response;
+    } catch (error) {
+      throw {
+        success: false,
+        message: error.message || 'Error al importar productos',
+        code: 'IMPORTAR_PRODUCTOS_ERROR',
+      };
+    }
+  },
+
+  /**
+   * Descargar plantilla Excel para importación de productos
+   * Usa window.open con token para descarga directa del servidor
+   *
+   * @param {string} apiBaseUrl - URL base de la API (import.meta.env.VITE_API_URL)
+   * @param {string} token - JWT token del usuario
+   */
+  descargarPlantilla: (apiBaseUrl, token) => {
+    const url = `${apiBaseUrl}${INVENTARIO_ENDPOINTS.PLANTILLA_IMPORTACION}?token=${token}`;
+    window.open(url, '_blank');
   },
 
   // ════════════════════════════════════════════════════════════════════════

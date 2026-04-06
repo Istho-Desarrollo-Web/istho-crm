@@ -31,7 +31,6 @@ import {
     Truck,
     Package,
     BarChart3,
-    Users,
     Shield,
     ArrowRight,
 } from 'lucide-react';
@@ -119,7 +118,9 @@ const LoginPage = () => {
     // Redirigir si ya está autenticado
     useEffect(() => {
         if (isAuthenticated && !authLoading) {
-            const destino = getDestino(user?.rol);
+            const destino = mensajePendiente
+                ? getDefaultRoute(user?.rol)
+                : (from || getDefaultRoute(user?.rol));
             navigate(destino, { replace: true });
         }
     }, [isAuthenticated, authLoading, navigate, from, user, mensajePendiente]);
@@ -138,7 +139,7 @@ const LoginPage = () => {
     useEffect(() => {
         const stored = sessionStorage.getItem('auth_mensaje_pendiente');
         if (stored) {
-            try { setMensajePendiente(JSON.parse(stored)); } catch {}
+            try { setMensajePendiente(JSON.parse(stored)); } catch { /* ignorado intencionalmente */ }
             sessionStorage.removeItem('auth_mensaje_pendiente');
         }
     }, []);

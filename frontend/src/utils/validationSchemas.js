@@ -361,11 +361,6 @@ export const clienteSchema = yup.object({
   estado: yup
     .string()
     .oneOf(['activo', 'inactivo', 'suspendido'], 'Estado no válido'),
-  credito_aprobado: yup
-    .number()
-    .nullable()
-    .transform((v, o) => (o === '' ? null : v))
-    .min(0, 'El crédito aprobado debe ser un número positivo'),
   notas: yup
     .string()
     .nullable()

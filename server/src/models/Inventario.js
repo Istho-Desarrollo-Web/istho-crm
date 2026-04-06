@@ -1,9 +1,9 @@
-/**
+﻿/**
  * ISTHO CRM - Modelo Inventario
  * 
  * Gestiona el inventario de productos almacenados por cliente.
  * Incluye control de stock, ubicaciones y alertas.
- * Preparado para sincronización con WMS Copérnico.
+ * Preparado para sincronización con WMS Centhrix.
  * 
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
@@ -154,7 +154,7 @@ module.exports = (sequelize) => {
     codigo_wms: {
       type: DataTypes.STRING(50),
       allowNull: true,
-      comment: 'Código del producto en WMS Copérnico'
+      comment: 'Código del producto en WMS Centhrix'
     },
     
     ultima_sincronizacion_wms: {

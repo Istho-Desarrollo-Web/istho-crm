@@ -1264,6 +1264,254 @@ const obtenerCajas = async (req, res) => {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// IMPORTACIÓN MASIVA DE PRODUCTOS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * POST /inventario/importar
+ * Importar productos desde Excel (.xlsx)
+ *
+ * Columnas esperadas (case-insensitive, con trim):
+ * nit_cliente, sku, producto, descripcion, categoria, unidad_medida,
+ * cantidad, stock_minimo, stock_maximo, costo_unitario, ubicacion, zona, codigo_wms
+ *
+ * Obligatorios: nit_cliente, sku, producto
+ * Límite: 10.000 filas por importación
+ */
+const importarProductos = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    if (!req.file) {
+      await transaction.rollback();
+      return errorResponse(res, 'Debe adjuntar un archivo Excel (.xlsx)', 400);
+    }
+
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(req.file.buffer);
+    const sheet = workbook.worksheets[0];
+
+    if (!sheet || sheet.rowCount < 2) {
+      await transaction.rollback();
+      return errorResponse(res, 'El archivo está vacío o no contiene datos', 400);
+    }
+
+    const totalFilas = sheet.rowCount - 1; // sin encabezado
+    if (totalFilas > 10000) {
+      await transaction.rollback();
+      return errorResponse(res, `El archivo supera el límite de 10.000 filas (tiene ${totalFilas})`, 400);
+    }
+
+    // Normalizar encabezados (fila 1)
+    const headers = [];
+    sheet.getRow(1).eachCell((cell, colNumber) => {
+      headers[colNumber] = String(cell.value || '')
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '_')
+        .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
+        .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ñ/g, 'n');
+    });
+
+    // Pre-cargar todos los NITs únicos para evitar N+1 queries
+    const nitsUnicos = new Set();
+    for (let rowNum = 2; rowNum <= sheet.rowCount; rowNum++) {
+      const row = sheet.getRow(rowNum);
+      let nit = null;
+      row.eachCell((cell, colNumber) => {
+        if (headers[colNumber] === 'nit_cliente') {
+          nit = String(cell.value ?? '').trim();
+        }
+      });
+      if (nit) nitsUnicos.add(nit);
+    }
+
+    const clientes = await Cliente.findAll({
+      where: { nit: { [Op.in]: [...nitsUnicos] } },
+      attributes: ['id', 'nit'],
+    });
+    const mapaNit = {};
+    clientes.forEach(c => { mapaNit[c.nit] = c.id; });
+
+    const resultados = { creados: 0, actualizados: 0, errores: [], total: totalFilas };
+
+    // Procesamiento en lotes de 500
+    const BATCH_SIZE = 500;
+    const loteUpsert = [];
+
+    const procesarLote = async (lote) => {
+      await Inventario.bulkCreate(lote, {
+        updateOnDuplicate: [
+          'producto', 'descripcion', 'categoria', 'unidad_medida',
+          'cantidad', 'stock_minimo', 'stock_maximo', 'costo_unitario',
+          'ubicacion', 'zona', 'codigo_wms', 'updated_at',
+        ],
+        transaction,
+      });
+    };
+
+    for (let rowNum = 2; rowNum <= sheet.rowCount; rowNum++) {
+      const row = sheet.getRow(rowNum);
+      const datos = {};
+      row.eachCell((cell, colNumber) => {
+        const header = headers[colNumber];
+        if (header) datos[header] = cell.value;
+      });
+
+      const nitCliente = String(datos.nit_cliente ?? '').trim();
+      const sku = String(datos.sku ?? '').trim();
+      const producto = String(datos.producto ?? '').trim();
+
+      // Validaciones obligatorias
+      if (!nitCliente) {
+        resultados.errores.push({ fila: rowNum, sku: sku || '(sin sku)', mensaje: 'nit_cliente es obligatorio' });
+        continue;
+      }
+      if (!sku) {
+        resultados.errores.push({ fila: rowNum, sku: '(sin sku)', mensaje: 'sku es obligatorio' });
+        continue;
+      }
+      if (!producto) {
+        resultados.errores.push({ fila: rowNum, sku, mensaje: 'producto es obligatorio' });
+        continue;
+      }
+
+      const clienteId = mapaNit[nitCliente];
+      if (!clienteId) {
+        resultados.errores.push({ fila: rowNum, sku, mensaje: `No se encontró cliente con NIT "${nitCliente}"` });
+        continue;
+      }
+
+      // Verificar si ya existe para conteo creados/actualizados
+      const existe = await Inventario.findOne({
+        where: { cliente_id: clienteId, sku },
+        attributes: ['id'],
+        transaction,
+      });
+      if (existe) {
+        resultados.actualizados++;
+      } else {
+        resultados.creados++;
+      }
+
+      loteUpsert.push({
+        cliente_id: clienteId,
+        sku,
+        producto,
+        descripcion: datos.descripcion ? String(datos.descripcion) : null,
+        categoria: datos.categoria ? String(datos.categoria) : null,
+        unidad_medida: datos.unidad_medida ? String(datos.unidad_medida).toUpperCase() : 'UND',
+        cantidad: parseFloat(datos.cantidad) || 0,
+        stock_minimo: parseFloat(datos.stock_minimo) || 0,
+        stock_maximo: datos.stock_maximo != null ? parseFloat(datos.stock_maximo) : null,
+        costo_unitario: datos.costo_unitario != null ? parseFloat(datos.costo_unitario) : null,
+        ubicacion: datos.ubicacion ? String(datos.ubicacion) : null,
+        zona: datos.zona ? String(datos.zona) : null,
+        codigo_wms: datos.codigo_wms ? String(datos.codigo_wms) : null,
+      });
+
+      if (loteUpsert.length >= BATCH_SIZE) {
+        await procesarLote([...loteUpsert]);
+        loteUpsert.length = 0;
+      }
+    }
+
+    // Último lote restante
+    if (loteUpsert.length > 0) {
+      await procesarLote(loteUpsert);
+    }
+
+    await transaction.commit();
+
+    // Auditoría
+    await Auditoria.registrar({
+      tabla: 'inventario',
+      registro_id: null,
+      accion: 'importar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_nuevos: {
+        creados: resultados.creados,
+        actualizados: resultados.actualizados,
+        errores: resultados.errores.length,
+        total: resultados.total,
+      },
+      ip_address: getClientIP(req),
+      descripcion: `Importación masiva de productos: ${resultados.creados} creados, ${resultados.actualizados} actualizados, ${resultados.errores.length} errores`,
+    });
+
+    logger.info('Importación de productos completada:', {
+      creados: resultados.creados,
+      actualizados: resultados.actualizados,
+      errores: resultados.errores.length,
+      usuario: req.user.id,
+    });
+
+    return success(res, resultados, 'Importación completada');
+  } catch (err) {
+    await transaction.rollback();
+    logger.error('Error al importar productos:', { message: err.message });
+    return serverError(res, 'Error al importar productos', err);
+  }
+};
+
+/**
+ * GET /inventario/plantilla-importacion
+ * Descargar plantilla Excel para importación de productos
+ */
+const plantillaImportacion = async (req, res) => {
+  try {
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Productos');
+
+    sheet.addTable({
+      name: 'PlantillaProductos',
+      ref: 'A1',
+      headerRow: true,
+      totalsRow: false,
+      style: {
+        theme: 'TableStyleMedium9',
+        showRowStripes: true,
+      },
+      columns: [
+        { name: 'nit_cliente', filterButton: true },
+        { name: 'sku', filterButton: true },
+        { name: 'producto', filterButton: true },
+        { name: 'descripcion', filterButton: true },
+        { name: 'categoria', filterButton: true },
+        { name: 'unidad_medida', filterButton: true },
+        { name: 'cantidad', filterButton: true },
+        { name: 'stock_minimo', filterButton: true },
+        { name: 'stock_maximo', filterButton: true },
+        { name: 'costo_unitario', filterButton: true },
+        { name: 'ubicacion', filterButton: true },
+        { name: 'zona', filterButton: true },
+        { name: 'codigo_wms', filterButton: true },
+      ],
+      rows: [
+        ['800245795-0', 'SKU-001', 'Leche Entera 1L', 'Leche entera pasteurizada 1 litro', 'lacteos', 'UND', 100, 20, 500, 2500, 'A-01-01', 'BOD-01', ''],
+        ['800245795-0', 'SKU-002', 'Jugo de Naranja 500ml', 'Jugo de naranja natural 500ml', 'bebidas', 'UND', 50, 10, 200, 3200, 'A-01-02', 'BOD-01', ''],
+        ['900123456-7', 'SKU-010', 'Cemento Gris 50kg', 'Saco de cemento gris 50 kilogramos', 'construccion', 'SAC', 200, 30, 1000, 28000, 'B-02-01', 'BOD-04', ''],
+      ],
+    });
+
+    // Ajustar anchos de columna
+    const anchos = [18, 14, 35, 40, 18, 14, 12, 14, 14, 16, 14, 14, 16];
+    sheet.columns.forEach((col, i) => { col.width = anchos[i] || 16; });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="plantilla_importacion_productos.xlsx"');
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    logger.error('Error al generar plantilla de productos:', { message: err.message });
+    return serverError(res, 'Error al generar la plantilla', err);
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // EXPORTS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1288,5 +1536,9 @@ module.exports = {
 
   // Alertas
   atenderAlerta,
-  descartarAlerta
+  descartarAlerta,
+
+  // Importación
+  importarProductos,
+  plantillaImportacion,
 };

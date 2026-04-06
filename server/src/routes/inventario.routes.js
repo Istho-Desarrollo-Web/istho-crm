@@ -36,6 +36,32 @@ router.use(verificarToken);
 router.use(filtrarPorCliente);
 
 // ═══════════════════════════════════════════════════════════════════════════
+// IMPORTACIÓN MASIVA (antes de /:id para evitar conflictos)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * GET /api/v1/inventario/plantilla-importacion
+ * Descargar plantilla Excel para importación de productos
+ */
+const multer = require('multer');
+const uploadMemory = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+
+router.get('/plantilla-importacion',
+  requiereRol('admin', 'supervisor', 'operador'),
+  inventarioController.plantillaImportacion
+);
+
+/**
+ * POST /api/v1/inventario/importar
+ * Importar productos desde Excel
+ */
+router.post('/importar',
+  requiereRol('admin', 'supervisor', 'operador'),
+  uploadMemory.single('archivo'),
+  inventarioController.importarProductos
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
 // CONSULTAS Y LISTADOS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -43,7 +69,7 @@ router.use(filtrarPorCliente);
  * GET /api/v1/inventario
  * Listar inventario con paginación y filtros
  */
-router.get('/', 
+router.get('/',
   listarInventarioValidator,
   inventarioController.listar
 );

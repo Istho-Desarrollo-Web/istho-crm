@@ -19,7 +19,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
-import { Button, ConfirmDialog } from '../../components/common';
+import { ConfirmDialog } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { getServerFileUrl } from '../../api/client';
 import { ADMIN_ENDPOINTS } from '../../api/endpoints';

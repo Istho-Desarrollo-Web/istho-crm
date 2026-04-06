@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 // ============================================================================
 // CRM ISTHO - Análisis de Alineación ACTUALIZADO
@@ -111,7 +111,7 @@ export default function AnalisisAlineacionActualizado() {
   // DATOS: Decisión de Nomenclatura
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const decisionNomenclatura = {
+  const _decisionNomenclatura = {
     frontend: {
       modulo: 'Despachos',
       rutas: ['/despachos', '/despachos/:id'],
@@ -370,7 +370,7 @@ export default function AnalisisAlineacionActualizado() {
                 </div>
               </div>
               <p className="text-sm text-amber-700 mt-4">
-                <strong>Decisión:</strong> Mantener "Despachos" en el frontend (más intuitivo para usuarios). 
+                <strong>Decisión:</strong> Mantener &ldquo;Despachos&rdquo; en el frontend (más intuitivo para usuarios).
                 El servicio de API hará el mapeo transparente a <code>/operaciones</code> del backend.
               </p>
             </div>
@@ -647,7 +647,7 @@ export default function AnalisisAlineacionActualizado() {
 
             {/* Implementación */}
             <div className="bg-gray-900 rounded-2xl p-6 overflow-x-auto">
-              <p className="text-gray-400 text-sm mb-4">// hooks/usePermissions.js - Implementación sugerida</p>
+              <p className="text-gray-400 text-sm mb-4">{'// hooks/usePermissions.js - Implementación sugerida'}</p>
               <pre className="text-green-400 text-xs font-mono">
 {`const PERMISSIONS = {
   admin: {
@@ -724,7 +724,7 @@ export const usePermissions = () => {
                   </div>
                   <div className="bg-white rounded-xl p-4">
                     <p className="text-sm text-gray-600 mb-1">Documentación</p>
-                    <p className="text-sm text-blue-700">ROLES_PERMISOS_MODULOS.md usa "Despachos"</p>
+                    <p className="text-sm text-blue-700">ROLES_PERMISOS_MODULOS.md usa &ldquo;Despachos&rdquo;</p>
                   </div>
                 </div>
               </div>
@@ -757,22 +757,22 @@ export const usePermissions = () => {
               </h3>
               <div className="bg-white rounded-xl p-4 mb-4">
                 <p className="font-medium text-gray-800 mb-2">
-                  <strong>Mantener "Despachos" en el Frontend</strong>
+                  <strong>Mantener &ldquo;Despachos&rdquo; en el Frontend</strong>
                 </p>
                 <p className="text-sm text-gray-600">
-                  El servicio de API hará el mapeo transparente: el usuario nunca ve "operaciones", 
+                  El servicio de API hará el mapeo transparente: el usuario nunca ve &ldquo;operaciones&rdquo;,
                   pero internamente las peticiones van a <code>/api/v1/operaciones</code>.
                 </p>
               </div>
               <p className="text-sm text-amber-700">
-                <strong>Justificación:</strong> La documentación de permisos y toda la UX ya usan "Despachos". 
+                <strong>Justificación:</strong> La documentación de permisos y toda la UX ya usan &ldquo;Despachos&rdquo;.
                 Es el término más intuitivo para usuarios de logística en Colombia.
               </p>
             </div>
 
             {/* Mapeo en Código */}
             <div className="bg-gray-900 rounded-2xl p-6 overflow-x-auto">
-              <p className="text-gray-400 text-sm mb-4">// api/despachos.service.js - Mapeo transparente</p>
+              <p className="text-gray-400 text-sm mb-4">{'// api/despachos.service.js - Mapeo transparente'}</p>
               <pre className="text-green-400 text-xs font-mono">
 {`// El frontend usa "despachos", pero internamente llama a "operaciones"
 import apiClient from './client';

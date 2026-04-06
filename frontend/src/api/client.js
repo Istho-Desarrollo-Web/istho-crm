@@ -77,6 +77,17 @@ const apiClient = axios.create({
 });
 
 // ============================================================================
+// DEDUPLICACIÓN DE REQUESTS GET
+// ============================================================================
+
+/**
+ * Evita que múltiples GETs idénticos en vuelo simultáneo dupliquen trabajo.
+ * key: `url|params` → { promise, resolve, reject }
+ * Los duplicados comparten el adapter del request canónico.
+ */
+const _pendingGets = new Map();
+
+// ============================================================================
 // INTERCEPTOR DE REQUEST
 // ============================================================================
 
@@ -88,20 +99,36 @@ apiClient.interceptors.request.use(
   (config) => {
     // Obtener token del localStorage
     const token = localStorage.getItem(TOKEN_KEY);
-    
+
     // Si existe token, agregarlo al header Authorization
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
+    // Deduplicar GETs: si ya hay un request idéntico en vuelo, reutilizar su promesa
+    if (config.method === 'get') {
+      const key = `${config.url}|${JSON.stringify(config.params ?? {})}`;
+      config._dedupeKey = key;
+
+      if (_pendingGets.has(key)) {
+        // Apuntar el adapter de este request a la promesa en vuelo
+        config.adapter = () => _pendingGets.get(key).promise;
+      } else {
+        // Registrar este como el request canónico
+        let resolve, reject;
+        const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
+        _pendingGets.set(key, { promise, resolve, reject });
+      }
+    }
+
     // Log en desarrollo para debugging
     if (import.meta.env.DEV) {
-      console.log(`📤 [API] ${config.method?.toUpperCase()} ${config.url}`, {
+      console.warn(`📤 [API] ${config.method?.toUpperCase()} ${config.url}`, {
         params: config.params,
         data: config.data ? '(data presente)' : undefined,
       });
     }
-    
+
     return config;
   },
   (error) => {
@@ -124,14 +151,21 @@ apiClient.interceptors.request.use(
  */
 apiClient.interceptors.response.use(
   (response) => {
+    // Resolver promesa compartida para requests deduplicados
+    const key = response.config?._dedupeKey;
+    if (key && _pendingGets.has(key)) {
+      _pendingGets.get(key).resolve(response);
+      _pendingGets.delete(key);
+    }
+
     // Log en desarrollo
     if (import.meta.env.DEV) {
-      console.log(`📥 [API] ${response.status} ${response.config.url}`, {
+      console.warn(`📥 [API] ${response.status} ${response.config.url}`, {
         success: response.data?.success,
         data: response.data?.data ? '(data presente)' : undefined,
       });
     }
-    
+
     // ═══════════════════════════════════════════════════════════════════════
     // IMPORTANTE: Devolver response.data directamente
     // Así los servicios reciben { success: true, data: {...} } directamente
@@ -139,6 +173,13 @@ apiClient.interceptors.response.use(
     return response.data;
   },
   async (error) => {
+    // Rechazar promesa compartida si el request canónico falló
+    const key = error.config?._dedupeKey;
+    if (key && _pendingGets.has(key)) {
+      _pendingGets.get(key).reject(error);
+      _pendingGets.delete(key);
+    }
+
     const originalRequest = error.config;
     
     // Si no hay respuesta (network error)
@@ -156,6 +197,9 @@ apiClient.interceptors.response.use(
     // Log del error
     if (import.meta.env.DEV) {
       console.error(`❌ [API] ${status} ${originalRequest.url}`, data);
+      if (data?.errors?.length) {
+        console.error('❌ [API] Errores de validación:', data.errors);
+      }
     }
     
     // Manejo por código de estado
@@ -184,7 +228,7 @@ apiClient.interceptors.response.use(
                 return apiClient(originalRequest);
               }
             }
-          } catch (refreshError) {
+          } catch (_refreshError) {
             // Refresh falló, hacer logout
             console.warn('⚠️ [API] Refresh token falló, cerrando sesión');
           }

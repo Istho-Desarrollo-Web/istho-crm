@@ -24,7 +24,6 @@ import {
   ArrowLeft,
   Pencil,
   Lock,
-  Plus,
   Truck,
   Receipt,
   CheckCircle,
@@ -32,7 +31,7 @@ import {
   DollarSign,
 } from 'lucide-react';
 
-import { Button, Modal, StatusChip, ConfirmDialog } from '../../components/common';
+import { Button, Modal, StatusChip } from '../../components/common';
 import { cajasMenoresService, movimientosService } from '../../api/viajes.service';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';

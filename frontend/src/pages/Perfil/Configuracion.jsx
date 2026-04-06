@@ -395,7 +395,7 @@ const Configuracion = () => {
         success('Preferencias guardadas correctamente');
         setHasChanges(false);
       }
-    } catch (err) {
+    } catch (_err) {
       showError('Error al guardar preferencias');
     } finally {
       setLoading(false);

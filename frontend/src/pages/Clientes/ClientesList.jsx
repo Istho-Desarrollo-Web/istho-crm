@@ -14,11 +14,13 @@
 import { useState, useRef } from 'react';
 import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useThemeContext } from '../../context/ThemeContext';
 import {
   Plus,
   Filter,
   Download,
   Upload,
+  FileDown,
   MoreVertical,
   Eye,
   Pencil,
@@ -104,69 +106,57 @@ const formatTipoCliente = (tipo) => {
 
 const RowActions = ({ cliente, onView, onEdit, onDelete, onChangeStatus }) => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const { isDark } = useThemeContext();
   const open = Boolean(anchorEl);
-  
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
 
   return (
     <>
-      <IconButton
-        onClick={handleClick}
-        size="small"
-        className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-      >
-        <MoreVertical className="w-4 h-4" />
+      <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} size="small">
+        <MoreVertical className="w-4 h-4 text-slate-400" />
       </IconButton>
 
       <Menu
         anchorEl={anchorEl}
         open={open}
-        onClose={handleClose}
+        onClose={() => setAnchorEl(null)}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{
           elevation: 0,
           sx: {
             overflow: 'visible',
-            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+            filter: isDark ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))' : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
             mt: 0.5,
             borderRadius: '0.75rem',
-            border: '1px solid #f3f4f6',
-            minWidth: '160px',
+            border: isDark ? '1px solid #334155' : '1px solid #f3f4f6',
+            backgroundColor: isDark ? '#0F1023' : '#ffffff',
+            minWidth: '170px',
             '& .MuiMenuItem-root': {
               fontSize: '0.875rem',
-              color: '#334155',
+              color: isDark ? '#e2e8f0' : '#334155',
               padding: '8px 16px',
               gap: '8px',
-              '&:hover': {
-                backgroundColor: '#f8fafc',
-              }
+              '&:hover': { backgroundColor: isDark ? '#334155' : '#f8fafc' },
             },
           },
         }}
       >
-        <MenuItem onClick={() => { onView(cliente); handleClose(); }}>
+        <MenuItem onClick={() => { onView(cliente); setAnchorEl(null); }}>
           <Eye className="w-4 h-4" />
           Ver detalle
         </MenuItem>
 
         <ProtectedAction module="clientes" action="editar">
-          <MenuItem onClick={() => { onEdit(cliente); handleClose(); }}>
+          <MenuItem onClick={() => { onEdit(cliente); setAnchorEl(null); }}>
             <Pencil className="w-4 h-4" />
             Editar
           </MenuItem>
         </ProtectedAction>
 
         <ProtectedAction module="clientes" action="cambiar_estado">
-          <MenuItem 
-            onClick={() => { onChangeStatus(cliente); handleClose(); }}
-            sx={{ color: '#d97706 !important', '&:hover': { backgroundColor: '#fffbeb !important' } }}
+          <MenuItem
+            onClick={() => { onChangeStatus(cliente); setAnchorEl(null); }}
+            sx={{ color: '#d97706 !important', '&:hover': { backgroundColor: isDark ? '#451a03 !important' : '#fffbeb !important' } }}
           >
             <RefreshCw className="w-4 h-4" />
             Cambiar Estado
@@ -174,9 +164,9 @@ const RowActions = ({ cliente, onView, onEdit, onDelete, onChangeStatus }) => {
         </ProtectedAction>
 
         <ProtectedAction module="clientes" action="eliminar">
-          <MenuItem 
-            onClick={() => { onDelete(cliente); handleClose(); }}
-            sx={{ color: '#dc2626 !important', '&:hover': { backgroundColor: '#fef2f2 !important' } }}
+          <MenuItem
+            onClick={() => { onDelete(cliente); setAnchorEl(null); }}
+            sx={{ color: '#dc2626 !important', '&:hover': { backgroundColor: isDark ? '#451a1a !important' : '#fef2f2 !important' } }}
           >
             <Trash2 className="w-4 h-4" />
             Eliminar
@@ -194,7 +184,7 @@ const RowActions = ({ cliente, onView, onEdit, onDelete, onChangeStatus }) => {
 const ClientesList = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
 
   // ──────────────────────────────────────────────────────────────────────────
   // HOOKS
@@ -204,11 +194,18 @@ const ClientesList = () => {
   const [importPreview, setImportPreview] = useState(null);
   const [importFile, setImportFile] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
+  const [importErrors, setImportErrors] = useState(null);
 
   const handleExport = () => {
     const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
     const token = localStorage.getItem('istho_token');
     window.open(`${baseUrl}/reportes/clientes/excel?token=${token}`, '_blank');
+  };
+
+  const handleDownloadPlantilla = () => {
+    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+    const token = localStorage.getItem('istho_token');
+    window.open(`${baseUrl}/clientes/plantilla-importacion?token=${token}`, '_blank');
   };
 
   const handleImportSelect = async (e) => {
@@ -230,7 +227,7 @@ const ClientesList = () => {
 
       setImportFile(file);
       setImportPreview(rows.slice(0, 50)); // Max 50 filas en preview
-    } catch (err) {
+    } catch (_err) {
       notifyError('Error al leer el archivo. Verifique que sea un Excel válido.');
     }
   };
@@ -252,14 +249,20 @@ const ClientesList = () => {
       });
       const data = await res.json();
       if (data.success) {
-        notifySuccess(`Importación completada: ${data.data.creados} creados, ${data.data.actualizados} actualizados${data.data.errores?.length ? `, ${data.data.errores.length} errores` : ''}`);
+        const { creados, actualizados, errores } = data.data;
+        if (errores?.length) {
+          notifySuccess(`Importación completada: ${creados} creados, ${actualizados} actualizados, ${errores.length} con errores`);
+          setImportErrors({ creados, actualizados, errores });
+        } else {
+          notifySuccess(`Importación completada: ${creados} creados, ${actualizados} actualizados`);
+        }
         fetchClientes();
         setImportPreview(null);
         setImportFile(null);
       } else {
         notifyError(data.message || 'Error al importar');
       }
-    } catch (err) {
+    } catch (_err) {
       notifyError('Error al importar archivo');
     } finally {
       setImportLoading(false);
@@ -440,6 +443,9 @@ const ClientesList = () => {
             </ProtectedAction>
 
             <ProtectedAction module="clientes" action="importar">
+              <Button variant="outline" icon={FileDown} size="md" onClick={handleDownloadPlantilla} title="Descargar plantilla de importación">
+                Plantilla
+              </Button>
               <Button variant="outline" icon={Upload} size="md" onClick={() => importInputRef.current?.click()}>
                 Importar
               </Button>
@@ -452,11 +458,6 @@ const ClientesList = () => {
               />
             </ProtectedAction>
 
-            <ProtectedAction module="clientes" action="crear">
-              <Button variant="primary" icon={Plus} onClick={handleCreate}>
-                Nuevo Cliente
-              </Button>
-            </ProtectedAction>
           </div>
         </div>
 
@@ -507,6 +508,13 @@ const ClientesList = () => {
             >
               <span className="hidden sm:inline">Actualizar</span>
             </Button>
+
+            <ProtectedAction module="clientes" action="crear">
+              <Button variant="primary" icon={Plus} onClick={handleCreate}>
+                <span className="hidden sm:inline">Nuevo Cliente</span>
+                <span className="sm:hidden">Nuevo</span>
+              </Button>
+            </ProtectedAction>
           </div>
 
           {showFilters && (
@@ -877,9 +885,19 @@ const ClientesList = () => {
 
             {/* Footer */}
             <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-b-2xl">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Columnas esperadas: NIT, Razón Social, Tipo, Sector, Dirección, Ciudad, Teléfono, Email
-              </p>
+              <div className="flex flex-col gap-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Columnas esperadas: NIT, Razón Social, Tipo, Sector, Dirección, Ciudad, Teléfono, Email
+                </p>
+                <button
+                  type="button"
+                  onClick={handleDownloadPlantilla}
+                  className="flex items-center gap-1 text-xs text-orange-500 hover:text-orange-600 hover:underline w-fit"
+                >
+                  <FileDown className="w-3 h-3" />
+                  Descargar plantilla
+                </button>
+              </div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => { setImportPreview(null); setImportFile(null); }}
@@ -905,6 +923,61 @@ const ClientesList = () => {
                   )}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL ERRORES DE IMPORTACIÓN */}
+      {importErrors && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-[#1A1B3A] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Resultado de la Importación</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {importErrors.creados} creados · {importErrors.actualizados} actualizados · <span className="text-red-500 font-medium">{importErrors.errores.length} con errores</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setImportErrors(null)}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Tabla de errores */}
+            <div className="flex-1 overflow-auto px-6 py-4">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50">
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase w-16">Fila</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase w-36">NIT</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">Motivo del error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {importErrors.errores.map((err, idx) => (
+                    <tr key={idx} className="border-t border-slate-100 dark:border-slate-700/50">
+                      <td className="py-2 px-3 text-slate-400 text-xs font-mono">{err.fila}</td>
+                      <td className="py-2 px-3 text-slate-600 dark:text-slate-300 font-mono text-xs">{err.nit || '—'}</td>
+                      <td className="py-2 px-3 text-red-600 dark:text-red-400 text-xs">{err.error}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-b-2xl">
+              <button
+                onClick={() => setImportErrors(null)}
+                className="px-5 py-2 text-sm font-medium text-white bg-[#E74C3C] hover:bg-[#C0392B] rounded-xl transition-colors"
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>

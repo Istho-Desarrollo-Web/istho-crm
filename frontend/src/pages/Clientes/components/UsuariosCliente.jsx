@@ -21,19 +21,17 @@ import {
   Shield,
   MoreVertical,
   Pencil,
-  Trash2,
   RefreshCw,
   Key,
   Send,
   CheckCircle,
-  XCircle,
   Clock,
   UserCheck,
   UserX,
 } from 'lucide-react';
 
 // Components
-import { Button, StatusChip, ConfirmDialog, EmptyState } from '../../../components/common';
+import { Button, ConfirmDialog, EmptyState } from '../../../components/common';
 
 // Local Components
 import UsuarioClienteForm from './UsuarioClienteForm';

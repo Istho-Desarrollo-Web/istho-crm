@@ -7,7 +7,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, X, Package, Building2, ArrowDownCircle,
+  Search, Package, Building2, ArrowDownCircle,
   ArrowUpCircle, RefreshCw, FileText, Loader2,
   Truck, Car, Wallet, ArrowLeftRight,
 } from 'lucide-react';
@@ -293,7 +293,7 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
           {query.length >= 2 && !loading && flatResults.length === 0 && (
             <div className="py-8 text-center">
               <Search className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-              <p className="text-sm text-slate-500 dark:text-slate-400">No se encontraron resultados para "{query}"</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">No se encontraron resultados para &ldquo;{query}&rdquo;</p>
             </div>
           )}
 
