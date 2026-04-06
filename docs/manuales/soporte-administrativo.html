@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -372,7 +372,7 @@
         El presente documento describe el soporte administrativo del sistema <strong>CRM CenthriX</strong>, una plataforma integral de gestión logística, transporte y almacenamiento desarrollada para <strong>ISTHO S.A.S.</strong> (Centro Logístico Industrial del Norte), ubicada en Girardota, Antioquia, Colombia.
       </p>
       <p>
-        CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración bidireccional con el sistema WMS Copérnico. El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.
+        CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración bidireccional con el sistema WMS Centhrix. El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.
       </p>
       <p>
         El CRM reemplaza procesos manuales y hojas de cálculo, proporcionando trazabilidad completa, auditoría en tiempo real y reportes automatizados para la toma de decisiones.
@@ -403,7 +403,7 @@
       <h3>3.2 Control de Inventario</h3>
       <ul>
         <li>Gestionar el inventario por cliente con trazabilidad a nivel de caja, lote y ubicación.</li>
-        <li>Sincronizar automáticamente entradas, salidas y ajustes desde el WMS Copérnico.</li>
+        <li>Sincronizar automáticamente entradas, salidas y ajustes desde el WMS Centhrix.</li>
         <li>Generar alertas automáticas de stock bajo, agotado y próximo a vencer.</li>
       </ul>
 
@@ -444,7 +444,7 @@
 
       <h3>3.8 Integración WMS</h3>
       <ul>
-        <li>Mantener sincronización bidireccional con WMS Copérnico via API REST.</li>
+        <li>Mantener sincronización bidireccional con WMS Centhrix via API REST.</li>
         <li>Validar dinámicamente estados, tipos de orden y motivos de kardex.</li>
         <li>Proporcionar panel de configuración para gestionar reglas de integración.</li>
       </ul>
@@ -486,7 +486,7 @@
           <tr><th>Sistema</th><th>Tipo</th><th>Protocolo</th><th>Descripción</th></tr>
         </thead>
         <tbody>
-          <tr><td>WMS Copérnico</td><td>Bidireccional</td><td>API REST + API Key</td><td>Sincronización de productos, entradas, salidas y kardex</td></tr>
+          <tr><td>WMS Centhrix</td><td>Bidireccional</td><td>API REST + API Key</td><td>Sincronización de productos, entradas, salidas y kardex</td></tr>
           <tr><td>Resend</td><td>Saliente</td><td>API HTTP</td><td>Envío de emails transaccionales y reportes</td></tr>
           <tr><td>Socket.io</td><td>Interno</td><td>WebSocket</td><td>Notificaciones en tiempo real</td></tr>
         </tbody>

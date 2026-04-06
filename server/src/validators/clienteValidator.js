@@ -73,46 +73,59 @@ const crearClienteValidator = [
     .isLength({ max: 50 }).withMessage('El teléfono no puede exceder 50 caracteres'),
   
   body('email')
-    .optional()
+    .optional({ nullable: true })
     .trim()
-    .isEmail().withMessage('Debe ser un email válido')
-    .normalizeEmail(),
-  
+    .custom((value) => {
+      if (!value || value === '') return true;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) throw new Error('Debe ser un email válido');
+      return true;
+    }),
+
   body('sitio_web')
-    .optional()
+    .optional({ nullable: true })
     .trim()
-    .isURL().withMessage('Debe ser una URL válida'),
-  
+    .custom((value) => {
+      if (!value || value === '') return true;
+      try { new URL(value); return true; }
+      catch { throw new Error('Debe ser una URL válida'); }
+    }),
+
   body('tipo_cliente')
-    .optional()
-    .isIn(['corporativo', 'pyme', 'persona_natural']).withMessage('Tipo de cliente no válido'),
-  
+    .optional({ nullable: true })
+    .custom((value) => {
+      if (!value || value === '') return true;
+      const valid = ['corporativo', 'pyme', 'persona_natural'];
+      if (!valid.includes(value)) throw new Error('Tipo de cliente no válido');
+      return true;
+    }),
+
   body('sector')
     .optional()
     .trim()
     .isLength({ max: 100 }).withMessage('El sector no puede exceder 100 caracteres'),
-  
+
   body('estado')
-    .optional()
-    .isIn(['activo', 'inactivo', 'suspendido']).withMessage('Estado no válido'),
-  
+    .optional({ nullable: true })
+    .custom((value) => {
+      if (!value || value === '') return true;
+      const valid = ['activo', 'inactivo', 'suspendido'];
+      if (!valid.includes(value)) throw new Error('Estado no válido');
+      return true;
+    }),
+
   body('fecha_inicio_relacion')
-    .optional()
-    .isISO8601().withMessage('Fecha de inicio debe ser válida (YYYY-MM-DD)'),
-  
-  body('credito_aprobado')
-    .optional()
-    .isFloat({ min: 0 }).withMessage('El crédito aprobado debe ser un número positivo'),
-  
+    .optional({ nullable: true })
+    .custom((value) => {
+      if (!value || value === '') return true;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error('Fecha debe ser válida (YYYY-MM-DD)');
+      return true;
+    }),
+
   body('notas')
     .optional()
     .trim()
     .isLength({ max: 2000 }).withMessage('Las notas no pueden exceder 2000 caracteres'),
-  
-  body('codigo_wms')
-    .optional()
-    .trim()
-    .isLength({ max: 50 }).withMessage('El código WMS no puede exceder 50 caracteres'),
   
   validar
 ];
@@ -197,19 +210,10 @@ const actualizarClienteValidator = [
       return true;
     }),
   
-  body('credito_aprobado')
-    .optional()
-    .isFloat({ min: 0 }).withMessage('El crédito aprobado debe ser un número positivo'),
-  
   body('notas')
     .optional()
     .trim()
     .isLength({ max: 2000 }).withMessage('Las notas no pueden exceder 2000 caracteres'),
-  
-  body('codigo_wms')
-    .optional()
-    .trim()
-    .isLength({ max: 50 }).withMessage('El código WMS no puede exceder 50 caracteres'),
   
   validar
 ];

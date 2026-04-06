@@ -1,0 +1,320 @@
+{
+  "info": {
+    "name": "WMS CenthriX — ISTHO CRM",
+    "description": "Colección de Postman para simular el WMS Centhrix enviando datos al CRM CenthriX.\n\n## Configuración\n1. Importar también el archivo de entorno `WMS_CenthriX.postman_environment.json`\n2. Seleccionar el entorno `WMS CenthriX (Local)` o `WMS CenthriX (Railway)`\n3. Ejecutar los requests en orden: Health Check → Productos → Entrada → Salida → Kardex",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-WMS-API-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{wms_api_key}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/wms/sync/status",
+          "host": ["{{base_url}}"],
+          "path": ["wms", "sync", "status"]
+        },
+        "description": "Verifica que la API WMS esté activa y respondiendo."
+      },
+      "response": [
+        {
+          "name": "200 OK — API activa",
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"success\": true,\n  \"message\": \"WMS Sync API activa\",\n  \"timestamp\": \"2026-04-04T00:00:00.000Z\",\n  \"version\": \"1.0.0\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "2. Sincronizar Productos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nit\": \"{{nit_cliente}}\",\n  \"productos\": [\n    {\n      \"codigo\": \"PRD-001\",\n      \"descripcion\": \"Caja cartón corrugado 60x40\",\n      \"unidad_medida\": \"UND\"\n    },\n    {\n      \"codigo\": \"PRD-002\",\n      \"descripcion\": \"Paleta madera 120x80\",\n      \"unidad_medida\": \"UND\"\n    },\n    {\n      \"codigo\": \"PRD-003\",\n      \"descripcion\": \"Bolsa polietileno 50x70\",\n      \"unidad_medida\": \"UND\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/wms/sync/productos",
+          "host": ["{{base_url}}"],
+          "path": ["wms", "sync", "productos"]
+        },
+        "description": "Sincroniza el catálogo de productos del cliente. Operación upsert por SKU — es seguro ejecutar múltiples veces."
+      },
+      "response": [
+        {
+          "name": "200 OK — Productos sincronizados",
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"success\": true,\n  \"message\": \"Productos sincronizados: 3 creados, 0 actualizados\",\n  \"data\": {\n    \"creados\": 3,\n    \"actualizados\": 0,\n    \"errores\": [],\n    \"total\": 3\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "3. Entrada (CO — Recepción)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nit\": \"{{nit_cliente}}\",\n  \"documento_origen\": \"REM-{{$randomInt}}\",\n  \"fecha_ingreso\": \"2026-04-04\",\n  \"tipo_documento\": \"Remisión\",\n  \"observaciones\": \"Remisión de prueba desde Postman\",\n  \"detalles\": [\n    {\n      \"producto\": \"PRD-001\",\n      \"cantidad\": 100,\n      \"descripcion\": \"Caja cartón corrugado 60x40\",\n      \"unidad_medida\": \"UND\",\n      \"lote\": \"LOT-2026-A\",\n      \"lote_externo\": \"PROV-LOT-001\",\n      \"fecha_vencimiento\": \"2027-04-04\",\n      \"caja\": \"CJ-000001\",\n      \"ubicacion\": \"A-01-01\",\n      \"peso\": 25.5\n    },\n    {\n      \"producto\": \"PRD-002\",\n      \"cantidad\": 50,\n      \"descripcion\": \"Paleta madera 120x80\",\n      \"unidad_medida\": \"UND\",\n      \"lote\": \"LOT-2026-B\",\n      \"caja\": \"CJ-000002\",\n      \"ubicacion\": \"B-02-01\",\n      \"peso\": 40.0\n    },\n    {\n      \"producto\": \"PRD-003\",\n      \"cantidad\": 200,\n      \"unidad_medida\": \"UND\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/wms/sync/entradas",
+          "host": ["{{base_url}}"],
+          "path": ["wms", "sync", "entradas"]
+        },
+        "description": "Crea una operación de entrada (tipo CO). Cada llamada debe usar un `documento_origen` único para evitar el error de duplicado.\n\n`{{$randomInt}}` de Postman genera un número aleatorio automáticamente."
+      },
+      "response": [
+        {
+          "name": "201 Created — Entrada creada",
+          "status": "Created",
+          "code": 201,
+          "body": "{\n  \"success\": true,\n  \"message\": \"Entrada OP-2026-0001 creada exitosamente\",\n  \"data\": {\n    \"operacion_id\": 1,\n    \"numero_operacion\": \"OP-2026-0001\",\n    \"cliente_id\": 1,\n    \"cliente\": \"EMPRESA XYZ S.A.S.\",\n    \"documento_wms\": \"REM-12345\",\n    \"total_lineas\": 3,\n    \"total_unidades\": 350,\n    \"estado\": \"pendiente\"\n  }\n}"
+        },
+        {
+          "name": "400 Error — Documento duplicado",
+          "status": "Bad Request",
+          "code": 400,
+          "body": "{\n  \"success\": false,\n  \"message\": \"Ya existe una operación con documento REM-12345\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "4. Salida (PK — Picking/Despacho)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nit\": \"{{nit_cliente}}\",\n  \"numero_picking\": \"PK-{{$randomInt}}\",\n  \"documento_wms\": \"DES-{{$randomInt}}\",\n  \"sucursal_entrega\": \"MDE-001\",\n  \"ciudad_destino\": \"Medellín\",\n  \"observaciones\": \"Pedido urgente - despachar hoy\",\n  \"detalles\": [\n    {\n      \"producto\": \"PRD-001\",\n      \"cantidad\": 30,\n      \"unidad_medida\": \"UND\",\n      \"lote_interno\": \"LOT-2026-A\",\n      \"caja\": \"CJ-000001\",\n      \"pedido\": \"PED-001\",\n      \"ubicacion\": \"A-01-01\",\n      \"peso\": 7.5\n    },\n    {\n      \"producto\": \"PRD-002\",\n      \"cantidad\": 20,\n      \"unidad_medida\": \"UND\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/wms/sync/salidas",
+          "host": ["{{base_url}}"],
+          "path": ["wms", "sync", "salidas"]
+        },
+        "description": "Crea una operación de salida (tipo PK). El stock se reduce. Si el producto no existe en inventario, la línea se omite silenciosamente."
+      },
+      "response": [
+        {
+          "name": "201 Created — Salida creada",
+          "status": "Created",
+          "code": 201,
+          "body": "{\n  \"success\": true,\n  \"message\": \"Salida OP-2026-0002 creada exitosamente (Picking: PK-67890)\",\n  \"data\": {\n    \"operacion_id\": 2,\n    \"numero_operacion\": \"OP-2026-0002\",\n    \"cliente_id\": 1,\n    \"cliente\": \"EMPRESA XYZ S.A.S.\",\n    \"numero_picking\": \"PK-67890\",\n    \"total_lineas\": 2,\n    \"total_unidades\": 50,\n    \"estado\": \"pendiente\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "5. Kardex (CR — Ajuste de Inventario)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nit\": \"{{nit_cliente}}\",\n  \"documento_origen\": \"KDC-{{$randomInt}}\",\n  \"motivo\": \"Ajuste por conteo físico\",\n  \"fecha_ingreso\": \"2026-04-04\",\n  \"observaciones\": \"Resultado de inventario cíclico zona A\",\n  \"detalles\": [\n    {\n      \"producto\": \"PRD-001\",\n      \"cantidad\": 10,\n      \"lote\": \"LOT-2026-A\",\n      \"descripcion\": \"Ajuste positivo +10\"\n    },\n    {\n      \"producto\": \"PRD-002\",\n      \"cantidad\": -5,\n      \"descripcion\": \"Ajuste negativo -5\"\n    },\n    {\n      \"producto\": \"PRD-003\",\n      \"cantidad\": 25,\n      \"unidad_medida\": \"UND\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/wms/sync/kardex",
+          "host": ["{{base_url}}"],
+          "path": ["wms", "sync", "kardex"]
+        },
+        "description": "Crea un ajuste de inventario (tipo CR).\n- `cantidad` positiva → suma al stock\n- `cantidad` negativa → resta al stock\n- El SKU DEBE existir previamente en inventario (ejecutar Sincronizar Productos primero)"
+      },
+      "response": [
+        {
+          "name": "201 Created — Kardex creado",
+          "status": "Created",
+          "code": 201,
+          "body": "{\n  \"success\": true,\n  \"message\": \"Kardex OP-2026-0003 creado exitosamente (Motivo: Ajuste por conteo físico)\",\n  \"data\": {\n    \"operacion_id\": 3,\n    \"numero_operacion\": \"OP-2026-0003\",\n    \"cliente_id\": 1,\n    \"cliente\": \"EMPRESA XYZ S.A.S.\",\n    \"documento_wms\": \"KDC-11111\",\n    \"motivo\": \"Ajuste por conteo físico\",\n    \"total_lineas\": 3,\n    \"total_unidades\": 40,\n    \"lineas_omitidas\": 0,\n    \"estado\": \"pendiente\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "— Errores / Casos de prueba negativos",
+      "item": [
+        {
+          "name": "Error: API Key ausente",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/wms/sync/status",
+              "host": ["{{base_url}}"],
+              "path": ["wms", "sync", "status"]
+            },
+            "description": "Prueba sin el header X-WMS-API-Key. Debe retornar 401."
+          }
+        },
+        {
+          "name": "Error: API Key inválida",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-WMS-API-Key",
+                "value": "clave-incorrecta-12345"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/wms/sync/status",
+              "host": ["{{base_url}}"],
+              "path": ["wms", "sync", "status"]
+            },
+            "description": "Prueba con API Key incorrecta. Debe retornar 403."
+          }
+        },
+        {
+          "name": "Error: NIT cliente no existe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nit\": \"999999999-0\",\n  \"productos\": [\n    {\n      \"codigo\": \"PRD-001\",\n      \"descripcion\": \"Producto de prueba\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/wms/sync/productos",
+              "host": ["{{base_url}}"],
+              "path": ["wms", "sync", "productos"]
+            },
+            "description": "NIT que no existe en la BD. Debe retornar 400 con mensaje de cliente no encontrado."
+          }
+        },
+        {
+          "name": "Error: Entrada con documento duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nit\": \"{{nit_cliente}}\",\n  \"documento_origen\": \"REM-DUPLICADO-001\",\n  \"detalles\": [\n    {\n      \"producto\": \"PRD-001\",\n      \"cantidad\": 10\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/wms/sync/entradas",
+              "host": ["{{base_url}}"],
+              "path": ["wms", "sync", "entradas"]
+            },
+            "description": "Ejecutar este request DOS veces. La segunda vez debe retornar 400 por documento duplicado."
+          }
+        },
+        {
+          "name": "Error: Kardex sin motivo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nit\": \"{{nit_cliente}}\",\n  \"documento_origen\": \"KDC-SIN-MOTIVO\",\n  \"detalles\": [\n    {\n      \"producto\": \"PRD-001\",\n      \"cantidad\": 5\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/wms/sync/kardex",
+              "host": ["{{base_url}}"],
+              "path": ["wms", "sync", "kardex"]
+            },
+            "description": "Kardex sin campo `motivo`. Debe retornar 400 con mensaje de validación."
+          }
+        }
+      ]
+    }
+  ]
+}

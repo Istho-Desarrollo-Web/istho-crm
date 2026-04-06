@@ -1,7 +1,7 @@
-/**
+﻿/**
  * ISTHO CRM - Servicio de Sincronización WMS
  *
- * Mapea datos del WMS Copérnico a los modelos del CRM.
+ * Mapea datos del WMS Centhrix a los modelos del CRM.
  * Asocia todo por NIT del cliente.
  *
  * Flujos:

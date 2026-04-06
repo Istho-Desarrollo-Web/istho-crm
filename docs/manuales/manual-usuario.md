@@ -1,4 +1,4 @@
-# Manual de Usuario — CRM CenthriX
+﻿# Manual de Usuario — CRM CenthriX
 
 ## ISTHO S.A.S.
 
@@ -376,7 +376,7 @@ Para acceder al inventario:
 | Stock Minimo | Numero | No | Cantidad minima para generar alerta de stock bajo |
 | Descripcion | Texto largo | No | Descripcion detallada del producto |
 
-> **Nota:** Los productos se sincronizan automaticamente desde el WMS Copernico. Los productos creados manualmente estan disponibles para operaciones internas.
+> **Nota:** Los productos se sincronizan automaticamente desde el WMS Centhrix. Los productos creados manualmente estan disponibles para operaciones internas.
 
 ### 4.2 Detalle de Producto
 
@@ -941,7 +941,7 @@ Los reportes programados permiten recibir reportes automaticos por correo electr
 
 ## 11. Configuracion WMS (Solo Admin)
 
-Este modulo permite gestionar la integracion con el sistema WMS Copernico. Solo es accesible para el rol **admin**.
+Este modulo permite gestionar la integracion con el sistema WMS Centhrix. Solo es accesible para el rol **admin**.
 
 Para acceder:
 1. En el menu lateral, navegue a **"Configuracion" > "Configuracion WMS"**.

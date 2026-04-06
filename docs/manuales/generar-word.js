@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Generador de documentos Word (.docx) con branding CenthriX
  *
  * Genera:
@@ -112,7 +112,7 @@ async function generarSoporteAdministrativo() {
         // 1. Introducción
         heading('1. Introducción'),
         para('El presente documento describe el soporte administrativo del sistema CRM CenthriX, una plataforma integral de gestión logística, transporte y almacenamiento desarrollada para ISTHO S.A.S. (Centro Logístico Industrial del Norte), ubicada en Girardota, Antioquia, Colombia.'),
-        para('CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración bidireccional con el sistema WMS Copérnico.'),
+        para('CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración bidireccional con el sistema WMS Centhrix.'),
         para('El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.'),
         divider(),
 
@@ -128,7 +128,7 @@ async function generarSoporteAdministrativo() {
         bullet('Proporcionar un portal de consulta para que los clientes accedan a su inventario y operaciones en tiempo real.'),
         heading('3.2 Control de Inventario', HeadingLevel.HEADING_3),
         bullet('Gestionar el inventario por cliente con trazabilidad a nivel de caja, lote y ubicación.'),
-        bullet('Sincronizar automáticamente entradas, salidas y ajustes desde el WMS Copérnico.'),
+        bullet('Sincronizar automáticamente entradas, salidas y ajustes desde el WMS Centhrix.'),
         bullet('Generar alertas automáticas de stock bajo, agotado y próximo a vencer.'),
         heading('3.3 Operaciones de Bodega', HeadingLevel.HEADING_3),
         bullet('Registrar y auditar todas las operaciones de ingreso (CO), salida/picking (PK) y ajustes de kardex (CR).'),
@@ -151,7 +151,7 @@ async function generarSoporteAdministrativo() {
         bullet('Controlar acceso granular por módulo y acción mediante sistema de permisos.'),
         bullet('Registrar todas las acciones del sistema en log de auditoría.'),
         heading('3.8 Integración WMS', HeadingLevel.HEADING_3),
-        bullet('Mantener sincronización bidireccional con WMS Copérnico via API REST.'),
+        bullet('Mantener sincronización bidireccional con WMS Centhrix via API REST.'),
         bullet('Validar dinámicamente estados, tipos de orden y motivos de kardex.'),
         bullet('Proporcionar panel de configuración para gestionar reglas de integración.'),
         divider(),

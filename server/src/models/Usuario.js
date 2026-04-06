@@ -89,7 +89,7 @@ module.exports = (sequelize) => {
       validate: {
         notEmpty: { msg: 'El username es requerido' },
         len: { args: [3, 50], msg: 'El username debe tener entre 3 y 50 caracteres' },
-        isAlphanumeric: { msg: 'El username solo puede contener letras y números' }
+        is: { args: /^[A-Za-z0-9._-]+$/, msg: 'El username solo puede contener letras, números, puntos, guiones y guiones bajos' }
       }
     },
     

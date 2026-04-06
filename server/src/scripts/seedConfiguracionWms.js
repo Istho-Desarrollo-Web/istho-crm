@@ -1,7 +1,7 @@
-/**
+﻿/**
  * ISTHO CRM - Seed de Configuración WMS
  *
- * Crea la configuración inicial para la integración WMS Copérnico:
+ * Crea la configuración inicial para la integración WMS Centhrix:
  * - Motivos de Kardex permitidos
  * - Mapeo de tipos de orden (fallback)
  * - Estados válidos para procesar órdenes

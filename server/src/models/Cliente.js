@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Modelo Cliente
  * 
  * Gestiona los clientes corporativos de ISTHO.
@@ -109,12 +109,6 @@ module.exports = (sequelize) => {
       allowNull: true
     },
     
-    credito_aprobado: {
-      type: DataTypes.DECIMAL(15, 2),
-      defaultValue: 0,
-      comment: 'Límite de crédito en COP'
-    },
-    
     notas: {
       type: DataTypes.TEXT,
       allowNull: true
@@ -126,13 +120,6 @@ module.exports = (sequelize) => {
       comment: 'URL del logo del cliente'
     },
 
-    // Campos para integración WMS
-    codigo_wms: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-      comment: 'Código del cliente en WMS Copérnico'
-    },
-    
     ultima_sincronizacion_wms: {
       type: DataTypes.DATE,
       allowNull: true
@@ -154,13 +141,13 @@ module.exports = (sequelize) => {
     
 hooks: {
   // Generar código de cliente automáticamente
-  beforeCreate: async (cliente, options) => { 
+  beforeCreate: async (cliente, options) => {
     if (!cliente.codigo_cliente) {
-      // Usar el modelo directamente desde la instancia
       const Cliente = cliente.constructor;
       const ultimo = await Cliente.findOne({
         order: [['id', 'DESC']],
-        paranoid: false
+        paranoid: false,
+        transaction: options.transaction || null
       });
       const siguienteNum = ultimo ? ultimo.id + 1 : 1;
       cliente.codigo_cliente = `CLI-${String(siguienteNum).padStart(4, '0')}`;

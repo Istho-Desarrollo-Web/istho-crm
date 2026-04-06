@@ -1,4 +1,4 @@
-# Servicios Externos — ISTHO CRM (CenthriX)
+﻿# Servicios Externos — ISTHO CRM (CenthriX)
 
 Todos los servicios que el sistema consume externamente, su propósito y variables de entorno asociadas.
 
@@ -137,7 +137,7 @@ BACKUP_API_KEY         # Debe coincidir con el secret de GitHub
 
 ---
 
-## 7. WMS Copérnico
+## 7. WMS Centhrix
 **Tipo:** Sistema de Gestión de Almacenes (WMS) externo
 **Integración:** Webhook entrante — Copérnico envía datos al CRM
 
@@ -162,5 +162,5 @@ WMS_API_KEY    # Clave que Copérnico incluye en cada llamada
 | Resend | Free | $0 |
 | Backblaze B2 | Free | $0 |
 | GitHub Actions | Free | $0 |
-| WMS Copérnico | Proveedor externo | N/A |
+| WMS Centhrix | Proveedor externo | N/A |
 | **Total** | | **~$20 USD/mes** |

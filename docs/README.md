@@ -1,8 +1,8 @@
-# ISTHO CRM - Sistema de Gestión Logística e Inventario
+﻿# ISTHO CRM - Sistema de Gestión Logística e Inventario
 
 ## Descripción General
 
-**ISTHO CRM** es un sistema integral de gestión logística y de inventario desarrollado para **ISTHO S.A.S.** (Centro Logístico Industrial del Norte), ubicado en Girardota, Antioquia, Colombia. El sistema permite la administración completa de clientes, inventario, operaciones de bodega, despachos, auditorías y la integración bidireccional con el sistema WMS Copérnico.
+**ISTHO CRM** es un sistema integral de gestión logística y de inventario desarrollado para **ISTHO S.A.S.** (Centro Logístico Industrial del Norte), ubicado en Girardota, Antioquia, Colombia. El sistema permite la administración completa de clientes, inventario, operaciones de bodega, despachos, auditorías y la integración bidireccional con el sistema WMS Centhrix.
 
 ## Stack Tecnológico
 

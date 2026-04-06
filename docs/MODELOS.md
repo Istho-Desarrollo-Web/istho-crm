@@ -1,4 +1,4 @@
-# Modelos de Base de Datos - ISTHO CRM
+﻿# Modelos de Base de Datos - ISTHO CRM
 
 ## Diagrama de Relaciones
 
@@ -154,7 +154,7 @@
 | `credito_aprobado` | DECIMAL(15,2) | | Cupo de crédito |
 | `logo_url` | STRING(500) | | Ruta al logo |
 | `notas` | TEXT | | |
-| `codigo_wms` | STRING(50) | | Código en WMS Copérnico |
+| `codigo_wms` | STRING(50) | | Código en WMS Centhrix |
 | `ultima_sincronizacion_wms` | DATE | | Última sync con WMS |
 
 **Índices:** codigo_cliente, nit, razon_social, estado, tipo_cliente, ciudad
@@ -214,7 +214,7 @@
 | `costo_unitario` | DECIMAL(12,2) | | |
 | `valor_total` | VIRTUAL | | `cantidad * costo_unitario` |
 | `estado` | ENUM | disponible, reservado, dañado, cuarentena, vencido | |
-| `codigo_wms` | STRING(50) | | Código en WMS Copérnico |
+| `codigo_wms` | STRING(50) | | Código en WMS Centhrix |
 | `ultima_sincronizacion_wms` | DATE | | |
 | `notas` | TEXT | | |
 | `alertas_silenciadas` | JSON | | `{ "agotado": "2026-03-11", ... }` |

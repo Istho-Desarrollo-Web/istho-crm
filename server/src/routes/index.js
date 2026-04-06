@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Router Principal
  * 
  * @author Coordinación TI - ISTHO S.A.S.
@@ -40,7 +40,7 @@ router.get('/', (req, res) => {
       auditorias: '/auditorias - Auditorías WMS (entradas y salidas)',
       reportes: '/reportes - Reportes y exportación',
       notificaciones: '/notificaciones - Notificaciones',
-      wms: '/wms/sync - Sincronización con WMS Copérnico',
+      wms: '/wms/sync - Sincronización con WMS Centhrix',
       vehiculos: '/vehiculos - Gestión de vehículos',
       cajaMenor: '/cajas-menores - Gestión de cajas menores',
       viajes: '/viajes - Registro de viajes',

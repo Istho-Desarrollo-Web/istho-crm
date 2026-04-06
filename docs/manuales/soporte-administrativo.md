@@ -1,4 +1,4 @@
-# Documento de Soporte Administrativo
+﻿# Documento de Soporte Administrativo
 ## CRM CenthriX — ISTHO S.A.S.
 
 **Versión:** 1.0.0
@@ -12,7 +12,7 @@
 
 El presente documento describe el soporte administrativo del sistema **CRM CenthriX**, una plataforma integral de gestión logística, transporte y almacenamiento desarrollada para **ISTHO S.A.S.** (Centro Logístico Industrial del Norte), ubicada en Girardota, Antioquia, Colombia.
 
-CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración bidireccional con el sistema WMS Copérnico. El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.
+CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración bidireccional con el sistema WMS Centhrix. El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.
 
 El CRM reemplaza procesos manuales y hojas de cálculo, proporcionando trazabilidad completa, auditoría en tiempo real y reportes automatizados para la toma de decisiones.
 
@@ -32,7 +32,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 
 ### 3.2 Control de Inventario
 - Gestionar el inventario por cliente con trazabilidad a nivel de caja, lote y ubicación.
-- Sincronizar automáticamente entradas, salidas y ajustes desde el WMS Copérnico.
+- Sincronizar automáticamente entradas, salidas y ajustes desde el WMS Centhrix.
 - Generar alertas automáticas de stock bajo, agotado y próximo a vencer.
 
 ### 3.3 Operaciones de Bodega
@@ -61,7 +61,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 - Registrar todas las acciones del sistema en log de auditoría.
 
 ### 3.8 Integración WMS
-- Mantener sincronización bidireccional con WMS Copérnico via API REST.
+- Mantener sincronización bidireccional con WMS Centhrix via API REST.
 - Validar dinámicamente estados, tipos de orden y motivos de kardex.
 - Proporcionar panel de configuración para gestionar reglas de integración.
 
@@ -95,7 +95,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 
 | Sistema | Tipo | Protocolo | Descripción |
 |---------|------|-----------|-------------|
-| WMS Copérnico | Bidireccional | API REST + API Key | Sincronización de productos, entradas, salidas y kardex |
+| WMS Centhrix | Bidireccional | API REST + API Key | Sincronización de productos, entradas, salidas y kardex |
 | Resend | Saliente | API HTTP | Envío de emails transaccionales y reportes |
 | Socket.io | Interno | WebSocket | Notificaciones en tiempo real |
 

@@ -1,15 +1,15 @@
-# Flujos de Negocio - ISTHO CRM
+﻿# Flujos de Negocio - ISTHO CRM
 
 > **Nota:** Para la especificación técnica completa con todos los campos, schemas request/response y reglas de validación, ver [WMS_API_SPEC.md](WMS_API_SPEC.md).
 
 ## 1. Sincronización WMS (Copérnico)
 
-El sistema WMS Copérnico envía datos a ISTHO CRM mediante una API REST autenticada con API Key (`X-WMS-API-Key`).
+El sistema WMS Centhrix envía datos a ISTHO CRM mediante una API REST autenticada con API Key (`X-WMS-API-Key`).
 
 ### 1.1 Flujo de Sincronización de Productos
 
 ```
-WMS Copérnico                              ISTHO CRM
+WMS Centhrix                              ISTHO CRM
      │                                         │
      │  POST /wms/sync/productos               │
      │  Header: X-WMS-API-Key                  │
@@ -71,7 +71,7 @@ WMS Centhrix                               ISTHO CRM
 ### 1.3 Flujo de Salida (PK - Picking/Despacho)
 
 ```
-WMS Copérnico                              ISTHO CRM
+WMS Centhrix                              ISTHO CRM
      │                                         │
      │  POST /wms/sync/salidas                 │
      │  Body: { nit, numero_picking,           │
@@ -102,7 +102,7 @@ WMS Copérnico                              ISTHO CRM
 ### 1.4 Flujo de Kardex (CR - Ajuste de Inventario)
 
 ```
-WMS Copérnico                              ISTHO CRM
+WMS Centhrix                              ISTHO CRM
      │                                         │
      │  POST /wms/sync/kardex                  │
      │  Body: { nit, documento_origen,         │

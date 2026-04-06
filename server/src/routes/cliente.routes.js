@@ -60,6 +60,13 @@ router.use('/:clienteId/usuarios', usuarioClienteRoutes);
 router.get('/stats', requiereRolMinimo('operador'), clienteController.estadisticas);
 
 /**
+ * @route   GET /clientes/plantilla-importacion
+ * @desc    Descargar plantilla Excel para importación de clientes
+ * @access  Privado (operador o superior)
+ */
+router.get('/plantilla-importacion', noClientes, requiereRolMinimo('operador'), clienteController.descargarPlantillaImportacion);
+
+/**
  * @route   GET /clientes/:id
  * @desc    Obtener un cliente por ID
  * @access  Privado

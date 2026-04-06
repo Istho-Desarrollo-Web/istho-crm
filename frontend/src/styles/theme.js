@@ -1,6 +1,6 @@
-/**
+﻿/**
  * ISTHO CRM - Configuración del Tema
- * Basado en diseño del WMS Copérnico para consistencia visual
+ * Basado en diseño del WMS Centhrix para consistencia visual
  * 
  * @author Coordinación TI
  * @date Enero 2026

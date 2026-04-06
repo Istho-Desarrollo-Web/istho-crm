@@ -1,7 +1,7 @@
-/**
+﻿/**
  * ISTHO CRM - Controlador de Sincronización WMS
  *
- * Endpoints para recibir datos del WMS Copérnico.
+ * Endpoints para recibir datos del WMS Centhrix.
  * Autenticación por API Key (header X-WMS-API-Key).
  *
  * @author Coordinación TI - ISTHO S.A.S.
@@ -37,7 +37,7 @@ const syncProductos = async (req, res) => {
       registro_id: null,
       accion: 'crear',
       usuario_id: null,
-      usuario_nombre: 'WMS Copérnico',
+      usuario_nombre: 'WMS Centhrix',
       datos_nuevos: { creados: resultado.creados, actualizados: resultado.actualizados, total: resultado.total },
       ip_address: getClientIP(req),
       descripcion: `Sync WMS productos: ${resultado.creados} creados, ${resultado.actualizados} actualizados`
@@ -84,7 +84,7 @@ const syncEntrada = async (req, res) => {
       registro_id: resultado.id || null,
       accion: 'crear',
       usuario_id: null,
-      usuario_nombre: 'WMS Copérnico',
+      usuario_nombre: 'WMS Centhrix',
       datos_nuevos: { numero_operacion: resultado.numero_operacion, documento_origen: req.body.documento_origen, tipo_documento: req.body.tipo_documento },
       ip_address: getClientIP(req),
       descripcion: `Sync WMS entrada: ${resultado.numero_operacion} (doc: ${req.body.documento_origen || 'N/A'})`
@@ -141,7 +141,7 @@ const syncSalida = async (req, res) => {
       registro_id: resultado.id || null,
       accion: 'crear',
       usuario_id: null,
-      usuario_nombre: 'WMS Copérnico',
+      usuario_nombre: 'WMS Centhrix',
       datos_nuevos: { numero_operacion: resultado.numero_operacion, numero_picking: resultado.numero_picking, sucursal_entrega: req.body.sucursal_entrega },
       ip_address: getClientIP(req),
       descripcion: `Sync WMS salida: ${resultado.numero_operacion} (picking: ${resultado.numero_picking || 'N/A'})`
@@ -195,7 +195,7 @@ const syncKardex = async (req, res) => {
       registro_id: resultado.id || null,
       accion: 'crear',
       usuario_id: null,
-      usuario_nombre: 'WMS Copérnico',
+      usuario_nombre: 'WMS Centhrix',
       datos_nuevos: { numero_operacion: resultado.numero_operacion, motivo: resultado.motivo, documento_origen: req.body.documento_origen },
       ip_address: getClientIP(req),
       descripcion: `Sync WMS kardex: ${resultado.numero_operacion} (motivo: ${resultado.motivo})`

@@ -1,6 +1,6 @@
-# Especificación API WMS — ISTHO CRM (CenthriX)
+﻿# Especificación API WMS — ISTHO CRM (CenthriX)
 
-Documentación técnica completa de la API de sincronización con WMS Copérnico.
+Documentación técnica completa de la API de sincronización con WMS Centhrix.
 
 ## Autenticación
 
@@ -455,7 +455,7 @@ Cuando se recibe un producto en entrada/salida, la descripción se resuelve en e
 | `producto` | STRING | Nombre del producto |
 | `cantidad` | INTEGER | Stock actual (min: 0) |
 | `unidad_medida` | STRING | Default: `"UND"` |
-| `codigo_wms` | STRING | Código en WMS Copérnico |
+| `codigo_wms` | STRING | Código en WMS Centhrix |
 | `estado` | ENUM | `disponible`, `reservado`, `dañado`, `cuarentena`, `vencido` |
 | `ultima_sincronizacion_wms` | DATE | Timestamp de última sync |
 

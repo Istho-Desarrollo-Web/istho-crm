@@ -1,7 +1,7 @@
-/**
+﻿/**
  * ISTHO CRM - Script de Simulación WMS: Día Típico de Operación
  *
- * Simula un día completo de operación logística con el WMS Copérnico:
+ * Simula un día completo de operación logística con el WMS Centhrix:
  *
  *  JORNADA MAÑANA (7:00 - 12:00)
  *   1. Health check del API

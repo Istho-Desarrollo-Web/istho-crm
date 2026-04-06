@@ -1,7 +1,7 @@
-/**
+﻿/**
  * ISTHO CRM - Modelo ConfiguracionWms
  *
- * Configuración dinámica para la integración WMS Copérnico.
+ * Configuración dinámica para la integración WMS Centhrix.
  * Permite al admin gestionar:
  * - Motivos de Kardex permitidos (lista blanca)
  * - Mapeo de tipos de orden (fallback)

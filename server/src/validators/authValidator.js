@@ -58,7 +58,7 @@ const registroValidator = [
     .trim()
     .notEmpty().withMessage('El username es requerido')
     .isLength({ min: 3, max: 50 }).withMessage('El username debe tener entre 3 y 50 caracteres')
-    .isAlphanumeric().withMessage('El username solo puede contener letras y números'),
+    .matches(/^[A-Za-z0-9._-]+$/).withMessage('El username solo puede contener letras, números, puntos, guiones y guiones bajos'),
   
   body('email')
     .trim()
