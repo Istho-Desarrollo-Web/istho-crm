@@ -237,20 +237,19 @@ const generarPDFInventario = async (inventario, filtros = {}) => {
          .text(`Valor total inventario: $${valorTotal.toLocaleString('es-CO', { minimumFractionDigits: 2 })}`)
          .moveDown();
       
-      const headers = ['SKU', 'Producto', 'Cliente', 'Cantidad', 'Ubicación', 'Vencimiento', 'Estado'];
+      const headers = ['SKU', 'Producto', 'Cliente', 'Cantidad', 'Vencimiento', 'Estado'];
       const rows = inventario.map(item => [
         item.sku,
         (item.producto || '').substring(0, 30),
         (item.cliente?.razon_social || 'N/A').substring(0, 20),
         parseFloat(item.cantidad || 0).toLocaleString('es-CO'),
-        item.ubicacion || '',
         item.fecha_vencimiento ? new Date(item.fecha_vencimiento).toLocaleDateString('es-CO') : '',
         item.estado?.toUpperCase()
       ]);
-      
+
       generarTabla(doc, headers, rows, {
-        anchoColumnas: [80, 180, 120, 70, 70, 80, 80],
-        alineacion: ['left', 'left', 'left', 'right', 'center', 'center', 'center']
+        anchoColumnas: [80, 200, 120, 70, 90, 80],
+        alineacion: ['left', 'left', 'left', 'right', 'center', 'center']
       });
       
       agregarPiePagina(doc, 1);

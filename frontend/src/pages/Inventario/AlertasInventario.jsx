@@ -180,7 +180,7 @@ const AlertaCard = ({ alerta, onView, onAtender, onDescartar, canAtender }) => {
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500 dark:text-slate-400">Stock Actual</span>
               <span className={`font-bold ${stockActual === 0 ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                {stockActual.toLocaleString()} {alerta.unidad_medida || 'UND'}
+                {Number(stockActual).toLocaleString()} {typeof alerta.unidad_medida === 'string' ? alerta.unidad_medida : 'UND'}
               </span>
             </div>
             {stockMinimo > 0 && (
@@ -241,6 +241,7 @@ const AlertasInventario = () => {
     fetchAlertas,
     atenderAlerta,
     descartarAlerta,
+    descartarTodasAlertas,
   } = useInventario({ autoFetchAlertas: true });
 
   const [filters, setFilters] = useState({});
@@ -248,6 +249,7 @@ const AlertasInventario = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [atenderModal, setAtenderModal] = useState({ isOpen: false, alerta: null });
   const [descartarModal, setDescartarModal] = useState({ isOpen: false, alerta: null });
+  const [descartarTodasModal, setDescartarTodasModal] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
 
   const canAtender = authHasPermission ? authHasPermission('inventario', 'ajustar') : user?.rol === 'admin';
@@ -343,6 +345,19 @@ const AlertasInventario = () => {
     }
   };
 
+  const handleConfirmDescartarTodas = async () => {
+    setFormLoading(true);
+    try {
+      const res = await descartarTodasAlertas();
+      warning(res.message || 'Alertas descartadas');
+      setDescartarTodasModal(false);
+    } catch (err) {
+      notifyError(err.message || 'Error al descartar alertas');
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
 
@@ -372,6 +387,17 @@ const AlertasInventario = () => {
               onClick={handleRefresh}
               loading={isRefreshing}
             />
+            {filteredAlertas.length > 0 && (user?.rol === 'admin' || user?.rol === 'supervisor') && (
+              <Button
+                variant="outline"
+                icon={XCircle}
+                onClick={() => setDescartarTodasModal(true)}
+                className="text-red-500 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
+                <span className="hidden sm:inline">Descartar todas</span>
+                <span className="sm:hidden">Descartar</span>
+              </Button>
+            )}
             <Button
               variant={showFilters ? 'secondary' : 'outline'}
               icon={Filter}
@@ -532,6 +558,17 @@ const AlertasInventario = () => {
         message={`¿Estás seguro de descartar la alerta para "${descartarModal.alerta?.producto_nombre || descartarModal.alerta?.nombre || ''}"?`}
         confirmText="Descartar"
         type="warning"
+        loading={formLoading}
+      />
+
+      <ConfirmDialog
+        isOpen={descartarTodasModal}
+        onClose={() => setDescartarTodasModal(false)}
+        onConfirm={handleConfirmDescartarTodas}
+        title="Descartar Todas las Alertas"
+        message={`¿Estás seguro de descartar las ${filteredAlertas.length} alerta${filteredAlertas.length !== 1 ? 's' : ''} visibles? Esta acción silenciará todas las alertas activas y quedará registrada en la auditoría.`}
+        confirmText="Sí, descartar todas"
+        type="danger"
         loading={formLoading}
       />
     </div>

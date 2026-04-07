@@ -2,7 +2,7 @@
 
 > **Nota:** Para la especificación técnica completa con todos los campos, schemas request/response y reglas de validación, ver [WMS_API_SPEC.md](WMS_API_SPEC.md).
 
-## 1. Sincronización WMS (Copérnico)
+## 1. Sincronización WMS (Centhrix)
 
 El sistema WMS Centhrix envía datos a ISTHO CRM mediante una API REST autenticada con API Key (`X-WMS-API-Key`).
 
@@ -619,10 +619,22 @@ Crear Notificación para supervisores
 Mostrar en /inventario/alertas
      │
      ├── Atender: Marcar como gestionada
-     ├── Descartar: Eliminar alerta
-     └── Silenciar: No mostrar por X días
-         (alertas_silenciadas JSON)
+     ├── Descartar (individual): Silencia una alerta → alertas_silenciadas JSON
+     └── Descartar todas (Admin/Supervisor):
+         POST /inventario/alertas/descartar-todas
+         ├── Agrupa IDs por tipo (agotado / bajo_stock / vencimiento)
+         ├── Ejecuta máx. 3 bulk UPDATEs con JSON_SET
+         └── Registra una entrada en Auditoria
 ```
+
+#### Silenciado de alertas (`alertas_silenciadas`)
+
+Campo JSON en `inventario` con timestamps de la última vez que se silenció cada tipo:
+```json
+{ "agotado": "2026-04-07T10:00:00.000Z", "bajo_stock": "2026-04-07T10:00:00.000Z" }
+```
+- Si el campo existe para un tipo, la alerta no se muestra aunque la condición siga activa
+- Se resetea a `NULL` en cada cambio de stock (entrada/salida/ajuste)
 
 ---
 
@@ -797,6 +809,23 @@ El tipo `gastos` soporta filtro por estado en el campo `filtros`:
 
 Requiere permiso `reportes.crear` (configurado en seedRolesPermisos).
 
+### 10.6 Estructura de Tablas Excel
+
+Todos los archivos Excel de reporte usan **tablas nativas de Excel** (`ws.addTable()` de ExcelJS). Cada sección de datos se registra como una tabla nombrada con filtros automáticos, lo que permite ordenar, filtrar por columna y ser reconocida por Excel como tabla estructurada.
+
+| Función | Nombre de tabla |
+|---------|----------------|
+| `exportarOperaciones` | `Operaciones` |
+| `exportarInventario` | `Inventario` |
+| `exportarClientes` | `Clientes` |
+| `exportarDetalleOperacion` | `Detalles` |
+| `exportarViajes` | `Viajes` |
+| `exportarCajasMenores` | `Cajas_Menores` |
+| `exportarMovimientos` | `Movimientos` |
+| `exportarVehiculos` | `Vehiculos` |
+
+**Estilo:** `TableStyleMedium2` con rayas alternas. Los encabezados tienen el color corporativo `azulOscuro` (#0F1023) y texto blanco — aplicados directamente sobre la celda después de `addTable()` para sobreescribir el tema de la tabla.
+
 ---
 
 ## 11. Almacenamiento de Archivos (Cloudinary)
@@ -961,3 +990,76 @@ CRM_API_URL                                        # URL backend Railway + /api/
 BACKUP_API_KEY                                     # Misma que Railway
 RESEND_API_KEY / BACKUP_ALERT_EMAIL / BACKUP_FROM_EMAIL  # Alertas email
 ```
+
+---
+
+## 14. Importación Masiva de Productos
+
+### Descripción
+
+Permite cargar hasta **10.000 productos** desde un archivo Excel (.xlsx) con upsert por clave `(cliente_id, sku)`. Diseñado para la carga histórica inicial desde WMS Centhrix u otras fuentes.
+
+### Flujo
+
+```
+Usuario sube archivo .xlsx (multipart/form-data)
+       │
+       ▼
+Validar formato y tamaño (max 10.000 filas)
+       │
+       ▼
+Leer encabezados fila 1 (normalizar a snake_case, sin tildes)
+       │
+       ▼
+leerCelda() por cada valor:
+  ├── {formula, result} → extrae result
+  ├── {richText: [...]} → concatena textos
+  ├── {text, hyperlink} → extrae text
+  └── valor primitivo  → pasa directo
+       │
+       ▼
+Pre-cargar NITs únicos → buscar clientes en BD (1 query)
+       │
+       ▼
+Por cada fila:
+  ├── Validar obligatorios: nit_cliente, sku, producto
+  ├── Resolver cliente_id desde mapaNit
+  └── Añadir al lote (máx 500 por lote)
+       │
+       ▼
+bulkCreate con updateOnDuplicate por lotes de 500
+  └── Clave upsert: (cliente_id, sku)
+  └── Campos actualizables: producto, descripcion, categoria,
+      unidad_medida, cantidad, stock_minimo, stock_maximo,
+      costo_unitario, codigo_wms
+       │
+       ▼
+commit() → Auditoria.registrar (accion: importar)
+       │
+       ▼
+Respuesta: { creados, actualizados, errores, total }
+```
+
+### Capacidad y rendimiento
+
+| Filas | Lotes | Tiempo aprox. |
+|---|---|---|
+| 500 | 1 | < 1s |
+| 3.000 | 6 | 2-4s |
+| 10.000 | 20 | 8-15s |
+
+### Endpoints
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/inventario/importar` | Sube y procesa el archivo |
+| `GET` | `/inventario/plantilla-importacion` | Descarga plantilla Excel con ejemplos |
+
+### Estrategia para datos históricos WMS
+
+**Recomendación:** usar fecha de corte (cutover date) en lugar de sincronización histórica completa.
+
+- Importar **catálogo actual** (productos + stock presente) vía este endpoint
+- Las operaciones históricas (10.000+ registros) quedan en WMS Centhrix como referencia
+- A partir de la fecha de corte, el CRM recibe operaciones nuevas vía API WMS
+- Evita sobrecarga de BD y mantiene el CRM enfocado en operaciones vigentes

@@ -466,11 +466,23 @@ const useInventario = (options = {}) => {
     const response = await inventarioService.descartarAlerta(alertaId);
 
     if (response.success) {
-      // Remover alerta del listado
       setAlertasState(prev => ({
         ...prev,
         data: prev.data.filter(alerta => alerta.id !== alertaId),
       }));
+    } else {
+      throw new Error(response.message);
+    }
+
+    return response;
+  }, []);
+
+  const descartarTodasAlertas = useCallback(async (params = {}) => {
+    const response = await inventarioService.descartarTodasAlertas(params);
+
+    if (response.success) {
+      // Limpiar todas las alertas del estado local
+      setAlertasState(prev => ({ ...prev, data: [] }));
     } else {
       throw new Error(response.message);
     }
@@ -678,6 +690,7 @@ const useInventario = (options = {}) => {
     fetchAlertas,
     atenderAlerta,
     descartarAlerta,
+    descartarTodasAlertas,
     
     // ═══════════════════════════════════════════════════════════════════════
     // ACCIONES DE STATS

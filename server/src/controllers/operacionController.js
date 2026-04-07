@@ -145,59 +145,33 @@ const reservarStock = async (detalles, clienteId, numeroOperacion, usuarioId, ip
         continue;
       }
       
-      // Calcular disponibilidad
+      // Verificar disponibilidad
       const cantidadActual = parseFloat(inventario.cantidad) || 0;
-      const cantidadReservada = parseFloat(inventario.cantidad_reservada) || 0;
-      const disponible = cantidadActual - cantidadReservada;
       const cantidadSolicitada = parseFloat(detalle.cantidad) || 0;
-      
-      if (cantidadSolicitada > disponible) {
+
+      if (cantidadSolicitada > cantidadActual) {
         errores.push({
           sku: inventario.sku,
           producto: inventario.producto,
-          mensaje: `Stock insuficiente. Disponible: ${disponible}, Solicitado: ${cantidadSolicitada}`
+          mensaje: `Stock insuficiente. Disponible: ${cantidadActual}, Solicitado: ${cantidadSolicitada}`
         });
         continue;
       }
-      
-      const nuevaReserva = cantidadReservada + cantidadSolicitada;
-      
-      // Reservar stock
-      await inventario.update({
-        cantidad_reservada: nuevaReserva
-      }, { transaction });
-      
-      // ════════════════════════════════════════════════════════════════════
-      // ✅ REGISTRAR MOVIMIENTO DE RESERVA
-      // ════════════════════════════════════════════════════════════════════
-      await MovimientoInventario.registrar({
-        inventario_id: inventario.id,
-        usuario_id: usuarioId,
-        tipo: 'reserva',
-        motivo: `Reserva para despacho ${numeroOperacion}`,
-        cantidad: cantidadSolicitada,  // Positivo para reserva
-        stock_anterior: cantidadActual,
-        stock_resultante: cantidadActual,  // Stock no cambia, solo reserva
-        documento_referencia: numeroOperacion,
-        observaciones: `Cantidad reservada: ${cantidadReservada} → ${nuevaReserva}`,
-        ip_address: ipAddress
-      }, { transaction });
       
       reservasRealizadas.push({
         inventario_id: inventario.id,
         sku: inventario.sku,
         cantidad: cantidadSolicitada
       });
-      
+
       // Guardar referencia del inventario en el detalle
       detalle.inventario_id = inventario.id;
-      
-      logger.info('Stock reservado:', {
+
+      logger.info('Stock verificado para despacho:', {
         inventario_id: inventario.id,
         sku: inventario.sku,
-        cantidad_reservada: cantidadSolicitada,
-        disponible_anterior: disponible,
-        disponible_nuevo: disponible - cantidadSolicitada
+        cantidad_disponible: cantidadActual,
+        cantidad_solicitada: cantidadSolicitada
       });
       
     } catch (error) {
@@ -259,36 +233,10 @@ const liberarStockReservado = async (operacionId, numeroOperacion, usuarioId, ip
       }
       
       if (inventario) {
-        const cantidadActual = parseFloat(inventario.cantidad) || 0;
-        const cantidadReservada = parseFloat(inventario.cantidad_reservada) || 0;
-        const cantidadLiberar = parseFloat(detalle.cantidad) || 0;
-        const nuevaReserva = Math.max(0, cantidadReservada - cantidadLiberar);
-        
-        await inventario.update({
-          cantidad_reservada: nuevaReserva
-        }, { transaction });
-        
-        // ════════════════════════════════════════════════════════════════════
-        // ✅ REGISTRAR MOVIMIENTO DE LIBERACIÓN
-        // ════════════════════════════════════════════════════════════════════
-        await MovimientoInventario.registrar({
-          inventario_id: inventario.id,
-          usuario_id: usuarioId,
-          operacion_id: operacionId,
-          tipo: 'liberacion',
-          motivo: `Liberación por anulación de ${numeroOperacion}`,
-          cantidad: cantidadLiberar,  // Positivo para liberación
-          stock_anterior: cantidadActual,
-          stock_resultante: cantidadActual,  // Stock no cambia, solo reserva
-          documento_referencia: numeroOperacion,
-          observaciones: `Reserva liberada: ${cantidadReservada} → ${nuevaReserva}`,
-          ip_address: ipAddress
-        }, { transaction });
-        
-        logger.info('Stock liberado:', {
+        logger.info('Operación anulada:', {
           inventario_id: inventario.id,
           sku: inventario.sku,
-          cantidad_liberada: cantidadLiberar
+          operacion: numeroOperacion
         });
       }
     } catch (error) {
@@ -364,9 +312,7 @@ const confirmarMovimientoStock = async (operacion, usuarioId, ipAddress, transac
             sku: detalle.sku,
             producto: detalle.producto,
             cantidad: 0,
-            cantidad_reservada: 0,
             unidad_medida: detalle.unidad_medida || 'UND',
-            lote: detalle.lote,
             fecha_vencimiento: detalle.fecha_vencimiento,
             estado: 'disponible'
           }, { transaction });
@@ -385,25 +331,22 @@ const confirmarMovimientoStock = async (operacion, usuarioId, ipAddress, transac
       }
       
       const cantidadAnterior = parseFloat(inventario.cantidad) || 0;
-      const cantidadReservada = parseFloat(inventario.cantidad_reservada) || 0;
       const cantidadMovimiento = parseFloat(detalle.cantidad) || 0;
       const cantidadAveria = parseFloat(detalle.cantidad_averia) || 0;
       const cantidadEfectiva = cantidadMovimiento - cantidadAveria;
-      
+
       let cantidadNueva;
       let tipoMovimiento;
       let motivoMovimiento;
-      
+
       if (operacion.tipo === 'salida') {
         // ════════════════════════════════════════════════════════════════════
-        // SALIDA: Reducir cantidad y liberar reserva
+        // SALIDA: Reducir cantidad
         // ════════════════════════════════════════════════════════════════════
         cantidadNueva = Math.max(0, cantidadAnterior - cantidadEfectiva);
-        const nuevaReserva = Math.max(0, cantidadReservada - cantidadMovimiento);
-        
+
         await inventario.update({
-          cantidad: cantidadNueva,
-          cantidad_reservada: nuevaReserva
+          cantidad: cantidadNueva
         }, { transaction });
         
         tipoMovimiento = 'salida';

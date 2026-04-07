@@ -146,26 +146,40 @@ const agregarResumen = (ws, fila, items, totalCols) => {
 };
 
 /**
- * Aplicar encabezados de tabla con autofiltro
+ * Crear tabla Excel real (con estructura Table reconocida por Excel)
+ * y sobre-escribir el encabezado con el estilo corporativo.
+ * Retorna la primera fila de datos para el loop de formato.
  */
-const aplicarEncabezadosTabla = (ws, fila, columnas) => {
-  const headerRow = ws.getRow(fila);
-  headerRow.height = 28;
+const crearTablaExcel = (ws, filaInicio, nombre, cols, filas) => {
+  const nombreSeguro = nombre.replace(/[^A-Za-z0-9_]/g, '_');
 
-  columnas.forEach((col, idx) => {
-    const cell = headerRow.getCell(idx + 1);
-    cell.value = col.header;
+  ws.addTable({
+    name: nombreSeguro,
+    ref: `A${filaInicio}`,
+    headerRow: true,
+    totalsRow: false,
+    style: {
+      theme: 'TableStyleMedium2',
+      showRowStripes: true,
+      showFirstColumn: false,
+      showLastColumn: false,
+    },
+    columns: cols.map(c => ({ name: c.header, filterButton: true })),
+    rows: filas,
+  });
+
+  // Sobre-escribir encabezado con estilo corporativo (fondo azul oscuro, texto blanco)
+  const headerRow = ws.getRow(filaInicio);
+  headerRow.height = 28;
+  cols.forEach((col, i) => {
+    const cell = ws.getCell(filaInicio, i + 1);
     cell.font = { bold: true, color: { argb: C.blanco }, size: 10 };
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.azulOscuro } };
     cell.alignment = { horizontal: col.align || 'center', vertical: 'middle', wrapText: true };
     cell.border = BORDE_MEDIO;
   });
 
-  // Autofiltro
-  const lastCol = String.fromCharCode(64 + columnas.length);
-  ws.autoFilter = `A${fila}:${lastCol}${fila}`;
-
-  return fila + 1;
+  return filaInicio + 1; // primera fila de datos
 };
 
 /**
@@ -269,82 +283,52 @@ const exportarOperaciones = async (operaciones, filtros = {}) => {
       { label: 'Total Averías:', value: totalAvg },
     ], COLS.length);
 
-    // Tabla
-    let dataFila = aplicarEncabezadosTabla(ws, fila, COLS);
+    // Tabla Excel estructurada
+    const filasOp = operaciones.map(op => [
+      op.numero_operacion,
+      (op.tipo || '').toUpperCase(),
+      op.documento_wms || '',
+      op.cliente?.razon_social || 'N/A',
+      op.fecha_operacion ? new Date(op.fecha_operacion) : null,
+      (op.estado || '').toUpperCase(),
+      op.total_referencias || 0,
+      parseFloat(op.total_unidades) || 0,
+      op.total_averias || 0,
+      op.vehiculo_placa || '',
+      op.conductor_nombre || '',
+    ]);
+
+    const dataFila = crearTablaExcel(ws, fila, 'Operaciones', COLS, filasOp);
 
     operaciones.forEach((op, idx) => {
-      const row = ws.getRow(dataFila);
-      row.height = 20;
-
-      const vals = [
-        op.numero_operacion,
-        (op.tipo || '').toUpperCase(),
-        op.documento_wms || '',
-        op.cliente?.razon_social || 'N/A',
-        op.fecha_operacion ? new Date(op.fecha_operacion) : null,
-        (op.estado || '').toUpperCase(),
-        op.total_referencias || 0,
-        parseFloat(op.total_unidades) || 0,
-        op.total_averias || 0,
-        op.vehiculo_placa || '',
-        op.conductor_nombre || '',
-      ];
-
-      vals.forEach((val, ci) => {
-        const cell = row.getCell(ci + 1);
-        cell.value = val;
+      ws.getRow(dataFila + idx).height = 20;
+      filasOp[idx].forEach((val, ci) => {
+        const cell = ws.getCell(dataFila + idx, ci + 1);
         estiloCelda(cell, ci, idx, { align: COLS[ci].align });
-
-        // Formato fecha
         if (ci === 4 && val) cell.numFmt = 'DD/MM/YYYY';
-        // Formato unidades
         if (ci === 7) cell.numFmt = '#,##0.000';
-
-        // Color tipo
         if (ci === 1) {
           const tipo = (op.tipo || '').toLowerCase();
-          cell.font = {
-            bold: true,
-            color: { argb: tipo === 'ingreso' ? C.verde : C.azulMedio },
-          };
+          cell.font = { bold: true, color: { argb: tipo === 'ingreso' ? C.verde : C.azulMedio } };
         }
-
-        // Color estado
         if (ci === 5) {
           const estado = (op.estado || '').toLowerCase();
-          if (estado === 'cerrado') {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } };
-            cell.font = { bold: true, color: { argb: C.verde } };
-          } else if (estado === 'anulado') {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
-            cell.font = { bold: true, color: { argb: C.rojo } };
-          } else if (estado === 'en_proceso') {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } };
-            cell.font = { bold: true, color: { argb: C.naranja } };
-          } else if (estado === 'pendiente') {
-            cell.font = { color: { argb: C.naranja } };
-          }
+          if (estado === 'cerrado') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
+          else if (estado === 'anulado') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
+          else if (estado === 'en_proceso') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } }; cell.font = { bold: true, color: { argb: C.naranja } }; }
+          else if (estado === 'pendiente') { cell.font = { color: { argb: C.naranja } }; }
         }
-
-        // Averías en rojo
-        if (ci === 8 && val > 0) {
-          cell.font = { bold: true, color: { argb: C.rojo } };
-        }
+        if (ci === 8 && val > 0) cell.font = { bold: true, color: { argb: C.rojo } };
       });
-
-      dataFila++;
     });
 
-    // Fila totales
-    dataFila++;
-    agregarFilaTotales(ws, dataFila, [
+    agregarFilaTotales(ws, dataFila + operaciones.length + 1, [
       { col: 1, value: 'TOTALES' },
       { col: 7, value: totalRefs },
       { col: 8, value: totalUds, numFmt: '#,##0.000' },
       { col: 9, value: totalAvg },
     ], COLS.length);
 
-    // Congelar encabezados de tabla
     ws.views = [{ state: 'frozen', ySplit: fila }];
 
     const buffer = await wb.xlsx.writeBuffer();
@@ -372,13 +356,8 @@ const exportarInventario = async (inventario, filtros = {}) => {
       { header: 'Producto', key: 'prod', width: 36, align: 'left' },
       { header: 'Cliente', key: 'cli', width: 26, align: 'left' },
       { header: 'Cantidad', key: 'cant', width: 12, align: 'right' },
-      { header: 'Reservado', key: 'res', width: 12, align: 'right' },
-      { header: 'Disponible', key: 'disp', width: 12, align: 'right' },
       { header: 'U.M.', key: 'um', width: 8, align: 'center' },
       { header: 'Stock Mín.', key: 'min', width: 11, align: 'right' },
-      { header: 'Ubicación', key: 'ubi', width: 12, align: 'center' },
-      { header: 'Zona', key: 'zona', width: 12, align: 'center' },
-      { header: 'Lote', key: 'lote', width: 13, align: 'center' },
       { header: 'Vencimiento', key: 'venc', width: 13, align: 'center' },
       { header: 'Costo Unit.', key: 'cu', width: 13, align: 'right' },
       { header: 'Valor Total', key: 'vt', width: 15, align: 'right' },
@@ -433,95 +412,56 @@ const exportarInventario = async (inventario, filtros = {}) => {
       { label: 'Productos Vencidos:', value: vencidos },
     ], COLS.length);
 
-    // Tabla
-    let dataFila = aplicarEncabezadosTabla(ws, fila, COLS);
-
-    inventario.forEach((item, idx) => {
-      const row = ws.getRow(dataFila);
-      row.height = 19;
-
+    // Tabla Excel estructurada
+    const filasInv = inventario.map(item => {
       const cant = parseFloat(item.cantidad) || 0;
-      const reservado = parseFloat(item.cantidad_reservada) || 0;
       const costoUnit = parseFloat(item.costo_unitario) || 0;
-      const valorItem = cant * costoUnit;
-
-      const vals = [
+      return [
         item.sku,
         item.producto,
         item.cliente?.razon_social || 'N/A',
         cant,
-        reservado,
-        cant - reservado,
         item.unidad_medida || 'UND',
         parseFloat(item.stock_minimo) || 0,
-        item.ubicacion || '',
-        item.zona || '',
-        item.lote || '',
         item.fecha_vencimiento ? new Date(item.fecha_vencimiento) : null,
         costoUnit,
-        valorItem,
+        cant * costoUnit,
         (item.estado || '').toUpperCase(),
       ];
-
-      vals.forEach((val, ci) => {
-        const cell = row.getCell(ci + 1);
-        cell.value = val;
-        estiloCelda(cell, ci, idx, { align: COLS[ci].align });
-
-        // Formatos numéricos
-        if ([3, 4, 5, 7].includes(ci)) cell.numFmt = '#,##0.000';
-        if (ci === 12 || ci === 13) cell.numFmt = '"$"#,##0.00';
-        if (ci === 11 && val) cell.numFmt = 'DD/MM/YYYY';
-
-        // Stock bajo
-        if (ci === 3) {
-          const minimo = parseFloat(item.stock_minimo) || 0;
-          if (minimo > 0 && cant <= minimo) {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
-            cell.font = { bold: true, color: { argb: C.rojo } };
-          }
-        }
-
-        // Disponible negativo
-        if (ci === 5 && (cant - reservado) < 0) {
-          cell.font = { bold: true, color: { argb: C.rojo } };
-        }
-
-        // Vencimiento
-        if (ci === 11 && val) {
-          const venc = new Date(val);
-          const dias = Math.ceil((venc - hoy) / (1000 * 60 * 60 * 24));
-          if (dias < 0) {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
-            cell.font = { bold: true, color: { argb: C.rojo } };
-          } else if (dias <= 30) {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } };
-            cell.font = { color: { argb: C.naranja } };
-          }
-        }
-
-        // Estado
-        if (ci === 14) {
-          const est = (item.estado || '').toLowerCase();
-          if (est === 'agotado') {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
-            cell.font = { bold: true, color: { argb: C.rojo } };
-          } else if (est === 'bajo_stock') {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } };
-            cell.font = { color: { argb: C.naranja } };
-          }
-        }
-      });
-
-      dataFila++;
     });
 
-    // Totales
-    dataFila++;
-    agregarFilaTotales(ws, dataFila, [
+    const dataFila = crearTablaExcel(ws, fila, 'Inventario', COLS, filasInv);
+
+    inventario.forEach((item, idx) => {
+      ws.getRow(dataFila + idx).height = 19;
+      const cant = parseFloat(item.cantidad) || 0;
+      filasInv[idx].forEach((val, ci) => {
+        const cell = ws.getCell(dataFila + idx, ci + 1);
+        estiloCelda(cell, ci, idx, { align: COLS[ci].align });
+        if ([3, 5].includes(ci)) cell.numFmt = '#,##0.000';
+        if (ci === 7 || ci === 8) cell.numFmt = '"$"#,##0.00';
+        if (ci === 6 && val) cell.numFmt = 'DD/MM/YYYY';
+        if (ci === 3) {
+          const minimo = parseFloat(item.stock_minimo) || 0;
+          if (minimo > 0 && cant <= minimo) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
+        }
+        if (ci === 6 && val) {
+          const dias = Math.ceil((new Date(val) - hoy) / (1000 * 60 * 60 * 24));
+          if (dias < 0) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
+          else if (dias <= 30) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } }; cell.font = { color: { argb: C.naranja } }; }
+        }
+        if (ci === 9) {
+          const est = (item.estado || '').toLowerCase();
+          if (est === 'agotado') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
+          else if (est === 'bajo_stock') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } }; cell.font = { color: { argb: C.naranja } }; }
+        }
+      });
+    });
+
+    agregarFilaTotales(ws, dataFila + inventario.length + 1, [
       { col: 1, value: 'TOTALES' },
       { col: 4, value: totalUds, numFmt: '#,##0.000' },
-      { col: 14, value: totalValor, numFmt: '"$"#,##0.00' },
+      { col: 9, value: totalValor, numFmt: '"$"#,##0.00' },
     ], COLS.length);
 
     ws.views = [{ state: 'frozen', ySplit: fila }];
@@ -593,18 +533,11 @@ const exportarClientes = async (clientes) => {
 
     fila = agregarResumen(ws, fila, resumenItems, COLS.length);
 
-    // Tabla
-    let dataFila = aplicarEncabezadosTabla(ws, fila, COLS);
-
-    clientes.forEach((cliente, idx) => {
-      const row = ws.getRow(dataFila);
-      row.height = 19;
-
-      const contactoPrincipal = cliente.contactos?.find(c => c.es_principal) || cliente.contactos?.[0];
-
+    // Tabla Excel estructurada
+    const filasCli = clientes.map(cliente => {
+      const cp = cliente.contactos?.find(c => c.es_principal) || cliente.contactos?.[0];
       const totalProductos = parseInt(cliente.getDataValue?.('total_productos') || cliente.total_productos || 0);
-
-      const vals = [
+      return [
         cliente.codigo_cliente || '',
         cliente.razon_social || '',
         cliente.nit || '',
@@ -615,30 +548,25 @@ const exportarClientes = async (clientes) => {
         cliente.email || '',
         (cliente.tipo_cliente || '').toUpperCase(),
         (cliente.estado || '').toUpperCase(),
-        contactoPrincipal?.nombre || '',
-        contactoPrincipal?.telefono || contactoPrincipal?.celular || '',
-        contactoPrincipal?.email || '',
+        cp?.nombre || '',
+        cp?.telefono || cp?.celular || '',
+        cp?.email || '',
       ];
+    });
 
-      vals.forEach((val, ci) => {
-        const cell = row.getCell(ci + 1);
-        cell.value = val;
+    const dataFila = crearTablaExcel(ws, fila, 'Clientes', COLS, filasCli);
+
+    clientes.forEach((cliente, idx) => {
+      ws.getRow(dataFila + idx).height = 19;
+      filasCli[idx].forEach((val, ci) => {
+        const cell = ws.getCell(dataFila + idx, ci + 1);
         estiloCelda(cell, ci, idx, { align: COLS[ci].align });
-
-        // Estado con color (ahora es columna 9, índice ci=9)
         if (ci === 9) {
           const est = (cliente.estado || '').toLowerCase();
-          if (est === 'activo') {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } };
-            cell.font = { bold: true, color: { argb: C.verde } };
-          } else {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
-            cell.font = { bold: true, color: { argb: C.rojo } };
-          }
+          if (est === 'activo') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
+          else { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
         }
       });
-
-      dataFila++;
     });
 
     ws.views = [{ state: 'frozen', ySplit: fila }];
@@ -752,46 +680,32 @@ const exportarDetalleOperacion = async (operacion) => {
       { header: 'Averías', align: 'center' },
     ];
 
-    let dataFila = aplicarEncabezadosTabla(ws, fila, detCols);
-
     const detalles = operacion.detalles || [];
     let sumCant = 0, sumAvg = 0;
 
-    detalles.forEach((det, idx) => {
-      const row = ws.getRow(dataFila);
-      row.height = 19;
+    // Tabla Excel estructurada
+    const filasDetalle = detalles.map((det, idx) => {
       const cant = parseFloat(det.cantidad) || 0;
       const avg = parseFloat(det.cantidad_averia) || 0;
       sumCant += cant;
       sumAvg += avg;
-
-      const vals = [
-        idx + 1,
-        det.sku || '',
-        det.producto || '',
-        cant,
-        det.unidad_medida || 'UND',
-        det.lote || '',
-        det.fecha_vencimiento || '',
-        avg,
-      ];
-
-      vals.forEach((val, ci) => {
-        const cell = row.getCell(ci + 1);
-        cell.value = val;
-        estiloCelda(cell, ci, idx, { align: detCols[ci].align });
-        if (ci === 3) cell.numFmt = '#,##0.000';
-        if (ci === 7 && avg > 0) {
-          cell.font = { bold: true, color: { argb: C.rojo } };
-        }
-      });
-
-      dataFila++;
+      return [idx + 1, det.sku || '', det.producto || '', cant, det.unidad_medida || 'UND', det.lote || '', det.fecha_vencimiento || '', avg];
     });
 
-    // Totales detalle
-    dataFila++;
-    agregarFilaTotales(ws, dataFila, [
+    const dataFila = crearTablaExcel(ws, fila, 'DetalleOperacion', detCols, filasDetalle);
+
+    detalles.forEach((det, idx) => {
+      ws.getRow(dataFila + idx).height = 19;
+      const avg = parseFloat(det.cantidad_averia) || 0;
+      filasDetalle[idx].forEach((val, ci) => {
+        const cell = ws.getCell(dataFila + idx, ci + 1);
+        estiloCelda(cell, ci, idx, { align: detCols[ci].align });
+        if (ci === 3) cell.numFmt = '#,##0.000';
+        if (ci === 7 && avg > 0) cell.font = { bold: true, color: { argb: C.rojo } };
+      });
+    });
+
+    agregarFilaTotales(ws, dataFila + detalles.length + 1, [
       { col: 1, value: 'TOTALES' },
       { col: 3, value: `${detalles.length} referencias` },
       { col: 4, value: sumCant, numFmt: '#,##0.000' },
@@ -859,22 +773,22 @@ const exportarViajes = async (viajes, filtros = {}) => {
     { label: 'Peso Total:', value: totalPeso, numFmt: '#,##0' },
   ], COLS.length);
 
-  let dataFila = aplicarEncabezadosTabla(ws, fila, COLS);
+  // Tabla Excel estructurada
+  const filasViajes = viajes.map(v => [
+    v.numero, v.fecha ? new Date(v.fecha) : null, v.origen, v.destino,
+    v.cliente_nombre || '', v.documento_cliente || '',
+    v.vehiculo?.placa || '', v.conductor?.nombre_completo || '',
+    parseFloat(v.peso) || 0, parseFloat(v.valor_viaje) || 0,
+    v.facturado ? 'Sí' : 'No', v.no_factura || '',
+    v.cajaMenor?.numero || '', (v.estado || '').toUpperCase(),
+  ]);
+
+  const dataFila = crearTablaExcel(ws, fila, 'Viajes', COLS, filasViajes);
 
   viajes.forEach((v, idx) => {
-    const row = ws.getRow(dataFila);
-    row.height = 20;
-    const vals = [
-      v.numero, v.fecha ? new Date(v.fecha) : null, v.origen, v.destino,
-      v.cliente_nombre || '', v.documento_cliente || '',
-      v.vehiculo?.placa || '', v.conductor?.nombre_completo || '',
-      parseFloat(v.peso) || 0, parseFloat(v.valor_viaje) || 0,
-      v.facturado ? 'Sí' : 'No', v.no_factura || '',
-      v.cajaMenor?.numero || '', (v.estado || '').toUpperCase(),
-    ];
-    vals.forEach((val, ci) => {
-      const cell = row.getCell(ci + 1);
-      cell.value = val;
+    ws.getRow(dataFila + idx).height = 20;
+    filasViajes[idx].forEach((val, ci) => {
+      const cell = ws.getCell(dataFila + idx, ci + 1);
       estiloCelda(cell, ci, idx, { align: COLS[ci].align });
       if (ci === 1 && val) cell.numFmt = 'DD/MM/YYYY';
       if (ci === 9) cell.numFmt = '$#,##0';
@@ -886,11 +800,9 @@ const exportarViajes = async (viajes, filtros = {}) => {
         else if (est === 'activo') { cell.font = { color: { argb: C.naranja } }; }
       }
     });
-    dataFila++;
   });
 
-  dataFila++;
-  agregarFilaTotales(ws, dataFila, [
+  agregarFilaTotales(ws, dataFila + viajes.length + 1, [
     { col: 1, value: 'TOTALES' },
     { col: 9, value: totalPeso, numFmt: '#,##0' },
     { col: 10, value: totalValor, numFmt: '$#,##0' },
@@ -945,40 +857,36 @@ const exportarCajasMenores = async (cajas) => {
     { label: 'Saldo Actual Total:', value: totalSaldoActual, numFmt: '$#,##0' },
   ], COLS.length);
 
-  let dataFila = aplicarEncabezadosTabla(ws, fila, COLS);
+  // Tabla Excel estructurada
+  const filasCajas = cajas.map(c => [
+    c.numero, c.asignado?.nombre_completo || c.asignado_nombre || '', (c.estado || '').toUpperCase(),
+    parseFloat(c.saldo_inicial) || 0, parseFloat(c.saldo_trasladado) || 0,
+    parseFloat(c.total_ingresos) || 0, parseFloat(c.total_egresos) || 0,
+    parseFloat(c.saldo_actual) || 0,
+    c.fecha_apertura ? new Date(c.fecha_apertura) : null,
+    c.fecha_cierre ? new Date(c.fecha_cierre) : null,
+    c.creador?.nombre_completo || c.creador?.username || 'Sin registro',
+  ]);
+
+  const dataFila = crearTablaExcel(ws, fila, 'CajasMenores', COLS, filasCajas);
 
   cajas.forEach((c, idx) => {
-    const row = ws.getRow(dataFila);
-    row.height = 20;
-    const vals = [
-      c.numero, c.asignado?.nombre_completo || c.asignado_nombre || '', (c.estado || '').toUpperCase(),
-      parseFloat(c.saldo_inicial) || 0, parseFloat(c.saldo_trasladado) || 0,
-      parseFloat(c.total_ingresos) || 0, parseFloat(c.total_egresos) || 0,
-      parseFloat(c.saldo_actual) || 0,
-      c.fecha_apertura ? new Date(c.fecha_apertura) : null,
-      c.fecha_cierre ? new Date(c.fecha_cierre) : null,
-      c.creador?.nombre_completo || c.creador?.username || 'Sin registro',
-    ];
-    vals.forEach((val, ci) => {
-      const cell = row.getCell(ci + 1);
-      cell.value = val;
+    ws.getRow(dataFila + idx).height = 20;
+    filasCajas[idx].forEach((val, ci) => {
+      const cell = ws.getCell(dataFila + idx, ci + 1);
       estiloCelda(cell, ci, idx, { align: COLS[ci].align });
       if ([3, 4, 5, 6, 7].includes(ci)) cell.numFmt = '$#,##0';
-      if (ci === 8 || ci === 9) if (val) cell.numFmt = 'DD/MM/YYYY';
+      if ((ci === 8 || ci === 9) && val) cell.numFmt = 'DD/MM/YYYY';
       if (ci === 2) {
         const est = (c.estado || '').toLowerCase();
         if (est === 'abierta') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
         else if (est === 'cerrada') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.grisClaro } }; cell.font = { color: { argb: C.textoGris } }; }
       }
-      if (ci === 7 && (parseFloat(c.saldo_actual) || 0) < 0) {
-        cell.font = { bold: true, color: { argb: C.rojo } };
-      }
+      if (ci === 7 && (parseFloat(c.saldo_actual) || 0) < 0) cell.font = { bold: true, color: { argb: C.rojo } };
     });
-    dataFila++;
   });
 
-  dataFila++;
-  agregarFilaTotales(ws, dataFila, [
+  agregarFilaTotales(ws, dataFila + cajas.length + 1, [
     { col: 1, value: 'TOTALES' },
     { col: 4, value: totalSaldoInicial, numFmt: '$#,##0' },
     { col: 6, value: totalIngresos, numFmt: '$#,##0' },
@@ -1038,42 +946,38 @@ const exportarMovimientos = async (movimientos) => {
     { label: 'Total Aprobado:', value: totalAprobado, numFmt: '$#,##0' },
   ], COLS.length);
 
-  let dataFila = aplicarEncabezadosTabla(ws, fila, COLS);
+  // Tabla Excel estructurada
+  const filasMov = movimientos.map(m => [
+    m.consecutivo, m.cajaMenor?.numero || '', m.usuario?.nombre_completo || '',
+    (m.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso'),
+    m.concepto, m.descripcion || '',
+    parseFloat(m.valor) || 0,
+    m.aprobado ? 'APROBADO' : m.rechazado ? 'RECHAZADO' : 'PENDIENTE',
+    parseFloat(m.valor_aprobado) || 0, m.aprobador?.nombre_completo || '',
+    m.fecha_aprobacion ? new Date(m.fecha_aprobacion) : null,
+    m.viaje ? `#${m.viaje.numero} - ${m.viaje.destino}` : 'Directo',
+    m.created_at ? new Date(m.created_at) : null,
+  ]);
+
+  const dataFila = crearTablaExcel(ws, fila, 'Movimientos', COLS, filasMov);
 
   movimientos.forEach((m, idx) => {
-    const row = ws.getRow(dataFila);
-    row.height = 20;
-    const estadoText = m.aprobado ? 'APROBADO' : m.rechazado ? 'RECHAZADO' : 'PENDIENTE';
-    const vals = [
-      m.consecutivo, m.cajaMenor?.numero || '', m.usuario?.nombre_completo || '',
-      (m.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso'),
-      m.concepto, m.descripcion || '',
-      parseFloat(m.valor) || 0, estadoText,
-      parseFloat(m.valor_aprobado) || 0, m.aprobador?.nombre_completo || '',
-      m.fecha_aprobacion ? new Date(m.fecha_aprobacion) : null,
-      m.viaje ? `#${m.viaje.numero} - ${m.viaje.destino}` : 'Directo',
-      m.created_at ? new Date(m.created_at) : null,
-    ];
-    vals.forEach((val, ci) => {
-      const cell = row.getCell(ci + 1);
-      cell.value = val;
+    ws.getRow(dataFila + idx).height = 20;
+    filasMov[idx].forEach((val, ci) => {
+      const cell = ws.getCell(dataFila + idx, ci + 1);
       estiloCelda(cell, ci, idx, { align: COLS[ci].align });
       if (ci === 6 || ci === 8) cell.numFmt = '$#,##0';
       if ((ci === 10 || ci === 12) && val) cell.numFmt = 'DD/MM/YYYY';
-      if (ci === 3) {
-        cell.font = { bold: true, color: { argb: m.tipo_movimiento === 'ingreso' ? C.verde : C.rojo } };
-      }
+      if (ci === 3) cell.font = { bold: true, color: { argb: m.tipo_movimiento === 'ingreso' ? C.verde : C.rojo } };
       if (ci === 7) {
         if (m.aprobado) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
         else if (m.rechazado) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
         else { cell.font = { color: { argb: C.naranja } }; }
       }
     });
-    dataFila++;
   });
 
-  dataFila++;
-  agregarFilaTotales(ws, dataFila, [
+  agregarFilaTotales(ws, dataFila + movimientos.length + 1, [
     { col: 1, value: 'TOTALES' },
     { col: 7, value: totalValor, numFmt: '$#,##0' },
     { col: 9, value: totalAprobado, numFmt: '$#,##0' },
@@ -1128,21 +1032,21 @@ const exportarVehiculos = async (vehiculos) => {
     { label: 'Tecnomecánica Vencidos:', value: tecnoVencidos },
   ], COLS.length);
 
-  let dataFila = aplicarEncabezadosTabla(ws, fila, COLS);
+  // Tabla Excel estructurada
+  const filasVehiculos = vehiculos.map(v => [
+    v.placa, v.tipo_vehiculo, v.marca || '', v.modelo || '', v.color || '',
+    parseFloat(v.capacidad_ton) || 0, v.conductor?.nombre_completo || '',
+    v.vencimiento_soat ? new Date(v.vencimiento_soat) : null,
+    v.vencimiento_tecnicomecanica ? new Date(v.vencimiento_tecnicomecanica) : null,
+    v.numero_motor || '', v.numero_chasis || '', (v.estado || '').toUpperCase(),
+  ]);
+
+  const dataFila = crearTablaExcel(ws, fila, 'Vehiculos', COLS, filasVehiculos);
 
   vehiculos.forEach((v, idx) => {
-    const row = ws.getRow(dataFila);
-    row.height = 20;
-    const vals = [
-      v.placa, v.tipo_vehiculo, v.marca || '', v.modelo || '', v.color || '',
-      parseFloat(v.capacidad_ton) || 0, v.conductor?.nombre_completo || '',
-      v.vencimiento_soat ? new Date(v.vencimiento_soat) : null,
-      v.vencimiento_tecnicomecanica ? new Date(v.vencimiento_tecnicomecanica) : null,
-      v.numero_motor || '', v.numero_chasis || '', (v.estado || '').toUpperCase(),
-    ];
-    vals.forEach((val, ci) => {
-      const cell = row.getCell(ci + 1);
-      cell.value = val;
+    ws.getRow(dataFila + idx).height = 20;
+    filasVehiculos[idx].forEach((val, ci) => {
+      const cell = ws.getCell(dataFila + idx, ci + 1);
       estiloCelda(cell, ci, idx, { align: COLS[ci].align });
       if (ci === 5) cell.numFmt = '#,##0.00';
       if ((ci === 7 || ci === 8) && val) {
@@ -1156,7 +1060,6 @@ const exportarVehiculos = async (vehiculos) => {
         else if (est === 'inactivo') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
       }
     });
-    dataFila++;
   });
 
   ws.views = [{ state: 'frozen', ySplit: fila }];

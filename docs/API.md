@@ -277,9 +277,8 @@ Elimina la foto de perfil del usuario.
 | `page` | number | Página (default: 1) |
 | `limit` | number | Registros por página (default: 20) |
 | `search` | string | Búsqueda por producto, SKU o código de barras |
-| `estado` | string | `disponible`, `bajo_stock`, `agotado`, `reservado`, `dañado`, `cuarentena`, `vencido` |
+| `estado` | string | `disponible`, `bajo_stock`, `agotado`, `dañado`, `cuarentena`, `vencido` |
 | `categoria` | string | Filtro por categoría |
-| `zona` | string | Filtro por zona de bodega |
 | `cliente_id` | number | Filtro por cliente (auto-inyectado para portal) |
 | `stock_bajo` | boolean | Solo productos con stock bajo |
 | `por_vencer` | boolean | Solo productos próximos a vencer |
@@ -298,13 +297,9 @@ Elimina la foto de perfil del usuario.
       "descripcion": "Descripción del producto",
       "categoria": "General",
       "cantidad": 100,
-      "cantidad_reservada": 10,
-      "cantidad_disponible": 90,
       "stock_minimo": 20,
       "stock_maximo": 500,
       "unidad_medida": "UND",
-      "ubicacion": "A-01-01",
-      "zona": "A",
       "costo_unitario": 15000.00,
       "valor_total": 1500000.00,
       "estado": "disponible",
@@ -402,7 +397,6 @@ Elimina la foto de perfil del usuario.
   "cantidad": 0,
   "stock_minimo": 10,
   "stock_maximo": 500,
-  "ubicacion": "A-01-01",
   "costo_unitario": 15000.00
 }
 ```
@@ -444,6 +438,81 @@ Elimina la foto de perfil del usuario.
 
 ### DELETE `/inventario/alertas/:alertaId`
 **Acceso:** Autenticado
+
+---
+
+### POST `/inventario/alertas/descartar-todas`
+**Acceso:** Admin / Supervisor
+
+Silencia en masa todas las alertas activas. Utiliza bulk UPDATE (máximo 3 queries) en lugar de updates individuales.
+
+**Body (todos opcionales):**
+```json
+{
+  "cliente_id": 1,
+  "tipo": "agotado"
+}
+```
+
+- `cliente_id`: filtrar por cliente; si se omite aplica a todo el inventario
+- `tipo`: `"agotado"` | `"bajo_stock"` | `"vencimiento"`; si se omite descarta los tres tipos
+
+**Respuesta (200):**
+```json
+{ "success": true, "data": { "descartadas": 42 }, "message": "42 alertas descartadas" }
+```
+
+---
+
+### POST `/inventario/importar`
+**Acceso:** Admin / Supervisor  
+**Content-Type:** `multipart/form-data`
+
+Importa productos desde un archivo Excel (.xlsx) con upsert por `(cliente_id, sku)`. Límite: 10.000 filas, lotes de 500.
+
+**Form field:** `archivo` — archivo .xlsx
+
+**Columnas Excel (fila 1 como encabezado, case-insensitive):**
+
+| Columna | Obligatorio | Descripción |
+|---|---|---|
+| `nit_cliente` | Sí | NIT del cliente (debe existir en el sistema) |
+| `sku` | Sí | Código único del producto |
+| `producto` | Sí | Nombre del producto |
+| `descripcion` | No | Descripción larga |
+| `categoria` | No | Categoría |
+| `unidad_medida` | No | `UND`, `KG`, `LT`, etc. (default: `UND`) |
+| `cantidad` | No | Stock inicial (default: 0) |
+| `stock_minimo` | No | Umbral de alerta bajo stock |
+| `stock_maximo` | No | Capacidad máxima |
+| `costo_unitario` | No | Costo en pesos |
+| `codigo_wms` | No | Código en WMS Centhrix |
+
+> **Nota:** ExcelJS normaliza automáticamente valores de celdas con rich text, fórmulas o hipervínculos — siempre se extrae el valor primitivo.
+
+**Respuesta (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "creados": 120,
+    "actualizados": 45,
+    "errores": [
+      { "fila": 5, "error": "NIT 900123456 no encontrado" }
+    ],
+    "total": 165
+  }
+}
+```
+
+---
+
+### GET `/inventario/plantilla-importacion`
+**Acceso:** Admin / Supervisor
+
+Descarga un archivo Excel de plantilla con encabezados correctos y 3 filas de ejemplo.
+
+**Respuesta:** Archivo `.xlsx` (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`)
 
 ---
 

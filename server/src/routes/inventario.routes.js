@@ -196,9 +196,18 @@ router.put('/alertas/:alertaId/atender',
  * DELETE /api/v1/inventario/alertas/:alertaId
  * Descartar una alerta
  */
-router.delete('/alertas/:alertaId', 
+router.delete('/alertas/:alertaId',
   requiereRol('admin', 'supervisor'),
   inventarioController.descartarAlerta
+);
+
+/**
+ * POST /api/v1/inventario/alertas/descartar-todas
+ * Descartar todas las alertas activas en masa
+ */
+router.post('/alertas/descartar-todas',
+  requiereRol('admin', 'supervisor'),
+  inventarioController.descartarTodasAlertas
 );
 
 // ═══════════════════════════════════════════════════════════════════════════

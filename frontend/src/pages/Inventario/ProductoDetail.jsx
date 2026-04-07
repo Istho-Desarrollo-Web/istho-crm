@@ -32,13 +32,11 @@ import {
   TrendingUp,
   TrendingDown,
   AlertTriangle,
-  Warehouse,
   FileText,
   BoxIcon,
   ArrowDownToLine,
   ArrowUpFromLine,
   Lock,
-  MapPin,
 } from 'lucide-react';
 
 // Layout
@@ -394,7 +392,6 @@ const ProductoDetail = () => {
   const costoUnitario = parseFloat(producto.costo_unitario) || 0;
   const precioVenta = parseFloat(producto.precio_venta) || 0;
   const clienteNombre = producto.cliente_nombre || producto.cliente?.razon_social || '-';
-  const bodegaNombre = producto.bodega_nombre || producto.zona || producto.bodega || '-';
   const unidadMedida = producto.unidad_medida || 'UND';
   const _fechaVencimiento = producto.fecha_vencimiento || null;
 
@@ -690,19 +687,6 @@ const ProductoDetail = () => {
           </div>
         </div>
 
-        {/* Ubicación en bodega */}
-        {(producto.ubicacion || producto.zona) && (
-          <div className="flex items-center gap-3 mb-4 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
-            <MapPin className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-            <div>
-              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Ubicación en bodega: </span>
-              <span className="text-sm text-blue-600 dark:text-blue-400">
-                {[producto.ubicacion, producto.zona].filter(Boolean).join(' — ')}
-              </span>
-            </div>
-          </div>
-        )}
-
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <KpiCard
@@ -829,11 +813,6 @@ const ProductoDetail = () => {
                           <Building2 className="w-5 h-5 text-slate-400" />
                           <span className="text-slate-500 dark:text-slate-400 w-28">Cliente:</span>
                           <span className="text-slate-800 dark:text-slate-200">{clienteNombre}</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm">
-                          <Warehouse className="w-5 h-5 text-slate-400" />
-                          <span className="text-slate-500 dark:text-slate-400 w-28">Bodega:</span>
-                          <span className="text-slate-800 dark:text-slate-200">{bodegaNombre}</span>
                         </div>
                       </div>
                     </div>

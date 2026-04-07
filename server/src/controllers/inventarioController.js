@@ -50,7 +50,7 @@ const logger = require('../utils/logger');
 const notificacionService = require('../services/notificacionService');
 
 // Campos permitidos para ordenamiento
-const CAMPOS_ORDENAMIENTO = ['producto', 'sku', 'cantidad', 'ubicacion', 'fecha_vencimiento', 'created_at', 'estado'];
+const CAMPOS_ORDENAMIENTO = ['producto', 'sku', 'cantidad', 'fecha_vencimiento', 'created_at', 'estado'];
 
 // ═══════════════════════════════════════════════════════════════════════════
 // OPERACIONES CRUD DE INVENTARIO
@@ -107,16 +107,6 @@ const listar = async (req, res) => {
       where.categoria = req.query.categoria;
     }
     
-    // Filtro por zona/bodega
-    if (req.query.zona || req.query.bodega) {
-      where.zona = req.query.zona || req.query.bodega;
-    }
-    
-    // Filtro por ubicación
-    if (req.query.ubicacion) {
-      where.ubicacion = { [Op.like]: `%${sanitizarBusqueda(req.query.ubicacion)}%` };
-    }
-    
     // Filtro por stock bajo (parámetro alternativo)
     if (req.query.stock_bajo === 'true' && !req.query.estado) {
       where[Op.and] = [
@@ -167,18 +157,16 @@ const listar = async (req, res) => {
       const itemJSON = item.toJSON();
       
       // Campos calculados
-      itemJSON.cantidad_disponible = item.cantidad_disponible;
       itemJSON.valor_total = item.valor_total;
       itemJSON.stock_bajo = item.tieneStockBajo ? item.tieneStockBajo() : false;
       itemJSON.proximo_a_vencer = item.proximoAVencer ? item.proximoAVencer() : false;
-      
+
       // Aliases para compatibilidad con frontend
       itemJSON.nombre = itemJSON.producto;
       itemJSON.codigo = itemJSON.sku;
       itemJSON.stock_actual = parseFloat(itemJSON.cantidad) || 0;
       itemJSON.stock_minimo = parseFloat(itemJSON.stock_minimo) || 0;
       itemJSON.stock_maximo = parseFloat(itemJSON.stock_maximo) || 0;
-      itemJSON.bodega = itemJSON.zona;
       itemJSON.cliente_nombre = itemJSON.cliente?.razon_social || '';
       
       return itemJSON;
@@ -289,22 +277,6 @@ const estadisticas = async (req, res) => {
       raw: true
     });
     
-    // Por zona/bodega
-    const porZona = await Inventario.findAll({
-      where: {
-        ...whereCliente,
-        zona: { [Op.ne]: null }
-      },
-      attributes: [
-        'zona',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'items'],
-        [sequelize.fn('SUM', sequelize.col('cantidad')), 'unidades']
-      ],
-      group: ['zona'],
-      order: [[sequelize.literal('unidades'), 'DESC']],
-      raw: true
-    });
-    
     // Formato para KPIs del frontend
     const stats = {
       // KPIs principales
@@ -334,11 +306,6 @@ const estadisticas = async (req, res) => {
         categoria: c.categoria,
         items: parseInt(c.items),
         unidades: parseFloat(c.unidades)
-      })),
-      porZona: porZona.map(z => ({
-        zona: z.zona,
-        items: parseInt(z.items),
-        unidades: parseFloat(z.unidades)
       }))
     };
     
@@ -396,7 +363,6 @@ const alertas = async (req, res) => {
         stockActual: 0,
         stock_minimo: parseFloat(item.stock_minimo) || 0,
         stockMinimo: parseFloat(item.stock_minimo) || 0,
-        ubicacion: item.ubicacion,
         unidad_medida: item.unidad_medida,
         fecha_alerta: item.updated_at,
         created_at: item.updated_at
@@ -491,8 +457,6 @@ const alertas = async (req, res) => {
           fecha_vencimiento: item.fecha_vencimiento,
           fechaVencimiento: item.fecha_vencimiento,
           dias_restantes: diasRestantes,
-          ubicacion: item.ubicacion,
-          lote: item.lote,
           unidad_medida: item.unidad_medida,
           fecha_alerta: item.updated_at,
           created_at: item.updated_at
@@ -544,8 +508,6 @@ const obtenerPorId = async (req, res) => {
     itemJSON.nombre = itemJSON.producto;
     itemJSON.codigo = itemJSON.sku;
     itemJSON.stock_actual = parseFloat(itemJSON.cantidad) || 0;
-    itemJSON.bodega = itemJSON.zona;
-    itemJSON.bodega_nombre = itemJSON.zona;
     itemJSON.cliente_nombre = itemJSON.cliente?.razon_social || '';
     
     return success(res, itemJSON);
@@ -652,12 +614,8 @@ const crear = async (req, res) => {
       categoria: datos.categoria,
       unidad_medida: datos.unidad_medida || 'UND',
       cantidad: datos.cantidad || datos.stock_actual || 0,
-      cantidad_reservada: datos.cantidad_reservada || 0,
       stock_minimo: datos.stock_minimo || 0,
       stock_maximo: datos.stock_maximo,
-      ubicacion: datos.ubicacion,
-      zona: datos.zona || datos.bodega,
-      lote: datos.lote,
       fecha_vencimiento: datos.fecha_vencimiento,
       fecha_ingreso: datos.fecha_ingreso || new Date(),
       costo_unitario: datos.costo_unitario,
@@ -756,7 +714,6 @@ const actualizar = async (req, res) => {
     if (datos.unidad_medida !== undefined) updateData.unidad_medida = datos.unidad_medida;
     if (datos.stock_minimo !== undefined) updateData.stock_minimo = datos.stock_minimo;
     if (datos.stock_maximo !== undefined) updateData.stock_maximo = datos.stock_maximo;
-    if (datos.zona || datos.bodega) updateData.zona = datos.zona || datos.bodega;
     if (datos.fecha_vencimiento !== undefined) updateData.fecha_vencimiento = datos.fecha_vencimiento;
     if (datos.costo_unitario !== undefined) updateData.costo_unitario = datos.costo_unitario;
     if (datos.estado !== undefined) updateData.estado = datos.estado;
@@ -1165,10 +1122,95 @@ const descartarAlerta = async (req, res) => {
     });
 
     return successMessage(res, 'Alerta descartada');
-    
+
   } catch (error) {
     logger.error('Error al descartar alerta:', { message: error.message });
     return serverError(res, 'Error al descartar la alerta', error);
+  }
+};
+
+/**
+ * POST /inventario/alertas/descartar-todas
+ * Descarta (silencia) todas las alertas activas de un cliente o de todo el inventario
+ */
+const descartarTodasAlertas = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { cliente_id, tipo } = req.body;
+    const ahora = new Date().toISOString();
+
+    // Condiciones para encontrar ítems con alertas activas
+    const tiposAlerta = tipo ? [tipo] : ['agotado', 'bajo_stock', 'vencimiento'];
+    const whereBase = {};
+    if (cliente_id) whereBase.cliente_id = cliente_id;
+
+    // Construir condición OR de alertas activas según los tipos solicitados
+    const condiciones = [];
+    if (tiposAlerta.includes('agotado')) {
+      condiciones.push(sequelize.literal("cantidad = 0 AND (alertas_silenciadas IS NULL OR JSON_EXTRACT(alertas_silenciadas, '$.agotado') IS NULL)"));
+    }
+    if (tiposAlerta.includes('bajo_stock')) {
+      condiciones.push(sequelize.literal("cantidad > 0 AND stock_minimo > 0 AND cantidad <= stock_minimo AND (alertas_silenciadas IS NULL OR JSON_EXTRACT(alertas_silenciadas, '$.bajo_stock') IS NULL)"));
+    }
+    if (tiposAlerta.includes('vencimiento')) {
+      const enDias = new Date();
+      enDias.setDate(enDias.getDate() + 30);
+      condiciones.push(sequelize.literal(`fecha_vencimiento IS NOT NULL AND fecha_vencimiento <= '${enDias.toISOString().split('T')[0]}' AND (alertas_silenciadas IS NULL OR JSON_EXTRACT(alertas_silenciadas, '$.vencimiento') IS NULL)`));
+    }
+
+    if (condiciones.length === 0) {
+      await transaction.rollback();
+      return success(res, { descartadas: 0 }, 'No hay alertas que descartar');
+    }
+
+    const items = await Inventario.findAll({
+      where: { ...whereBase, [Op.or]: condiciones },
+      attributes: ['id', 'alertas_silenciadas', 'producto', 'cantidad', 'stock_minimo', 'fecha_vencimiento'],
+      transaction
+    });
+
+    // Agrupar IDs por tipo de alerta para hacer UPDATEs bulk (1 query por tipo)
+    const idsPorTipo = { agotado: [], bajo_stock: [], vencimiento: [] };
+    for (const item of items) {
+      if (tiposAlerta.includes('agotado') && Number(item.cantidad) === 0) idsPorTipo.agotado.push(item.id);
+      if (tiposAlerta.includes('bajo_stock') && Number(item.cantidad) > 0 && Number(item.stock_minimo) > 0 && Number(item.cantidad) <= Number(item.stock_minimo)) idsPorTipo.bajo_stock.push(item.id);
+      if (tiposAlerta.includes('vencimiento') && item.fecha_vencimiento) idsPorTipo.vencimiento.push(item.id);
+    }
+
+    // Ejecutar bulk UPDATE por tipo (máximo 3 queries en lugar de N individuales)
+    const actualizaciones = [];
+    for (const [tipoKey, ids] of Object.entries(idsPorTipo)) {
+      if (ids.length === 0) continue;
+      actualizaciones.push(
+        sequelize.query(
+          `UPDATE inventario SET alertas_silenciadas = JSON_SET(COALESCE(alertas_silenciadas, '{}'), '$.${tipoKey}', ?), updated_at = NOW() WHERE id IN (${ids.map(() => '?').join(',')})`,
+          { replacements: [ahora, ...ids], transaction }
+        )
+      );
+    }
+    await Promise.all(actualizaciones);
+
+    const descartadas = items.length;
+
+    await transaction.commit();
+
+    await Auditoria.registrar({
+      tabla: 'inventario',
+      registro_id: null,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_nuevos: { accion: 'descartar_todas_alertas', tipos: tiposAlerta, cliente_id, descartadas },
+      ip_address: getClientIP(req),
+      descripcion: `${descartadas} alertas descartadas en masa${cliente_id ? ` para cliente ${cliente_id}` : ''}`
+    });
+
+    return success(res, { descartadas }, `${descartadas} alerta${descartadas !== 1 ? 's' : ''} descartada${descartadas !== 1 ? 's' : ''}`);
+
+  } catch (error) {
+    await transaction.rollback();
+    logger.error('Error al descartar todas las alertas:', { message: error.message });
+    return serverError(res, 'Error al descartar las alertas', error);
   }
 };
 
@@ -1313,6 +1355,22 @@ const importarProductos = async (req, res) => {
         .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ñ/g, 'n');
     });
 
+    // ExcelJS puede retornar objetos para rich text, fórmulas e hipervínculos
+    const leerCelda = (valor) => {
+      if (valor === null || valor === undefined) return null;
+      if (typeof valor === 'object') {
+        // Fórmula: { formula, result }
+        if ('result' in valor) return leerCelda(valor.result);
+        // Rich text: { richText: [{text:'...'}, ...] }
+        if (Array.isArray(valor.richText)) return valor.richText.map(r => r.text || '').join('');
+        // Hipervínculo: { text, hyperlink }
+        if ('text' in valor) return valor.text;
+        // Fecha de ExcelJS (instancia Date)
+        if (valor instanceof Date) return valor;
+      }
+      return valor;
+    };
+
     // Pre-cargar todos los NITs únicos para evitar N+1 queries
     const nitsUnicos = new Set();
     for (let rowNum = 2; rowNum <= sheet.rowCount; rowNum++) {
@@ -1320,7 +1378,7 @@ const importarProductos = async (req, res) => {
       let nit = null;
       row.eachCell((cell, colNumber) => {
         if (headers[colNumber] === 'nit_cliente') {
-          nit = String(cell.value ?? '').trim();
+          nit = String(leerCelda(cell.value) ?? '').trim();
         }
       });
       if (nit) nitsUnicos.add(nit);
@@ -1344,7 +1402,7 @@ const importarProductos = async (req, res) => {
         updateOnDuplicate: [
           'producto', 'descripcion', 'categoria', 'unidad_medida',
           'cantidad', 'stock_minimo', 'stock_maximo', 'costo_unitario',
-          'ubicacion', 'zona', 'codigo_wms', 'updated_at',
+          'codigo_wms', 'updated_at',
         ],
         transaction,
       });
@@ -1355,7 +1413,7 @@ const importarProductos = async (req, res) => {
       const datos = {};
       row.eachCell((cell, colNumber) => {
         const header = headers[colNumber];
-        if (header) datos[header] = cell.value;
+        if (header) datos[header] = leerCelda(cell.value);
       });
 
       const nitCliente = String(datos.nit_cliente ?? '').trim();
@@ -1405,8 +1463,6 @@ const importarProductos = async (req, res) => {
         stock_minimo: parseFloat(datos.stock_minimo) || 0,
         stock_maximo: datos.stock_maximo != null ? parseFloat(datos.stock_maximo) : null,
         costo_unitario: datos.costo_unitario != null ? parseFloat(datos.costo_unitario) : null,
-        ubicacion: datos.ubicacion ? String(datos.ubicacion) : null,
-        zona: datos.zona ? String(datos.zona) : null,
         codigo_wms: datos.codigo_wms ? String(datos.codigo_wms) : null,
       });
 
@@ -1485,19 +1541,17 @@ const plantillaImportacion = async (req, res) => {
         { name: 'stock_minimo', filterButton: true },
         { name: 'stock_maximo', filterButton: true },
         { name: 'costo_unitario', filterButton: true },
-        { name: 'ubicacion', filterButton: true },
-        { name: 'zona', filterButton: true },
         { name: 'codigo_wms', filterButton: true },
       ],
       rows: [
-        ['800245795-0', 'SKU-001', 'Leche Entera 1L', 'Leche entera pasteurizada 1 litro', 'lacteos', 'UND', 100, 20, 500, 2500, 'A-01-01', 'BOD-01', ''],
-        ['800245795-0', 'SKU-002', 'Jugo de Naranja 500ml', 'Jugo de naranja natural 500ml', 'bebidas', 'UND', 50, 10, 200, 3200, 'A-01-02', 'BOD-01', ''],
-        ['900123456-7', 'SKU-010', 'Cemento Gris 50kg', 'Saco de cemento gris 50 kilogramos', 'construccion', 'SAC', 200, 30, 1000, 28000, 'B-02-01', 'BOD-04', ''],
+        ['800245795-0', 'SKU-001', 'Leche Entera 1L', 'Leche entera pasteurizada 1 litro', 'lacteos', 'UND', 100, 20, 500, 2500, ''],
+        ['800245795-0', 'SKU-002', 'Jugo de Naranja 500ml', 'Jugo de naranja natural 500ml', 'bebidas', 'UND', 50, 10, 200, 3200, ''],
+        ['900123456-7', 'SKU-010', 'Cemento Gris 50kg', 'Saco de cemento gris 50 kilogramos', 'construccion', 'SAC', 200, 30, 1000, 28000, ''],
       ],
     });
 
     // Ajustar anchos de columna
-    const anchos = [18, 14, 35, 40, 18, 14, 12, 14, 14, 16, 14, 14, 16];
+    const anchos = [18, 14, 35, 40, 18, 14, 12, 14, 14, 16, 16];
     sheet.columns.forEach((col, i) => { col.width = anchos[i] || 16; });
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -1537,6 +1591,7 @@ module.exports = {
   // Alertas
   atenderAlerta,
   descartarAlerta,
+  descartarTodasAlertas,
 
   // Importación
   importarProductos,

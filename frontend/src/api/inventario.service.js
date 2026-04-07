@@ -355,6 +355,22 @@ const inventarioService = {
       };
     }
   },
+
+  descartarTodasAlertas: async (params = {}) => {
+    try {
+      const response = await apiClient.post(
+        INVENTARIO_ENDPOINTS.DESCARTAR_TODAS_ALERTAS,
+        params
+      );
+      return response;
+    } catch (error) {
+      throw {
+        success: false,
+        message: error.message || 'Error al descartar alertas',
+        code: 'DESCARTAR_TODAS_ALERTAS_ERROR',
+      };
+    }
+  },
   
   // ──────────────────────────────────────────────────────────────────────────
   // CAJAS (DETALLE POR OPERACIÓN)

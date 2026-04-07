@@ -202,18 +202,13 @@
 | `categoria` | STRING(100) | | |
 | `unidad_medida` | STRING(20) | DEFAULT 'UND' | |
 | `cantidad` | INTEGER | DEFAULT 0 | Stock total |
-| `cantidad_reservada` | INTEGER | DEFAULT 0 | Reservado para despachos |
-| `cantidad_disponible` | VIRTUAL | | `cantidad - cantidad_reservada` |
 | `stock_minimo` | INTEGER | DEFAULT 0 | Umbral de alerta |
 | `stock_maximo` | INTEGER | DEFAULT 0 | |
-| `ubicacion` | STRING(50) | | Ubicación en bodega (ej: A-01-01) |
-| `zona` | STRING(20) | | Zona de bodega |
-| `lote` | STRING(50) | | Lote (legacy, ahora en CajaInventario) |
 | `fecha_vencimiento` | DATE | | |
 | `fecha_ingreso` | DATE | | |
 | `costo_unitario` | DECIMAL(12,2) | | |
 | `valor_total` | VIRTUAL | | `cantidad * costo_unitario` |
-| `estado` | ENUM | disponible, reservado, dañado, cuarentena, vencido | |
+| `estado` | ENUM | disponible, dañado, cuarentena, vencido | |
 | `codigo_wms` | STRING(50) | | Código en WMS Centhrix |
 | `ultima_sincronizacion_wms` | DATE | | |
 | `notas` | TEXT | | |

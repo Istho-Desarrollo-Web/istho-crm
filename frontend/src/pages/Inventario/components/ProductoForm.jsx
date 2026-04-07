@@ -123,7 +123,6 @@ const ProductoForm = ({
         categoria: producto.categoria || '',
         unidad_medida: producto.unidad_medida || 'UND',
         stock_minimo: toInputValue(producto.stock_minimo),
-        ubicacion: producto.ubicacion || '',
         notas: producto.notas || '',
       });
     } else {
@@ -135,7 +134,6 @@ const ProductoForm = ({
         categoria: '',
         unidad_medida: 'UND',
         stock_minimo: '',
-        ubicacion: '',
         notas: '',
       });
     }
@@ -159,7 +157,6 @@ const ProductoForm = ({
       categoria: data.categoria || '',
       unidad_medida: data.unidad_medida || 'UND',
       stock_minimo: safeParseNumber(data.stock_minimo) ?? 0,
-      ubicacion: data.ubicacion || '',
       notas: data.notas || '',
     };
 
@@ -336,22 +333,6 @@ const ProductoForm = ({
                 />
                 {errors.stock_minimo && (
                   <p className="mt-1 text-sm text-red-500">{errors.stock_minimo.message}</p>
-                )}
-              </div>
-
-              {/* Ubicación */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  Ubicación
-                </label>
-                <input
-                  {...register('ubicacion')}
-                  type="text"
-                  placeholder="Bodega, estante, posición..."
-                  className={fieldCls(!!errors.ubicacion)}
-                />
-                {errors.ubicacion && (
-                  <p className="mt-1 text-sm text-red-500">{errors.ubicacion.message}</p>
                 )}
               </div>
 

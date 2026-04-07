@@ -21,7 +21,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Plus,
   Filter,
-  Download,
   MoreVertical,
   Eye,
   Pencil,
@@ -84,7 +83,6 @@ const FILTER_OPTIONS = {
     { value: 'disponible', label: 'Disponible' },
     { value: 'bajo_stock', label: 'Bajo Stock' },
     { value: 'agotado', label: 'Agotado' },
-    { value: 'reservado', label: 'Reservado' },
   ],
 };
 
@@ -323,6 +321,7 @@ const InventarioList = () => {
   // Modal de importación
   const [importModal, setImportModal] = useState({ isOpen: false });
   const [importFile, setImportFile] = useState(null);
+  const [importPreview, setImportPreview] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
   const [importResultados, setImportResultados] = useState(null);
   const [importErroresExpanded, setImportErroresExpanded] = useState(false);
@@ -333,7 +332,7 @@ const InventarioList = () => {
   const canCreate = hasPermission('inventario', 'crear');
   const canEdit = hasPermission('inventario', 'editar');
   const canDelete = hasPermission('inventario', 'eliminar');
-  const canExport = hasPermission('inventario', 'exportar');
+  const _canExport = hasPermission('inventario', 'exportar');
   const _canImport = hasPermission('inventario', 'importar');
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -478,6 +477,7 @@ const InventarioList = () => {
 
   const handleOpenImport = () => {
     setImportFile(null);
+    setImportPreview(null);
     setImportResultados(null);
     setImportErroresExpanded(false);
     setImportModal({ isOpen: true });
@@ -486,13 +486,12 @@ const InventarioList = () => {
   const handleCloseImport = () => {
     if (importLoading) return;
     setImportModal({ isOpen: false });
-    // Si hubo productos creados/actualizados, refrescar la lista
     if (importResultados && (importResultados.creados > 0 || importResultados.actualizados > 0)) {
       refresh();
     }
   };
 
-  const handleImportFileChange = (file) => {
+  const handleImportFileChange = async (file) => {
     if (!file) return;
     if (!file.name.endsWith('.xlsx')) {
       notifyError('Solo se permiten archivos Excel (.xlsx)');
@@ -500,6 +499,17 @@ const InventarioList = () => {
     }
     setImportFile(file);
     setImportResultados(null);
+    setImportPreview(null);
+    try {
+      const XLSX = await import('xlsx');
+      const buffer = await file.arrayBuffer();
+      const wb = XLSX.read(buffer, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      setImportPreview(rows.slice(0, 20));
+    } catch (_) {
+      // Si falla el parse local, el servidor lo validará al importar
+    }
   };
 
   const handleImportDrop = (e) => {
@@ -517,6 +527,7 @@ const InventarioList = () => {
       formData.append('archivo', importFile);
       const response = await inventarioService.importarProductos(formData);
       const resultados = response.data || response;
+      setImportPreview(null);
       setImportResultados(resultados);
       if (resultados.errores?.length === 0) {
         success(`Importación completada: ${resultados.creados} creados, ${resultados.actualizados} actualizados`);
@@ -1058,8 +1069,8 @@ const InventarioList = () => {
             </Button>
           </div>
 
-          {/* Paso 2 — Dropzone */}
-          {!importResultados && (
+          {/* Paso 2 — Dropzone (sin preview ni resultado) */}
+          {!importPreview && !importResultados && (
             <div>
               <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Selecciona el archivo Excel
@@ -1101,6 +1112,51 @@ const InventarioList = () => {
                     <p className="text-xs text-slate-400">o haz clic para seleccionarlo · Solo .xlsx</p>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Paso 2b — Vista previa */}
+          {importPreview && !importResultados && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Vista previa — {importPreview.length >= 20 ? 'primeros 20 registros' : `${importPreview.length} registros`}
+                  <span className="ml-2 text-xs font-normal text-slate-400">({importFile?.name})</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { setImportPreview(null); setImportFile(null); }}
+                  className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline underline-offset-2"
+                >
+                  Cambiar archivo
+                </button>
+              </div>
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-auto max-h-64">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0">
+                    <tr className="bg-slate-50 dark:bg-slate-800">
+                      <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">#</th>
+                      {Object.keys(importPreview[0] || {}).slice(0, 8).map((key) => (
+                        <th key={key} className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase whitespace-nowrap">
+                          {key}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {importPreview.map((row, idx) => (
+                      <tr key={idx} className="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                        <td className="py-2 px-3 text-slate-400 text-xs">{idx + 1}</td>
+                        {Object.values(row).slice(0, 8).map((val, i) => (
+                          <td key={i} className="py-2 px-3 text-slate-700 dark:text-slate-300 whitespace-nowrap max-w-[180px] truncate text-xs">
+                            {val != null && val !== '' ? String(val) : <span className="text-slate-300 dark:text-slate-600">—</span>}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
@@ -1184,7 +1240,11 @@ const InventarioList = () => {
                 disabled={!importFile || importLoading}
                 loading={importLoading}
               >
-                {importLoading ? 'Importando...' : 'Importar'}
+                {importLoading
+                  ? 'Importando...'
+                  : importPreview
+                    ? `Confirmar importación (${importPreview.length} registros)`
+                    : 'Importar'}
               </Button>
             )}
           </div>

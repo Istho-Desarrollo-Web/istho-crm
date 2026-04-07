@@ -68,6 +68,7 @@ export const INVENTARIO_ENDPOINTS = {
   // Gestión de alertas
   ATENDER_ALERTA: (alertaId) => `/inventario/alertas/${alertaId}/atender`,
   DESCARTAR_ALERTA: (alertaId) => `/inventario/alertas/${alertaId}`,
+  DESCARTAR_TODAS_ALERTAS: '/inventario/alertas/descartar-todas',
   
   // Cajas (detalle por operación)
   CAJAS: (id) => `/inventario/${id}/cajas`,

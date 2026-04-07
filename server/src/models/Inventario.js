@@ -74,21 +74,6 @@ module.exports = (sequelize) => {
       }
     },
     
-    cantidad_reservada: {
-      type: DataTypes.DECIMAL(15, 3),
-      defaultValue: 0,
-      comment: 'Cantidad reservada para despachos pendientes'
-    },
-    
-    cantidad_disponible: {
-      type: DataTypes.VIRTUAL,
-      get() {
-        const cantidad = parseFloat(this.getDataValue('cantidad')) || 0;
-        const reservada = parseFloat(this.getDataValue('cantidad_reservada')) || 0;
-        return cantidad - reservada;
-      }
-    },
-    
     stock_minimo: {
       type: DataTypes.DECIMAL(15, 3),
       defaultValue: 0,
@@ -99,24 +84,6 @@ module.exports = (sequelize) => {
       type: DataTypes.DECIMAL(15, 3),
       allowNull: true,
       comment: 'Cantidad máxima recomendada'
-    },
-    
-    ubicacion: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-      comment: 'Ubicación física en bodega (ej: A-01-02)'
-    },
-    
-    zona: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-      comment: 'Zona de la bodega (ej: Refrigerado, Seco, etc.)'
-    },
-    
-    lote: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-      comment: 'Número de lote'
     },
     
     fecha_vencimiento: {
@@ -184,9 +151,7 @@ module.exports = (sequelize) => {
       { fields: ['sku'] },
       { fields: ['codigo_barras'] },
       { fields: ['producto'] },
-      { fields: ['ubicacion'] },
       { fields: ['estado'] },
-      { fields: ['lote'] },
       { fields: ['fecha_vencimiento'] },
       // Índice compuesto para SKU único por cliente (referencia)
       {

@@ -97,38 +97,14 @@ const crearInventarioValidator = [
     .optional()
     .isFloat({ min: 0 }).withMessage('El stock actual debe ser un número positivo'),
   
-  body('cantidad_reservada')
-    .optional()
-    .isFloat({ min: 0 }).withMessage('La cantidad reservada debe ser un número positivo'),
-  
   body('stock_minimo')
     .optional()
     .isFloat({ min: 0 }).withMessage('El stock mínimo debe ser un número positivo'),
-  
+
   body('stock_maximo')
     .optional()
     .isFloat({ min: 0 }).withMessage('El stock máximo debe ser un número positivo'),
-  
-  body('ubicacion')
-    .optional()
-    .trim()
-    .isLength({ max: 50 }).withMessage('La ubicación no puede exceder 50 caracteres'),
-  
-  body('zona')
-    .optional()
-    .trim()
-    .isLength({ max: 50 }).withMessage('La zona no puede exceder 50 caracteres'),
-  
-  body('bodega')
-    .optional()
-    .trim()
-    .isLength({ max: 50 }).withMessage('La bodega no puede exceder 50 caracteres'),
-  
-  body('lote')
-    .optional()
-    .trim()
-    .isLength({ max: 50 }).withMessage('El lote no puede exceder 50 caracteres'),
-  
+
   body('fecha_vencimiento')
     .optional({ nullable: true })
     .custom((value) => {
@@ -138,7 +114,7 @@ const crearInventarioValidator = [
       }
       return true;
     }),
-  
+
   body('fecha_ingreso')
     .optional({ nullable: true })
     .custom((value) => {
@@ -241,38 +217,14 @@ const actualizarInventarioValidator = [
     .optional()
     .isFloat({ min: 0 }).withMessage('El stock actual debe ser un número positivo'),
   
-  body('cantidad_reservada')
-    .optional()
-    .isFloat({ min: 0 }).withMessage('La cantidad reservada debe ser un número positivo'),
-  
   body('stock_minimo')
     .optional()
     .isFloat({ min: 0 }).withMessage('El stock mínimo debe ser un número positivo'),
-  
+
   body('stock_maximo')
     .optional()
     .isFloat({ min: 0 }).withMessage('El stock máximo debe ser un número positivo'),
-  
-  body('ubicacion')
-    .optional()
-    .trim()
-    .isLength({ max: 50 }).withMessage('La ubicación no puede exceder 50 caracteres'),
-  
-  body('zona')
-    .optional()
-    .trim()
-    .isLength({ max: 50 }).withMessage('La zona no puede exceder 50 caracteres'),
-  
-  body('bodega')
-    .optional()
-    .trim()
-    .isLength({ max: 50 }).withMessage('La bodega no puede exceder 50 caracteres'),
-  
-  body('lote')
-    .optional()
-    .trim()
-    .isLength({ max: 50 }).withMessage('El lote no puede exceder 50 caracteres'),
-  
+
   body('fecha_vencimiento')
     .optional({ nullable: true })
     .custom((value) => {
@@ -282,7 +234,7 @@ const actualizarInventarioValidator = [
       }
       return true;
     }),
-  
+
   body('costo_unitario')
     .optional()
     .isFloat({ min: 0 }).withMessage('El costo unitario debe ser un número positivo'),
@@ -357,15 +309,7 @@ const listarInventarioValidator = [
   query('categoria')
     .optional()
     .trim(),
-  
-  query('zona')
-    .optional()
-    .trim(),
-  
-  query('bodega')
-    .optional()
-    .trim(),
-  
+
   query('stock_bajo')
     .optional()
     .isIn(['true', 'false']).withMessage('stock_bajo debe ser true o false'),
@@ -380,7 +324,7 @@ const listarInventarioValidator = [
   
   query('sort')
     .optional()
-    .isIn(['producto', 'sku', 'cantidad', 'ubicacion', 'fecha_vencimiento', 'created_at', 'estado'])
+    .isIn(['producto', 'sku', 'cantidad', 'fecha_vencimiento', 'created_at', 'estado'])
     .withMessage('Campo de ordenamiento no válido'),
   
   query('order')

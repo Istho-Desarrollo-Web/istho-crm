@@ -29,6 +29,9 @@ import {
   RefreshCw,
   List,
   LayoutGrid,
+  CheckCircle,
+  Loader2,
+  XCircle,
 } from 'lucide-react';
 
 // Layout
@@ -42,6 +45,7 @@ import {
   StatusChip,
   Pagination,
   ConfirmDialog,
+  Modal,
 } from '../../components/common';
 
 // Local Components
@@ -190,11 +194,14 @@ const ClientesList = () => {
   // HOOKS
   // ──────────────────────────────────────────────────────────────────────────
   const { success: notifySuccess, apiError, saved, deleted, error: notifyError } = useNotification();
-  const importInputRef = useRef(null);
-  const [importPreview, setImportPreview] = useState(null);
+  const fileInputRef = useRef(null);
+  const [importModal, setImportModal] = useState({ isOpen: false });
   const [importFile, setImportFile] = useState(null);
+  const [importPreview, setImportPreview] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
-  const [importErrors, setImportErrors] = useState(null);
+  const [importResultados, setImportResultados] = useState(null);
+  const [importErroresExpanded, setImportErroresExpanded] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const handleExport = () => {
     const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
@@ -208,37 +215,55 @@ const ClientesList = () => {
     window.open(`${baseUrl}/clientes/plantilla-importacion?token=${token}`, '_blank');
   };
 
-  const handleImportSelect = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = '';
+  const handleOpenImport = () => {
+    setImportFile(null);
+    setImportPreview(null);
+    setImportResultados(null);
+    setImportErroresExpanded(false);
+    setImportModal({ isOpen: true });
+  };
 
+  const handleCloseImport = () => {
+    if (importLoading) return;
+    setImportModal({ isOpen: false });
+    if (importResultados && (importResultados.creados > 0 || importResultados.actualizados > 0)) {
+      fetchClientes();
+    }
+  };
+
+  const handleImportFileChange = async (file) => {
+    if (!file) return;
+    if (!file.name.match(/\.(xlsx|xls|csv)$/i)) {
+      notifyError('Solo se permiten archivos Excel (.xlsx, .xls) o CSV');
+      return;
+    }
+    setImportFile(file);
+    setImportResultados(null);
+    setImportPreview(null);
     try {
       const XLSX = await import('xlsx');
       const buffer = await file.arrayBuffer();
       const wb = XLSX.read(buffer, { type: 'array' });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-
-      if (rows.length === 0) {
-        notifyError('El archivo no contiene datos');
-        return;
-      }
-
-      setImportFile(file);
-      setImportPreview(rows.slice(0, 50)); // Max 50 filas en preview
+      if (rows.length === 0) { notifyError('El archivo no contiene datos'); return; }
+      setImportPreview(rows.slice(0, 20));
     } catch (_err) {
-      notifyError('Error al leer el archivo. Verifique que sea un Excel válido.');
+      // El servidor validará si falla el parse local
     }
+  };
+
+  const handleImportDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    handleImportFileChange(e.dataTransfer.files[0]);
   };
 
   const handleImportConfirm = async () => {
     if (!importFile) return;
     setImportLoading(true);
-
     const formData = new FormData();
     formData.append('archivo', importFile);
-
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
       const token = localStorage.getItem('istho_token');
@@ -250,15 +275,9 @@ const ClientesList = () => {
       const data = await res.json();
       if (data.success) {
         const { creados, actualizados, errores } = data.data;
-        if (errores?.length) {
-          notifySuccess(`Importación completada: ${creados} creados, ${actualizados} actualizados, ${errores.length} con errores`);
-          setImportErrors({ creados, actualizados, errores });
-        } else {
-          notifySuccess(`Importación completada: ${creados} creados, ${actualizados} actualizados`);
-        }
-        fetchClientes();
         setImportPreview(null);
         setImportFile(null);
+        setImportResultados({ creados, actualizados, errores: errores || [] });
       } else {
         notifyError(data.message || 'Error al importar');
       }
@@ -436,26 +455,23 @@ const ClientesList = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              icon={RefreshCw}
+              onClick={fetchClientes}
+              title="Actualizar datos"
+            />
+
             <ProtectedAction module="clientes" action="exportar">
               <Button variant="outline" icon={Download} size="md" onClick={handleExport}>
-                Exportar
+                <span className="hidden sm:inline">Exportar</span>
               </Button>
             </ProtectedAction>
 
             <ProtectedAction module="clientes" action="importar">
-              <Button variant="outline" icon={FileDown} size="md" onClick={handleDownloadPlantilla} title="Descargar plantilla de importación">
-                Plantilla
+              <Button variant="outline" icon={Upload} size="md" onClick={handleOpenImport}>
+                <span className="hidden sm:inline">Importar</span>
               </Button>
-              <Button variant="outline" icon={Upload} size="md" onClick={() => importInputRef.current?.click()}>
-                Importar
-              </Button>
-              <input
-                ref={importInputRef}
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                className="hidden"
-                onChange={handleImportSelect}
-              />
             </ProtectedAction>
 
           </div>
@@ -835,153 +851,206 @@ const ClientesList = () => {
         />
       )}
 
-      {/* MODAL VISTA PREVIA IMPORTACIÓN */}
-      {importPreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#1A1B3A] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-              <div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Vista Previa de Importación</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {importPreview.length} registros encontrados{importPreview.length >= 50 ? ' (mostrando primeros 50)' : ''} — {importFile?.name}
-                </p>
+      {/* MODAL IMPORTACIÓN CLIENTES */}
+      <Modal
+        isOpen={importModal.isOpen}
+        onClose={handleCloseImport}
+        title="Importar Clientes"
+        subtitle="Carga masiva desde archivo Excel (.xlsx)"
+        size="lg"
+      >
+        <div className="space-y-5">
+
+          {/* Plantilla */}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                <FileDown className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
-              <button
-                onClick={() => { setImportPreview(null); setImportFile(null); }}
-                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+              <div>
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Plantilla de importación</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Descarga el formato correcto con columnas y ejemplos</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" icon={FileDown} onClick={handleDownloadPlantilla}>
+              Descargar
+            </Button>
+          </div>
+
+          {/* Dropzone */}
+          {!importPreview && !importResultados && (
+            <div>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Selecciona el archivo Excel
+              </p>
+              <div
+                className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer
+                  ${isDragOver
+                    ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/10'
+                    : importFile
+                      ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/10'
+                      : 'border-slate-300 dark:border-slate-600 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/10'
+                  }`}
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                onDragLeave={() => setIsDragOver(false)}
+                onDrop={handleImportDrop}
               >
-                ✕
-              </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  className="hidden"
+                  onChange={(e) => handleImportFileChange(e.target.files[0])}
+                />
+                {importFile ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <CheckCircle className="w-10 h-10 text-emerald-500" />
+                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{importFile.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {(importFile.size / 1024).toFixed(1)} KB · Haz clic para cambiar el archivo
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <Upload className="w-10 h-10 text-slate-400" />
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                      Arrastra y suelta el archivo aquí
+                    </p>
+                    <p className="text-xs text-slate-400">o haz clic para seleccionarlo · .xlsx, .xls, .csv</p>
+                  </div>
+                )}
+              </div>
             </div>
+          )}
 
-            {/* Table */}
-            <div className="flex-1 overflow-auto px-6 py-4">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/50">
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">#</th>
-                    {Object.keys(importPreview[0] || {}).slice(0, 8).map((key) => (
-                      <th key={key} className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase whitespace-nowrap">
-                        {key}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {importPreview.map((row, idx) => (
-                    <tr key={idx} className="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/30">
-                      <td className="py-2 px-3 text-slate-400 text-xs">{idx + 1}</td>
-                      {Object.values(row).slice(0, 8).map((val, i) => (
-                        <td key={i} className="py-2 px-3 text-slate-700 dark:text-slate-300 whitespace-nowrap max-w-[200px] truncate">
-                          {val != null ? String(val) : '-'}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-b-2xl">
-              <div className="flex flex-col gap-1">
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Columnas esperadas: NIT, Razón Social, Tipo, Sector, Dirección, Ciudad, Teléfono, Email
+          {/* Vista previa */}
+          {importPreview && !importResultados && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Vista previa — {importPreview.length >= 20 ? 'primeros 20 registros' : `${importPreview.length} registros`}
+                  <span className="ml-2 text-xs font-normal text-slate-400">({importFile?.name})</span>
                 </p>
                 <button
                   type="button"
-                  onClick={handleDownloadPlantilla}
-                  className="flex items-center gap-1 text-xs text-orange-500 hover:text-orange-600 hover:underline w-fit"
-                >
-                  <FileDown className="w-3 h-3" />
-                  Descargar plantilla
-                </button>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
                   onClick={() => { setImportPreview(null); setImportFile(null); }}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700"
+                  className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline underline-offset-2"
                 >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleImportConfirm}
-                  disabled={importLoading}
-                  className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-[#E74C3C] hover:bg-[#C0392B] rounded-xl transition-colors disabled:opacity-50"
-                >
-                  {importLoading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Importando...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      Confirmar Importación ({importPreview.length} registros)
-                    </>
-                  )}
+                  Cambiar archivo
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL ERRORES DE IMPORTACIÓN */}
-      {importErrors && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#1A1B3A] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-              <div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Resultado de la Importación</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {importErrors.creados} creados · {importErrors.actualizados} actualizados · <span className="text-red-500 font-medium">{importErrors.errores.length} con errores</span>
-                </p>
-              </div>
-              <button
-                onClick={() => setImportErrors(null)}
-                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Tabla de errores */}
-            <div className="flex-1 overflow-auto px-6 py-4">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/50">
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase w-16">Fila</th>
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase w-36">NIT</th>
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">Motivo del error</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {importErrors.errores.map((err, idx) => (
-                    <tr key={idx} className="border-t border-slate-100 dark:border-slate-700/50">
-                      <td className="py-2 px-3 text-slate-400 text-xs font-mono">{err.fila}</td>
-                      <td className="py-2 px-3 text-slate-600 dark:text-slate-300 font-mono text-xs">{err.nit || '—'}</td>
-                      <td className="py-2 px-3 text-red-600 dark:text-red-400 text-xs">{err.error}</td>
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-auto max-h-64">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0">
+                    <tr className="bg-slate-50 dark:bg-slate-800">
+                      <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">#</th>
+                      {Object.keys(importPreview[0] || {}).slice(0, 8).map((key) => (
+                        <th key={key} className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase whitespace-nowrap">
+                          {key}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {importPreview.map((row, idx) => (
+                      <tr key={idx} className="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                        <td className="py-2 px-3 text-slate-400 text-xs">{idx + 1}</td>
+                        {Object.values(row).slice(0, 8).map((val, i) => (
+                          <td key={i} className="py-2 px-3 text-slate-700 dark:text-slate-300 whitespace-nowrap max-w-[180px] truncate text-xs">
+                            {val != null && val !== '' ? String(val) : <span className="text-slate-300 dark:text-slate-600">—</span>}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
+          )}
 
-            {/* Footer */}
-            <div className="flex justify-end px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-b-2xl">
+          {/* Resultados */}
+          {importResultados && (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Resultado de la importación</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-xl p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 text-center">
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{importResultados.creados}</p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">Creados</p>
+                </div>
+                <div className="rounded-xl p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 text-center">
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{importResultados.actualizados}</p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">Actualizados</p>
+                </div>
+                <div className={`rounded-xl p-3 border text-center ${importResultados.errores?.length > 0 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                  <p className={`text-2xl font-bold ${importResultados.errores?.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}`}>
+                    {importResultados.errores?.length || 0}
+                  </p>
+                  <p className={`text-xs mt-0.5 ${importResultados.errores?.length > 0 ? 'text-red-700 dark:text-red-300' : 'text-slate-500'}`}>
+                    Errores
+                  </p>
+                </div>
+              </div>
+              {importResultados.errores?.length > 0 && (
+                <div className="rounded-xl border border-red-200 dark:border-red-800 overflow-hidden">
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-sm font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                    onClick={() => setImportErroresExpanded(!importErroresExpanded)}
+                  >
+                    <span className="flex items-center gap-2">
+                      <XCircle className="w-4 h-4" />
+                      Ver {importResultados.errores.length} error(es)
+                    </span>
+                    {importErroresExpanded ? '▲' : '▼'}
+                  </button>
+                  {importErroresExpanded && (
+                    <div className="max-h-48 overflow-y-auto divide-y divide-red-100 dark:divide-red-900/30">
+                      {importResultados.errores.map((err, idx) => (
+                        <div key={idx} className="px-4 py-2 flex items-start gap-3 bg-white dark:bg-slate-800">
+                          <span className="text-xs text-slate-400 shrink-0 mt-0.5 font-mono">F{err.fila}</span>
+                          {err.nit && <span className="text-xs font-mono text-slate-500 shrink-0 mt-0.5">{err.nit}</span>}
+                          <span className="text-xs text-red-600 dark:text-red-400">{err.error}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
               <button
-                onClick={() => setImportErrors(null)}
-                className="px-5 py-2 text-sm font-medium text-white bg-[#E74C3C] hover:bg-[#C0392B] rounded-xl transition-colors"
+                type="button"
+                onClick={() => { setImportResultados(null); setImportFile(null); }}
+                className="text-xs text-slate-500 hover:text-orange-600 dark:text-slate-400 dark:hover:text-orange-400 underline underline-offset-2"
               >
-                Cerrar
+                Importar otro archivo
               </button>
             </div>
+          )}
+
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-700">
+            <Button variant="ghost" onClick={handleCloseImport} disabled={importLoading}>
+              {importResultados ? 'Cerrar' : 'Cancelar'}
+            </Button>
+            {!importResultados && (
+              <Button
+                variant="primary"
+                icon={importLoading ? Loader2 : Upload}
+                onClick={handleImportConfirm}
+                disabled={!importFile || importLoading}
+                loading={importLoading}
+              >
+                {importLoading
+                  ? 'Importando...'
+                  : importPreview
+                    ? `Confirmar importación (${importPreview.length} registros)`
+                    : 'Importar'}
+              </Button>
+            )}
           </div>
         </div>
-      )}
+      </Modal>
+
     </div>
   );
 };
