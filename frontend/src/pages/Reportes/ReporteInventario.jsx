@@ -109,7 +109,7 @@ const ReporteInventario = () => {
       const [dashResponse, alertasResponse, inventarioResponse] = await Promise.all([
         reportesService.getDashboard(params),
         inventarioService.getAlertas().catch(() => ({ data: [] })),
-        inventarioService.getAll({ limit: 100 }).catch(() => ({ data: [] })),
+        inventarioService.getAll({ ...params, limit: 500 }).catch(() => ({ data: [] })),
       ]);
 
       if (dashResponse?.success && dashResponse.data) {
@@ -168,6 +168,20 @@ const ReporteInventario = () => {
       counts[estado] = (counts[estado] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  })();
+
+  // Top 20 productos por cliente (ordenados por cantidad desc)
+  const productosPorCliente = (() => {
+    const grupos = {};
+    productos.forEach(p => {
+      const nombre = p.cliente?.razon_social || p.cliente?.nombre || 'Sin cliente';
+      if (!grupos[nombre]) grupos[nombre] = [];
+      grupos[nombre].push(p);
+    });
+    return Object.entries(grupos).map(([cliente, items]) => ({
+      cliente,
+      items: [...items].sort((a, b) => (parseFloat(b.cantidad) || 0) - (parseFloat(a.cantidad) || 0)).slice(0, 20),
+    }));
   })();
 
   const cajasPorProducto = (() => {
@@ -310,6 +324,77 @@ const ReporteInventario = () => {
                 <AlertaItem key={alerta.id || idx} alerta={alerta} />
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Top 20 productos por cliente */}
+        {productosPorCliente.length > 0 && (
+          <div className="space-y-6 mb-6">
+            {productosPorCliente.map(({ cliente, items }) => (
+              <div key={cliente} className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-100">{cliente}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Top {items.length} productos por cantidad en stock</p>
+                  </div>
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">
+                    {items.length} productos
+                  </span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-slate-50 dark:bg-slate-700/50">
+                        <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-8">#</th>
+                        <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">SKU</th>
+                        <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Producto</th>
+                        <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Categoría</th>
+                        <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Cantidad</th>
+                        <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Costo Unit.</th>
+                        <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Valor Total</th>
+                        <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+                      {items.map((p, idx) => {
+                        const cantidad = parseFloat(p.cantidad) || 0;
+                        const costo = parseFloat(p.costo_unitario) || 0;
+                        const valorTotal = cantidad * costo;
+                        const estado = cantidad === 0 ? 'agotado'
+                          : (p.stock_minimo > 0 && cantidad <= p.stock_minimo) ? 'bajo_stock'
+                          : 'disponible';
+                        const estadoLabel = { disponible: 'Disponible', bajo_stock: 'Stock Bajo', agotado: 'Agotado' }[estado];
+                        const estadoClass = {
+                          disponible: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                          bajo_stock: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                          agotado: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                        }[estado];
+                        return (
+                          <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                            <td className="px-4 py-3 text-slate-400 dark:text-slate-500">{idx + 1}</td>
+                            <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-300">{p.sku}</td>
+                            <td className="px-4 py-3 text-slate-800 dark:text-slate-200 max-w-[200px] truncate" title={p.producto}>{p.producto}</td>
+                            <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{p.categoria || '—'}</td>
+                            <td className="px-4 py-3 text-right font-medium text-slate-800 dark:text-slate-200">{cantidad.toLocaleString()} {p.unidad_medida || 'UND'}</td>
+                            <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300">
+                              {costo > 0 ? `$${costo.toLocaleString('es-CO')}` : '—'}
+                            </td>
+                            <td className="px-4 py-3 text-right font-medium text-slate-800 dark:text-slate-200">
+                              {valorTotal > 0 ? formatCurrency(valorTotal) : '—'}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${estadoClass}`}>
+                                {estadoLabel}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
