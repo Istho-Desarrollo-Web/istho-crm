@@ -1,0 +1,68 @@
+<h2>¿Cómo debe verse el pie de página?</h2>
+<p class="subtitle">Aparece en todas las páginas del PDF</p>
+
+<div class="cards">
+
+  <!-- Opción A: Simple con línea -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0; overflow:hidden; border-radius:8px 8px 0 0; background:#fff;">
+      <div style="background:#f5f5f5; height:60px; border-bottom:1px dashed #ddd; display:flex; align-items:center; justify-content:center;">
+        <span style="color:#ccc; font-size:10px;">... contenido de la tabla ...</span>
+      </div>
+      <div style="border-top:2px solid #E74C3C; padding:7px 14px; background:#fff; display:flex; align-items:center; justify-content:space-between;">
+        <div style="font-size:8px; color:#999;">ISTHO S.A.S. — Centro Logístico Industrial del Norte, Bodega 130 — Girardota, Antioquia</div>
+        <div style="font-size:8px; color:#E74C3C; font-weight:600;">Página 1 de 4</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Línea roja + dirección + página</h3>
+      <p>Limpio. Línea roja superior, dirección a la izquierda, número de página a la derecha.</p>
+    </div>
+  </div>
+
+  <!-- Opción B: Fondo oscuro -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0; overflow:hidden; border-radius:8px 8px 0 0; background:#fff;">
+      <div style="background:#f5f5f5; height:60px; border-bottom:1px dashed #ddd; display:flex; align-items:center; justify-content:center;">
+        <span style="color:#ccc; font-size:10px;">... contenido de la tabla ...</span>
+      </div>
+      <div style="background:linear-gradient(135deg,#1A1B3A,#0F1023); padding:7px 14px; display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <div style="font-size:8px; color:#E74C3C; font-weight:600;">CenthriX WMS · ISTHO S.A.S.</div>
+          <div style="font-size:7px; color:#555; margin-top:1px;">Girardota, Antioquia · Colombia</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:8px; color:#aaa;">Generado: 08/04/2026</div>
+          <div style="font-size:8px; color:#E74C3C; font-weight:600; margin-top:1px;">Pág. 1 / 4</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Fondo oscuro (espejo del header)</h3>
+      <p>El footer replica el estilo del header. Documento visualmente consistente de inicio a fin.</p>
+    </div>
+  </div>
+
+  <!-- Opción C: Minimalista solo numeración -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0; overflow:hidden; border-radius:8px 8px 0 0; background:#fff;">
+      <div style="background:#f5f5f5; height:60px; border-bottom:1px dashed #ddd; display:flex; align-items:center; justify-content:center;">
+        <span style="color:#ccc; font-size:10px;">... contenido de la tabla ...</span>
+      </div>
+      <div style="padding:6px 14px; background:#fff; display:flex; align-items:center; justify-content:space-between; border-top:1px solid #eee;">
+        <div style="font-size:7px; color:#ccc; letter-spacing:.5px;">CONFIDENCIAL · ISTHO S.A.S. © 2026</div>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <div style="width:14px; height:14px; background:#E74C3C; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+            <span style="color:#fff; font-size:6px; font-weight:700;">1</span>
+          </div>
+          <span style="font-size:7px; color:#aaa;">de 4</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Minimalista con número en círculo</h3>
+      <p>Discreto. Solo texto de confidencialidad y número de página con acento rojo.</p>
+    </div>
+  </div>
+
+</div>

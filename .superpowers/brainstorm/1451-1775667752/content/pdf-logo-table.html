@@ -1,0 +1,173 @@
+<h2>Logo en header + tabla con contraste</h2>
+<p class="subtitle">Ajustes sobre el estilo B ya elegido. Selecciona la combinación que prefieras.</p>
+
+<div class="cards">
+
+  <!-- Opción A: Logo blanco izquierda + tabla con borde sutil -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0; overflow:hidden; border-radius:8px 8px 0 0; background:#fff;">
+      <!-- Header con logo -->
+      <div style="background:linear-gradient(135deg,#1A1B3A,#0F1023); padding:0;">
+        <div style="background:#E74C3C; height:3px;"></div>
+        <div style="padding:10px 14px; display:flex; align-items:center; gap:12px;">
+          <!-- Logo placeholder (círculo blanco simulando logo) -->
+          <div style="width:38px; height:38px; background:rgba(255,255,255,0.12); border-radius:6px; border:1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <div style="width:28px; height:14px; background:#fff; border-radius:2px; opacity:0.9;"></div>
+          </div>
+          <div style="flex:1;">
+            <div style="color:#E74C3C; font-size:7px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;">ISTHO S.A.S. · CenthriX WMS</div>
+            <div style="color:#fff; font-size:12px; font-weight:700; margin-top:2px;">Reporte de Operaciones</div>
+            <div style="color:#888; font-size:8px; margin-top:1px;">Ingresos y salidas · WMS Copérnico</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="background:#E74C3C; color:#fff; font-size:7px; padding:2px 7px; border-radius:10px; font-weight:600; white-space:nowrap;">08/04/2026</div>
+          </div>
+        </div>
+      </div>
+      <!-- KPIs -->
+      <div style="padding:7px 14px; background:#F9F9F9; border-bottom:1px solid #eee; display:flex; gap:5px;">
+        <div style="flex:1; background:#fff; border:1px solid #eee; border-radius:5px; padding:5px 7px; border-left:3px solid #E74C3C;">
+          <div style="font-size:6.5px; color:#999; text-transform:uppercase;">Total</div>
+          <div style="font-size:12px; font-weight:700; color:#1A1B3A;">1,248</div>
+        </div>
+        <div style="flex:1; background:#fff; border:1px solid #eee; border-radius:5px; padding:5px 7px; border-left:3px solid #2ECC71;">
+          <div style="font-size:6.5px; color:#999; text-transform:uppercase;">Entradas</div>
+          <div style="font-size:12px; font-weight:700; color:#1A1B3A;">842</div>
+        </div>
+        <div style="flex:1; background:#fff; border:1px solid #eee; border-radius:5px; padding:5px 7px; border-left:3px solid #E74C3C;">
+          <div style="font-size:6.5px; color:#999; text-transform:uppercase;">Salidas</div>
+          <div style="font-size:12px; font-weight:700; color:#1A1B3A;">406</div>
+        </div>
+        <div style="flex:1; background:#fff; border:1px solid #eee; border-radius:5px; padding:5px 7px; border-left:3px solid #3498DB;">
+          <div style="font-size:6.5px; color:#999; text-transform:uppercase;">Unidades</div>
+          <div style="font-size:12px; font-weight:700; color:#1A1B3A;">24,500</div>
+        </div>
+      </div>
+      <!-- Tabla con borde y sombra sutil -->
+      <div style="padding:8px 14px; background:#fff;">
+        <div style="border-radius:5px; overflow:hidden; border:1px solid #D8D8D8; box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+          <div style="background:#1A1B3A; display:flex; padding:5px 7px;">
+            <div style="color:#E74C3C; font-size:6.5px; font-weight:700; flex:2; text-transform:uppercase;">N° Operación</div>
+            <div style="color:#E74C3C; font-size:6.5px; font-weight:700; flex:1; text-align:center; text-transform:uppercase;">Tipo</div>
+            <div style="color:#E74C3C; font-size:6.5px; font-weight:700; flex:2; text-transform:uppercase;">Cliente</div>
+            <div style="color:#E74C3C; font-size:6.5px; font-weight:700; flex:1; text-align:right; text-transform:uppercase;">Unidades</div>
+          </div>
+          <div style="display:flex; padding:3px 7px; background:#fff; border-bottom:1px solid #F0F0F0;">
+            <div style="font-size:6.5px; color:#333; flex:2; font-weight:500;">CO-2026-001</div>
+            <div style="font-size:6.5px; color:#2ECC71; flex:1; text-align:center; font-weight:600;">Entrada</div>
+            <div style="font-size:6.5px; color:#555; flex:2;">Cliente ABC S.A.S.</div>
+            <div style="font-size:6.5px; color:#333; flex:1; text-align:right; font-weight:500;">480</div>
+          </div>
+          <div style="display:flex; padding:3px 7px; background:#FAFAFA; border-bottom:1px solid #F0F0F0;">
+            <div style="font-size:6.5px; color:#333; flex:2; font-weight:500;">PK-2026-002</div>
+            <div style="font-size:6.5px; color:#E74C3C; flex:1; text-align:center; font-weight:600;">Salida</div>
+            <div style="font-size:6.5px; color:#555; flex:2;">Empresa XYZ Ltda.</div>
+            <div style="font-size:6.5px; color:#333; flex:1; text-align:right; font-weight:500;">320</div>
+          </div>
+          <div style="display:flex; padding:3px 7px; background:#fff;">
+            <div style="font-size:6.5px; color:#333; flex:2; font-weight:500;">CO-2026-003</div>
+            <div style="font-size:6.5px; color:#2ECC71; flex:1; text-align:center; font-weight:600;">Entrada</div>
+            <div style="font-size:6.5px; color:#555; flex:2;">Logística Norte S.A.</div>
+            <div style="font-size:6.5px; color:#333; flex:1; text-align:right; font-weight:500;">750</div>
+          </div>
+        </div>
+      </div>
+      <!-- Footer -->
+      <div style="background:linear-gradient(135deg,#1A1B3A,#0F1023); padding:6px 14px; display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <div style="font-size:7px; color:#E74C3C; font-weight:600;">CenthriX WMS · ISTHO S.A.S.</div>
+          <div style="font-size:6.5px; color:#555;">Girardota, Antioquia</div>
+        </div>
+        <div style="font-size:7px; color:#E74C3C; font-weight:600;">Pág. 1 / 4</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Logo + tabla con borde y sombra</h3>
+      <p>Logo ISTHO en el header. Tabla con borde gris y sombra suave que la separa del fondo.</p>
+    </div>
+  </div>
+
+  <!-- Opción B: Logo + tabla con encabezado de sección -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0; overflow:hidden; border-radius:8px 8px 0 0; background:#fff;">
+      <div style="background:linear-gradient(135deg,#1A1B3A,#0F1023); padding:0;">
+        <div style="background:#E74C3C; height:3px;"></div>
+        <div style="padding:10px 14px; display:flex; align-items:center; gap:12px;">
+          <div style="width:38px; height:38px; background:rgba(255,255,255,0.12); border-radius:6px; border:1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <div style="width:28px; height:14px; background:#fff; border-radius:2px; opacity:0.9;"></div>
+          </div>
+          <div style="flex:1;">
+            <div style="color:#E74C3C; font-size:7px; font-weight:700; letter-spacing:1.5px;">ISTHO S.A.S. · CenthriX WMS</div>
+            <div style="color:#fff; font-size:12px; font-weight:700; margin-top:2px;">Reporte de Operaciones</div>
+          </div>
+          <div style="color:#aaa; font-size:8px;">08/04/2026</div>
+        </div>
+      </div>
+      <!-- KPIs -->
+      <div style="padding:7px 14px; background:#F9F9F9; border-bottom:1px solid #eee; display:flex; gap:5px;">
+        <div style="flex:1; background:#fff; border:1px solid #eee; border-radius:5px; padding:5px 7px; border-left:3px solid #E74C3C;">
+          <div style="font-size:6.5px; color:#999; text-transform:uppercase;">Total</div>
+          <div style="font-size:12px; font-weight:700; color:#1A1B3A;">1,248</div>
+        </div>
+        <div style="flex:1; background:#fff; border:1px solid #eee; border-radius:5px; padding:5px 7px; border-left:3px solid #2ECC71;">
+          <div style="font-size:6.5px; color:#999; text-transform:uppercase;">Entradas</div>
+          <div style="font-size:12px; font-weight:700; color:#1A1B3A;">842</div>
+        </div>
+        <div style="flex:1; background:#fff; border:1px solid #eee; border-radius:5px; padding:5px 7px; border-left:3px solid #E74C3C;">
+          <div style="font-size:6.5px; color:#999; text-transform:uppercase;">Salidas</div>
+          <div style="font-size:12px; font-weight:700; color:#1A1B3A;">406</div>
+        </div>
+        <div style="flex:1; background:#fff; border:1px solid #eee; border-radius:5px; padding:5px 7px; border-left:3px solid #3498DB;">
+          <div style="font-size:6.5px; color:#999; text-transform:uppercase;">Unidades</div>
+          <div style="font-size:12px; font-weight:700; color:#1A1B3A;">24,500</div>
+        </div>
+      </div>
+      <!-- Tabla con etiqueta de sección -->
+      <div style="padding:8px 14px; background:#fff;">
+        <div style="font-size:7px; color:#E74C3C; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; display:flex; align-items:center; gap:4px;">
+          <div style="width:10px; height:2px; background:#E74C3C; border-radius:1px;"></div>
+          Detalle de Operaciones
+        </div>
+        <div style="border-radius:5px; overflow:hidden; border:1.5px solid #1A1B3A;">
+          <div style="background:#1A1B3A; display:flex; padding:5px 7px;">
+            <div style="color:#E74C3C; font-size:6.5px; font-weight:700; flex:2; text-transform:uppercase;">N° Operación</div>
+            <div style="color:#E74C3C; font-size:6.5px; font-weight:700; flex:1; text-align:center; text-transform:uppercase;">Tipo</div>
+            <div style="color:#E74C3C; font-size:6.5px; font-weight:700; flex:2; text-transform:uppercase;">Cliente</div>
+            <div style="color:#E74C3C; font-size:6.5px; font-weight:700; flex:1; text-align:right; text-transform:uppercase;">Unidades</div>
+          </div>
+          <div style="display:flex; padding:3px 7px; background:#fff; border-bottom:1px solid #F0F0F0;">
+            <div style="font-size:6.5px; color:#333; flex:2;">CO-2026-001</div>
+            <div style="font-size:6.5px; color:#2ECC71; flex:1; text-align:center; font-weight:600;">Entrada</div>
+            <div style="font-size:6.5px; color:#555; flex:2;">Cliente ABC S.A.S.</div>
+            <div style="font-size:6.5px; flex:1; text-align:right; color:#333;">480</div>
+          </div>
+          <div style="display:flex; padding:3px 7px; background:#FAFAFA; border-bottom:1px solid #F0F0F0;">
+            <div style="font-size:6.5px; color:#333; flex:2;">PK-2026-002</div>
+            <div style="font-size:6.5px; color:#E74C3C; flex:1; text-align:center; font-weight:600;">Salida</div>
+            <div style="font-size:6.5px; color:#555; flex:2;">Empresa XYZ Ltda.</div>
+            <div style="font-size:6.5px; flex:1; text-align:right; color:#333;">320</div>
+          </div>
+          <div style="display:flex; padding:3px 7px; background:#fff;">
+            <div style="font-size:6.5px; color:#333; flex:2;">CO-2026-003</div>
+            <div style="font-size:6.5px; color:#2ECC71; flex:1; text-align:center; font-weight:600;">Entrada</div>
+            <div style="font-size:6.5px; color:#555; flex:2;">Logística Norte S.A.</div>
+            <div style="font-size:6.5px; flex:1; text-align:right; color:#333;">750</div>
+          </div>
+        </div>
+      </div>
+      <!-- Footer -->
+      <div style="background:linear-gradient(135deg,#1A1B3A,#0F1023); padding:6px 14px; display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <div style="font-size:7px; color:#E74C3C; font-weight:600;">CenthriX WMS · ISTHO S.A.S.</div>
+          <div style="font-size:6.5px; color:#555;">Girardota, Antioquia</div>
+        </div>
+        <div style="font-size:7px; color:#E74C3C; font-weight:600;">Pág. 1 / 4</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Logo + tabla con borde oscuro y título de sección</h3>
+      <p>Borde de la tabla en color oscuro (#1A1B3A) para más contraste. Etiqueta roja "Detalle de Operaciones" encima.</p>
+    </div>
+  </div>
+
+</div>
