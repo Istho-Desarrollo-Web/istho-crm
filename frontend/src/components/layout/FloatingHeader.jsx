@@ -696,9 +696,8 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
         <div className="sticky top-0 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-700 px-4 py-4 z-10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-sm">
-                <span className="text-white text-sm font-bold">IS</span>
-              </div>
+              <img src={logoBlanco} alt="ISTHO" className="w-8 h-8 rounded-lg dark:hidden" />
+              <img src={logoNegro} alt="ISTHO" className="w-8 h-8 rounded-lg hidden dark:block" />
               <span className="text-xl font-bold text-slate-800 dark:text-white">CRM</span>
             </div>
             <button
@@ -825,7 +824,7 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
         {/* Footer */}
         <div className="p-4 text-center border-t border-gray-100 dark:border-slate-700">
           <p className="text-xs text-slate-400 dark:text-slate-500">
-            © 2026 ISTHO CRM v4.0.0
+            © 2026 ISTHO CRM v2.0.0
           </p>
         </div>
       </div>
@@ -921,25 +920,25 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
           <div className="py-1">
             <button
               onClick={() => handleNavigate('/perfil')}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
             >
-              <UserCircle className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+              <UserCircle className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               Ver Perfil
             </button>
 
             <button
               onClick={() => handleNavigate('/configuracion')}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
             >
-              <Settings className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+              <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               Configuración
             </button>
 
             <button
               onClick={() => handleNavigate('/notificaciones')}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
             >
-              <Bell className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+              <Bell className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               Notificaciones
             </button>
           </div>
@@ -948,7 +947,7 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
           <div className="border-t border-gray-100 dark:border-slate-700 py-1">
             <button
               onClick={() => { setIsOpen(false); onLogout(); }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors"
             >
               <LogOut className="w-4 h-4" />
               Cerrar Sesión
@@ -1073,12 +1072,12 @@ const FloatingHeader = () => {
                 onClick={() => navigate('/dashboard')}
               >
                 <img
-                  src={logoNegro}
+                  src={logoBlanco}
                   alt="ISTHO"
                   className="w-10 h-10 rounded-lg shadow-lg shadow-orange-500/20 dark:hidden"
                 />
                 <img
-                  src={logoBlanco}
+                  src={logoNegro}
                   alt="ISTHO"
                   className="w-10 h-10 rounded-lg shadow-lg shadow-orange-500/20 hidden dark:block"
                 />
@@ -1161,7 +1160,7 @@ const FloatingHeader = () => {
                   className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-400 bg-slate-100 dark:bg-slate-800 border border-transparent hover:border-slate-300 dark:hover:border-slate-600 rounded-lg transition-all w-48 xl:w-56"
                 >
                   <Search className="w-4 h-4" />
-                  <span className="flex-1 text-left">Buscar (⌘K)...</span>
+                  <span className="flex-1 text-left">Buscar (Ctrl+K)...</span>
                 </button>
               </div>
 
@@ -1216,7 +1215,7 @@ const FloatingHeader = () => {
                             <p className="text-sm text-slate-500 dark:text-slate-400">No hay notificaciones</p>
                           </div>
                         ) : (
-                          notificaciones.map((notif) => {
+                          [...notificaciones].sort((a, b) => (a.leida === b.leida ? 0 : a.leida ? 1 : -1)).map((notif) => {
                             const typeConfig = {
                               despacho: { icon: Truck, bg: 'bg-blue-100 dark:bg-blue-900/30', color: 'text-blue-600' },
                               alerta: { icon: AlertTriangle, bg: 'bg-amber-100 dark:bg-amber-900/30', color: 'text-amber-600' },

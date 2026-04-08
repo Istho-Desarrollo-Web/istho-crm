@@ -20,7 +20,6 @@ import auditoriasService from '../../../api/auditorias.service';
 import {
   Eye,
   Search,
-  Download,
   FileSpreadsheet,
   MoreVertical,
   Clock,
@@ -35,7 +34,6 @@ import {
   LayoutGrid,
 } from 'lucide-react';
 import { Pagination } from '../../../components/common';
-import { exportToCsv } from '../../../utils/exportCsv';
 import { formatDate } from '../../../utils/formatDate';
 import PageFooter from '@components/common/PageFooter';
 
@@ -231,19 +229,6 @@ const SalidasList = () => {
     navigate(`/inventario/salidas/${salida.id}`);
   };
 
-  const handleExportCsv = () => {
-    exportToCsv(filtered, [
-      { key: 'documento_wms', label: 'Documento WMS' },
-      { key: 'documento', label: 'Operación' },
-      { key: 'cliente', label: 'Cliente' },
-      { key: 'tipo_documento_wms', label: 'Tipo Doc.' },
-      { key: 'fecha_salida', label: 'Fecha Salida' },
-      { key: 'lineas', label: 'Total Líneas' },
-      { key: 'lineas_verificadas', label: 'Líneas Verificadas' },
-      { key: 'estado', label: 'Estado' },
-    ], 'salidas_inventario');
-  };
-
   const handleExportExcel = () => {
     const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
     const token = localStorage.getItem('istho_token');
@@ -281,13 +266,6 @@ const SalidasList = () => {
               >
                 <FileSpreadsheet className="w-4 h-4" />
                 Excel
-              </button>
-              <button
-                onClick={handleExportCsv}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                CSV
               </button>
             </div>
           )}

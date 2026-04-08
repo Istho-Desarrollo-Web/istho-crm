@@ -415,7 +415,16 @@ const CajaMenorList = () => {
               <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestión de cajas menores y saldos</p>
             </div>
           </div>
-          {/* Botón movido a la barra de filtros */}
+            {/* Botón exportar Excel */}
+            {cajas.length > 0 && (
+              <button
+                onClick={handleExportExcel}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                Excel
+              </button>
+            )}
         </div>
 
         {/* KPI CARDS */}
@@ -491,16 +500,7 @@ const CajaMenorList = () => {
               ))}
             </div>
 
-            {/* Botón exportar Excel */}
-            {cajas.length > 0 && (
-              <button
-                onClick={handleExportExcel}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                Excel
-              </button>
-            )}
+          
 
             {/* Botón crear */}
             <ProtectedAction module="caja_menor" action="crear">

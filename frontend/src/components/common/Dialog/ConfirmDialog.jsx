@@ -62,6 +62,8 @@ const ConfirmDialog = ({
   cancelText = 'Cancelar',
   type = 'danger',
   loading = false,
+  customContent,
+  hideConfirmButton = false,
 }) => {
   // Usar config del tipo o fallback si no existe
   const config = DIALOG_TYPES[type] || DEFAULT_CONFIG;
@@ -87,19 +89,22 @@ const ConfirmDialog = ({
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-semibold text-slate-800 mb-2">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">
           {title}
         </h3>
 
         {/* Message */}
         {message && (
-          <p className="text-slate-500 text-sm mb-6">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
             {message}
           </p>
         )}
 
+        {/* Custom content (e.g. opciones de estado) */}
+        {customContent}
+
         {/* Actions */}
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center gap-3 mt-4">
           <Button
             variant="outline"
             onClick={onClose}
@@ -107,13 +112,15 @@ const ConfirmDialog = ({
           >
             {cancelText}
           </Button>
-          <Button
-            variant={config.confirmVariant}
-            onClick={handleConfirm}
-            loading={loading}
-          >
-            {confirmText}
-          </Button>
+          {!hideConfirmButton && (
+            <Button
+              variant={config.confirmVariant}
+              onClick={handleConfirm}
+              loading={loading}
+            >
+              {confirmText}
+            </Button>
+          )}
         </div>
       </div>
     </Modal>
@@ -123,13 +130,15 @@ const ConfirmDialog = ({
 ConfirmDialog.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func,
   title: PropTypes.string,
   message: PropTypes.string,
   confirmText: PropTypes.string,
   cancelText: PropTypes.string,
   type: PropTypes.oneOf(['danger', 'warning', 'info', 'success']),
   loading: PropTypes.bool,
+  customContent: PropTypes.node,
+  hideConfirmButton: PropTypes.bool,
 };
 
 export default ConfirmDialog;

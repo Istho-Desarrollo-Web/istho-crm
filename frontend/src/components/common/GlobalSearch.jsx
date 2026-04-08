@@ -104,7 +104,7 @@ const MODULE_CONFIG = [
       const data = Array.isArray(res?.data) ? res.data : res?.data?.viajes || [];
       return data.map(v => ({
         id: v.id,
-        title: v.numero_viaje || `Viaje #${v.id}`,
+        title: v.numero || `Viaje #${v.id}`,
         subtitle: v.destino || '-',
         path: `/viajes/${v.id}`,
       }));

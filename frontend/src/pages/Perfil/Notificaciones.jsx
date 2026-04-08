@@ -219,7 +219,7 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
 const Notificaciones = () => {
   const _navigate = useNavigate();
   const { success, apiError } = useNotification();
-  const { fetchCount } = useNotificaciones();
+  const { fetchCount, marcarLeida: ctxMarcarLeida, marcarTodasLeidas: ctxMarcarTodasLeidas } = useNotificaciones();
 
   // ──────────────────────────────────────────────────────────────────────────
   // ESTADOS
@@ -301,9 +301,8 @@ const Notificaciones = () => {
 
   const handleMarcarLeida = async (id) => {
     try {
-      await notificacionesService.marcarLeida(id);
+      await ctxMarcarLeida(id); // Actualiza badge inmediatamente
       setNotificaciones(prev => prev.map(n => n.id === id ? { ...n, leida: true, fecha_lectura: new Date() } : n));
-      fetchCount();
     } catch (err) {
       apiError(err);
     }
@@ -311,9 +310,8 @@ const Notificaciones = () => {
 
   const handleMarcarTodasLeidas = async () => {
     try {
-      await notificacionesService.marcarTodasLeidas();
+      await ctxMarcarTodasLeidas(); // Pone badge a 0 inmediatamente
       setNotificaciones(prev => prev.map(n => ({ ...n, leida: true, fecha_lectura: new Date() })));
-      fetchCount();
       success('Todas las notificaciones marcadas como leídas');
     } catch (err) {
       apiError(err);

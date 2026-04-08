@@ -544,7 +544,7 @@ const UsuariosList = () => {
             )}
             <div className="flex gap-2 justify-end">
               <button
-                onClick={() => { setShowResetPassword(null); setNewPassword(''); setEnviarCorreoReset(false); }}
+                onClick={() => { setShowResetPassword(null); setNewPassword(''); setEnviarCorreoReset(false);  }}
                 className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"
               >
                 Cancelar

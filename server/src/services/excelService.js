@@ -9,7 +9,10 @@
  */
 
 const ExcelJS = require('exceljs');
+const path = require('path');
 const logger = require('../utils/logger');
+
+const LOGO_PATH = path.join(__dirname, '../assets/logo-negro.png');
 
 // ═══════════════════════════════════════════════════════════════════════════
 // COLORES Y ESTILOS
@@ -65,38 +68,45 @@ const fechaHoy = () => new Date().toLocaleDateString('es-CO', {
 });
 
 /**
- * Encabezado corporativo mejorado con merge dinámico
+ * Encabezado corporativo con logo
  */
-const agregarEncabezado = (ws, titulo, subtitulo, totalCols) => {
+const agregarEncabezado = (ws, titulo, subtitulo, totalCols, wb) => {
   const lastCol = String.fromCharCode(64 + Math.min(totalCols, 26));
 
-  // Fila 1: Título
-  ws.mergeCells(`A1:${lastCol}1`);
-  const c1 = ws.getCell('A1');
-  c1.value = `ISTHO S.A.S.`;
+  ws.getRow(1).height = 30;
+  ws.getRow(2).height = 22;
+  ws.getRow(3).height = 16;
+  ws.getRow(4).height = 6;
+
+  // Logo en columna A (tamaño fijo para no distorsionar)
+  try {
+    const logoId = wb.addImage({ filename: LOGO_PATH, extension: 'png' });
+    ws.addImage(logoId, { tl: { col: 0, row: 0 }, ext: { width: 120, height: 95 }, editAs: 'oneCell' });
+  } catch (_) { /* si el logo no está disponible, continúa sin él */ }
+
+  // Fila 1: Nombre empresa (desde col C)
+  ws.mergeCells(`C1:${lastCol}1`);
+  const c1 = ws.getCell('C1');
+  c1.value = 'ISTHO S.A.S.';
   c1.font = { bold: true, size: 18, color: { argb: C.azulOscuro } };
   c1.alignment = { horizontal: 'center', vertical: 'middle' };
-  ws.getRow(1).height = 30;
 
-  // Fila 2: Subtítulo del reporte
-  ws.mergeCells(`A2:${lastCol}2`);
-  const c2 = ws.getCell('A2');
+  // Fila 2: Título del reporte
+  ws.mergeCells(`C2:${lastCol}2`);
+  const c2 = ws.getCell('C2');
   c2.value = titulo;
   c2.font = { bold: true, size: 13, color: { argb: C.naranja } };
   c2.alignment = { horizontal: 'center', vertical: 'middle' };
-  ws.getRow(2).height = 22;
 
   // Fila 3: Fecha / filtro aplicado
-  ws.mergeCells(`A3:${lastCol}3`);
-  const c3 = ws.getCell('A3');
+  ws.mergeCells(`C3:${lastCol}3`);
+  const c3 = ws.getCell('C3');
   c3.value = subtitulo || `Generado el ${fechaHoy()}`;
   c3.font = { size: 9, italic: true, color: { argb: C.textoGris } };
   c3.alignment = { horizontal: 'center' };
 
   // Fila 4: separador
-  ws.getRow(4).height = 6;
-
-  return 5; // fila donde empieza el contenido
+  return 5;
 };
 
 /**
@@ -260,7 +270,7 @@ const exportarOperaciones = async (operaciones, filtros = {}) => {
       sub = `Período: ${desde} al ${hasta} | Generado el ${fechaHoy()}`;
     }
 
-    let fila = agregarEncabezado(ws, 'REPORTE DE OPERACIONES', sub, COLS.length);
+    let fila = agregarEncabezado(ws, 'REPORTE DE OPERACIONES', sub, COLS.length, wb);
 
     // Calcular estadísticas
     const totalOps = operaciones.length;
@@ -278,7 +288,7 @@ const exportarOperaciones = async (operaciones, filtros = {}) => {
       { label: 'Salidas:', value: salidas },
       { label: 'Cerradas:', value: cerradas },
       { label: 'Pendientes:', value: pendientes },
-      { label: 'Total Unidades:', value: totalUds, numFmt: '#,##0.000' },
+      { label: 'Total Unidades:', value: totalUds, numFmt: '0' },
       { label: 'Total Referencias:', value: totalRefs },
       { label: 'Total Averías:', value: totalAvg },
     ], COLS.length);
@@ -306,7 +316,7 @@ const exportarOperaciones = async (operaciones, filtros = {}) => {
         const cell = ws.getCell(dataFila + idx, ci + 1);
         estiloCelda(cell, ci, idx, { align: COLS[ci].align });
         if (ci === 4 && val) cell.numFmt = 'DD/MM/YYYY';
-        if (ci === 7) cell.numFmt = '#,##0.000';
+        if (ci === 7) cell.numFmt = '0';
         if (ci === 1) {
           const tipo = (op.tipo || '').toLowerCase();
           cell.font = { bold: true, color: { argb: tipo === 'ingreso' ? C.verde : C.azulMedio } };
@@ -325,7 +335,7 @@ const exportarOperaciones = async (operaciones, filtros = {}) => {
     agregarFilaTotales(ws, dataFila + operaciones.length + 1, [
       { col: 1, value: 'TOTALES' },
       { col: 7, value: totalRefs },
-      { col: 8, value: totalUds, numFmt: '#,##0.000' },
+      { col: 8, value: totalUds, numFmt: '0' },
       { col: 9, value: totalAvg },
     ], COLS.length);
 
@@ -378,7 +388,7 @@ const exportarInventario = async (inventario, filtros = {}) => {
     }
     if (subParts.length) sub = `${subParts.join(' | ')} | Generado el ${fechaHoy()}`;
 
-    let fila = agregarEncabezado(ws, 'REPORTE DE INVENTARIO', sub, COLS.length);
+    let fila = agregarEncabezado(ws, 'REPORTE DE INVENTARIO', sub, COLS.length, wb);
 
     // Estadísticas
     const totalItems = inventario.length;
@@ -504,7 +514,7 @@ const exportarClientes = async (clientes) => {
 
     ws.columns = COLS.map(c => ({ width: c.width }));
 
-    let fila = agregarEncabezado(ws, 'DIRECTORIO DE CLIENTES', null, COLS.length);
+    let fila = agregarEncabezado(ws, 'DIRECTORIO DE CLIENTES', null, COLS.length, wb);
 
     // Estadísticas
     const total = clientes.length;
@@ -596,16 +606,23 @@ const exportarDetalleOperacion = async (operacion) => {
       { width: 13 }, { width: 10 }, { width: 14 }, { width: 14 }, { width: 12 },
     ];
 
-    // Encabezado
-    ws.mergeCells('A1:H1');
-    const c1 = ws.getCell('A1');
+    // Encabezado con logo
+    ws.getRow(1).height = 30;
+    ws.getRow(2).height = 22;
+    ws.getRow(3).height = 6;
+    try {
+      const logoId = wb.addImage({ filename: LOGO_PATH, extension: 'png' });
+      ws.addImage(logoId, { tl: { col: 0, row: 0 }, br: { col: 2, row: 2 }, editAs: 'oneCell' });
+    } catch (_) {}
+
+    ws.mergeCells('C1:H1');
+    const c1 = ws.getCell('C1');
     c1.value = 'ISTHO S.A.S.';
     c1.font = { bold: true, size: 18, color: { argb: C.azulOscuro } };
     c1.alignment = { horizontal: 'center', vertical: 'middle' };
-    ws.getRow(1).height = 30;
 
-    ws.mergeCells('A2:H2');
-    const c2 = ws.getCell('A2');
+    ws.mergeCells('C2:H2');
+    const c2 = ws.getCell('C2');
     c2.value = `DETALLE DE OPERACIÓN — ${operacion.numero_operacion}`;
     c2.font = { bold: true, size: 13, color: { argb: C.naranja } };
     c2.alignment = { horizontal: 'center' };
@@ -755,7 +772,7 @@ const exportarViajes = async (viajes, filtros = {}) => {
     sub = `Período: ${filtros.fecha_desde || '...'} al ${filtros.fecha_hasta || '...'} | Generado el ${fechaHoy()}`;
   }
 
-  let fila = agregarEncabezado(ws, 'REPORTE DE VIAJES', sub, COLS.length);
+  let fila = agregarEncabezado(ws, 'REPORTE DE VIAJES', sub, COLS.length, wb);
 
   const total = viajes.length;
   const activos = viajes.filter(v => v.estado === 'activo').length;
@@ -838,7 +855,7 @@ const exportarCajasMenores = async (cajas) => {
 
   ws.columns = COLS.map(c => ({ width: c.width }));
 
-  let fila = agregarEncabezado(ws, 'REPORTE DE CAJAS MENORES', null, COLS.length);
+  let fila = agregarEncabezado(ws, 'REPORTE DE CAJAS MENORES', null, COLS.length, wb);
 
   const abiertas = cajas.filter(c => c.estado === 'abierta').length;
   const cerradas = cajas.filter(c => c.estado === 'cerrada').length;
@@ -926,7 +943,7 @@ const exportarMovimientos = async (movimientos) => {
 
   ws.columns = COLS.map(c => ({ width: c.width }));
 
-  let fila = agregarEncabezado(ws, 'REPORTE DE MOVIMIENTOS DE CAJA MENOR', null, COLS.length);
+  let fila = agregarEncabezado(ws, 'REPORTE DE MOVIMIENTOS DE CAJA MENOR', null, COLS.length, wb);
 
   const totalMov = movimientos.length;
   const ingresos = movimientos.filter(m => m.tipo_movimiento === 'ingreso');
@@ -1014,7 +1031,7 @@ const exportarVehiculos = async (vehiculos) => {
 
   ws.columns = COLS.map(c => ({ width: c.width }));
 
-  let fila = agregarEncabezado(ws, 'REPORTE DE VEHÍCULOS', null, COLS.length);
+  let fila = agregarEncabezado(ws, 'REPORTE DE VEHÍCULOS', null, COLS.length, wb);
 
   const activos = vehiculos.filter(v => v.estado === 'activo').length;
   const mantenimiento = vehiculos.filter(v => v.estado === 'mantenimiento').length;

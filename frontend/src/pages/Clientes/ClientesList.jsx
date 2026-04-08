@@ -458,7 +458,7 @@ const ClientesList = () => {
             <Button
               variant="ghost"
               icon={RefreshCw}
-              onClick={fetchClientes}
+              onClick={() => fetchClientes()}
               title="Actualizar datos"
             />
 
@@ -514,15 +514,6 @@ const ClientesList = () => {
                   {Object.values(filters).filter(Boolean).length}
                 </span>
               )}
-            </Button>
-
-            <Button
-              variant="outline"
-              icon={RefreshCw}
-              onClick={refresh}
-              loading={loading}
-            >
-              <span className="hidden sm:inline">Actualizar</span>
             </Button>
 
             <ProtectedAction module="clientes" action="crear">
@@ -823,28 +814,38 @@ const ClientesList = () => {
           onClose={() => setStatusModal({ isOpen: false, cliente: null })}
           title="Cambiar Estado"
           message={`Selecciona el nuevo estado para "${statusModal.cliente?.razon_social}"`}
+          type="warning"
           loading={formLoading}
           customContent={
-            <div className="space-y-2 mt-4">
-              {FILTER_OPTIONS.estado.map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => handleConfirmStatusChange(opt.value)}
-                  disabled={statusModal.cliente?.estado === opt.value}
-                  className={`
-                    w-full p-3 text-left rounded-xl border transition-colors
-                    ${statusModal.cliente?.estado === opt.value
-                      ? 'bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-400 cursor-not-allowed'
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20'
-                    }
-                  `}
-                >
-                  {opt.label}
-                  {statusModal.cliente?.estado === opt.value && (
-                    <span className="text-xs ml-2">(actual)</span>
-                  )}
-                </button>
-              ))}
+            <div className="space-y-2">
+              {FILTER_OPTIONS.estado.map(opt => {
+                const isActual = statusModal.cliente?.estado === opt.value;
+                const colores = {
+                  activo: { active: 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400', badge: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' },
+                  inactivo: { active: 'border-slate-400 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300', badge: 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400' },
+                  suspendido: { active: 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400', badge: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' },
+                };
+                const c = colores[opt.value] || colores.inactivo;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => !isActual && handleConfirmStatusChange(opt.value)}
+                    disabled={isActual || formLoading}
+                    className={`
+                      w-full p-3 flex items-center justify-between rounded-xl border-2 transition-all text-sm font-medium
+                      ${isActual
+                        ? `${c.active} cursor-not-allowed opacity-80`
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer'
+                      }
+                    `}
+                  >
+                    <span>{opt.label}</span>
+                    {isActual && (
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${c.badge}`}>Estado actual</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           }
           hideConfirmButton

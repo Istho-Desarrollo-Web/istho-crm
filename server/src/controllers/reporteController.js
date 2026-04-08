@@ -903,6 +903,128 @@ const getPeriodosDisponibles = async (req, res) => {
 };
 
 // =============================================
+// EXPORTAR VIAJES A PDF
+// =============================================
+
+const exportarViajesPDF = async (req, res) => {
+  try {
+    const where = {};
+    if (req.query.conductor_id) where.conductor_id = req.query.conductor_id;
+    if (req.query.vehiculo_id) where.vehiculo_id = req.query.vehiculo_id;
+    if (req.query.caja_menor_id) where.caja_menor_id = req.query.caja_menor_id;
+    if (req.query.estado && req.query.estado !== 'todos') where.estado = req.query.estado;
+    if (req.query.fecha_desde || req.query.fecha_hasta) {
+      where.fecha = {};
+      if (req.query.fecha_desde) where.fecha[Op.gte] = req.query.fecha_desde;
+      if (req.query.fecha_hasta) where.fecha[Op.lte] = req.query.fecha_hasta;
+    }
+    if (req.user.esConductor) where.conductor_id = req.user.id;
+
+    const viajes = await Viaje.findAll({
+      where,
+      include: [
+        { model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa', 'tipo_vehiculo'] },
+        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
+      ],
+      order: [['fecha', 'DESC']],
+      limit: MAX_EXPORT_ROWS,
+    });
+
+    const buffer = await pdfService.generarPDFViajes(viajes, req.query);
+    const filename = `viajes_${new Date().toISOString().split('T')[0]}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+
+    logger.info('PDF viajes generado:', { registros: viajes.length });
+  } catch (error) {
+    logger.error('Error al exportar viajes PDF:', { message: error.message });
+    return serverError(res, 'Error al generar reporte de viajes', error);
+  }
+};
+
+// =============================================
+// EXPORTAR CAJAS MENORES A PDF
+// =============================================
+
+const exportarCajasMenoresPDF = async (req, res) => {
+  try {
+    const where = {};
+    if (req.query.estado && req.query.estado !== 'todos') where.estado = req.query.estado;
+    if (req.query.asignado_a) where.asignado_a = req.query.asignado_a;
+    if (req.user.esConductor) where.asignado_a = req.user.id;
+
+    const cajas = await CajaMenor.findAll({
+      where,
+      include: [
+        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo', 'username'] },
+      ],
+      order: [['created_at', 'DESC']],
+      limit: MAX_EXPORT_ROWS,
+    });
+
+    const buffer = await pdfService.generarPDFCajasMenores(cajas, req.query);
+    const filename = `cajas_menores_${new Date().toISOString().split('T')[0]}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+
+    logger.info('PDF cajas menores generado:', { registros: cajas.length });
+  } catch (error) {
+    logger.error('Error al exportar cajas menores PDF:', { message: error.message });
+    return serverError(res, 'Error al generar reporte de cajas menores', error);
+  }
+};
+
+// =============================================
+// EXPORTAR GASTOS (MOVIMIENTOS) A PDF
+// =============================================
+
+const exportarGastosPDF = async (req, res) => {
+  try {
+    const where = {};
+    if (req.query.caja_menor_id) where.caja_menor_id = req.query.caja_menor_id;
+    if (req.query.concepto) where.concepto = req.query.concepto;
+    if (req.query.tipo_movimiento) where.tipo_movimiento = req.query.tipo_movimiento;
+    if (req.query.aprobado === 'pendiente') {
+      where.aprobado = false;
+      where.rechazado = false;
+    } else if (req.query.aprobado === 'aprobado' || req.query.aprobado === 'true') {
+      where.aprobado = true;
+    } else if (req.query.aprobado === 'rechazado') {
+      where.rechazado = true;
+    }
+    if (req.query.usuario_id) where.usuario_id = req.query.usuario_id;
+    if (req.user.esConductor) where.usuario_id = req.user.id;
+
+    const movimientos = await MovimientoCajaMenor.findAll({
+      where,
+      include: [
+        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
+        { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
+        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
+      ],
+      order: [['created_at', 'DESC']],
+      limit: MAX_EXPORT_ROWS,
+    });
+
+    const buffer = await pdfService.generarPDFGastos(movimientos, req.query);
+    const filename = `gastos_${new Date().toISOString().split('T')[0]}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+
+    logger.info('PDF gastos generado:', { registros: movimientos.length });
+  } catch (error) {
+    logger.error('Error al exportar gastos PDF:', { message: error.message });
+    return serverError(res, 'Error al generar reporte de gastos', error);
+  }
+};
+
+// =============================================
 // #9 - REPORTES PROGRAMADOS (CRUD)
 // =============================================
 
@@ -1802,4 +1924,7 @@ module.exports = {
   actualizarProgramado,
   eliminarProgramado,
   ejecutarProgramadoManual,
+  exportarViajesPDF,
+  exportarCajasMenoresPDF,
+  exportarGastosPDF,
 };

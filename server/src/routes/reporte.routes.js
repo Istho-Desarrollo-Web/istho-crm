@@ -62,7 +62,9 @@ router.get('/gastos-reporte', reporteController.getReporteGastos);
 // =============================================
 
 router.get('/viajes/excel', reporteController.exportarViajesExcel);
+router.get('/viajes/pdf', reporteController.exportarViajesPDF);
 router.get('/cajas-menores/excel', reporteController.exportarCajasMenoresExcel);
+router.get('/cajas-menores/pdf', reporteController.exportarCajasMenoresPDF);
 router.get('/cajas-menores/:id/excel', reporteController.exportarCajaMenorExcel);
 
 // =============================================
@@ -77,6 +79,7 @@ router.get('/vehiculos/csv', reporteController.exportarVehiculosCsv);
 // =============================================
 
 router.get('/movimientos/excel', reporteController.exportarMovimientosExcel);
+router.get('/movimientos/pdf', reporteController.exportarGastosPDF);
 router.get('/movimientos/csv', reporteController.exportarMovimientosCsv);
 
 // =============================================

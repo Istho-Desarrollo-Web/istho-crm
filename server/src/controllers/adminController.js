@@ -203,6 +203,12 @@ const actualizarUsuario = async (req, res) => {
       usuario.rol = rol.codigo;
       usuario.rol_id = rol.id;
       usuario.cliente_id = rol.es_cliente ? (cliente_id || usuario.cliente_id) : null;
+    } else if (cliente_id !== undefined) {
+      // Mismo rol pero se actualiza el cliente asociado (solo aplica si el rol actual es de tipo cliente)
+      const rolActual = await Rol.findByPk(usuario.rol_id);
+      if (rolActual?.es_cliente) {
+        usuario.cliente_id = cliente_id || null;
+      }
     }
 
     // Si cambia email, verificar unicidad

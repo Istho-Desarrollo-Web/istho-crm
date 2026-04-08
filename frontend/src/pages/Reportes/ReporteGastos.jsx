@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Receipt, DollarSign, CheckCircle, Clock, FileSpreadsheet, Download, Calendar, ArrowLeft, RefreshCw, Mail, Filter, X, Search, Loader2 } from 'lucide-react';
+import { Receipt, DollarSign, CheckCircle, Clock, FileSpreadsheet, FileText, Calendar, ArrowLeft, RefreshCw, Mail, Filter, X, Search, Loader2 } from 'lucide-react';
 import { KpiCard, AccionesDropdown } from '../../components/common';
 import { BarChart, PieChart } from '../../components/charts';
 import reportesService from '../../api/reportes.service';
@@ -98,7 +98,7 @@ const ReporteGastos = () => {
           <AccionesDropdown acciones={[
             { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
             { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel') },
-            { label: 'CSV', icon: Download, onClick: () => handleExport('csv') },
+            { label: 'PDF', icon: FileText, onClick: () => handleExport('pdf') },
             { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true) },
           ]} />
         </div>

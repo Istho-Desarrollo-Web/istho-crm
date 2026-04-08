@@ -109,7 +109,7 @@ const ReporteInventario = () => {
       const [dashResponse, alertasResponse, inventarioResponse] = await Promise.all([
         reportesService.getDashboard(params),
         inventarioService.getAlertas().catch(() => ({ data: [] })),
-        inventarioService.getAll({ ...params, limit: 500 }).catch(() => ({ data: [] })),
+        inventarioService.getAll({ ...params, limit: 100 }).catch(() => ({ data: [] })),
       ]);
 
       if (dashResponse?.success && dashResponse.data) {
@@ -171,17 +171,26 @@ const ReporteInventario = () => {
   })();
 
   // Top 20 productos por cliente (ordenados por cantidad desc)
+  const hayFiltroCliente = !!filters.cliente_id;
   const productosPorCliente = (() => {
-    const grupos = {};
-    productos.forEach(p => {
-      const nombre = p.cliente?.razon_social || p.cliente?.nombre || 'Sin cliente';
-      if (!grupos[nombre]) grupos[nombre] = [];
-      grupos[nombre].push(p);
-    });
-    return Object.entries(grupos).map(([cliente, items]) => ({
-      cliente,
-      items: [...items].sort((a, b) => (parseFloat(b.cantidad) || 0) - (parseFloat(a.cantidad) || 0)).slice(0, 20),
-    }));
+    if (hayFiltroCliente) {
+      // Agrupado por cliente (solo uno esperado)
+      const grupos = {};
+      productos.forEach(p => {
+        const nombre = p.cliente?.razon_social || p.cliente?.nombre || 'Sin cliente';
+        if (!grupos[nombre]) grupos[nombre] = [];
+        grupos[nombre].push(p);
+      });
+      return Object.entries(grupos).map(([cliente, items]) => ({
+        cliente,
+        items: [...items].sort((a, b) => (parseFloat(b.cantidad) || 0) - (parseFloat(a.cantidad) || 0)).slice(0, 20),
+      }));
+    }
+    // Sin filtro: tabla única con columna Cliente, top 20 general por cantidad
+    const top20 = [...productos]
+      .sort((a, b) => (parseFloat(b.cantidad) || 0) - (parseFloat(a.cantidad) || 0))
+      .slice(0, 20);
+    return top20.length > 0 ? [{ cliente: null, items: top20 }] : [];
   })();
 
   const cajasPorProducto = (() => {
@@ -331,11 +340,15 @@ const ReporteInventario = () => {
         {productosPorCliente.length > 0 && (
           <div className="space-y-6 mb-6">
             {productosPorCliente.map(({ cliente, items }) => (
-              <div key={cliente} className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+              <div key={cliente ?? '__all__'} className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-slate-800 dark:text-slate-100">{cliente}</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Top {items.length} productos por cantidad en stock</p>
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                      {cliente ?? 'Top productos en stock'}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Top {items.length} productos por cantidad en stock
+                    </p>
                   </div>
                   <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">
                     {items.length} productos
@@ -348,6 +361,9 @@ const ReporteInventario = () => {
                         <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-8">#</th>
                         <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">SKU</th>
                         <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Producto</th>
+                        {!hayFiltroCliente && (
+                          <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Cliente</th>
+                        )}
                         <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Categoría</th>
                         <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Cantidad</th>
                         <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Costo Unit.</th>
@@ -374,6 +390,11 @@ const ReporteInventario = () => {
                             <td className="px-4 py-3 text-slate-400 dark:text-slate-500">{idx + 1}</td>
                             <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-300">{p.sku}</td>
                             <td className="px-4 py-3 text-slate-800 dark:text-slate-200 max-w-[200px] truncate" title={p.producto}>{p.producto}</td>
+                            {!hayFiltroCliente && (
+                              <td className="px-4 py-3 text-slate-500 dark:text-slate-400 max-w-[150px] truncate" title={p.cliente?.razon_social}>
+                                {p.cliente?.razon_social || '—'}
+                              </td>
+                            )}
                             <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{p.categoria || '—'}</td>
                             <td className="px-4 py-3 text-right font-medium text-slate-800 dark:text-slate-200">{cantidad.toLocaleString()} {p.unidad_medida || 'UND'}</td>
                             <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300">

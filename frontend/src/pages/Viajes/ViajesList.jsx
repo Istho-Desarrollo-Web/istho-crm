@@ -37,7 +37,6 @@ import {
   Check,
   X,
   FileSpreadsheet,
-  Download,
   LayoutGrid,
   LayoutList,
 } from 'lucide-react';
@@ -395,15 +394,6 @@ const ViajesList = () => {
     window.open(`${baseUrl}/reportes/viajes/excel?${params.toString()}`, '_blank');
   };
 
-  const handleExportCsv = () => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-    const token = localStorage.getItem('istho_token');
-    const params = new URLSearchParams();
-    if (token) params.set('token', token);
-    if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
-    window.open(`${baseUrl}/reportes/viajes/csv?${params.toString()}`, '_blank');
-  };
-
   // ──────────────────────────────────────────────────────────────────────────
   // RENDER
   // ──────────────────────────────────────────────────────────────────────────
@@ -432,13 +422,6 @@ const ViajesList = () => {
                 >
                   <FileSpreadsheet className="w-4 h-4" />
                   Excel
-                </button>
-                <button
-                  onClick={handleExportCsv}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  CSV
                 </button>
               </>
             )}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Wallet, DollarSign, Clock, FileSpreadsheet, TrendingDown, ArrowLeft, RefreshCw, Mail } from 'lucide-react';
+import { Wallet, DollarSign, Clock, FileSpreadsheet, FileText, TrendingDown, ArrowLeft, RefreshCw, Mail } from 'lucide-react';
 import { KpiCard, AccionesDropdown } from '../../components/common';
 import { PieChart } from '../../components/charts';
 import reportesService from '../../api/reportes.service';
@@ -31,10 +31,10 @@ const ReporteCajasMenores = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleExport = () => {
+  const handleExport = (format) => {
     const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
     const token = localStorage.getItem('istho_token');
-    window.open(`${baseUrl}/reportes/cajas-menores/excel?token=${token}`, '_blank');
+    window.open(`${baseUrl}/reportes/cajas-menores/${format}?token=${token}`, '_blank');
   };
 
   const kpis = data?.kpis || {};
@@ -63,7 +63,8 @@ const ReporteCajasMenores = () => {
           </div>
           <AccionesDropdown acciones={[
             { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
-            { label: 'Excel', icon: FileSpreadsheet, onClick: handleExport },
+            { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel') },
+            { label: 'PDF', icon: FileText, onClick: () => handleExport('pdf') },
             { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true) },
           ]} />
         </div>

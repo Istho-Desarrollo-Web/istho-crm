@@ -10,10 +10,10 @@
 import { useNavigate } from 'react-router-dom';
 import {
   FileText,
+  FileSpreadsheet,
   Package,
   Users,
   Truck,
-  Download,
   Calendar,
   Activity,
   Eye,
@@ -53,7 +53,7 @@ const REPORTES_OPERATIVOS = [
     descripcion: 'Listado de clientes, contactos y estado',
     icon: Users,
     color: 'bg-violet-500',
-    exportEndpoints: { excel: '/reportes/clientes/excel' },
+    exportEndpoints: { excel: '/reportes/clientes/excel', pdf: '/reportes/clientes/pdf' } ,
   },
 ];
 
@@ -65,7 +65,7 @@ const REPORTES_FINANCIEROS = [
     descripcion: 'Historial de viajes, rutas, conductores y estados',
     icon: Truck,
     color: 'bg-blue-500',
-    exportEndpoints: { excel: '/reportes/viajes/excel', csv: '/reportes/viajes/csv' },
+    exportEndpoints: { excel: '/reportes/viajes/excel', pdf: '/reportes/viajes/pdf' } ,
   },
   {
     id: 'cajas-menores',
@@ -73,7 +73,7 @@ const REPORTES_FINANCIEROS = [
     descripcion: 'Resumen de cajas menores, saldos y movimientos',
     icon: Wallet,
     color: 'bg-amber-500',
-    exportEndpoints: { excel: '/reportes/cajas-menores/excel' },
+    exportEndpoints: { excel: '/reportes/cajas-menores/excel', pdf: '/reportes/cajas-menores/pdf' },
   },
   {
     id: 'gastos',
@@ -81,7 +81,7 @@ const REPORTES_FINANCIEROS = [
     descripcion: 'Detalle de egresos e ingresos por conductor y concepto',
     icon: Receipt,
     color: 'bg-orange-500',
-    exportEndpoints: { excel: '/reportes/movimientos/excel', csv: '/reportes/movimientos/csv' },
+    exportEndpoints: { excel: '/reportes/movimientos/excel', pdf: '/reportes/movimientos/pdf' },
   },
 ];
 
@@ -147,11 +147,11 @@ const ReporteCard = ({ reporte, canExport }) => {
     window.open(`${baseUrl}${reporte.exportEndpoints.excel}?token=${token}`, '_blank');
   };
 
-  const handleExportCsv = () => {
-    if (!reporte.exportEndpoints?.csv) return;
+  const handleExportPdf = () => {
+    if (!reporte.exportEndpoints?.pdf) return;
     const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
     const token = localStorage.getItem('istho_token');
-    window.open(`${baseUrl}${reporte.exportEndpoints.csv}?token=${token}`, '_blank');
+    window.open(`${baseUrl}${reporte.exportEndpoints.pdf}?token=${token}`, '_blank');
   };
 
   return (
@@ -184,22 +184,22 @@ const ReporteCard = ({ reporte, canExport }) => {
               <Button
                 variant="outline"
                 size="sm"
-                icon={Download}
+                icon={FileSpreadsheet}
                 onClick={handleExportExcel}
                 fullWidth
               >
                 Excel
               </Button>
             )}
-            {reporte.exportEndpoints.csv && (
+            {reporte.exportEndpoints.pdf && (
               <Button
                 variant="outline"
                 size="sm"
-                icon={Download}
-                onClick={handleExportCsv}
+                icon={FileText}
+                onClick={handleExportPdf}
                 fullWidth
               >
-                CSV
+                PDF
               </Button>
             )}
           </div>
@@ -253,7 +253,7 @@ const ReportesList = () => {
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
-                <Download className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                <FileSpreadsheet className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">Excel / PDF</p>
