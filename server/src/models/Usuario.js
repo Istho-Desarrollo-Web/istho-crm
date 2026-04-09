@@ -377,6 +377,13 @@ module.exports = (sequelize) => {
   };
 
   /**
+   * Verificar si es operador
+   */
+  Usuario.prototype.esOperador = function() {
+    return this.rol === 'operador';
+  };
+
+  /**
    * Verificar si es financiera
    */
   Usuario.prototype.esFinanciera = function() {

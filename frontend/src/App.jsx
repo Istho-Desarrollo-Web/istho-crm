@@ -17,6 +17,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'rea
 import { Suspense, lazy, useEffect, Component } from 'react';
 import { SnackbarProvider } from 'notistack';
 import useNotification from './hooks/useNotification';
+import useIdleTimer from './hooks/useIdleTimer';
 
 // ════════════════════════════════════════════════════════════════════════════
 // PROVIDERS Y COMPONENTES DE AUTH
@@ -176,16 +177,23 @@ const SEARCH_ENDPOINTS = {
   INVENTARIO: allEndpoints.INVENTARIO_ENDPOINTS,
   CLIENTES: allEndpoints.CLIENTES_ENDPOINTS,
   AUDITORIAS: allEndpoints.AUDITORIAS_ENDPOINTS,
+  VIAJES: allEndpoints.VIAJES_ENDPOINTS,
+  VEHICULOS: allEndpoints.VEHICULOS_ENDPOINTS,
+  CAJAS_MENORES: allEndpoints.CAJAS_MENORES_ENDPOINTS,
+  MOVIMIENTOS: allEndpoints.MOVIMIENTOS_ENDPOINTS,
 };
 
-const ProtectedLayout = () => (
-  <>
-    <FloatingHeader />
-    <ForceChangePasswordModal />
-    <GlobalSearch apiClient={apiClient} endpoints={SEARCH_ENDPOINTS} />
-    <Outlet />
-  </>
-);
+const ProtectedLayout = () => {
+  useIdleTimer();
+  return (
+    <>
+      <FloatingHeader />
+      <ForceChangePasswordModal />
+      <GlobalSearch apiClient={apiClient} endpoints={SEARCH_ENDPOINTS} />
+      <Outlet />
+    </>
+  );
+};
 
 // ════════════════════════════════════════════════════════════════════════════
 // CONFIGURACIÓN DE NOTISTACK
@@ -336,7 +344,7 @@ function App() {
                 {/* PERFIL Y CONFIGURACIÓN */}
                 {/* ────────────────────────────────────────────────────────── */}
                 <Route path="/perfil" element={<PerfilUsuario />} />
-                <Route path="/configuracion" element={<PermissionRoute module="configuracion" action="ver"><Configuracion /></PermissionRoute>} />
+                <Route path="/configuracion" element={<PermissionRoute module="perfil" action="ver"><Configuracion /></PermissionRoute>} />
                 <Route path="/configuracion-wms" element={<AdminRoute><ConfiguracionWms /></AdminRoute>} />
                 <Route path="/notificaciones" element={<PermissionRoute module="notificaciones" action="ver"><Notificaciones /></PermissionRoute>} />
                 <Route path="/alertas" element={<PermissionRoute module="notificaciones" action="ver"><Notificaciones /></PermissionRoute>} />

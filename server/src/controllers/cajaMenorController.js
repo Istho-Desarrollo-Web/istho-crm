@@ -35,8 +35,8 @@ const listar = async (req, res) => {
       where.asignado_a = req.query.asignado_a;
     }
 
-    // Usuario solo ve sus cajas a menos que tenga permisos de caja_menor más allá de 'ver'
-    if (req.user.esConductor) {
+    // Conductor y operador solo ven sus propias cajas
+    if (req.user.esConductor || req.user.esOperador) {
       where.asignado_a = req.user.id;
     }
 

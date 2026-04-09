@@ -52,6 +52,7 @@ import SortIcon from '@components/common/SortIcon';
 
 // Services
 import { vehiculosService } from '../../api/viajes.service';
+import { formatDateShort } from '../../utils/formatDate';
 
 // Utils
 
@@ -71,14 +72,6 @@ const formatTipoVehiculo = (tipo) => {
   return tipos[tipo] || tipo || '-';
 };
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return '-';
-  const date = new Date(dateStr);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-};
 
 /**
  * Calcula el estado de vencimiento de un documento.
@@ -88,7 +81,7 @@ const getVencimientoStatus = (fechaVencimiento) => {
   if (!fechaVencimiento) return null;
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
-  const vencimiento = new Date(fechaVencimiento);
+  const vencimiento = new Date(fechaVencimiento.substring(0, 10) + 'T00:00:00');
   vencimiento.setHours(0, 0, 0, 0);
 
   const diffMs = vencimiento - hoy;
@@ -133,7 +126,7 @@ const VencimientoBadge = ({ fecha }) => {
     <div className={`inline-flex flex-col items-center gap-0.5 px-2.5 py-1 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>
       <span className="flex items-center gap-1">
         {status !== 'vigente' && <AlertTriangle className="w-3 h-3" />}
-        {formatDate(fecha)}
+        {formatDateShort(fecha)}
       </span>
       <span className="text-[10px] opacity-70">{c.label}</span>
     </div>
@@ -269,7 +262,7 @@ const RowActions = ({ vehiculo, onView, onEdit, onDelete }) => {
 const PAGE_SIZE = 20;
 
 const VehiculosList = () => {
-  const [_searchParams, _setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { success: _success, apiError, saved: _saved, deleted } = useNotification();
 
@@ -281,7 +274,7 @@ const VehiculosList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [estadoFilter, setEstadoFilter] = useState('todos');
   const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
   const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');

@@ -15,6 +15,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Menu, MenuItem, IconButton, Checkbox } from '@mui/material';
 import { useThemeContext } from '../../context/ThemeContext';
 import { movimientosService } from '../../api/viajes.service';
+import { formatDate } from '../../utils/formatDate';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -79,15 +80,6 @@ const formatMoney = (value) => {
   return `$${Number(value).toLocaleString('es-CO')}`;
 };
 
-/** Formatear fecha evitando desfase de timezone */
-const formatDate = (fecha) => {
-  if (!fecha) return '-';
-  // Si es solo fecha (YYYY-MM-DD), agregar T12:00 para evitar desfase UTC
-  const str = String(fecha);
-  const d = str.length === 10 ? new Date(str + 'T12:00:00') : new Date(str);
-  if (isNaN(d)) return '-';
-  return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
-};
 
 const PAGE_SIZE = 20;
 
@@ -349,7 +341,7 @@ const MovimientosList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [tipoFilter, setTipoFilter] = useState(searchParams.get('tipo_movimiento') || 'todos');
   const [aprobadoFilter, setAprobadoFilter] = useState(searchParams.get('aprobado') || 'todos');
   const [sortField, setSortField] = useState('created_at');

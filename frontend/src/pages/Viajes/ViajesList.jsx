@@ -11,10 +11,11 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useThemeContext } from '../../context/ThemeContext';
 import { viajesService } from '../../api/viajes.service';
+import { formatDateShort } from '../../utils/formatDate';
 import useNotification from '../../hooks/useNotification';
 import useSort from '@hooks/useSort';
 import SortIcon from '@components/common/SortIcon';
@@ -87,14 +88,6 @@ const ESTADO_CONFIG = {
 // HELPER: Formatear fecha DD/MM/YYYY
 // ════════════════════════════════════════════════════════════════════════════
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return '-';
-  const date = new Date(dateStr);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-};
 
 // ════════════════════════════════════════════════════════════════════════════
 // STATUS BADGE COMPONENT
@@ -227,12 +220,13 @@ const PAGE_SIZE = 20;
 
 const ViajesList = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user: _user } = useAuth();
   const { success, apiError, deleted } = useNotification();
   const socket = useSocket();
 
   const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [estadoFilter, setEstadoFilter] = useState('todos');
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
@@ -644,7 +638,7 @@ const ViajesList = () => {
                               {viaje.numero}
                             </p>
                             <p className="text-xs text-slate-400 dark:text-slate-500">
-                              {formatDate(viaje.fecha)}
+                              {formatDateShort(viaje.fecha)}
                             </p>
                           </div>
                         </div>
@@ -739,7 +733,7 @@ const ViajesList = () => {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{viaje.numero}</p>
-                        <p className="text-xs text-slate-400">{formatDate(viaje.fecha)}</p>
+                        <p className="text-xs text-slate-400">{formatDateShort(viaje.fecha)}</p>
                       </div>
                     </div>
                     <div onClick={(e) => e.stopPropagation()}>

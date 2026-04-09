@@ -106,12 +106,19 @@ Los 3 formularios de auditoría (Entrada, Salida, Kardex) aplican sanitización 
 | origen / destino | Auto-MAYÚSCULAS | 55 |
 | observaciones | Texto libre | 255 |
 
+- **`validateLogisticaField` para placa:** primero verificar `value.length < 6 → 'Mínimo 6 caracteres'`, luego el regex `^[A-Z]{3}[0-9]{2}[A-Z0-9]$`. Si se valida sólo cuando `length === 6`, una placa incompleta (ej. "ABC") pasa sin error.
+- **Validación en tiempo real:** `camposConError` y `validFields` se computan en cada render desde `validateLogisticaField()` sobre `formData` actual, NO desde `fieldErrors` (que es stale). Esto garantiza que el badge y `canClose` reflejen el estado real aunque los datos vengan precargados.
+- **Paginación de líneas:** 10 líneas por página (`LINEAS_POR_PAGINA = 10`). Estado `lineaPage` controla la página activa.
+- **"Verificar todas":** `handleVerificarTodas` usa `Promise.allSettled` para verificar todas las líneas activas en paralelo con UI optimista.
+- **Formulario de averías:** `cantidad_afectada` es **requerida** (no opcional) y no puede superar `linea.cantidad_esperada`. Las cantidades en el selector se muestran con `Intl.NumberFormat('es-CO')` (ej. `30.000 UND`).
+
 ## Caja Menor (Petty Cash)
 - **Assignable to ANY user** (not just conductors). Field: `asignado_a` (FK to Usuario)
 - **Movements:** Field `usuario_id` (FK to Usuario). Viaje association only visible if assigned user is conductor
 - **All internal roles** have `caja_menor.ver` + `movimientos.ver/crear/editar` — each user only sees their own
 - **Approval flow:** Financiera/Admin/Supervisor approve/reject. Only approved movements affect saldo
 - **Closing:** Option to transfer surplus to next caja or liquidate to $0
+- **Operador scope filter:** `cajaMenorController` and `movimientoCajaMenorController` check `req.user.esOperador` (same as `esConductor`) to restrict results to the authenticated user's own records. `esOperador()` is a prototype method on `Usuario` model, exposed via `auth.js` middleware as `req.user.esOperador`.
 
 ## Database
 - **ORM:** Sequelize 6 with MySQL. Config in `server/src/config/database.js`
@@ -163,6 +170,10 @@ Los 3 formularios de auditoría (Entrada, Salida, Kardex) aplican sanitización 
 - **actualizarUsuario — cliente_id:** When updating a portal user, `cliente_id` must be updated even if `rol_id` doesn't change. The backend checks `rolActual.es_cliente` before applying the change.
 - **Notification badge:** Shows unread count capped at "+9" when count > 9 (FloatingHeader.jsx). Sound plays via Web Audio API when socket event arrives (configurable per user)
 - **Auditoría obligatoria:** Every new controller MUST register audit entries for ALL write operations (crear, actualizar, eliminar, and any custom action that mutates data). Use `Auditoria.registrar({ tabla, registro_id, accion, usuario_id, usuario_nombre, datos_anteriores, datos_nuevos, ip_address, descripcion })`. For system-origin operations (WMS sync, cron jobs) use `usuario_id: null` and a descriptive `usuario_nombre` (e.g. `'WMS Centhrix'`, `'Scheduler'`). Import `Auditoria` from models and `getClientIP` from `utils/helpers`. Never skip this — missing audit logs are a silent compliance gap.
+- **formatDate singleton:** `frontend/src/utils/formatDate.js` exports `setPreferencias(prefs)` that stores user preferences in a module-level variable. Called from `AuthContext` via `useEffect` on `user.preferencias`. All pages importing `formatDate`/`formatDateShort` automatically inherit timezone (`zona_horaria`) and date format (`formato_fecha`) without per-component changes.
+- **useIdleTimer:** Hook in `frontend/src/hooks/useIdleTimer.js`. Reads `user.preferencias.tiempo_sesion` (minutes). Value `0` disables auto-logout. Mounted in `ProtectedLayout` in `App.jsx`. Resets on DOM events: mousemove, mousedown, keydown, touchstart, scroll, wheel.
+- **Notification module filtering:** `NotificacionesContext` maps notification `tipo` to user preference keys via `MAPA_ALERTAS`. Silenced modules still increment unread badge but suppress toast and sound.
+- **Configuración route:** `/configuracion` uses `<PermissionRoute module="perfil" action="ver">` — all 6 roles have this permission, so any authenticated user can access their own preferences page.
 
 ## Documentation
 - `docs/WMS_API_SPEC.md` — Complete WMS API specification with all fields, schemas, and business rules

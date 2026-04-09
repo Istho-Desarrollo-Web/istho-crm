@@ -199,6 +199,7 @@ const verificarToken = async (req, res, next) => {
       esInterno: usuario.esInterno(),
       esAdmin: usuario.esAdmin(),
       esConductor: usuario.esConductor(),
+      esOperador: usuario.esOperador(),
       esFinanciera: usuario.esFinanciera(),
       // Función de verificación de permiso dinámico
       tienePermiso: function(modulo, accion) {

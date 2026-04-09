@@ -28,6 +28,7 @@ import {
 import PropTypes from 'prop-types';
 import authService from '../api/auth.service';
 import { clearAuthToken, isAuthenticated as checkToken } from '../api/client';
+import { setPreferencias } from '../utils/formatDate';
 
 // ============================================================================
 // CONTEXTO
@@ -277,7 +278,12 @@ export const AuthProvider = ({ children }) => {
 
     return () => clearTimeout(safetyTimeout);
   }, []);
-  
+
+  // Sincronizar preferencias de formateo de fechas cuando cambia el usuario
+  useEffect(() => {
+    setPreferencias(state.user?.preferencias || {});
+  }, [state.user?.preferencias]);
+
   // ──────────────────────────────────────────────────────────────────────────
   // LOGIN
   // ──────────────────────────────────────────────────────────────────────────

@@ -472,6 +472,8 @@ const SalidaAuditoria = () => {
 
   const [estado, setEstado] = useState('pendiente');
   const [lineas, setLineas] = useState([]);
+  const [lineaPage, setLineaPage] = useState(1);
+  const LINEAS_POR_PAGINA = 10;
 
   const [formData, setFormData] = useState({
     conductor: '',
@@ -584,7 +586,8 @@ const SalidaAuditoria = () => {
       case 'cedula':
         return value.length < 5 ? 'Mínimo 5 dígitos' : null;
       case 'placa':
-        return value.length === 6 && !/^[A-Z]{3}[0-9]{2}[A-Z0-9]$/.test(value)
+        if (value.length < 6) return 'Mínimo 6 caracteres';
+        return !/^[A-Z]{3}[0-9]{2}[A-Z0-9]$/.test(value)
           ? 'Formato inválido (ej: ABC123 o ABC12D)' : null;
       case 'telefono':
         return value.length < 7 ? 'Mínimo 7 dígitos' : null;
@@ -646,6 +649,16 @@ const SalidaAuditoria = () => {
     } catch {
       // Mantener cambio local
     }
+  };
+
+  const handleVerificarTodas = async () => {
+    const sinVerificar = lineas.filter((l) => !l.eliminado && !l.verificado);
+    if (sinVerificar.length === 0) return;
+    setLineas((prev) => prev.map((l) => (!l.eliminado ? { ...l, verificado: true } : l)));
+    if (estado === 'pendiente') setEstado('en_proceso');
+    await Promise.allSettled(
+      sinVerificar.map((l) => auditoriasService.verificarLinea(id, l.id, true))
+    );
   };
 
   const handleEliminarLinea = async (lineaId) => {
@@ -715,9 +728,19 @@ const SalidaAuditoria = () => {
       return;
     }
 
+    if (!cantidad_afectada || parseInt(cantidad_afectada) < 1) {
+      showAlert({ type: 'warning', title: 'Campo requerido', message: 'Indique las unidades afectadas por la avería.' });
+      return;
+    }
+
+    const cantAfectada = parseInt(cantidad_afectada);
+    if (linea && cantAfectada > linea.cantidad_esperada) {
+      showAlert({ type: 'warning', title: 'Cantidad inválida', message: `Las unidades afectadas no pueden superar la cantidad de la línea (${new Intl.NumberFormat('es-CO').format(linea.cantidad_esperada)} ${linea.unidad || 'UND'}).` });
+      return;
+    }
+
     setSavingAveria(true);
     try {
-      const cantAfectada = cantidad_afectada ? parseInt(cantidad_afectada) : 1;
       const payload = {
         detalle_id,
         sku: linea?.sku || '',
@@ -758,10 +781,19 @@ const SalidaAuditoria = () => {
   const lineasActivas = lineas.filter((l) => !l.eliminado);
   const lineasVerificadas = lineasActivas.filter((l) => l.verificado);
   const lineasProgress = lineasActivas.length > 0 ? Math.round((lineasVerificadas.length / lineasActivas.length) * 100) : 0;
+  const totalPaginasLineas = Math.ceil(lineas.length / LINEAS_POR_PAGINA);
+  const lineasPaginadas = lineas.slice((lineaPage - 1) * LINEAS_POR_PAGINA, lineaPage * LINEAS_POR_PAGINA);
 
   const requiredFields = ['conductor', 'cedula', 'placa', 'telefono', 'origen', 'destino'];
-  const filledFields = requiredFields.filter((f) => formData[f].trim() !== '');
-  const formProgress = Math.round((filledFields.length / requiredFields.length) * 100);
+  const camposConError = requiredFields.filter((f) => {
+    const val = formData[f].trim();
+    return val !== '' && validateLogisticaField(f, val) !== null;
+  });
+  const validFields = requiredFields.filter((f) => {
+    const val = formData[f].trim();
+    return val !== '' && validateLogisticaField(f, val) === null;
+  });
+  const formProgress = Math.round((validFields.length / requiredFields.length) * 100);
 
   const hasPdf = files.some((f) => f.type === 'application/pdf');
   const hasPhotos = files.some((f) => f.type.startsWith('image/'));
@@ -770,6 +802,7 @@ const SalidaAuditoria = () => {
   const totalProgress = Math.round((lineasProgress + formProgress + evidenceProgress) / 3);
   const canClose = lineasProgress === 100 && formProgress === 100 && evidenceProgress === 100;
   const isCerrado = estado === 'cerrado';
+  const puedeEditar = hasPermission('auditoria', 'exportar') && !isCerrado;
 
   const handleCerrarAuditoria = () => {
     if (!canClose || closing) return;
@@ -956,15 +989,25 @@ const SalidaAuditoria = () => {
             icon={Package}
             color="blue"
             badge={
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                lineasProgress === 100 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-              }`}>
-                {lineasVerificadas.length}/{lineasActivas.length} verificadas
-              </span>
+              <div className="flex items-center gap-2">
+                {puedeEditar && lineasVerificadas.length < lineasActivas.length && (
+                  <button
+                    onClick={() => handleVerificarTodas()}
+                    className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                  >
+                    Verificar todas
+                  </button>
+                )}
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  lineasProgress === 100 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                }`}>
+                  {lineasVerificadas.length}/{lineasActivas.length} verificadas
+                </span>
+              </div>
             }
           >
             <div className="space-y-3">
-              {lineas.map((linea) => (
+              {lineasPaginadas.map((linea) => (
                 <div
                   key={linea.id}
                   className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
@@ -977,8 +1020,8 @@ const SalidaAuditoria = () => {
                 >
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <button
-                      onClick={() => !linea.eliminado && !isCerrado && handleVerificarLinea(linea.id)}
-                      disabled={linea.eliminado || isCerrado}
+                      onClick={() => !linea.eliminado && puedeEditar && handleVerificarLinea(linea.id)}
+                      disabled={linea.eliminado || !puedeEditar}
                       className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-all ${
                         linea.eliminado
                           ? 'border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 cursor-not-allowed'
@@ -999,7 +1042,7 @@ const SalidaAuditoria = () => {
                       </p>
                     </div>
                   </div>
-                  {!isCerrado && (
+                  {puedeEditar && (
                     <div className="flex items-center gap-2 ml-4">
                       {linea.eliminado ? (
                         <button onClick={() => handleRestaurarLinea(linea.id)} className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
@@ -1015,6 +1058,44 @@ const SalidaAuditoria = () => {
                 </div>
               ))}
             </div>
+
+            {/* Paginación de líneas */}
+            {totalPaginasLineas > 1 && (
+              <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700 mt-3">
+                <span className="text-xs text-slate-400 dark:text-slate-500">
+                  Página {lineaPage} de {totalPaginasLineas} · {lineas.length} líneas
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setLineaPage((p) => Math.max(1, p - 1))}
+                    disabled={lineaPage === 1}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Anterior
+                  </button>
+                  {Array.from({ length: totalPaginasLineas }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setLineaPage(p)}
+                      className={`w-8 h-8 text-xs font-medium rounded-lg transition-colors ${
+                        p === lineaPage
+                          ? 'bg-blue-500 text-white'
+                          : 'border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setLineaPage((p) => Math.min(totalPaginasLineas, p + 1))}
+                    disabled={lineaPage === totalPaginasLineas}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+            )}
           </Section>
 
           {/* DATOS LOGÍSTICOS */}
@@ -1025,24 +1106,29 @@ const SalidaAuditoria = () => {
             badge={
               <div className="flex items-center gap-2">
                 {savingLogistica && <Loader2 className="w-3 h-3 animate-spin text-blue-500" />}
-                {logisticaSaved && !savingLogistica && <Check className="w-3 h-3 text-emerald-500" />}
+                {!savingLogistica && camposConError.length > 0 && <X className="w-3 h-3 text-red-500" />}
+                {!savingLogistica && camposConError.length === 0 && logisticaSaved && <Check className="w-3 h-3 text-emerald-500" />}
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  formProgress === 100 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                  camposConError.length > 0
+                    ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                    : formProgress === 100
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                    : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
                 }`}>
-                  {filledFields.length}/{requiredFields.length} campos
+                  {validFields.length}/{requiredFields.length} campos
                 </span>
               </div>
             }
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField icon={User} label="Nombre del Conductor" value={formData.conductor} onChange={handleFieldChange('conductor')} placeholder="Ej: Juan Pérez" required disabled={isCerrado} error={fieldErrors.conductor} />
-              <FormField icon={CreditCard} label="Cédula del Conductor" value={formData.cedula} onChange={handleFieldChange('cedula')} placeholder="Ej: 1066601726" required disabled={isCerrado} error={fieldErrors.cedula} />
-              <FormField icon={Truck} label="Placa del Vehículo" value={formData.placa} onChange={handleFieldChange('placa')} placeholder="Ej: ABC123" required disabled={isCerrado} error={fieldErrors.placa} />
-              <FormField icon={Phone} label="Teléfono del Conductor" value={formData.telefono} onChange={handleFieldChange('telefono')} placeholder="Ej: 3001234567" required disabled={isCerrado} error={fieldErrors.telefono} />
-              <FormField icon={MapPin} label="Origen" value={formData.origen} onChange={handleFieldChange('origen')} placeholder="Ej: CEDI GIRARDOTA" required disabled={isCerrado} error={fieldErrors.origen} />
-              <FormField icon={MapPin} label="Destino" value={formData.destino} onChange={handleFieldChange('destino')} placeholder="Ej: TIENDA CAÑAVERAL" required disabled={isCerrado} error={fieldErrors.destino} />
+              <FormField icon={User} label="Nombre del Conductor" value={formData.conductor} onChange={handleFieldChange('conductor')} placeholder="Ej: Juan Pérez" required disabled={!puedeEditar} error={fieldErrors.conductor} />
+              <FormField icon={CreditCard} label="Cédula del Conductor" value={formData.cedula} onChange={handleFieldChange('cedula')} placeholder="Ej: 1066601726" required disabled={!puedeEditar} error={fieldErrors.cedula} />
+              <FormField icon={Truck} label="Placa del Vehículo" value={formData.placa} onChange={handleFieldChange('placa')} placeholder="Ej: ABC123" required disabled={!puedeEditar} error={fieldErrors.placa} />
+              <FormField icon={Phone} label="Teléfono del Conductor" value={formData.telefono} onChange={handleFieldChange('telefono')} placeholder="Ej: 3001234567" required disabled={!puedeEditar} error={fieldErrors.telefono} />
+              <FormField icon={MapPin} label="Origen" value={formData.origen} onChange={handleFieldChange('origen')} placeholder="Ej: CEDI GIRARDOTA" required disabled={!puedeEditar} error={fieldErrors.origen} />
+              <FormField icon={MapPin} label="Destino" value={formData.destino} onChange={handleFieldChange('destino')} placeholder="Ej: TIENDA CAÑAVERAL" required disabled={!puedeEditar} error={fieldErrors.destino} />
               <div className="md:col-span-2">
-                <FormField icon={MessageSquare} label="Observaciones" value={formData.observaciones} onChange={handleFieldChange('observaciones')} placeholder="Novedades de la operación (opcional)..." type="textarea" disabled={isCerrado} />
+                <FormField icon={MessageSquare} label="Observaciones" value={formData.observaciones} onChange={handleFieldChange('observaciones')} placeholder="Novedades de la operación (opcional)..." type="textarea" disabled={!puedeEditar} />
               </div>
             </div>
           </Section>
@@ -1063,7 +1149,7 @@ const SalidaAuditoria = () => {
             }
           >
             {/* Formulario para registrar avería */}
-            {!isCerrado && (
+            {puedeEditar && (
               <div className="space-y-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Selector de producto */}
@@ -1083,7 +1169,7 @@ const SalidaAuditoria = () => {
                         <option value="">-- Seleccionar producto --</option>
                         {lineas.filter(l => !l.eliminado).map(l => (
                           <option key={l.id} value={l.id}>
-                            {l.sku} — {l.producto} {l.caja ? `(${l.caja})` : ''} ({l.cantidad_esperada} {l.unidad || 'UND'})
+                            {l.sku} — {l.producto} {l.caja ? `(${l.caja})` : ''} ({new Intl.NumberFormat('es-CO').format(l.cantidad_esperada)} {l.unidad || 'UND'})
                           </option>
                         ))}
                       </select>
@@ -1164,7 +1250,7 @@ const SalidaAuditoria = () => {
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                       <div className="flex items-center gap-1.5">
                         <Package className="w-3.5 h-3.5 text-amber-500" />
-                        Unidades afectadas <span className="text-slate-400 text-xs">(opcional)</span>
+                        Unidades afectadas <span className="text-red-500">*</span>
                       </div>
                     </label>
                     <input type="number" min="1" value={averiaForm.cantidad_afectada} onChange={(e) => setAveriaForm(prev => ({ ...prev, cantidad_afectada: e.target.value }))} placeholder="Ej: 5" className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all hover:border-amber-400 dark:hover:border-amber-500/50" />
@@ -1231,7 +1317,7 @@ const SalidaAuditoria = () => {
                       <span className="text-xs text-slate-400 flex-shrink-0">
                         Cant: {av.cantidad}
                       </span>
-                      {!isCerrado && (
+                      {puedeEditar && (
                         <button onClick={() => handleEliminarAveria(av.id)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0" title="Eliminar avería">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -1263,12 +1349,14 @@ const SalidaAuditoria = () => {
               </div>
             }
           >
-            {isCerrado ? (
+            {!puedeEditar ? (
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <Shield className="w-5 h-5 text-emerald-500" />
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                    Auditoría cerrada — {files.length} evidencia{files.length !== 1 && 's'} registrada{files.length !== 1 && 's'}
+                    {isCerrado
+                      ? `Auditoría cerrada — ${files.length} evidencia${files.length !== 1 ? 's' : ''} registrada${files.length !== 1 ? 's' : ''}`
+                      : 'No tienes permiso para agregar evidencias'}
                   </p>
                 </div>
                 <FilePreviewGallery files={files} readOnly={true} />
@@ -1281,7 +1369,7 @@ const SalidaAuditoria = () => {
       </main>
 
       {/* FLOATING BOTTOM BAR */}
-      {!isCerrado && (
+      {puedeEditar && (
         <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-gray-200 dark:border-slate-700 px-4 py-4">
           <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
             <div className="hidden sm:flex items-center gap-6 text-sm">

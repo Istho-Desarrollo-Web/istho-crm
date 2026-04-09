@@ -272,7 +272,7 @@ export const NotificacionesProvider = ({ children }) => {
     const handleNuevaNotificacion = (data) => {
       if (!mountedRef.current) return;
 
-      // Actualizar contador
+      // Actualizar contador (siempre, aunque esté silenciado el módulo)
       setUnreadCount(prev => prev + 1);
 
       // Agregar al inicio de la lista
@@ -281,14 +281,26 @@ export const NotificacionesProvider = ({ children }) => {
         ...prev.slice(0, 4), // Mantener máximo 5
       ]);
 
-      // Reproducir sonido si está habilitado en preferencias
-      const sonidoHabilitado = user?.preferencias?.notificaciones_sonido !== false;
-      if (sonidoHabilitado) {
-        playNotificationSound();
-      }
+      // Verificar si el módulo está silenciado en preferencias del usuario
+      const prefs = user?.preferencias || {};
+      const MAPA_ALERTAS = {
+        despacho:   prefs.alertas_despachos  !== false,
+        inventario: prefs.alertas_inventario !== false,
+        cliente:    prefs.alertas_clientes   !== false,
+        sistema:    prefs.alertas_viajes     !== false,
+      };
+      const moduloHabilitado = MAPA_ALERTAS[data.tipo] !== false;
 
-      // Guardar última para toast
-      setUltimaNotificacion(data);
+      if (moduloHabilitado) {
+        // Reproducir sonido si está habilitado en preferencias
+        const sonidoHabilitado = prefs.notificaciones_sonido !== false;
+        if (sonidoHabilitado) {
+          playNotificationSound();
+        }
+
+        // Guardar última para toast
+        setUltimaNotificacion(data);
+      }
     };
 
     socket.on('notificacion:nueva', handleNuevaNotificacion);

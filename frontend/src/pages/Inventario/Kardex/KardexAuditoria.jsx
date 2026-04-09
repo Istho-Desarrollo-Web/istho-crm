@@ -511,6 +511,8 @@ const KardexAuditoria = () => {
   // Estado del documento
   const [estado, setEstado] = useState('pendiente');
   const [lineas, setLineas] = useState([]);
+  const [lineaPage, setLineaPage] = useState(1);
+  const LINEAS_POR_PAGINA = 10;
 
   // Formulario logistico (opcional para kardex - sin campos requeridos)
   const [formData, setFormData] = useState({
@@ -628,7 +630,8 @@ const KardexAuditoria = () => {
       case 'cedula':
         return value.length < 5 ? 'Mínimo 5 dígitos' : null;
       case 'placa':
-        return value.length === 6 && !/^[A-Z]{3}[0-9]{2}[A-Z0-9]$/.test(value)
+        if (value.length < 6) return 'Mínimo 6 caracteres';
+        return !/^[A-Z]{3}[0-9]{2}[A-Z0-9]$/.test(value)
           ? 'Formato inválido (ej: ABC123 o ABC12D)' : null;
       case 'telefono':
         return value.length < 7 ? 'Mínimo 7 dígitos' : null;
@@ -695,6 +698,16 @@ const KardexAuditoria = () => {
     } catch {
       // Si falla, la UI ya esta actualizada localmente
     }
+  };
+
+  const handleVerificarTodas = async () => {
+    const sinVerificar = lineas.filter((l) => !l.eliminado && !l.verificado);
+    if (sinVerificar.length === 0) return;
+    setLineas((prev) => prev.map((l) => (!l.eliminado ? { ...l, verificado: true } : l)));
+    if (estado === 'pendiente') setEstado('en_proceso');
+    await Promise.allSettled(
+      sinVerificar.map((l) => auditoriasService.verificarLinea(id, l.id, true))
+    );
   };
 
   const handleEliminarLinea = async (lineaId) => {
@@ -767,13 +780,23 @@ const KardexAuditoria = () => {
     const tipoFinal = tipo_averia === 'Otra' ? descripcion_custom.trim() : tipo_averia;
 
     if (tipo_averia === 'Otra' && !tipoFinal) {
-      showAlert({ type: 'warning', title: 'Descripcion requerida', message: 'Escriba el motivo de la averia.' });
+      showAlert({ type: 'warning', title: 'Descripción requerida', message: 'Escriba el motivo de la avería.' });
+      return;
+    }
+
+    if (!cantidad_afectada || parseInt(cantidad_afectada) < 1) {
+      showAlert({ type: 'warning', title: 'Campo requerido', message: 'Indique las unidades afectadas por la avería.' });
+      return;
+    }
+
+    const cantAfectada = parseInt(cantidad_afectada);
+    if (linea && cantAfectada > linea.cantidad_esperada) {
+      showAlert({ type: 'warning', title: 'Cantidad inválida', message: `Las unidades afectadas no pueden superar la cantidad de la línea (${new Intl.NumberFormat('es-CO').format(linea.cantidad_esperada)} ${linea.unidad || 'UND'}).` });
       return;
     }
 
     setSavingAveria(true);
     try {
-      const cantAfectada = cantidad_afectada ? parseInt(cantidad_afectada) : 1;
       const payload = {
         detalle_id,
         sku: linea?.sku || '',
@@ -817,16 +840,26 @@ const KardexAuditoria = () => {
   const lineasActivas = lineas.filter((l) => !l.eliminado);
   const lineasVerificadas = lineasActivas.filter((l) => l.verificado);
   const lineasProgress = lineasActivas.length > 0 ? Math.round((lineasVerificadas.length / lineasActivas.length) * 100) : 0;
+  const totalPaginasLineas = Math.ceil(lineas.length / LINEAS_POR_PAGINA);
+  const lineasPaginadas = lineas.slice((lineaPage - 1) * LINEAS_POR_PAGINA, lineaPage * LINEAS_POR_PAGINA);
 
   const hasPdf = files.some((f) => f.type === 'application/pdf');
   const hasPhotos = files.some((f) => f.type.startsWith('image/'));
   const evidenceProgress = hasPdf && hasPhotos ? 100 : hasPdf || hasPhotos ? 50 : 0;
 
+  // Validar campos logísticos opcionales (si se llenaron, deben ser válidos)
+  const todosLosCampos = ['conductor', 'cedula', 'placa', 'telefono', 'origen', 'destino'];
+  const camposConError = todosLosCampos.filter((f) => {
+    const val = formData[f].trim();
+    return val !== '' && validateLogisticaField(f, val) !== null;
+  });
+
   // Kardex: 2 factores (lineas + evidencias), logistica es opcional
   const totalProgress = Math.round((lineasProgress + evidenceProgress) / 2);
-  const canClose = lineasProgress === 100 && evidenceProgress === 100;
+  const canClose = lineasProgress === 100 && evidenceProgress === 100 && camposConError.length === 0;
 
   const isCerrado = estado === 'cerrado';
+  const puedeEditar = hasPermission('auditoria', 'exportar') && !isCerrado;
 
   const handleCerrarAuditoria = () => {
     if (!canClose || closing) return;
@@ -1052,18 +1085,28 @@ const KardexAuditoria = () => {
             icon={Package}
             color="purple"
             badge={
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                lineasProgress === 100
-                  ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'
-                  : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-              }`}>
-                {lineasVerificadas.length}/{lineasActivas.length} verificadas
-              </span>
+              <div className="flex items-center gap-2">
+                {puedeEditar && lineasVerificadas.length < lineasActivas.length && (
+                  <button
+                    onClick={() => handleVerificarTodas()}
+                    className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
+                  >
+                    Verificar todas
+                  </button>
+                )}
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  lineasProgress === 100
+                    ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'
+                    : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                }`}>
+                  {lineasVerificadas.length}/{lineasActivas.length} verificadas
+                </span>
+              </div>
             }
           >
             <div className="space-y-3">
               {/* Table header for Motivo column */}
-              {lineas.length > 0 && (
+              {lineasPaginadas.length > 0 && (
                 <div className="hidden md:grid md:grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-4 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                   <span className="w-8" />
                   <span>Producto / SKU</span>
@@ -1071,7 +1114,7 @@ const KardexAuditoria = () => {
                   <span className="w-20 text-right">Acciones</span>
                 </div>
               )}
-              {lineas.map((linea) => (
+              {lineasPaginadas.map((linea) => (
                 <div
                   key={linea.id}
                   className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
@@ -1085,8 +1128,8 @@ const KardexAuditoria = () => {
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     {/* Verify Checkbox */}
                     <button
-                      onClick={() => !linea.eliminado && !isCerrado && handleVerificarLinea(linea.id)}
-                      disabled={linea.eliminado || isCerrado}
+                      onClick={() => !linea.eliminado && puedeEditar && handleVerificarLinea(linea.id)}
+                      disabled={linea.eliminado || !puedeEditar}
                       className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-all ${
                         linea.eliminado
                           ? 'border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 cursor-not-allowed'
@@ -1122,7 +1165,7 @@ const KardexAuditoria = () => {
                   </div>
 
                   {/* Actions */}
-                  {!isCerrado && (
+                  {puedeEditar && (
                     <div className="flex items-center gap-2 ml-4">
                       {linea.eliminado ? (
                         <button
@@ -1146,9 +1189,9 @@ const KardexAuditoria = () => {
               ))}
 
               {/* Mobile: show motivo below each line */}
-              {lineas.some(l => l.motivo_linea) && (
+              {lineasPaginadas.some(l => l.motivo_linea) && (
                 <div className="md:hidden mt-2 space-y-2">
-                  {lineas.filter(l => l.motivo_linea).map(linea => (
+                  {lineasPaginadas.filter(l => l.motivo_linea).map(linea => (
                     <div key={`motivo-${linea.id}`} className="flex items-center gap-2 px-4 py-1.5 text-xs text-purple-600 dark:text-purple-400">
                       <span className="font-mono text-slate-400">{linea.sku}:</span>
                       <span className="font-medium">{linea.motivo_linea}</span>
@@ -1157,6 +1200,44 @@ const KardexAuditoria = () => {
                 </div>
               )}
             </div>
+
+            {/* Paginación de líneas */}
+            {totalPaginasLineas > 1 && (
+              <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700 mt-3">
+                <span className="text-xs text-slate-400 dark:text-slate-500">
+                  Página {lineaPage} de {totalPaginasLineas} · {lineas.length} líneas
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setLineaPage((p) => Math.max(1, p - 1))}
+                    disabled={lineaPage === 1}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Anterior
+                  </button>
+                  {Array.from({ length: totalPaginasLineas }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setLineaPage(p)}
+                      className={`w-8 h-8 text-xs font-medium rounded-lg transition-colors ${
+                        p === lineaPage
+                          ? 'bg-purple-500 text-white'
+                          : 'border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setLineaPage((p) => Math.min(totalPaginasLineas, p + 1))}
+                    disabled={lineaPage === totalPaginasLineas}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+            )}
           </Section>
 
           {/* ════════════════════════════════════════════════════════════════ */}
@@ -1169,9 +1250,14 @@ const KardexAuditoria = () => {
             badge={
               <div className="flex items-center gap-2">
                 {savingLogistica && <Loader2 className="w-3 h-3 animate-spin text-blue-500" />}
-                {logisticaSaved && !savingLogistica && <Check className="w-3 h-3 text-purple-500" />}
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
-                  Opcional
+                {!savingLogistica && camposConError.length > 0 && <X className="w-3 h-3 text-red-500" />}
+                {!savingLogistica && camposConError.length === 0 && logisticaSaved && <Check className="w-3 h-3 text-purple-500" />}
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  camposConError.length > 0
+                    ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                    : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                }`}>
+                  {camposConError.length > 0 ? `${camposConError.length} error(es)` : 'Opcional'}
                 </span>
               </div>
             }
@@ -1183,7 +1269,7 @@ const KardexAuditoria = () => {
                 value={formData.conductor}
                 onChange={handleFieldChange('conductor')}
                 placeholder="Ej: Juan Pérez"
-                disabled={isCerrado}
+                disabled={!puedeEditar}
                 error={fieldErrors.conductor}
               />
               <FormField
@@ -1192,7 +1278,7 @@ const KardexAuditoria = () => {
                 value={formData.cedula}
                 onChange={handleFieldChange('cedula')}
                 placeholder="Ej: 1066601726"
-                disabled={isCerrado}
+                disabled={!puedeEditar}
                 error={fieldErrors.cedula}
               />
               <FormField
@@ -1201,7 +1287,7 @@ const KardexAuditoria = () => {
                 value={formData.placa}
                 onChange={handleFieldChange('placa')}
                 placeholder="Ej: ABC123"
-                disabled={isCerrado}
+                disabled={!puedeEditar}
                 error={fieldErrors.placa}
               />
               <FormField
@@ -1210,7 +1296,7 @@ const KardexAuditoria = () => {
                 value={formData.telefono}
                 onChange={handleFieldChange('telefono')}
                 placeholder="Ej: 3001234567"
-                disabled={isCerrado}
+                disabled={!puedeEditar}
                 error={fieldErrors.telefono}
               />
               <FormField
@@ -1219,7 +1305,7 @@ const KardexAuditoria = () => {
                 value={formData.origen}
                 onChange={handleFieldChange('origen')}
                 placeholder="Ej: PLANTA BOGOTÁ"
-                disabled={isCerrado}
+                disabled={!puedeEditar}
                 error={fieldErrors.origen}
               />
               <FormField
@@ -1228,7 +1314,7 @@ const KardexAuditoria = () => {
                 value={formData.destino}
                 onChange={handleFieldChange('destino')}
                 placeholder="Ej: CEDI GIRARDOTA"
-                disabled={isCerrado}
+                disabled={!puedeEditar}
                 error={fieldErrors.destino}
               />
               <div className="md:col-span-2">
@@ -1239,7 +1325,7 @@ const KardexAuditoria = () => {
                   onChange={handleFieldChange('observaciones')}
                   placeholder="Novedades de la operacion (opcional)..."
                   type="textarea"
-                  disabled={isCerrado}
+                  disabled={!puedeEditar}
                 />
               </div>
             </div>
@@ -1263,7 +1349,7 @@ const KardexAuditoria = () => {
             }
           >
             {/* Formulario para registrar averia */}
-            {!isCerrado && (
+            {puedeEditar && (
               <div className="space-y-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Selector de producto */}
@@ -1283,7 +1369,7 @@ const KardexAuditoria = () => {
                         <option value="">-- Seleccionar producto --</option>
                         {lineas.filter(l => !l.eliminado).map(l => (
                           <option key={l.id} value={l.id}>
-                            {l.sku} — {l.producto} {l.caja ? `(${l.caja})` : ''} ({l.cantidad_esperada} {l.unidad || 'UND'})
+                            {l.sku} — {l.producto} {l.caja ? `(${l.caja})` : ''} ({new Intl.NumberFormat('es-CO').format(l.cantidad_esperada)} {l.unidad || 'UND'})
                           </option>
                         ))}
                       </select>
@@ -1363,7 +1449,7 @@ const KardexAuditoria = () => {
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                       <div className="flex items-center gap-1.5">
                         <Package className="w-3.5 h-3.5 text-amber-500" />
-                        Unidades afectadas <span className="text-slate-400 text-xs">(opcional)</span>
+                        Unidades afectadas <span className="text-red-500">*</span>
                       </div>
                     </label>
                     <input type="number" min="1" value={averiaForm.cantidad_afectada} onChange={(e) => setAveriaForm(prev => ({ ...prev, cantidad_afectada: e.target.value }))} placeholder="Ej: 5" className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all hover:border-amber-400 dark:hover:border-amber-500/50" />
@@ -1430,7 +1516,7 @@ const KardexAuditoria = () => {
                       <span className="text-xs text-slate-400 flex-shrink-0">
                         Cant: {av.cantidad}
                       </span>
-                      {!isCerrado && (
+                      {puedeEditar && (
                         <button onClick={() => handleEliminarAveria(av.id)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0" title="Eliminar avería">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -1466,12 +1552,14 @@ const KardexAuditoria = () => {
               </div>
             }
           >
-            {isCerrado ? (
+            {!puedeEditar ? (
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <Shield className="w-5 h-5 text-purple-500" />
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                    Auditoria cerrada — {files.length} evidencia{files.length !== 1 && 's'} registrada{files.length !== 1 && 's'}
+                    {isCerrado
+                      ? `Auditoría cerrada — ${files.length} evidencia${files.length !== 1 ? 's' : ''} registrada${files.length !== 1 ? 's' : ''}`
+                      : 'No tienes permiso para agregar evidencias'}
                   </p>
                 </div>
                 <FilePreviewGallery files={files} readOnly={true} />
@@ -1491,7 +1579,7 @@ const KardexAuditoria = () => {
       {/* ════════════════════════════════════════════════════════════════════ */}
       {/* FLOATING BOTTOM BAR */}
       {/* ════════════════════════════════════════════════════════════════════ */}
-      {!isCerrado && (
+      {puedeEditar && (
         <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-gray-200 dark:border-slate-700 px-4 py-4">
           <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
             {/* Progress Summary */}

@@ -58,8 +58,8 @@ const listar = async (req, res) => {
       where.usuario_id = req.query.usuario_id;
     }
 
-    // Usuario solo ve sus movimientos
-    if (req.user.esConductor) {
+    // Conductor y operador solo ven sus propios movimientos
+    if (req.user.esConductor || req.user.esOperador) {
       where.usuario_id = req.user.id;
     }
 
