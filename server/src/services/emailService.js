@@ -202,8 +202,8 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
         return plain;
       }),
       totalReferencias: operacion.total_referencias || 0,
-      totalUnidades: operacion.total_unidades,
-      totalAverias: operacion.total_averias,
+      totalUnidades: Math.round(parseFloat(operacion.total_unidades) || 0),
+      totalAverias: Math.round(parseFloat(operacion.total_averias) || 0),
       tieneAverias: operacion.total_averias > 0,
       origen: operacion.origen || 'No especificado',
       destino: operacion.destino || 'No especificado',

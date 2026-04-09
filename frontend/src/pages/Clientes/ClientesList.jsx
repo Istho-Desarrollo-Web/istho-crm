@@ -331,7 +331,7 @@ const ClientesList = () => {
     sector: searchParams.get('sector') || '',
     estado: searchParams.get('estado') || '',
   });
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
 
   // Modales
   const [viewMode, setViewMode] = useState('table');

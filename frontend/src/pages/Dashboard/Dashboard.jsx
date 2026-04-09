@@ -527,7 +527,7 @@ const Dashboard = () => {
           />
 
           <PieChart
-            title="Entradas vs Salidas"
+            title="Distribución por Tipo"
             subtitle={`Operaciones de ${mesNombre}`}
             data={pieData}
             size={180}

@@ -215,29 +215,42 @@ import { getServerFileUrl } from '../../api/client';
  * Hook para atajos de teclado
  */
 const useKeyboardShortcuts = (shortcuts, enabled = true) => {
+  // Ref para acceder siempre al array más reciente sin re-registrar el listener
+  const shortcutsRef = useRef(shortcuts);
   const sequenceRef = useRef([]);
   const timeoutRef = useRef(null);
+
+  // Sincronizar la ref en cada render sin disparar el effect
+  useEffect(() => {
+    shortcutsRef.current = shortcuts;
+  });
 
   useEffect(() => {
     if (!enabled) return;
 
     const handleKeyDown = (e) => {
-      // Ignorar si está escribiendo en un input
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+      const current = shortcutsRef.current;
+
+      // Ignorar si está escribiendo en un input (excepto Ctrl/Cmd)
+      if (!e.ctrlKey && !e.metaKey && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
       // Atajos especiales con modificadores (Ctrl en Windows, Cmd en Mac)
       if (e.ctrlKey || e.metaKey) {
+        // Ignorar en inputs solo si NO hay un shortcut registrado para esa combinación
         const key = e.key.toUpperCase();
-        const shortcut = shortcuts.find(s => {
+        const shortcut = current.find(s => {
           const sKey = s.key.toUpperCase();
           return sKey === `CMD+${key}` || sKey === `CTRL+${key}`;
         });
         if (shortcut) {
           e.preventDefault();
           shortcut.action();
-          return;
         }
+        return;
       }
+
+      // Ignorar inputs para secuencias
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
       // Secuencias (ej: "G D" para ir a dashboard)
       const key = e.key.toUpperCase();
@@ -251,7 +264,7 @@ const useKeyboardShortcuts = (shortcuts, enabled = true) => {
 
       // Verificar secuencia
       const sequence = sequenceRef.current.join(' ');
-      const shortcut = shortcuts.find(s => s.key === sequence);
+      const shortcut = current.find(s => s.key === sequence);
       if (shortcut) {
         e.preventDefault();
         shortcut.action();
@@ -259,12 +272,13 @@ const useKeyboardShortcuts = (shortcuts, enabled = true) => {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    // capture:true garantiza que este listener se ejecuta antes que cualquier handler de elemento
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown, { capture: true });
       clearTimeout(timeoutRef.current);
     };
-  }, [shortcuts, enabled]);
+  }, [enabled]); // Solo se re-registra si enabled cambia, no en cada render
 };
 
 /**
@@ -1020,7 +1034,6 @@ const FloatingHeader = () => {
 
   // Configurar atajos
   const shortcuts = [
-    { key: 'CMD+K', action: () => document.querySelector('[data-search-input]')?.focus() },
     { key: 'CMD+B', action: toggleDark },
     { key: 'CMD+/', action: () => setIsShortcutsOpen(true) },
     // Navegación

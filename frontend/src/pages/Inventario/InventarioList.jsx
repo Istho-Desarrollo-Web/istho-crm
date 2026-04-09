@@ -284,7 +284,7 @@ const InventarioList = () => {
   // ESTADOS LOCALES
   // ──────────────────────────────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [filters, setFilters] = useState({});
   const [showFilters, setShowFilters] = useState(false);
 

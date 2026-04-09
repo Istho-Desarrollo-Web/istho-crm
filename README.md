@@ -8,8 +8,9 @@ Sistema integral de gestión logística, transporte y almacenamiento para **ISTH
 |------|-----------|
 | **Frontend** | React 19 + Vite + Tailwind CSS 4 + MUI 7 + Lucide Icons |
 | **Backend** | Node.js 20 + Express 4.18 + Sequelize 6 (ORM) |
-| **Base de Datos** | MySQL 9.6 (Railway producción / XAMPP local) |
-| **Autenticación** | JWT con refresh tokens (HS256) |
+| **Base de Datos** | MySQL (Railway producción / XAMPP local) |
+| **Autenticación** | JWT con refresh tokens (HS256) — 24h acceso / 7d refresh |
+| **Almacenamiento** | Cloudinary (avatares, soportes, evidencias, averías, branding) |
 | **Email** | Resend (API HTTP, producción) / Nodemailer SMTP (desarrollo) |
 | **Exportaciones** | ExcelJS (Excel) + PDFKit (PDF) |
 | **Real-time** | Socket.io (notificaciones y actualizaciones en vivo) |
@@ -27,12 +28,23 @@ Sistema integral de gestión logística, transporte y almacenamiento para **ISTH
 
 ### Dashboard
 - KPIs diferenciados por rol (Admin/WMS, Financiera, Conductor, Operador)
-- Saludo dinámico por hora del día
-- Acciones rápidas contextuales
-- Gráficos con Recharts
+- Estadísticas de operaciones por tipo (Entradas, Salidas, Kardex) y estado
+- Gráficos de distribución con Recharts
+- Tablas de auditorías recientes (entradas y salidas)
+- Saludo dinámico por hora del día y acciones rápidas contextuales
+
+### Búsqueda Global (Ctrl+K)
+- Busca en todos los módulos simultáneamente con debounce
+- Filtro por permisos: solo muestra módulos accesibles al rol del usuario
+- Prefijo de módulo: `v ` busca solo Viajes, `c ` solo Clientes, etc.
+- Historial de búsquedas recientes (localStorage)
+- Resaltado de texto coincidente en resultados
+- Enlace "Ver todos" lleva al módulo con el filtro pre-aplicado
+- Navegación con teclado (↑ ↓ Enter)
 
 ### Clientes
-- CRUD con contactos, documentación tributaria y estado comercial
+- CRUD con contactos, documentación tributaria y estado comercial (activo/inactivo/suspendido)
+- Contactos con selección de tipos de notificación: Todas / Entradas / Salidas / Kardex
 - Portal de cliente con navegación filtrada y permisos granulares por módulo
 - Middleware `filtrarPorCliente` inyecta automáticamente el `cliente_id`
 
@@ -42,7 +54,7 @@ Sistema integral de gestión logística, transporte y almacenamiento para **ISTH
 - Alertas de stock bajo/agotado/próximo a vencer con gestión (atender/descartar/silenciar)
 - Movimientos históricos con trazabilidad completa
 
-### Integración WMS (Copérnico)
+### Integración WMS (Centhrix)
 - API autenticada con `X-WMS-API-Key`
 - **syncProductos**: Sincronización de catálogo de SKUs
 - **syncEntrada** (CO): Recepción de mercancía → Operación + Cajas + Stock
@@ -56,7 +68,9 @@ Sistema integral de gestión logística, transporte y almacenamiento para **ISTH
 - **Entradas** (verde): Verificación de líneas, logística obligatoria, evidencias
 - **Salidas** (azul): Datos de despacho (picking, sucursal, ciudad destino)
 - **Kardex** (púrpura): Flujo simplificado, logística opcional
+- Evidencias subidas a Cloudinary (fotos + PDFs)
 - Stepper de estado, KPIs, cierre con selección de plantilla de email
+- Preview de destinatarios antes de cerrar (filtrado por tipo de notificación del contacto)
 
 ### Vehículos
 - Gestión de flota con control de documentos (SOAT, tecnomecánica)
@@ -76,21 +90,24 @@ Sistema integral de gestión logística, transporte y almacenamiento para **ISTH
 - Campo viaje solo visible si el usuario asignado tiene rol conductor
 
 ### Movimientos de Caja Menor
-- Creación con soporte adjunto (base64 en BD)
+- Creación con soporte adjunto (Cloudinary / base64 fallback)
 - Aprobación individual y masiva
 - Valor aprobado puede diferir del solicitado
 - Vista detalle con preview de soporte
 
 ### Reportes
-- Reportes operativos (despachos, inventario, clientes) y financieros (viajes, cajas menores, gastos)
-- Exportación Excel/CSV desde backend
-- KPIs, gráficos y tablas de datos por tipo de reporte
+- Reportes operativos (operaciones, inventario, clientes) y financieros (viajes, cajas menores, gastos)
+- Exportación Excel y PDF desde backend
+- KPIs, gráficos de distribución por tipo/estado y tablas de datos por reporte
+- Tendencia comparativa de últimos 6 meses (operaciones)
+- Envío de reportes por email directamente desde la UI
 - **Reportes programados**: 6 tipos con envío automático por email (node-cron)
 
 ### Plantillas de Email
 - 3 plantillas predeterminadas (entrada, salida, kardex)
 - Variables Handlebars dinámicas
 - Firma configurable por plantilla
+- Logo desde Cloudinary (evita límite de 102KB de Gmail)
 - Editor CRUD con preview en tiempo real
 
 ### Administración
@@ -100,7 +117,7 @@ Sistema integral de gestión logística, transporte y almacenamiento para **ISTH
 - Auditoría de acciones (crear, actualizar, eliminar, login, logout)
 
 ### Perfil y Configuración
-- Edición de datos personales y avatar (base64 en BD)
+- Edición de datos personales y avatar (Cloudinary / base64 fallback)
 - Cambio de contraseña
 - Preferencias: tema oscuro/claro, sonido de notificaciones
 
@@ -108,6 +125,7 @@ Sistema integral de gestión logística, transporte y almacenamiento para **ISTH
 - En tiempo real via WebSocket (Socket.io)
 - Tipos: WMS sync, aprobación de gastos, cierre de caja, alertas de inventario, vehículos
 - Panel con filtros por tipo y prioridad
+- Badge con contador (máx. "+9") y sonido configurable
 
 ## Roles del Sistema
 
@@ -119,6 +137,24 @@ Sistema integral de gestión logística, transporte y almacenamiento para **ISTH
 | **operador** | 50 | Operaciones de bodega, cajas menores asignadas |
 | **conductor** | 30 | Viajes, gastos de viaje, vehículos asignados, cajas menores |
 | **cliente** | 10 | Portal: inventario, operaciones, reportes propios |
+
+## Atajos de Teclado
+
+| Atajo | Acción |
+|-------|--------|
+| `Ctrl+K` | Abrir búsqueda global |
+| `Ctrl+B` | Alternar modo oscuro/claro |
+| `Ctrl+/` | Ver listado de atajos |
+| `G D` | Ir a Dashboard |
+| `G C` | Ir a Clientes |
+| `G I` | Ir a Inventario |
+| `G E` | Ir a Entradas |
+| `G S` | Ir a Salidas |
+| `G K` | Ir a Kardex |
+| `G V` | Ir a Vehículos |
+| `G T` | Ir a Viajes |
+| `G M` | Ir a Cajas Menores |
+| `G R` | Ir a Reportes |
 
 ## Inicio Rápido
 
@@ -133,7 +169,7 @@ cd ../frontend && npm install
 
 # 3. Configurar variables de entorno
 cp server/.env.example server/.env
-# Editar server/.env con datos de MySQL, JWT y email
+# Editar server/.env con datos de MySQL, JWT, email y Cloudinary
 
 # 4. Iniciar en desarrollo
 cd server && npm run dev          # Backend en :5000
@@ -142,6 +178,20 @@ cd ../frontend && npm run dev     # Frontend en :5173
 
 Los seeds de roles, permisos, plantillas de email y configuración WMS se ejecutan automáticamente al iniciar el servidor.
 
+## Variables de Entorno Principales
+
+| Variable | Descripción |
+|----------|-------------|
+| `DATABASE_URL` / `MYSQL_URL` | Conexión MySQL |
+| `JWT_SECRET` | Secreto para access tokens |
+| `JWT_REFRESH_SECRET` | Secreto para refresh tokens |
+| `RESEND_API_KEY` | API key de Resend (email producción) |
+| `CLOUDINARY_CLOUD_NAME` | Nombre del cloud en Cloudinary |
+| `CLOUDINARY_API_KEY` | API key de Cloudinary |
+| `CLOUDINARY_API_SECRET` | API secret de Cloudinary |
+| `WMS_API_KEY` | Key para autenticar llamadas del WMS |
+| `CORS_ORIGIN` | URL exacta del frontend (sin trailing slash) |
+
 ## Despliegue
 
 | Componente | Plataforma | Configuración |
@@ -149,6 +199,7 @@ Los seeds de roles, permisos, plantillas de email y configuración WMS se ejecut
 | **Backend** | Railway | `server/railway.toml` + `server/nixpacks.toml`. Health check: `/health` |
 | **Frontend** | Vercel | `frontend/vercel.json`. Root directory: `frontend` |
 | **Base de datos** | Railway MySQL | `MYSQL_URL` (interna) para backend |
+| **Archivos** | Cloudinary | Avatares, soportes, evidencias, averías y branding |
 | **Email** | Resend | API HTTP. Requiere verificar dominio para enviar a externos |
 
 > **Importante:** NO definir variable `PORT` en Railway (se asigna automáticamente). `CORS_ORIGIN` debe coincidir con la URL exacta de Vercel sin trailing slash.
@@ -160,10 +211,11 @@ Para detalles completos de deploy ver [DEPLOY.md](DEPLOY.md).
 | Token | Valor |
 |-------|-------|
 | Accent | `#E74C3C` (Rojo Energía) |
-| Primary | `#1A1A2E` (Azul Marino) |
+| Hover | `#C0392B` |
+| Primary Dark | `#0F1023` / `#151631` / `#1A1B3A` |
 | Success | `#2ECC71` (Verde Logístico) |
-| Dark BG | `#0F1023` / `#151631` / `#1A1B3A` |
 | Font | Segoe UI |
+| Logo | `frontend/src/assets/Centhrix WMS - ISTHO-03.svg` |
 
 ## Documentación
 

@@ -141,7 +141,8 @@ const ReporteDespachos = () => {
   const pieData = [
     { name: 'Ingresos', value: porTipo.ingreso || 0 },
     { name: 'Salidas', value: porTipo.salida || 0 },
-  ];
+    { name: 'Kardex', value: porTipo.kardex || 0 },
+  ].filter(d => d.value > 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
@@ -229,8 +230,8 @@ const ReporteDespachos = () => {
             height={300}
           />
           <PieChart
-            title="Ingresos vs Salidas"
-            subtitle="Distribución por tipo"
+            title="Distribución por Tipo"
+            subtitle="Ingresos, Salidas y Kardex"
             data={pieData}
             size={180}
           />

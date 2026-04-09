@@ -276,6 +276,7 @@ const exportarOperaciones = async (operaciones, filtros = {}) => {
     const totalOps = operaciones.length;
     const ingresos = operaciones.filter(o => o.tipo === 'ingreso').length;
     const salidas = operaciones.filter(o => o.tipo === 'salida').length;
+    const kardex = operaciones.filter(o => o.tipo === 'kardex').length;
     const cerradas = operaciones.filter(o => o.estado === 'cerrado').length;
     const pendientes = operaciones.filter(o => o.estado === 'pendiente').length;
     const totalUds = operaciones.reduce((s, o) => s + (parseFloat(o.total_unidades) || 0), 0);
@@ -286,6 +287,7 @@ const exportarOperaciones = async (operaciones, filtros = {}) => {
       { label: 'Total Operaciones:', value: totalOps },
       { label: 'Ingresos:', value: ingresos },
       { label: 'Salidas:', value: salidas },
+      { label: 'Kardex:', value: kardex },
       { label: 'Cerradas:', value: cerradas },
       { label: 'Pendientes:', value: pendientes },
       { label: 'Total Unidades:', value: totalUds, numFmt: '0' },
@@ -319,7 +321,7 @@ const exportarOperaciones = async (operaciones, filtros = {}) => {
         if (ci === 7) cell.numFmt = '0';
         if (ci === 1) {
           const tipo = (op.tipo || '').toLowerCase();
-          cell.font = { bold: true, color: { argb: tipo === 'ingreso' ? C.verde : C.azulMedio } };
+          cell.font = { bold: true, color: { argb: tipo === 'ingreso' ? C.verde : tipo === 'kardex' ? C.naranja : C.azulMedio } };
         }
         if (ci === 5) {
           const estado = (op.estado || '').toLowerCase();

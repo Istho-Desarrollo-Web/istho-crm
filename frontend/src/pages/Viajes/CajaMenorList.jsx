@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useThemeContext } from '../../context/ThemeContext';
 import { cajasMenoresService } from '../../api/viajes.service';
@@ -215,11 +215,12 @@ const PAGE_SIZE = 20;
 
 const CajaMenorList = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user: _user } = useAuth();
   const { success, apiError, deleted } = useNotification();
   const socket = useSocket();
   const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [estadoFilter, setEstadoFilter] = useState('todos');
   const [loading, setLoading] = useState(true);
   const [cajas, setCajas] = useState([]);

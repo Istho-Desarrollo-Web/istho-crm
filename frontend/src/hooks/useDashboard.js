@@ -41,7 +41,7 @@ const DEFAULT_OPERACIONES = {
   semana: 0,
   pendientes: 0,
   porEstado: { pendiente: 0, en_proceso: 0, cerrado: 0, anulado: 0 },
-  porTipo: { ingreso: 0, salida: 0 },
+  porTipo: { ingreso: 0, salida: 0, kardex: 0 },
 };
 
 const DEFAULT_INVENTARIO = {
@@ -361,12 +361,13 @@ const useDashboard = (options = {}) => {
           }))
         : [],
       
-      // Ingresos vs Salidas
+      // Ingresos vs Salidas (incluye Kardex)
       ingresosVsSalidas: operaciones.porTipo
         ? [
             { name: 'Ingresos', value: operaciones.porTipo.ingreso || 0 },
             { name: 'Salidas', value: operaciones.porTipo.salida || 0 },
-          ]
+            { name: 'Kardex', value: operaciones.porTipo.kardex || 0 },
+          ].filter(d => d.value > 0)
         : [],
       
       // Tendencia mensual (placeholder - se puede expandir)

@@ -27,8 +27,8 @@ const db = require('../models');
 const plantillaEntrada = {
   nombre: 'Cierre de Entrada de Inventario',
   tipo: 'operacion_cierre',
-  asunto_template: '📦 Entrada de Inventario - {{numeroOperacion}} | {{clienteNombre}}',
-  cuerpo_html: `<h2 style="color: #1a237e; margin: 0 0 5px 0;">📥 Entrada de Inventario Completada</h2>
+  asunto_template: 'Entrada de Inventario - {{documentoWms}} | {{clienteNombre}}',
+  cuerpo_html: `<h2 style="color: #1a237e; margin: 0 0 5px 0;">Entrada de Inventario Completada</h2>
 <p style="color: #64748b; margin: 0 0 25px 0; font-size: 14px;">Se ha registrado exitosamente el ingreso de mercancía</p>
 
 <p>Estimado(a) cliente,</p>
@@ -246,8 +246,8 @@ const plantillaEntrada = {
 const plantillaSalida = {
   nombre: 'Cierre de Salida con Picking',
   tipo: 'operacion_cierre',
-  asunto_template: '🚚 Salida con Picking - {{numeroOperacion}} | {{clienteNombre}}',
-  cuerpo_html: `<h2 style="color: #1a237e; margin: 0 0 5px 0;">📤 Salida con Picking Completada</h2>
+  asunto_template: 'Salida con Picking - {{numeroPicking}} | {{clienteNombre}}',
+  cuerpo_html: `<h2 style="color: #1a237e; margin: 0 0 5px 0;">Salida con Picking Completada</h2>
 <p style="color: #64748b; margin: 0 0 25px 0; font-size: 14px;">Se ha completado el despacho de mercancía</p>
 
 <p>Estimado(a) cliente,</p>
@@ -501,8 +501,8 @@ const plantillaSalida = {
 const plantillaKardex = {
   nombre: 'Cierre de Ajuste Kardex',
   tipo: 'operacion_cierre',
-  asunto_template: '🔄 Ajuste Kardex - {{numeroOperacion}} | {{clienteNombre}}',
-  cuerpo_html: `<h2 style="color: #6d28d9; margin: 0 0 5px 0;">🔄 Ajuste de Inventario (Kardex) Completado</h2>
+  asunto_template: 'Ajuste Kardex - {{numeroOperacion}} | {{clienteNombre}}',
+  cuerpo_html: `<h2 style="color: #6d28d9; margin: 0 0 5px 0;">Ajuste de Inventario (Kardex) Completado</h2>
 <p style="color: #64748b; margin: 0 0 25px 0; font-size: 14px;">Se ha registrado exitosamente un ajuste de inventario</p>
 
 <p>Estimado(a) cliente,</p>

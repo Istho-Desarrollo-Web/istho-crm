@@ -13,7 +13,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import useSort from '@hooks/useSort';
 import SortIcon from '@components/common/SortIcon';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useThemeContext } from '../../../context/ThemeContext';
 import auditoriasService from '../../../api/auditorias.service';
@@ -155,7 +155,8 @@ const KpiMini = ({ icon: Icon, label, value, color }) => (
 
 const KardexList = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [estadoFilter, setEstadoFilter] = useState('todos');
   const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
   const [loading, setLoading] = useState(true);
