@@ -10,7 +10,7 @@ const router = express.Router();
 
 const reporteController = require('../controllers/reporteController');
 const { verificarToken, filtrarPorCliente } = require('../middleware/auth');
-const { requiereRolMinimo } = require('../middleware/roles');
+const { requiereRolMinimo, requierePermiso } = require('../middleware/roles');
 
 // Todas las rutas requieren autenticación y filtro por cliente
 router.use(verificarToken);
@@ -41,6 +41,14 @@ router.get('/operaciones/:id/pdf', reporteController.exportarDetalleOperacionPDF
 
 router.get('/inventario/excel', reporteController.exportarInventarioExcel);
 router.get('/inventario/pdf', reporteController.exportarInventarioPDF);
+
+// =============================================
+// REPORTES DE INVENTARIO POR UBICACIÓN
+// =============================================
+
+router.get('/inventario-ubicacion', reporteController.getReporteInventarioUbicacion);
+router.get('/inventario-ubicacion/excel', reporteController.exportarInventarioUbicacionExcel);
+router.get('/inventario-ubicacion/pdf', reporteController.exportarInventarioUbicacionPDF);
 
 // =============================================
 // REPORTES DE CLIENTES
@@ -92,7 +100,7 @@ router.get('/viajes/csv', reporteController.exportarViajesCsv);
 // ENVIAR REPORTE POR EMAIL
 // =============================================
 
-router.post('/enviar-email', requiereRolMinimo('supervisor'), reporteController.enviarReportePorEmail);
+router.post('/enviar-email', requierePermiso('reportes', 'crear'), reporteController.enviarReportePorEmail);
 
 // =============================================
 // REPORTES COMPARATIVOS
@@ -104,10 +112,10 @@ router.get('/comparativo', reporteController.getComparativo);
 // REPORTES PROGRAMADOS (CRUD)
 // =============================================
 
-router.get('/programados', requiereRolMinimo('supervisor'), reporteController.listarProgramados);
-router.post('/programados', requiereRolMinimo('supervisor'), reporteController.crearProgramado);
-router.put('/programados/:id', requiereRolMinimo('supervisor'), reporteController.actualizarProgramado);
-router.delete('/programados/:id', requiereRolMinimo('supervisor'), reporteController.eliminarProgramado);
-router.post('/programados/:id/ejecutar', requiereRolMinimo('supervisor'), reporteController.ejecutarProgramadoManual);
+router.get('/programados', requierePermiso('reportes', 'crear'), reporteController.listarProgramados);
+router.post('/programados', requierePermiso('reportes', 'crear'), reporteController.crearProgramado);
+router.put('/programados/:id', requierePermiso('reportes', 'crear'), reporteController.actualizarProgramado);
+router.delete('/programados/:id', requierePermiso('reportes', 'crear'), reporteController.eliminarProgramado);
+router.post('/programados/:id/ejecutar', requierePermiso('reportes', 'crear'), reporteController.ejecutarProgramadoManual);
 
 module.exports = router;

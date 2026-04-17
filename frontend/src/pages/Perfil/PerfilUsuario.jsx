@@ -32,6 +32,7 @@ import {
   Settings,
   LogOut,
   CheckCircle,
+  Check,
   Eye,
   EyeOff,
   AlertTriangle,
@@ -269,7 +270,7 @@ const ChangePasswordModal = ({ isOpen, onClose, onSubmit, loading }) => {
               <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center ${
                 req.ok ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
               }`}>
-                {req.ok && <span className="text-white text-[8px]">✓</span>}
+                {req.ok && <Check className="w-2 h-2 text-white" />}
               </div>
               <span className={req.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}>
                 {req.text}
@@ -558,22 +559,34 @@ const PerfilUsuario = () => {
   // Catálogo de labels para portal
   const PORTAL_MODULO_LABELS = {
     inventario: 'Inventario',
-    despachos: 'Despachos',
     reportes: 'Reportes',
     facturacion: 'Facturación',
     perfil: 'Perfil',
+    dashboard: 'Dashboard',
+    clientes: 'Clientes',
+    operaciones: 'Operaciones',
+    auditoria: 'Completar Operación',
+    notificaciones: 'Notificaciones',
+    caja_menor: 'Caja Menor',
+    movimientos: 'Movimientos',
+    viajes: 'Viajes',
+    vehiculos: 'Vehículos',
+    gastos: 'Gastos',
+    usuarios: 'Usuarios',
+    documentos: 'Documentos',
+    tickets: 'Tickets',
   };
   const PORTAL_ACCION_LABELS = {
     ver: 'Ver',
+    crear: 'Crear',
+    editar: 'Editar',
+    eliminar: 'Eliminar',
     exportar: 'Exportar',
+    descargar: 'Descargar',
     alertas: 'Alertas',
     crear_solicitud: 'Crear Solicitud',
     descargar_documentos: 'Descargar Documentos',
-    descargar: 'Descargar',
-    editar: 'Editar',
     cambiar_password: 'Cambiar Contraseña',
-    crear: 'Crear',
-    eliminar: 'Eliminar',
   };
 
   const diasActivo = Math.max(1, Math.ceil(
@@ -847,71 +860,35 @@ const PerfilUsuario = () => {
                     </div>
 
                     {permisosTabla.length > 0 ? (
-                      isPortalUser ? (
-                        /* Portal: mostrar cada módulo con sus acciones específicas */
-                        <div className="space-y-3">
-                          {permisosTabla.map((permiso, idx) => (
-                            <div key={idx} className="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-4">
-                              <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">
-                                {PORTAL_MODULO_LABELS[permiso.modulo] || permiso.modulo}
-                              </h4>
-                              <div className="flex flex-wrap gap-2">
-                                {Object.entries(permiso.acciones).map(([accion, habilitado]) => (
-                                  <span
-                                    key={accion}
-                                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-                                      habilitado
-                                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                                        : 'bg-slate-200 dark:bg-slate-600/30 text-slate-400 dark:text-slate-500 line-through'
-                                    }`}
-                                  >
-                                    {habilitado ? (
-                                      <CheckCircle className="w-3.5 h-3.5" />
-                                    ) : (
-                                      <X className="w-3.5 h-3.5" />
-                                    )}
-                                    {PORTAL_ACCION_LABELS[accion] || accion}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        /* Interno: tabla clásica con columnas fijas */
-                        <div className="overflow-x-auto">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="bg-slate-50 dark:bg-slate-700/50">
-                                <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Módulo</th>
-                                <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Ver</th>
-                                <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Crear</th>
-                                <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Editar</th>
-                                <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Eliminar</th>
-                                <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Exportar</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {permisosTabla.map((permiso, idx) => (
-                                <tr key={idx} className="border-b border-gray-50 dark:border-slate-700">
-                                  <td className="py-3 px-4 text-sm font-medium text-slate-800 dark:text-slate-200 capitalize">
-                                    {permiso.modulo}
-                                  </td>
-                                  {['ver', 'crear', 'editar', 'eliminar', 'exportar'].map((accion) => (
-                                    <td key={accion} className="py-3 px-4 text-center">
-                                      {permiso.acciones[accion] ? (
-                                        <CheckCircle className="w-5 h-5 text-emerald-500 mx-auto" />
-                                      ) : (
-                                        <X className="w-5 h-5 text-slate-300 dark:text-slate-600 mx-auto" />
-                                      )}
-                                    </td>
-                                  ))}
-                                </tr>
+                      /* Todos los roles: tarjetas con pills por módulo */
+                      <div className="space-y-3">
+                        {permisosTabla.map((permiso, idx) => (
+                          <div key={idx} className="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-4">
+                            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2 capitalize">
+                              {PORTAL_MODULO_LABELS[permiso.modulo] || permiso.modulo}
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {Object.entries(permiso.acciones).map(([accion, habilitado]) => (
+                                <span
+                                  key={accion}
+                                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                                    habilitado
+                                      ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                                      : 'bg-slate-200 dark:bg-slate-600/30 text-slate-400 dark:text-slate-500 line-through'
+                                  }`}
+                                >
+                                  {habilitado ? (
+                                    <CheckCircle className="w-3.5 h-3.5" />
+                                  ) : (
+                                    <X className="w-3.5 h-3.5" />
+                                  )}
+                                  {PORTAL_ACCION_LABELS[accion] || accion}
+                                </span>
                               ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     ) : (
                       <div className="text-center py-8 text-slate-500 dark:text-slate-400">
                         <Shield className="w-12 h-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" />

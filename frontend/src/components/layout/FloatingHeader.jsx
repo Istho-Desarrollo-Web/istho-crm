@@ -46,6 +46,8 @@ import {
   Wallet,
   Receipt,
   CarFront,
+  Download,
+  Upload,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -77,40 +79,54 @@ const allMenuConfig = [
   {
     id: 'dashboard',
     label: 'Dashboard',
+    icon: LayoutDashboard,
     basePath: '/dashboard',
     shortcut: 'D',
     items: [
       { icon: LayoutDashboard, label: 'Vista General', href: '/dashboard', shortcut: 'G D' },
       { icon: BarChart3, label: 'Reportes', href: '/reportes', shortcut: 'G R' },
+      { icon: Building2, label: 'Mi Empresa', href: '/mi-empresa', soloPortal: true },
     ],
   },
   {
     id: 'clientes',
     label: 'Clientes',
+    icon: Users,
     basePath: '/clientes',
     shortcut: 'C',
     soloInternos: true, // No visible para rol cliente
     items: [
-      { icon: Users, label: 'Lista de Clientes', href: '/clientes', shortcut: 'G C' },  
+      { icon: Users, label: 'Lista de Clientes', href: '/clientes', shortcut: 'G C' },
       { icon: Mail, label: 'Plantillas de Email', href: '/plantillas-email', shortcut: 'G P' },
     ],
   },
   {
     id: 'inventario',
     label: 'Inventario',
+    icon: Package,
     basePath: '/inventario',
     shortcut: 'I',
     items: [
       { icon: Package, label: 'Maestro de Productos', href: '/inventario', shortcut: 'G I' },
-      { icon: ClipboardList, label: 'Entradas (Ingresos)', href: '/inventario/entradas', shortcut: 'G E' },
-      { icon: Truck, label: 'Salidas (Despachos)', href: '/inventario/salidas', shortcut: 'G S' },
-      { icon: RefreshCw, label: 'Kardex (Ajustes)', href: '/inventario/kardex', shortcut: 'G K' },
-      { icon: AlertCircle, label: 'Alertas de Stock', href: '/inventario/alertas' },
+      { icon: AlertCircle, label: 'Alertas de Productos', href: '/inventario/alertas', shortcut: 'G L' },
+    ],
+  },
+  {
+    id: 'operaciones',
+    label: 'Operaciones',
+    icon: ClipboardList,
+    basePath: '/operaciones',
+    shortcut: 'N',
+    items: [
+      { icon: Download, label: 'Entradas', href: '/operaciones/entradas', shortcut: 'G E' },
+      { icon: Upload, label: 'Salidas', href: '/operaciones/salidas', shortcut: 'G S' },
+      { icon: RefreshCw, label: 'Kardex', href: '/operaciones/kardex', shortcut: 'G K' },
     ],
   },
   {
     id: 'viajes',
     label: 'Viajes',
+    icon: MapPin,
     basePath: '/viajes',
     shortcut: 'V',
     soloInternos: true,
@@ -124,12 +140,13 @@ const allMenuConfig = [
   {
     id: 'admin',
     label: 'Administración',
+    icon: Shield,
     basePath: '/administracion',
     shortcut: 'A',
     soloAdmin: true,
     items: [
       { icon: Settings, label: 'Usuarios y Roles', href: '/administracion', shortcut: 'G U' },
-      { icon: Activity, label: 'Auditoría de Acciones', href: '/auditoria-acciones', shortcut: 'G A' },
+      { icon: Activity, label: 'Auditoría de Acciones', href: '/auditoria-acciones', shortcut: 'G X' },
       { icon: Truck, label: 'Configuración WMS', href: '/configuracion-wms' },
     ],
   },
@@ -147,7 +164,8 @@ const allMenuConfig = [
 const MENU_PERMISSION_MAP = {
   dashboard: ['dashboard.ver'],
   clientes: ['clientes.ver'],
-  inventario: ['inventario.ver'],
+  inventario: ['inventario.ver', 'inventario.alertas'],
+  operaciones: ['operaciones.ver'],
   viajes: ['vehiculos.ver', 'viajes.ver', 'caja_menor.ver', 'movimientos.ver'],
   admin: ['usuarios.ver', 'roles.ver', 'configuracion_wms.ver'],
 };
@@ -176,8 +194,16 @@ const getMenuForRole = (rol, hasPermission) => {
     .map(menu => {
       // Filtrar sub-items según permisos específicos
       const filteredItems = menu.items.filter(item => {
+        // Mi Empresa solo visible para portal cliente
+        if (item.soloPortal) return rol === 'cliente' && hasPermission('clientes', 'ver');
         // Alertas de inventario requiere permiso especial
         if (item.href === '/inventario/alertas') return hasPermission('inventario', 'alertas');
+        // Maestro de productos requiere inventario.ver
+        if (item.href === '/inventario') return hasPermission('inventario', 'ver');
+        // Operaciones (Entradas, Salidas, Kardex)
+        if (item.href === '/operaciones/entradas') return hasPermission('operaciones', 'ver');
+        if (item.href === '/operaciones/salidas') return hasPermission('operaciones', 'ver');
+        if (item.href === '/operaciones/kardex') return hasPermission('operaciones', 'ver');
         // Reportes requiere permiso
         if (item.href === '/reportes') return hasPermission('reportes', 'ver');
         // Configuración WMS requiere permiso
@@ -399,9 +425,14 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
     {
       category: 'Inventario', items: [
         { keys: ['G', 'I'], description: 'Maestro de Productos' },
-        { keys: ['G', 'E'], description: 'Entradas (Ingresos)' },
-        { keys: ['G', 'S'], description: 'Salidas (Despachos)' },
-        { keys: ['G', 'K'], description: 'Kardex (Ajustes)' },
+        { keys: ['G', 'L'], description: 'Alertas de Productos' },
+      ]
+    },
+    {
+      category: 'Operaciones', items: [
+        { keys: ['G', 'E'], description: 'Entradas' },
+        { keys: ['G', 'S'], description: 'Salidas' },
+        { keys: ['G', 'K'], description: 'Kardex' },
       ]
     },
     {
@@ -415,7 +446,7 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
     {
       category: 'Administración', items: [
         { keys: ['G', 'U'], description: 'Usuarios y Roles' },
-        { keys: ['G', 'A'], description: 'Auditoría de Acciones' },
+        { keys: ['G', 'X'], description: 'Auditoría de Acciones' },
       ]
     },
     {
@@ -535,52 +566,65 @@ DropdownMenuItem.propTypes = {
 /**
  * Menú dropdown de navegación (Desktop)
  */
-const DropdownMenu = ({ menu, isActive, isCurrentSection, onMouseEnter, onMouseLeave, onNavigate, currentPath }) => (
-  <div
-    className="relative"
-    onMouseEnter={onMouseEnter}
-    onMouseLeave={onMouseLeave}
-  >
-    <button
-      className={`
-        flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200
-        ${isCurrentSection
-          ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/20'
-          : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
-        }
-      `}
-      aria-expanded={isActive}
-      aria-haspopup="true"
+const DropdownMenu = ({ menu, isActive, isCurrentSection, onMouseEnter, onMouseLeave, onNavigate, currentPath }) => {
+  const Icon = menu.icon;
+  return (
+    <div
+      className="relative"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
-      {menu.label}
-      <ChevronDown
-        className={`w-4 h-4 transition-transform duration-200 ${isActive ? 'rotate-180' : ''}`}
-      />
-    </button>
+      <button
+        className={`
+          group relative flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200
+          ${isCurrentSection
+            ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/20'
+            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
+          }
+        `}
+        aria-expanded={isActive}
+        aria-haspopup="true"
+      >
+        {Icon && <Icon className="w-5 h-5" />}
+        <ChevronDown
+          className={`w-3 h-3 transition-transform duration-200 ${isActive ? 'rotate-180' : ''}`}
+        />
+        {!isActive && (
+          <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 px-2 py-1 text-xs font-medium text-white bg-slate-800 dark:bg-slate-600 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-[60]">
+            {menu.label}
+          </span>
+        )}
+      </button>
 
-    {isActive && (
-      <div className="absolute top-full left-0 pt-2 w-56 z-50">
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 animate-fadeIn">
-          {menu.items.map((item, idx) => (
-            <DropdownMenuItem
-              key={idx}
-              icon={item.icon}
-              label={item.label}
-              href={item.href}
-              isActive={currentPath === item.href.split('?')[0]}
-              onClick={onNavigate}
-              badge={item.badge}
-              shortcut={item.shortcut}
-            />
-          ))}
+      {isActive && (
+        <div className="absolute top-full left-0 pt-2 w-56 z-50">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 animate-fadeIn">
+            {menu.items.map((item, idx) => (
+              <DropdownMenuItem
+                key={idx}
+                icon={item.icon}
+                label={item.label}
+                href={item.href}
+                isActive={currentPath === item.href.split('?')[0]}
+                onClick={onNavigate}
+                badge={item.badge}
+                shortcut={item.shortcut}
+              />
+            ))}
+          </div>
         </div>
-      </div>
-    )}
-  </div>
-);
+      )}
+    </div>
+  );
+};
 
 DropdownMenu.propTypes = {
-  menu: PropTypes.object.isRequired,
+  menu: PropTypes.shape({
+    id: PropTypes.string,
+    label: PropTypes.string,
+    icon: PropTypes.elementType,
+    items: PropTypes.array,
+  }).isRequired,
   isActive: PropTypes.bool.isRequired,
   isCurrentSection: PropTypes.bool,
   onMouseEnter: PropTypes.func.isRequired,
@@ -1081,7 +1125,7 @@ const FloatingHeader = () => {
               </button>
 
               <div
-                className="flex items-center gap-2 cursor-pointer"
+                className="hidden sm:flex items-center gap-2 cursor-pointer"
                 onClick={() => navigate('/dashboard')}
               >
                 <img
@@ -1167,15 +1211,13 @@ const FloatingHeader = () => {
             {/* Right Actions */}
             <div className="flex items-center gap-2 sm:gap-4">
               {/* Search - abre GlobalSearch modal */}
-              <div className="hidden lg:flex items-center">
-                <button
-                  onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
-                  className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-400 bg-slate-100 dark:bg-slate-800 border border-transparent hover:border-slate-300 dark:hover:border-slate-600 rounded-lg transition-all w-48 xl:w-56"
-                >
-                  <Search className="w-4 h-4" />
-                  <span className="flex-1 text-left">Buscar (Ctrl+K)...</span>
-                </button>
-              </div>
+              <button
+                onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+                className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                title="Buscar (Ctrl+K)"
+              >
+                <Search className="w-5 h-5" />
+              </button>
 
               <div className="flex items-center gap-1 sm:gap-2 border-l border-gray-200 dark:border-slate-700 pl-2 sm:pl-4">
                 <button
@@ -1190,6 +1232,7 @@ const FloatingHeader = () => {
                   <button
                     onClick={handleBellClick}
                     className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors relative"
+                    title="Notificaciones"
                   >
                     <Bell className="w-5 h-5" />
                     <NotificationBadge count={notificationCount} />

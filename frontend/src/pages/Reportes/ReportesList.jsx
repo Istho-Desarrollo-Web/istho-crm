@@ -19,6 +19,7 @@ import {
   Eye,
   Wallet,
   Receipt,
+  MapPin,
 } from 'lucide-react';
 
 import { Button } from '../../components/common';
@@ -32,9 +33,9 @@ import PageFooter from '@components/common/PageFooter';
 // Reportes operativos (admin, supervisor, operador)
 const REPORTES_OPERATIVOS = [
   {
-    id: 'despachos',
-    titulo: 'Reporte de Despachos',
-    descripcion: 'Analisis de operaciones de ingreso y salida del WMS',
+    id: 'operaciones',
+    titulo: 'Reporte de Operaciones',
+    descripcion: 'Analisis de Ingresos, Salidas y Kardex del WMS',
     icon: Truck,
     color: 'bg-blue-500',
     exportEndpoints: { excel: '/reportes/operaciones/excel', pdf: '/reportes/operaciones/pdf' },
@@ -46,6 +47,15 @@ const REPORTES_OPERATIVOS = [
     icon: Package,
     color: 'bg-emerald-500',
     exportEndpoints: { excel: '/reportes/inventario/excel', pdf: '/reportes/inventario/pdf' },
+  },
+  {
+    id: 'inventario-ubicacion',
+    titulo: 'Inventario por Ubicación',
+    descripcion: 'Detalle de cajas disponibles por ubicación en bodega',
+    icon: MapPin,
+    color: 'bg-teal-500',
+    navigateTo: '/reportes/inventario-ubicacion',
+    exportEndpoints: { excel: '/reportes/inventario-ubicacion/excel', pdf: '/reportes/inventario-ubicacion/pdf' },
   },
   {
     id: 'clientes',
@@ -96,7 +106,16 @@ const REPORTES_CLIENTE = [
     exportEndpoints: { excel: '/reportes/inventario/excel', pdf: '/reportes/inventario/pdf' },
   },
   {
-    id: 'despachos',
+    id: 'inventario-ubicacion',
+    titulo: 'Inventario por Ubicación',
+    descripcion: 'Detalle de cajas por ubicación en bodega',
+    icon: MapPin,
+    color: 'bg-teal-500',
+    navigateTo: '/reportes/inventario-ubicacion',
+    exportEndpoints: { excel: '/reportes/inventario-ubicacion/excel', pdf: '/reportes/inventario-ubicacion/pdf' },
+  },
+  {
+    id: 'operaciones',
     titulo: 'Reporte de Operaciones',
     descripcion: 'Historial de ingresos y salidas de tus productos',
     icon: Truck,

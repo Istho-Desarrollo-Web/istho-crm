@@ -130,23 +130,10 @@ export const movimientosService = {
     return response;
   },
   create: async (data) => {
-    // Si tiene archivo, usar FormData
-    if (data instanceof FormData) {
-      const response = await apiClient.post(MOVIMIENTOS_ENDPOINTS.BASE, data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      return response;
-    }
     const response = await apiClient.post(MOVIMIENTOS_ENDPOINTS.BASE, data);
     return response;
   },
   update: async (id, data) => {
-    if (data instanceof FormData) {
-      const response = await apiClient.put(MOVIMIENTOS_ENDPOINTS.BY_ID(id), data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      return response;
-    }
     const response = await apiClient.put(MOVIMIENTOS_ENDPOINTS.BY_ID(id), data);
     return response;
   },

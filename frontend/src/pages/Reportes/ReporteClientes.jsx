@@ -32,6 +32,7 @@ import EnviarReporteModal from '../../components/common/EnviarReporteModal';
 import reportesService from '../../api/reportes.service';
 import clientesService from '../../api/clientes.service';
 import { useSnackbar } from 'notistack';
+import { useAuth } from '../../context/AuthContext';
 import { formatDateShort } from '../../utils/formatDate';
 
 // ============================================
@@ -40,7 +41,9 @@ import { formatDateShort } from '../../utils/formatDate';
 const ReporteClientes = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { hasPermission } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
+  const canDownload = hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
   const [loading, setLoading] = useState(true);
   const [firstLoad, setFirstLoad] = useState(true);
   const [stats, setStats] = useState(null);
@@ -179,9 +182,9 @@ const ReporteClientes = () => {
 
           <AccionesDropdown acciones={[
             { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
-            { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true) },
-            { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel') },
-            { label: 'PDF', icon: Download, onClick: () => handleExport('pdf'), variant: 'primary' },
+            { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true), hidden: !canDownload },
+            { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel'), hidden: !canDownload },
+            { label: 'PDF', icon: Download, onClick: () => handleExport('pdf'), variant: 'primary', hidden: !canDownload },
           ]} />
         </div>
 
@@ -325,6 +328,7 @@ const ReporteClientes = () => {
         </div>
 
         {/* Export Info */}
+        {canDownload && (
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
           <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-3">Exportar Listado Completo</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
@@ -339,6 +343,7 @@ const ReporteClientes = () => {
             </Button>
           </div>
         </div>
+        )}
       </main>
 
       <EnviarReporteModal

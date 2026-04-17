@@ -393,8 +393,9 @@ const UsuariosCliente = ({ clienteId, clienteNombre }) => {
           variant="primary"
           icon={Plus}
           onClick={handleCrear}
+          title="Crear Usuario"
         >
-          Crear Usuario
+          <span className="hidden sm:inline">Crear Usuario</span>
         </Button>
       </div>
       

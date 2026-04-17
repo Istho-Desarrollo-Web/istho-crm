@@ -45,7 +45,7 @@ router.post('/', noClientes, requiereRolMinimo('operador'), crearOperacionValida
 router.put('/:id/transporte', noClientes, requiereRolMinimo('operador'), actualizarTransporteValidator, operacionController.actualizarTransporte);
 
 // Averías
-router.get('/:id/averias', requiereRolMinimo('operador'), operacionController.listarAverias);
+router.get('/:id/averias', operacionController.listarAverias);
 router.post('/:id/averias', noClientes, requiereRolMinimo('operador'), uploadAveria.single('foto'), registrarAveriaValidator, operacionController.registrarAveria);
 router.delete('/:id/averias/:averiaId', noClientes, requiereRolMinimo('operador'), operacionController.eliminarAveria);
 

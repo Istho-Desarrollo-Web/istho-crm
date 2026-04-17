@@ -23,13 +23,14 @@ import useIdleTimer from './hooks/useIdleTimer';
 // PROVIDERS Y COMPONENTES DE AUTH
 // ════════════════════════════════════════════════════════════════════════════
 import { AlertProvider } from './context/AlertContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import PrivateRoute, {
   AdminRoute,
   PermissionRoute
 } from './components/auth/PrivateRoute';
 
 // Layout
+import { AlertTriangle, Wrench } from 'lucide-react';
 import FloatingHeader from './components/layout/FloatingHeader';
 import ForceChangePasswordModal from './components/auth/ForceChangePasswordModal';
 import GlobalSearch from './components/common/GlobalSearch';
@@ -64,22 +65,19 @@ const InventarioList = lazy(() => import('./pages/Inventario/InventarioList'));
 const ProductoDetail = lazy(() => import('./pages/Inventario/ProductoDetail'));
 const AlertasInventario = lazy(() => import('./pages/Inventario/AlertasInventario'));
 
-// Inventario Entradas
+// Operaciones (Entradas, Salidas, Kardex desde WMS)
 const EntradasList = lazy(() => import('./pages/Inventario/Entradas/EntradasList'));
 const EntradaAuditoria = lazy(() => import('./pages/Inventario/Entradas/EntradaAuditoria'));
-
-// Inventario Salidas
 const SalidasList = lazy(() => import('./pages/Inventario/Salidas/SalidasList'));
 const SalidaAuditoria = lazy(() => import('./pages/Inventario/Salidas/SalidaAuditoria'));
-
-// Inventario Kardex
 const KardexList = lazy(() => import('./pages/Inventario/Kardex/KardexList'));
 const KardexAuditoria = lazy(() => import('./pages/Inventario/Kardex/KardexAuditoria'));
 
 // Reportes
 const ReportesList = lazy(() => import('./pages/Reportes/ReportesList'));
-const ReporteDespachos = lazy(() => import('./pages/Reportes/ReporteDespachos'));
+const ReporteOperaciones = lazy(() => import('./pages/Reportes/ReporteOperaciones'));
 const ReporteInventario = lazy(() => import('./pages/Reportes/ReporteInventario'));
+const ReporteInventarioUbicacion = lazy(() => import('./pages/Reportes/ReporteInventarioUbicacion'));
 const ReporteClientes = lazy(() => import('./pages/Reportes/ReporteClientes'));
 const ReportesProgramados = lazy(() => import('./pages/Reportes/ReportesProgramados'));
 const ReporteViajes = lazy(() => import('./pages/Reportes/ReporteViajes'));
@@ -134,7 +132,7 @@ class ErrorBoundary extends Component {
         <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
           <div className="max-w-md w-full text-center">
             <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">⚠️</span>
+              <AlertTriangle className="w-8 h-8 text-red-400" />
             </div>
             <h1 className="text-xl font-bold text-slate-100 mb-2">Algo salió mal</h1>
             <p className="text-slate-400 text-sm mb-6">
@@ -162,13 +160,20 @@ const ComingSoon = ({ title }) => (
     <FloatingHeader />
     <div className="text-center">
       <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-4">
-        <span className="text-4xl">🚧</span>
+        <Wrench className="w-9 h-9 text-slate-500" />
       </div>
       <h1 className="text-3xl font-bold text-slate-800 mb-2">{title || 'Página no encontrada'}</h1>
       <p className="text-slate-500">Módulo en desarrollo</p>
     </div>
   </div>
 );
+
+// Redirect para portal clientes: /mi-empresa → /clientes/:cliente_id
+const MiEmpresaRedirect = () => {
+  const { user } = useAuth();
+  if (user?.cliente_id) return <Navigate to={`/clientes/${user.cliente_id}`} replace />;
+  return <Navigate to="/dashboard" replace />;
+};
 
 // ════════════════════════════════════════════════════════════════════════════
 // LAYOUT WRAPPER - Incluye Header en páginas protegidas
@@ -221,7 +226,7 @@ const PermissionDeniedListener = () => {
 
   useEffect(() => {
     const handler = (e) => {
-      warning(`🔒 ${e.detail?.message || 'No tienes permiso para realizar esta acción'}`, {
+      warning(`${e.detail?.message || 'No tienes permiso para realizar esta acción'}`, {
         autoHideDuration: 4000,
       });
     };
@@ -282,6 +287,7 @@ function App() {
                 {/* ────────────────────────────────────────────────────────── */}
                 <Route path="/clientes" element={<PermissionRoute module="clientes" action="ver"><ClientesList /></PermissionRoute>} />
                 <Route path="/clientes/:id" element={<PermissionRoute module="clientes" action="ver"><ClienteDetail /></PermissionRoute>} />
+                <Route path="/mi-empresa" element={<PermissionRoute module="clientes" action="ver"><MiEmpresaRedirect /></PermissionRoute>} />
 
                 {/* ────────────────────────────────────────────────────────── */}
                 {/* INVENTARIO - Requiere inventario.ver (todos los roles) */}
@@ -290,28 +296,30 @@ function App() {
                 <Route path="/inventario/productos/:id" element={<PermissionRoute module="inventario" action="ver"><ProductoDetail /></PermissionRoute>} />
                 <Route path="/inventario/alertas" element={<PermissionRoute module="inventario" action="alertas"><AlertasInventario /></PermissionRoute>} />
 
-                <Route path="/inventario/entradas" element={<PermissionRoute module="inventario" action="ver"><EntradasList /></PermissionRoute>} />
-                <Route path="/inventario/entradas/:id" element={<PermissionRoute module="inventario" action="ver"><EntradaAuditoria /></PermissionRoute>} />
-
-                <Route path="/inventario/salidas" element={<PermissionRoute module="inventario" action="ver"><SalidasList /></PermissionRoute>} />
-                <Route path="/inventario/salidas/:id" element={<PermissionRoute module="inventario" action="ver"><SalidaAuditoria /></PermissionRoute>} />
-
-                <Route path="/inventario/kardex" element={<PermissionRoute module="kardex" action="ver"><KardexList /></PermissionRoute>} />
-                <Route path="/inventario/kardex/:id" element={<PermissionRoute module="kardex" action="ver"><KardexAuditoria /></PermissionRoute>} />
+                {/* ────────────────────────────────────────────────────────── */}
+                {/* OPERACIONES - Entradas, Salidas y Kardex desde WMS */}
+                {/* ────────────────────────────────────────────────────────── */}
+                <Route path="/operaciones/entradas" element={<PermissionRoute module="operaciones" action="ver"><EntradasList /></PermissionRoute>} />
+                <Route path="/operaciones/entradas/:id" element={<PermissionRoute module="operaciones" action="ver"><EntradaAuditoria /></PermissionRoute>} />
+                <Route path="/operaciones/salidas" element={<PermissionRoute module="operaciones" action="ver"><SalidasList /></PermissionRoute>} />
+                <Route path="/operaciones/salidas/:id" element={<PermissionRoute module="operaciones" action="ver"><SalidaAuditoria /></PermissionRoute>} />
+                <Route path="/operaciones/kardex" element={<PermissionRoute module="operaciones" action="ver"><KardexList /></PermissionRoute>} />
+                <Route path="/operaciones/kardex/:id" element={<PermissionRoute module="operaciones" action="ver"><KardexAuditoria /></PermissionRoute>} />
 
                 {/* ────────────────────────────────────────────────────────── */}
                 {/* REPORTES - Requiere reportes.ver (todos los roles) */}
                 {/* ────────────────────────────────────────────────────────── */}
                 <Route path="/reportes" element={<PermissionRoute module="reportes" action="ver"><ReportesList /></PermissionRoute>} />
-                <Route path="/reportes/despachos" element={<PermissionRoute module="reportes" action="ver"><ReporteDespachos /></PermissionRoute>} />
+                <Route path="/reportes/operaciones" element={<PermissionRoute module="reportes" action="ver"><ReporteOperaciones /></PermissionRoute>} />
                 <Route path="/reportes/inventario" element={<PermissionRoute module="reportes" action="ver"><ReporteInventario /></PermissionRoute>} />
+                <Route path="/reportes/inventario-ubicacion" element={<PermissionRoute module="reportes" action="ver"><ReporteInventarioUbicacion /></PermissionRoute>} />
                 <Route path="/reportes/clientes" element={<PermissionRoute module="reportes" action="ver"><ReporteClientes /></PermissionRoute>} />
                 <Route path="/reportes/viajes" element={<PermissionRoute module="reportes" action="ver"><ReporteViajes /></PermissionRoute>} />
                 <Route path="/reportes/cajas-menores" element={<PermissionRoute module="reportes" action="ver"><ReporteCajasMenores /></PermissionRoute>} />
                 <Route path="/reportes/gastos" element={<PermissionRoute module="reportes" action="ver"><ReporteGastos /></PermissionRoute>} />
                 <Route path="/reportes/programados" element={<PermissionRoute module="reportes" action="crear"><ReportesProgramados /></PermissionRoute>} />
-                <Route path="/reportes/operativo" element={<PermissionRoute module="reportes" action="ver"><ReporteDespachos /></PermissionRoute>} />
-                <Route path="/reportes/kpis" element={<PermissionRoute module="reportes" action="ver"><ReporteDespachos /></PermissionRoute>} />
+                <Route path="/reportes/operativo" element={<PermissionRoute module="reportes" action="ver"><ReporteOperaciones /></PermissionRoute>} />
+                <Route path="/reportes/kpis" element={<PermissionRoute module="reportes" action="ver"><ReporteOperaciones /></PermissionRoute>} />
                 <Route path="/reportes/financiero" element={<PermissionRoute module="reportes" action="ver"><ReporteClientes /></PermissionRoute>} />
                 <Route path="/reportes/crear" element={<PermissionRoute module="reportes" action="crear"><ReportesList /></PermissionRoute>} />
 

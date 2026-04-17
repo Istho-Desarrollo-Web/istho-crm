@@ -248,7 +248,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   // ── HOOKS ──
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const { inventoryAlert, info } = useNotification();
 
   // ── FILTRO MES GRÁFICA ── (debe ir antes de useDashboard)
@@ -326,8 +326,8 @@ const Dashboard = () => {
   }, [loadingAlertas]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── HANDLERS ──
-  const handleEntradaClick = (row) => navigate(`/inventario/entradas/${row.id}`);
-  const handleSalidaClick = (row) => navigate(`/inventario/salidas/${row.id}`);
+  const handleEntradaClick = (row) => navigate(`/operaciones/entradas/${row.id}`);
+  const handleSalidaClick = (row) => navigate(`/operaciones/salidas/${row.id}`);
 
   const handleAlertClick = (alert) => {
     if (alert.originalData?.producto_id) {
@@ -410,7 +410,7 @@ const Dashboard = () => {
               {getGreeting()}, {user?.nombre_completo?.split(' ')[0] || 'Usuario'}
             </h1>
             <p className="text-slate-500 mt-1 dark:text-slate-400">
-              Panel de Auditoría WMS
+              Panel de Operaciones WMS
               {lastUpdated && (
                 <span className="text-xs ml-2 text-slate-400 dark:text-slate-600">
                   • Actualizado: {new Date(lastUpdated).toLocaleTimeString('es-CO')}
@@ -484,16 +484,16 @@ const Dashboard = () => {
           <QuickAction
             icon={ArrowDownCircle}
             label="Entradas"
-            description="Auditar recepciones WMS"
+            description="Ver recepciones WMS"
             color="emerald"
-            onClick={() => navigate('/inventario/entradas')}
+            onClick={() => navigate('/operaciones/entradas')}
           />
           <QuickAction
             icon={ArrowUpCircle}
             label="Salidas"
-            description="Auditar despachos WMS"
+            description="Ver despachos WMS"
             color="blue"
-            onClick={() => navigate('/inventario/salidas')}
+            onClick={() => navigate('/operaciones/salidas')}
           />
           <QuickAction
             icon={Package}
@@ -502,13 +502,15 @@ const Dashboard = () => {
             color="violet"
             onClick={() => navigate('/inventario')}
           />
-          <QuickAction
-            icon={Users}
-            label="Clientes"
-            description="Gestión de clientes"
-            color="orange"
-            onClick={() => navigate('/clientes')}
-          />
+          {hasPermission('clientes', 'ver') && (
+            <QuickAction
+              icon={Users}
+              label="Clientes"
+              description="Gestión de clientes"
+              color="orange"
+              onClick={() => navigate('/clientes')}
+            />
+          )}
         </div>
 
         {/* ════════════════════════════════════════════════════════════════ */}
@@ -516,7 +518,7 @@ const Dashboard = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <BarChart
-            title="Auditorías por Estado"
+            title="Operaciones por Estado"
             subtitle="Distribución actual de operaciones"
             data={barData}
             legend={[
@@ -568,7 +570,7 @@ const Dashboard = () => {
             operations={ultimasEntradas}
             type="entrada"
             onRowClick={handleEntradaClick}
-            onViewAll={() => navigate('/inventario/entradas')}
+            onViewAll={() => navigate('/operaciones/entradas')}
           />
 
           <OperationsCard
@@ -579,7 +581,7 @@ const Dashboard = () => {
             operations={ultimasSalidas}
             type="salida"
             onRowClick={handleSalidaClick}
-            onViewAll={() => navigate('/inventario/salidas')}
+            onViewAll={() => navigate('/operaciones/salidas')}
           />
         </div>
 
@@ -595,8 +597,8 @@ const Dashboard = () => {
                 <Activity className="w-5 h-5 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Resumen de Auditoría</h3>
-                <p className="text-xs text-slate-400 dark:text-slate-500">Estado actual del proceso de verificación</p>
+                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Resumen de Operaciones</h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500">Estado actual de las operaciones en curso</p>
               </div>
             </div>
 

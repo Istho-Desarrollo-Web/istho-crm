@@ -4,8 +4,10 @@
  */
 import { useState } from 'react';
 import { Mail, Send, FileSpreadsheet, FileText, Loader2, X, Check } from 'lucide-react';
+import useNotification from '@hooks/useNotification';
 
 const EnviarReporteModal = ({ isOpen, onClose, tipoReporte, onSend }) => {
+  const { showSuccess, showError } = useNotification();
   const [destinatarios, setDestinatarios] = useState('');
   const [formatoExcel, setFormatoExcel] = useState(true);
   const [formatoPdf, setFormatoPdf] = useState(false);
@@ -40,9 +42,12 @@ const EnviarReporteModal = ({ isOpen, onClose, tipoReporte, onSend }) => {
         destinatarios: emails,
       });
       setDestinatarios('');
+      showSuccess('Reporte enviado correctamente');
       onClose();
     } catch (err) {
-      setError(err.message || 'Error al enviar');
+      const msg = err.message || 'Error al enviar el reporte';
+      setError(msg);
+      showError(msg);
     } finally {
       setLoading(false);
     }

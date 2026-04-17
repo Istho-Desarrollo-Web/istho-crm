@@ -734,8 +734,8 @@ const historial = async (req, res) => {
         titulo,
         descripcion,
         estado: op.estado,
-        fecha: op.fecha_cierre || op.created_at,
-        usuario: op.cerrador?.nombre_completo || op.creador?.nombre_completo || 'Sistema',
+        fecha: op.fecha_cierre || op.createdAt,
+        usuario: op.cerrador?.nombre_completo || null,
         referencia_id: op.id,
         referencia_tipo: 'operacion',
         metadata: {

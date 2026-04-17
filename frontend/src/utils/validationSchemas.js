@@ -170,10 +170,12 @@ export const vehiculoSchema = yup.object({
 export const viajeSchema = yup.object({
   vehiculo_id: yup
     .number()
+    .typeError('Seleccione un vehículo')
     .required('El vehículo es requerido')
     .min(1, 'Seleccione un vehículo válido'),
   conductor_id: yup
     .number()
+    .typeError('Seleccione un conductor')
     .required('El conductor es requerido')
     .min(1, 'Seleccione un conductor válido'),
   fecha: yup
@@ -241,10 +243,12 @@ export const viajeSchema = yup.object({
 export const cajaMenorSchema = yup.object({
   asignado_a: yup
     .number()
+    .typeError('Seleccione un usuario')
     .required('El usuario asignado es requerido')
     .min(1, 'Seleccione un usuario válido'),
   saldo_inicial: yup
     .number()
+    .typeError('El saldo inicial debe ser un número')
     .required('El saldo inicial es requerido')
     .min(0, 'El saldo inicial no puede ser negativo'),
   caja_anterior_id: yup
@@ -264,6 +268,7 @@ export const cajaMenorSchema = yup.object({
 export const movimientoSchema = yup.object({
   caja_menor_id: yup
     .number()
+    .typeError('Seleccione una caja menor')
     .required('La caja menor es requerida')
     .min(1, 'Seleccione una caja menor válida'),
   tipo_movimiento: yup
@@ -284,6 +289,7 @@ export const movimientoSchema = yup.object({
     }),
   valor: yup
     .number()
+    .typeError('El valor debe ser un número')
     .required('El valor es requerido')
     .min(0.01, 'El valor debe ser mayor a cero'),
   viaje_id: yup

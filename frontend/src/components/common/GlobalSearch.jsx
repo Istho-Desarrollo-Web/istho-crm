@@ -61,8 +61,8 @@ const MODULE_CONFIG = [
     prefix: 'e',
     icon: ArrowDownCircle,
     color: 'text-green-500',
-    permission: { modulo: 'auditoria', accion: 'ver' },
-    listPath: '/inventario/entradas',
+    permission: { modulo: 'operaciones', accion: 'ver' },
+    listPath: '/operaciones/entradas',
     searchFn: async (term, apiClient, endpoints) => {
       const res = await apiClient.get(endpoints.AUDITORIAS.ENTRADAS, { params: { search: term, limit: 5 } });
       const data = Array.isArray(res?.data) ? res.data : res?.data?.entradas || [];
@@ -70,7 +70,7 @@ const MODULE_CONFIG = [
         id: e.id,
         title: e.documento_wms || e.documento,
         subtitle: `${e.cliente || ''} - ${e.estado}`,
-        path: `/inventario/entradas/${e.id}`,
+        path: `/operaciones/entradas/${e.id}`,
       }));
     },
   },
@@ -80,8 +80,8 @@ const MODULE_CONFIG = [
     prefix: 's',
     icon: ArrowUpCircle,
     color: 'text-indigo-500',
-    permission: { modulo: 'auditoria', accion: 'ver' },
-    listPath: '/inventario/salidas',
+    permission: { modulo: 'operaciones', accion: 'ver' },
+    listPath: '/operaciones/salidas',
     searchFn: async (term, apiClient, endpoints) => {
       const res = await apiClient.get(endpoints.AUDITORIAS.SALIDAS, { params: { search: term, limit: 5 } });
       const data = Array.isArray(res?.data) ? res.data : res?.data?.salidas || [];
@@ -89,7 +89,7 @@ const MODULE_CONFIG = [
         id: s.id,
         title: s.documento_wms || s.documento,
         subtitle: `${s.cliente || ''} - ${s.estado}`,
-        path: `/inventario/salidas/${s.id}`,
+        path: `/operaciones/salidas/${s.id}`,
       }));
     },
   },
@@ -99,8 +99,8 @@ const MODULE_CONFIG = [
     prefix: 'k',
     icon: RefreshCw,
     color: 'text-purple-500',
-    permission: { modulo: 'auditoria', accion: 'ver' },
-    listPath: '/inventario/kardex',
+    permission: { modulo: 'operaciones', accion: 'ver' },
+    listPath: '/operaciones/kardex',
     searchFn: async (term, apiClient, endpoints) => {
       const res = await apiClient.get(endpoints.AUDITORIAS.KARDEX, { params: { search: term, limit: 5 } });
       const data = Array.isArray(res?.data) ? res.data : res?.data?.kardex || [];
@@ -108,7 +108,7 @@ const MODULE_CONFIG = [
         id: k.id,
         title: k.documento_wms || k.motivo || k.documento,
         subtitle: `${k.cliente || ''} - ${k.estado}`,
-        path: `/inventario/kardex/${k.id}`,
+        path: `/operaciones/kardex/${k.id}`,
       }));
     },
   },

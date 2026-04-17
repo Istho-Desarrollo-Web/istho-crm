@@ -721,9 +721,73 @@ const generarPDFGastos = async (movimientos, filtros = {}) => {
   });
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// INVENTARIO POR UBICACIÓN
+// ═══════════════════════════════════════════════════════════════════════════
+
+const generarPDFInventarioUbicacion = async (cajas, filtros = {}) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const chunks = [];
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      agregarEncabezado(doc, 'INVENTARIO POR UBICACIÓN', 'Detalle de cajas disponibles por ubicación en bodega');
+
+      const totalCajas = cajas.length;
+      const totalUnidades = cajas.reduce((s, c) => s + (parseFloat(c.cantidad) || 0), 0);
+      const ubicaciones = new Set(cajas.map(c => c.ubicacion).filter(Boolean)).size;
+      const productos = new Set(cajas.map(c => c.inventario_id)).size;
+
+      agregarKpis(doc, [
+        { label: 'Total Cajas',  valor: totalCajas,                                      subtexto: 'registros', color: COLORES.azul   },
+        { label: 'Unidades',     valor: totalUnidades.toLocaleString('es-CO'),            subtexto: 'en bodega', color: COLORES.verde  },
+        { label: 'Ubicaciones',  valor: ubicaciones,                                      subtexto: 'únicas',   color: COLORES.acento },
+        { label: 'Productos',    valor: productos,                                        subtexto: 'únicos',   color: COLORES.morado || COLORES.azul },
+      ]);
+
+      const hoy = new Date();
+      const headers = ['#', 'Ref.', 'Caja', 'Saldo', 'Descripción', 'Unidad', 'Lote', 'Ubicación', 'Venc.'];
+      const rows = cajas.map((c, idx) => {
+        const fv = c.fecha_vencimiento ? new Date(c.fecha_vencimiento) : null;
+        const dias = fv ? Math.ceil((fv - hoy) / (1000 * 60 * 60 * 24)) : '';
+        return [
+          idx + 1,
+          c.inventario?.id || c.inventario_id || '',
+          c.numero_caja || '',
+          parseFloat(c.cantidad || 0).toLocaleString('es-CO'),
+          (c.inventario?.producto || '').substring(0, 30),
+          c.unidad_medida || c.inventario?.unidad_medida || 'UND',
+          c.lote || '',
+          c.ubicacion || '',
+          dias !== '' ? `${dias}d` : '',
+        ];
+      });
+
+      const finalPage = generarTabla(doc, headers, rows, {
+        anchoColumnas: [30, 45, 60, 65, 195, 45, 70, 85, 45],
+        alineacion:    ['center', 'right', 'right', 'right', 'left', 'center', 'right', 'center', 'right'],
+        etiquetaSeccion: 'Detalle por Ubicación',
+        titulosContinuacion: 'INVENTARIO POR UBICACIÓN',
+        paginaInicial: 1,
+      });
+
+      agregarPiePagina(doc, finalPage);
+      doc.end();
+
+      logger.info('PDF inventario-ubicacion generado:', { registros: totalCajas });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 module.exports = {
   generarPDFOperaciones,
   generarPDFInventario,
+  generarPDFInventarioUbicacion,
   generarPDFDetalleOperacion,
   generarPDFClientes,
   generarPDFViajes,

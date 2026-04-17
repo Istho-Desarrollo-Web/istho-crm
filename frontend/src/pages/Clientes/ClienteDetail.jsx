@@ -212,10 +212,12 @@ const ActivityItem = ({ actividad }) => {
             <Clock className="w-3 h-3" />
             {new Date(actividad.fecha || actividad.created_at).toLocaleString('es-CO')}
           </span>
-          <span className="flex items-center gap-1">
-            <User className="w-3 h-3" />
-            {actividad.usuario || actividad.usuario_nombre || 'Sistema'}
-          </span>
+          {actividad.usuario && (
+            <span className="flex items-center gap-1">
+              <User className="w-3 h-3" />
+              {actividad.usuario}
+            </span>
+          )}
         </div>
       </div>
     </div>
@@ -696,25 +698,25 @@ const ClienteDetail = () => {
 
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
         {/* HEADER */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between mb-6 gap-2">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <button
               onClick={() => navigate('/clientes')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="p-2 flex-shrink-0 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-4">
-              <div className="relative group">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+              <div className="relative group flex-shrink-0">
                 {cliente.logo_url ? (
                   <img
                     src={`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'}${cliente.logo_url}`}
                     alt={cliente.razon_social}
-                    className="w-14 h-14 rounded-2xl object-contain bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600"
+                    className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl object-contain bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600"
                   />
                 ) : (
-                  <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center">
-                    <Building2 className="w-7 h-7 text-orange-600 dark:text-orange-400" />
+                  <div className="w-10 h-10 sm:w-14 sm:h-14 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center">
+                    <Building2 className="w-5 h-5 sm:w-7 sm:h-7 text-orange-600 dark:text-orange-400" />
                   </div>
                 )}
                 {canEdit && (
@@ -736,27 +738,27 @@ const ClienteDetail = () => {
                   </>
                 )}
               </div>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{cliente.razon_social}</h1>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-slate-100 truncate">{cliente.razon_social}</h1>
                   <StatusChip status={cliente.estado} />
                 </div>
-                <p className="text-slate-500 dark:text-slate-400">
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">
                   {cliente.codigo_cliente} • NIT: {cliente.nit}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             {canEdit && (
-              <Button variant="outline" icon={Pencil} onClick={() => setEditModal(true)}>
-                Editar
+              <Button variant="outline" icon={Pencil} onClick={() => setEditModal(true)} title="Editar">
+                <span className="hidden sm:inline">Editar</span>
               </Button>
             )}
             {canDelete && (
-              <Button variant="danger" icon={Trash2} onClick={() => setDeleteModal(true)}>
-                Eliminar
+              <Button variant="danger" icon={Trash2} onClick={() => setDeleteModal(true)} title="Eliminar">
+                <span className="hidden sm:inline">Eliminar</span>
               </Button>
             )}
           </div>
@@ -791,8 +793,8 @@ const ClienteDetail = () => {
 
         {/* TABS */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 mb-6">
-          <div className="border-b border-gray-100 dark:border-slate-700">
-            <nav className="flex px-6">
+          <div className="border-b border-gray-100 dark:border-slate-700 overflow-x-auto">
+            <nav className="flex px-2 sm:px-6 min-w-max">
               {tabs.map((tab) => {
                 const TabIcon = tab.icon;
                 return (
@@ -800,14 +802,15 @@ const ClienteDetail = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      py-4 px-4 text-sm font-medium transition-colors relative flex items-center gap-2
+                      py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-medium transition-colors relative flex items-center gap-1.5 whitespace-nowrap
                       ${activeTab === tab.id
                         ? 'text-orange-600 dark:text-orange-400'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                       }
                     `}
+                    title={tab.label}
                   >
-                    <TabIcon className="w-4 h-4" />
+                    <TabIcon className="w-4 h-4 flex-shrink-0" />
                     {tab.label}
                     {activeTab === tab.id && (
                       <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500" />

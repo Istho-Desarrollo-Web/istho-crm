@@ -136,6 +136,8 @@ const CierreAuditoriaModal = ({
     });
   };
 
+  if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Overlay */}
@@ -153,7 +155,7 @@ const CierreAuditoriaModal = ({
           </div>
           <div className="flex-1">
             <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
-              Completar Auditoría
+              Completar Operación
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">
               {tipoLabels[tipoAuditoria] || 'Operación'} - Confirmar cierre y envío de correo
@@ -329,7 +331,7 @@ const CierreAuditoriaModal = ({
           {/* Warning message */}
           <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Una vez cerrada la auditoría, no podrá realizar más cambios en esta operación.
+              Una vez completada la operación, no podrá realizar más cambios.
               {enviarCorreo && ' Se enviará el correo de notificación a los contactos configurados del cliente.'}
             </p>
           </div>

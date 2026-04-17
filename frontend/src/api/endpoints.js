@@ -166,8 +166,8 @@ export const REPORTES_ENDPOINTS = {
   DASHBOARD: '/reportes/dashboard',
 
   // Reportes específicos
-  DESPACHOS: '/reportes/despachos',
   INVENTARIO: '/reportes/inventario',
+  INVENTARIO_UBICACION: '/reportes/inventario-ubicacion',
   CLIENTES: '/reportes/clientes',
   OPERACIONES: '/reportes/operaciones',
 

@@ -23,6 +23,7 @@ const {
   Viaje,
   MovimientoCajaMenor,
   Usuario,
+  CajaInventario,
   sequelize
 } = require('../models');
 const excelService = require('../services/excelService');
@@ -721,6 +722,49 @@ const enviarReportePorEmail = async (req, res) => {
         });
         break;
       }
+      case 'viajes': {
+        datos = await Viaje.findAll({
+          where,
+          include: [
+            { model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa', 'tipo_vehiculo'] },
+            { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+            { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
+          ],
+          order: [['fecha', 'DESC']],
+          limit: MAX_EXPORT_ROWS,
+        });
+        break;
+      }
+      case 'cajas_menores': {
+        datos = await CajaMenor.findAll({
+          where,
+          include: [
+            { model: Usuario, as: 'asignado', attributes: ['id', 'nombre_completo'] },
+            { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo', 'username'] },
+          ],
+          order: [['created_at', 'DESC']],
+          limit: MAX_EXPORT_ROWS,
+        });
+        break;
+      }
+      case 'gastos': {
+        datos = await MovimientoCajaMenor.findAll({
+          where,
+          include: [
+            { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
+            { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
+            { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
+            { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
+          ],
+          order: [['created_at', 'DESC']],
+          limit: MAX_EXPORT_ROWS,
+        });
+        break;
+      }
+      case 'inventario_ubicacion': {
+        datos = await _fetchCajasUbicacion({ cliente_id });
+        break;
+      }
       default:
         return serverError(res, 'Tipo de reporte no válido');
     }
@@ -732,7 +776,11 @@ const enviarReportePorEmail = async (req, res) => {
     const generadores = {
       operaciones: { excel: () => excelService.exportarOperaciones(datos), pdf: () => pdfServiceMod.generarPDFOperaciones(datos) },
       inventario: { excel: () => excelService.exportarInventario(datos), pdf: () => pdfServiceMod.generarPDFInventario(datos) },
+      inventario_ubicacion: { excel: () => excelService.exportarInventarioUbicacion(datos), pdf: () => pdfServiceMod.generarPDFInventarioUbicacion(datos) },
       clientes: { excel: () => excelService.exportarClientes(datos), pdf: () => pdfServiceMod.generarPDFClientes(datos) },
+      viajes: { excel: () => excelService.exportarViajes(datos), pdf: () => pdfServiceMod.generarPDFViajes(datos) },
+      cajas_menores: { excel: () => excelService.exportarCajasMenores(datos), pdf: () => pdfServiceMod.generarPDFCajasMenores(datos) },
+      gastos: { excel: () => excelService.exportarMovimientos(datos), pdf: () => pdfServiceMod.generarPDFGastos(datos) },
     };
 
     for (const fmt of formatosAGenerar) {
@@ -1893,6 +1941,101 @@ const getReporteGastos = async (req, res) => {
   }
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// INVENTARIO POR UBICACIÓN
+// ═══════════════════════════════════════════════════════════════════════════
+
+const _fetchCajasUbicacion = async (query = {}) => {
+  const invWhere = {};
+  if (query.cliente_id) invWhere.cliente_id = query.cliente_id;
+
+  return CajaInventario.findAll({
+    where: { estado: 'disponible' },
+    include: [{
+      model: Inventario,
+      as: 'inventario',
+      attributes: ['id', 'producto', 'sku', 'unidad_medida', 'cliente_id'],
+      where: Object.keys(invWhere).length ? invWhere : undefined,
+      required: true,
+      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }]
+    }],
+    order: [['ubicacion', 'ASC'], ['numero_caja', 'ASC']],
+    limit: MAX_EXPORT_ROWS,
+  });
+};
+
+const getReporteInventarioUbicacion = async (req, res) => {
+  try {
+    const cajas = await _fetchCajasUbicacion(req.query);
+
+    const hoy = new Date();
+    const totalCajas = cajas.length;
+    const totalUnidades = cajas.reduce((s, c) => s + (parseFloat(c.cantidad) || 0), 0);
+    const ubicacionesUnicas = new Set(cajas.map(c => c.ubicacion).filter(Boolean)).size;
+    const productosUnicos = new Set(cajas.map(c => c.inventario_id)).size;
+
+    const rows = cajas.map(c => {
+      const fv = c.fecha_vencimiento ? new Date(c.fecha_vencimiento) : null;
+      const diasVencimiento = fv ? Math.ceil((fv - hoy) / (1000 * 60 * 60 * 24)) : null;
+      return {
+        referencia: c.inventario?.id || c.inventario_id,
+        numero_caja: c.numero_caja,
+        saldo: parseFloat(c.cantidad) || 0,
+        descripcion: c.inventario?.producto || '',
+        unidad_medida: c.unidad_medida || c.inventario?.unidad_medida || 'UND',
+        lote: c.lote,
+        lote_externo: c.lote_externo,
+        dias_vencimiento: diasVencimiento,
+        fecha_ingreso: c.fecha_movimiento,
+        fecha_vencimiento: c.fecha_vencimiento,
+        ubicacion: c.ubicacion,
+      };
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        kpis: { totalCajas, totalUnidades, ubicacionesUnicas, productosUnicos },
+        rows,
+        cliente: cajas[0]?.inventario?.cliente || null,
+      }
+    });
+  } catch (error) {
+    logger.error('Error reporte inventario-ubicacion:', { message: error.message });
+    return serverError(res, 'Error al generar reporte de inventario por ubicación', error);
+  }
+};
+
+const exportarInventarioUbicacionExcel = async (req, res) => {
+  try {
+    const cajas = await _fetchCajasUbicacion(req.query);
+    const buffer = await excelService.exportarInventarioUbicacion(cajas, req.query);
+    const filename = `inventario_ubicacion_${new Date().toISOString().split('T')[0]}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+    logger.info('Excel inventario-ubicacion generado:', { registros: cajas.length });
+  } catch (error) {
+    logger.error('Error exportar inventario-ubicacion Excel:', { message: error.message });
+    return serverError(res, 'Error al generar el reporte', error);
+  }
+};
+
+const exportarInventarioUbicacionPDF = async (req, res) => {
+  try {
+    const cajas = await _fetchCajasUbicacion(req.query);
+    const buffer = await pdfService.generarPDFInventarioUbicacion(cajas, req.query);
+    const filename = `inventario_ubicacion_${new Date().toISOString().split('T')[0]}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+    logger.info('PDF inventario-ubicacion generado:', { registros: cajas.length });
+  } catch (error) {
+    logger.error('Error exportar inventario-ubicacion PDF:', { message: error.message });
+    return serverError(res, 'Error al generar el reporte', error);
+  }
+};
+
 module.exports = {
   getPeriodosDisponibles,
   exportarOperacionesExcel,
@@ -1901,6 +2044,9 @@ module.exports = {
   exportarDetalleOperacionPDF,
   exportarInventarioExcel,
   exportarInventarioPDF,
+  getReporteInventarioUbicacion,
+  exportarInventarioUbicacionExcel,
+  exportarInventarioUbicacionPDF,
   exportarClientesExcel,
   exportarClientesPDF,
   getDashboard,

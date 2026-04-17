@@ -453,11 +453,17 @@ module.exports = (sequelize) => {
     }
 
     if (this.esCliente()) {
+      const permisosBase = this.permisos_cliente || PERMISOS_CLIENTE_DEFAULT;
       return {
         esAdmin: false,
         esCliente: true,
         clienteId: this.cliente_id,
-        permisos: this.permisos_cliente || PERMISOS_CLIENTE_DEFAULT
+        permisos: {
+          ...permisosBase,
+          clientes: { ver: true },       // siempre puede ver su propia empresa
+          operaciones: { ver: true },    // entradas, salidas, kardex (solo lectura)
+          configuracion: { ver: true, editar: true }, // preferencias de usuario
+        }
       };
     }
 

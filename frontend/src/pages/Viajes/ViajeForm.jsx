@@ -170,7 +170,7 @@ const ViajeForm = () => {
     const load = async () => {
       try {
         const [vehRes, condRes, cajasRes, clientesRes] = await Promise.all([
-          vehiculosService.getAll({ limit: 200 }),
+          vehiculosService.getAll({ limit: 200, estado: 'activo' }),
           vehiculosService.getConductores(),
           cajasMenoresService.getAll({ estado: 'abierta', limit: 100 }),
           clientesService.getAll({ estado: 'activo', limit: 100 }),

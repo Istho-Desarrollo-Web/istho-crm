@@ -10,7 +10,7 @@
  */
 
 import { useState } from 'react';
-import { Lock, Eye, EyeOff, Shield, AlertTriangle } from 'lucide-react';
+import { Lock, Eye, EyeOff, Shield, AlertTriangle, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../api/auth.service';
 
@@ -261,7 +261,7 @@ const ForceChangePasswordModal = () => {
                 <div className={`w-3 h-3 rounded-full flex items-center justify-center ${
                   req.ok ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
                 }`}>
-                  {req.ok && <span className="text-white text-[7px]">✓</span>}
+                  {req.ok && <Check className="w-2 h-2 text-white" />}
                 </div>
                 <span className={req.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}>
                   {req.text}

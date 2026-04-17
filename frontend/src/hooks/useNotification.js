@@ -125,7 +125,7 @@ const useNotification = () => {
    * @param {string} entity - Nombre de la entidad (Cliente, Despacho, etc.)
    */
   const saved = useCallback((entity = 'Registro') => {
-    return success(`✓ ${entity} guardado correctamente`);
+    return success(`${entity} guardado correctamente`);
   }, [success]);
   
   /**
@@ -133,7 +133,7 @@ const useNotification = () => {
    * @param {string} entity - Nombre de la entidad
    */
   const deleted = useCallback((entity = 'Registro') => {
-    return success(`✓ ${entity} eliminado correctamente`);
+    return success(`${entity} eliminado correctamente`);
   }, [success]);
   
   /**
@@ -154,7 +154,7 @@ const useNotification = () => {
 
     // 403 - Permiso denegado: mostrar como warning con estilo especial
     if (status === 403) {
-      return warning(`🔒 ${message}`, {
+      return warning(message, {
         autoHideDuration: 4000,
       });
     }
@@ -162,7 +162,7 @@ const useNotification = () => {
     // Errores 500 duran más pero NO se persisten
     const duration = status === 500 ? 6000 : 5000;
 
-    return error(`✕ ${message}`, {
+    return error(message, {
       autoHideDuration: duration,
     });
   }, [error, warning]);
@@ -174,11 +174,11 @@ const useNotification = () => {
   const wmsSync = useCallback((status) => {
     const st = status || 'success';
     if (st === 'success') {
-      return success('✓ Sincronización con WMS completada');
+      return success('Sincronización con WMS completada');
     } else if (st === 'error') {
-      return error('✕ Error al sincronizar con WMS');
+      return error('Error al sincronizar con WMS');
     } else {
-      return info('⟳ Sincronizando con WMS...');
+      return info('Sincronizando con WMS...');
     }
   }, [success, error, info]);
   
@@ -187,7 +187,7 @@ const useNotification = () => {
    * @param {string} numero - Número del despacho
    */
   const despachoCerrado = useCallback((numero) => {
-    return success(`✓ Despacho ${numero} cerrado correctamente`);
+    return success(`Despacho ${numero} cerrado correctamente`);
   }, [success]);
   
   /**
@@ -196,7 +196,7 @@ const useNotification = () => {
    * @deprecated Usar inventoryAlert para mensajes más precisos
    */
   const stockAlert = useCallback((count) => {
-    return warning(`⚠ ${count} producto(s) con alertas de inventario`);
+    return warning(`${count} producto(s) con alertas de inventario`);
   }, [warning]);
   
   /**
@@ -232,7 +232,7 @@ const useNotification = () => {
     
     // Si no hay detalles, mensaje genérico
     if (partes.length === 0) {
-      return notify(`📦 ${total} alerta${total > 1 ? 's' : ''} de inventario`, {
+      return notify(`${total} alerta${total > 1 ? 's' : ''} de inventario`, {
         variant: 'warning',
         autoHideDuration: 5000,
         style: {
@@ -262,7 +262,7 @@ const useNotification = () => {
    * @param {string} name - Nombre del documento
    */
   const documentUploaded = useCallback((name) => {
-    return success(`✓ Documento "${name}" subido correctamente`);
+    return success(`Documento "${name}" subido correctamente`);
   }, [success]);
   
   /**
@@ -270,7 +270,7 @@ const useNotification = () => {
    * @param {string} to - Destinatario del correo
    */
   const emailSent = useCallback((to) => {
-    return success(`✓ Correo enviado a ${to}`);
+    return success(`Correo enviado a ${to}`);
   }, [success]);
 
   /**
@@ -279,42 +279,42 @@ const useNotification = () => {
    * @param {string} numero - Número de la operación
    */
   const operacionCreada = useCallback((tipo, numero) => {
-    return success(`✓ Operación de ${tipo} ${numero} creada correctamente`);
+    return success(`Operación de ${tipo} ${numero} creada correctamente`);
   }, [success]);
 
   /**
    * Notificación de avería registrada
    */
   const averiaRegistrada = useCallback(() => {
-    return success('✓ Avería registrada correctamente');
+    return success('Avería registrada correctamente');
   }, [success]);
 
   /**
    * Notificación de cliente actualizado
    */
   const clienteActualizado = useCallback(() => {
-    return success('✓ Cliente actualizado correctamente');
+    return success('Cliente actualizado correctamente');
   }, [success]);
 
   /**
    * Notificación de contacto agregado
    */
   const contactoAgregado = useCallback(() => {
-    return success('✓ Contacto agregado correctamente');
+    return success('Contacto agregado correctamente');
   }, [success]);
 
   /**
    * Notificación de sesión expirada
    */
   const sessionExpired = useCallback(() => {
-    return warning('⚠ Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+    return warning('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
   }, [warning]);
 
   /**
    * Notificación de permiso denegado
    */
   const permissionDenied = useCallback(() => {
-    return error('✕ No tienes permiso para realizar esta acción');
+    return error('No tienes permiso para realizar esta acción');
   }, [error]);
   
   /**
@@ -323,7 +323,7 @@ const useNotification = () => {
    * @returns {string} - ID del snackbar para cerrarlo después
    */
   const loading = useCallback((message = 'Cargando...') => {
-    return notify(`⟳ ${message}`, {
+    return notify(message, {
       variant: 'info',
       persist: true,
       style: {

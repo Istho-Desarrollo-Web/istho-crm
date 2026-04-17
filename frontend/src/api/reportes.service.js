@@ -100,7 +100,16 @@ const reportesService = {
     try {
       return await apiClient.get(REPORTES_ENDPOINTS.INVENTARIO, { params });
     } catch (error) {
-      console.error('❌ Error obteniendo reporte de inventario:', error);
+      console.error('Error obteniendo reporte de inventario:', error);
+      throw error;
+    }
+  },
+
+  getInventarioUbicacion: async (params = {}) => {
+    try {
+      return await apiClient.get(REPORTES_ENDPOINTS.INVENTARIO_UBICACION, { params });
+    } catch (error) {
+      console.error('Error obteniendo reporte inventario ubicacion:', error);
       throw error;
     }
   },

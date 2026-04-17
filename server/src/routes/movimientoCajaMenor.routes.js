@@ -25,8 +25,8 @@ router.put('/aprobar-masivo', requierePermiso('movimientos', 'aprobar'), movimie
 // CRUD
 router.get('/', requierePermiso('movimientos', 'ver'), movimientoController.listar);
 router.get('/:id', idParamValidator, requierePermiso('movimientos', 'ver'), movimientoController.obtenerPorId);
-router.post('/', crearMovimientoValidator, requierePermiso('movimientos', 'crear'), uploadSoporte.single('soporte'), movimientoController.crear);
-router.put('/:id', actualizarMovimientoValidator, requierePermiso('movimientos', 'editar'), uploadSoporte.single('soporte'), movimientoController.actualizar);
+router.post('/', uploadSoporte.single('soporte'), crearMovimientoValidator, requierePermiso('movimientos', 'crear'), movimientoController.crear);
+router.put('/:id', uploadSoporte.single('soporte'), actualizarMovimientoValidator, requierePermiso('movimientos', 'editar'), movimientoController.actualizar);
 router.put('/:id/aprobar', aprobarMovimientoValidator, requierePermiso('movimientos', 'aprobar'), movimientoController.aprobar);
 router.delete('/:id', idParamValidator, requierePermiso('movimientos', 'eliminar'), movimientoController.eliminar);
 

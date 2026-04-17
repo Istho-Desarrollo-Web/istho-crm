@@ -35,6 +35,7 @@ const TIPOS = [
   { value: 'viajes', label: 'Viajes', icon: RefreshCw },
   { value: 'cajas_menores', label: 'Cajas Menores', icon: FileSpreadsheet },
   { value: 'gastos', label: 'Gastos / Movimientos', icon: FileSpreadsheet },
+  { value: 'inventario_ubicacion', label: 'Inventario por Ubicación', icon: FileSpreadsheet },
 ];
 
 // ════════════════════════════════════════════════════════════════
@@ -248,7 +249,7 @@ const ReportesProgramados = () => {
     } finally { setExecuting(null); }
   };
 
-  const tipoLabel = { operaciones: 'Operaciones', inventario: 'Inventario', clientes: 'Clientes', viajes: 'Viajes', cajas_menores: 'Cajas Menores', gastos: 'Gastos' };
+  const tipoLabel = { operaciones: 'Operaciones', inventario: 'Inventario', inventario_ubicacion: 'Inv. Ubicación', clientes: 'Clientes', viajes: 'Viajes', cajas_menores: 'Cajas Menores', gastos: 'Gastos' };
   const tipoColor = {
     operaciones: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
     inventario: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
@@ -256,6 +257,7 @@ const ReportesProgramados = () => {
     viajes: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
     cajas_menores: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
     gastos: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
+    inventario_ubicacion: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
   };
 
   return (
@@ -280,10 +282,11 @@ const ReportesProgramados = () => {
           </div>
           <button
             onClick={() => setFormModal({ open: true, reporte: null })}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-xl transition-colors"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-xl transition-colors"
+            title="Nuevo Programado"
           >
-            <Plus className="w-4 h-4" />
-            Nuevo Programado
+            <Plus className="w-4 h-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Nuevo Programado</span>
           </button>
         </div>
 

@@ -859,7 +859,7 @@ const KardexAuditoria = () => {
   const canClose = lineasProgress === 100 && evidenceProgress === 100 && camposConError.length === 0;
 
   const isCerrado = estado === 'cerrado';
-  const puedeEditar = hasPermission('auditoria', 'exportar') && !isCerrado;
+  const puedeEditar = hasPermission('auditoria', 'ver') && !isCerrado;
 
   const handleCerrarAuditoria = () => {
     if (!canClose || closing) return;
@@ -957,7 +957,7 @@ const KardexAuditoria = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <main className="pt-28 px-4 pb-8 max-w-5xl mx-auto">
           <button
-            onClick={() => navigate('/inventario/kardex')}
+            onClick={() => navigate('/operaciones/kardex')}
             className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 mb-6 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -981,7 +981,7 @@ const KardexAuditoria = () => {
                 Reintentar
               </button>
               <button
-                onClick={() => navigate('/inventario/kardex')}
+                onClick={() => navigate('/operaciones/kardex')}
                 className="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-xl transition-colors"
               >
                 Volver al listado
@@ -999,7 +999,7 @@ const KardexAuditoria = () => {
 
         {/* BACK NAVIGATION */}
         <button
-          onClick={() => navigate('/inventario/kardex')}
+          onClick={() => navigate('/operaciones/kardex')}
           className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 mb-6 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -1468,7 +1468,7 @@ const KardexAuditoria = () => {
                     {averiaFotoPreview ? (
                       <div className="relative inline-block">
                         <img src={averiaFotoPreview} alt="Vista previa" className="w-32 h-32 object-cover rounded-xl border-2 border-amber-300 dark:border-amber-700" />
-                        <button type="button" onClick={() => { setAveriaFoto(null); setAveriaFotoPreview(null); }} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-sm">✕</button>
+                        <button type="button" onClick={() => { setAveriaFoto(null); setAveriaFotoPreview(null); }} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"><X className="w-3 h-3" /></button>
                       </div>
                     ) : (
                       <button type="button" onClick={() => averiaFotoRef.current?.click()} className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:border-amber-400 hover:text-amber-600 dark:hover:border-amber-500 dark:hover:text-amber-400 transition-all">
@@ -1558,7 +1558,7 @@ const KardexAuditoria = () => {
                   <Shield className="w-5 h-5 text-purple-500" />
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
                     {isCerrado
-                      ? `Auditoría cerrada — ${files.length} evidencia${files.length !== 1 ? 's' : ''} registrada${files.length !== 1 ? 's' : ''}`
+                      ? `Operación completada — ${files.length} evidencia${files.length !== 1 ? 's' : ''} registrada${files.length !== 1 ? 's' : ''}`
                       : 'No tienes permiso para agregar evidencias'}
                   </p>
                 </div>
@@ -1616,7 +1616,7 @@ const KardexAuditoria = () => {
                 }`}
               >
                 {closing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                {closing ? 'Cerrando...' : 'Completar Auditoria'}
+                {closing ? 'Completando...' : 'Completar Operación'}
               </button>
             </div>
           </div>
@@ -1629,9 +1629,9 @@ const KardexAuditoria = () => {
           <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5" />
-              <span className="font-semibold">Auditoria completada y cerrada exitosamente</span>
+              <span className="font-semibold">Operación completada exitosamente</span>
             </div>
-            {hasPermission('auditoria', 'reenviar_correo') && (
+            {hasPermission('operaciones', 'reenviar_correo') && (
               <button
                 onClick={handleReenviarCorreo}
                 disabled={reenviando}

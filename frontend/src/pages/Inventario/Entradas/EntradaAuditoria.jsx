@@ -67,7 +67,7 @@ const resolveFileUrl = (url) => {
 const STEPS = [
   { key: 'pendiente', label: 'Pendiente', icon: Clock, description: 'Documento recibido del WMS' },
   { key: 'en_proceso', label: 'En Proceso', icon: Loader2, description: 'Verificando líneas y datos' },
-  { key: 'cerrado', label: 'Cerrado', icon: CheckCircle2, description: 'Auditoría completada' },
+  { key: 'cerrado', label: 'Cerrado', icon: CheckCircle2, description: 'Operación completada' },
 ];
 
 const StatusStepper = ({ currentStatus }) => {
@@ -882,8 +882,8 @@ const EntradaAuditoria = () => {
   const canClose = lineasProgress === 100 && formProgress === 100 && evidenceProgress === 100;
 
   const isCerrado = estado === 'cerrado';
-  // Puede editar si tiene permiso exportar en auditoría (supervisor/admin/operador) y la auditoría no está cerrada
-  const puedeEditar = hasPermission('auditoria', 'exportar') && !isCerrado;
+  // Puede editar si tiene permiso para completar operaciones (auditoria.ver) y la operación no está cerrada
+  const puedeEditar = hasPermission('auditoria', 'ver') && !isCerrado;
 
   const handleCerrarAuditoria = () => {
     if (!canClose || closing) return;
@@ -906,9 +906,9 @@ const EntradaAuditoria = () => {
       // Feedback: correo se envía en background
       const correoEstado = result?.data?.correo_enviado || result?.correo_enviado;
       if (correoEstado === 'enviando' || correoEstado === true) {
-        showAlert({ type: 'success', title: 'Auditoría Cerrada', message: 'El correo de notificación se está enviando en segundo plano.' });
+        showAlert({ type: 'success', title: 'Operación Completada', message: 'El correo de notificación se está enviando en segundo plano.' });
       } else {
-        showAlert({ type: 'success', title: 'Auditoría Cerrada', message: 'Operación cerrada. No se envió correo (sin destinatarios configurados).' });
+        showAlert({ type: 'success', title: 'Operación Completada', message: 'Operación completada. No se envió correo (sin destinatarios configurados).' });
       }
     } catch (error) {
       console.error('Error al cerrar auditoría:', error);
@@ -978,7 +978,7 @@ const EntradaAuditoria = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <main className="pt-28 px-4 pb-8 max-w-5xl mx-auto">
           <button
-            onClick={() => navigate('/inventario/entradas')}
+            onClick={() => navigate('/operaciones/entradas')}
             className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 mb-6 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -1002,7 +1002,7 @@ const EntradaAuditoria = () => {
                 Reintentar
               </button>
               <button
-                onClick={() => navigate('/inventario/entradas')}
+                onClick={() => navigate('/operaciones/entradas')}
                 className="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-xl transition-colors"
               >
                 Volver al listado
@@ -1020,7 +1020,7 @@ const EntradaAuditoria = () => {
 
         {/* BACK NAVIGATION */}
         <button
-          onClick={() => navigate('/inventario/entradas')}
+          onClick={() => navigate('/operaciones/entradas')}
           className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 mb-6 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -1490,9 +1490,9 @@ const EntradaAuditoria = () => {
                         <button
                           type="button"
                           onClick={() => { setAveriaFoto(null); setAveriaFotoPreview(null); }}
-                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-sm"
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
                         >
-                          ✕
+                          <X className="w-3 h-3" />
                         </button>
                       </div>
                     ) : (
@@ -1592,7 +1592,7 @@ const EntradaAuditoria = () => {
                   <Shield className="w-5 h-5 text-emerald-500" />
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
                     {isCerrado
-                      ? `Auditoría cerrada — ${files.length} evidencia${files.length !== 1 ? 's' : ''} registrada${files.length !== 1 ? 's' : ''}`
+                      ? `Operación completada — ${files.length} evidencia${files.length !== 1 ? 's' : ''} registrada${files.length !== 1 ? 's' : ''}`
                       : 'No tienes permiso para agregar evidencias'}
                   </p>
                 </div>
@@ -1655,7 +1655,7 @@ const EntradaAuditoria = () => {
                 }`}
               >
                 {closing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                {closing ? 'Cerrando...' : 'Completar Auditoría'}
+                {closing ? 'Completando...' : 'Completar Operación'}
               </button>
             </div>
           </div>
@@ -1668,9 +1668,9 @@ const EntradaAuditoria = () => {
           <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5" />
-              <span className="font-semibold">Auditoría completada y cerrada exitosamente</span>
+              <span className="font-semibold">Operación completada exitosamente</span>
             </div>
-            {hasPermission('auditoria', 'reenviar_correo') && (
+            {hasPermission('operaciones', 'reenviar_correo') && (
               <button
                 onClick={handleReenviarCorreo}
                 disabled={reenviando}

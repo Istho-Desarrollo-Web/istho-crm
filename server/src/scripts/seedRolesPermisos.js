@@ -53,13 +53,10 @@ const PERMISOS_CATALOGO = [
   { modulo: 'inventario', accion: 'exportar', descripcion: 'Exportar inventario Excel/PDF', grupo: 'Operaciones' },
   { modulo: 'inventario', accion: 'alertas', descripcion: 'Ver alertas de inventario (stock bajo, vencimientos)', grupo: 'Operaciones' },
 
-  // Operaciones
-  { modulo: 'operaciones', accion: 'ver', descripcion: 'Ver operaciones de ingreso/salida', grupo: 'Operaciones' },
-  { modulo: 'operaciones', accion: 'crear', descripcion: 'Crear nuevas operaciones', grupo: 'Operaciones' },
-  { modulo: 'operaciones', accion: 'editar', descripcion: 'Modificar operaciones', grupo: 'Operaciones' },
-  { modulo: 'operaciones', accion: 'cerrar', descripcion: 'Cerrar operaciones', grupo: 'Operaciones' },
-  { modulo: 'operaciones', accion: 'anular', descripcion: 'Anular operaciones', grupo: 'Operaciones' },
-  { modulo: 'operaciones', accion: 'exportar', descripcion: 'Exportar detalle/listado', grupo: 'Operaciones' },
+  // Operaciones (Entradas, Salidas y Kardex desde WMS)
+  { modulo: 'operaciones', accion: 'ver', descripcion: 'Ver Entradas, Salidas y Kardex y su detalle', grupo: 'Operaciones' },
+  { modulo: 'operaciones', accion: 'exportar', descripcion: 'Exportar datos de operaciones Excel/PDF', grupo: 'Operaciones' },
+  { modulo: 'operaciones', accion: 'reenviar_correo', descripcion: 'Reenviar correo de cierre de operación', grupo: 'Operaciones' },
 
   // Reportes
   { modulo: 'reportes', accion: 'ver', descripcion: 'Ver módulo de reportes', grupo: 'General' },
@@ -84,14 +81,8 @@ const PERMISOS_CATALOGO = [
   { modulo: 'roles', accion: 'editar', descripcion: 'Modificar permisos de roles', grupo: 'Sistema' },
   { modulo: 'roles', accion: 'eliminar', descripcion: 'Eliminar roles no-sistema', grupo: 'Sistema' },
 
-  // Auditoría
-  { modulo: 'auditoria', accion: 'ver', descripcion: 'Ver auditorías WMS', grupo: 'Operaciones' },
-  { modulo: 'auditoria', accion: 'exportar', descripcion: 'Exportar auditorías', grupo: 'Operaciones' },
-  { modulo: 'auditoria', accion: 'reenviar_correo', descripcion: 'Reenviar correos de auditoría', grupo: 'Operaciones' },
-
-  // Kardex
-  { modulo: 'kardex', accion: 'ver', descripcion: 'Ver auditorías Kardex', grupo: 'Operaciones' },
-  { modulo: 'kardex', accion: 'exportar', descripcion: 'Exportar auditorías Kardex', grupo: 'Operaciones' },
+  // Auditoría (completar datos de una operación — "Cerrar CRM")
+  { modulo: 'auditoria', accion: 'ver', descripcion: 'Completar datos de una operación (Cerrar CRM)', grupo: 'Operaciones' },
 
   // Configuración
   { modulo: 'configuracion', accion: 'ver', descripcion: 'Ver configuración del sistema', grupo: 'Sistema' },
@@ -108,13 +99,6 @@ const PERMISOS_CATALOGO = [
   { modulo: 'notificaciones', accion: 'crear', descripcion: 'Crear notificaciones/alertas', grupo: 'General' },
   { modulo: 'notificaciones', accion: 'editar', descripcion: 'Gestionar notificaciones', grupo: 'General' },
   { modulo: 'notificaciones', accion: 'eliminar', descripcion: 'Eliminar notificaciones', grupo: 'General' },
-
-  // Despachos (alias de operaciones en algunas vistas)
-  { modulo: 'despachos', accion: 'ver', descripcion: 'Ver despachos', grupo: 'Operaciones' },
-  { modulo: 'despachos', accion: 'crear', descripcion: 'Crear despachos', grupo: 'Operaciones' },
-  { modulo: 'despachos', accion: 'editar', descripcion: 'Modificar despachos', grupo: 'Operaciones' },
-  { modulo: 'despachos', accion: 'eliminar', descripcion: 'Eliminar despachos', grupo: 'Operaciones' },
-  { modulo: 'despachos', accion: 'exportar', descripcion: 'Exportar despachos', grupo: 'Operaciones' },
 
   // Vehículos
   { modulo: 'vehiculos', accion: 'ver', descripcion: 'Ver listado de vehículos', grupo: 'Viajes' },
@@ -162,14 +146,12 @@ const PERMISOS_POR_ROL = {
     dashboard: ['ver', 'exportar'],
     clientes: ['ver', 'crear', 'editar', 'exportar'],
     inventario: ['ver', 'crear', 'editar', 'ajustar', 'exportar', 'alertas'],
-    operaciones: ['ver', 'crear', 'editar', 'cerrar', 'exportar'],
-    despachos: ['ver', 'crear', 'editar', 'exportar'],
+    operaciones: ['ver', 'exportar', 'reenviar_correo'],
+    auditoria: ['ver'],
     reportes: ['ver', 'crear', 'exportar'],
-    plantillas_email: ['ver', 'crear', 'editar', 'eliminar'],
+    plantillas_email: ['ver'],
     usuarios: ['ver'],
-    auditoria: ['ver', 'exportar', 'reenviar_correo'],
-    kardex: ['ver', 'exportar'],
-    configuracion: ['ver'],
+    configuracion: ['ver', 'editar'],
     configuracion_wms: ['ver'],
     notificaciones: ['ver', 'editar'],
     vehiculos: ['ver', 'crear', 'editar', 'eliminar'],
@@ -182,7 +164,8 @@ const PERMISOS_POR_ROL = {
   financiera: {
     dashboard: ['ver'],
     clientes: ['ver'],
-    reportes: ['ver', 'exportar'],
+    reportes: ['ver', 'crear', 'exportar'],
+    configuracion: ['ver', 'editar'],
     notificaciones: ['ver'],
     vehiculos: ['ver', 'crear', 'editar'],
     viajes: ['ver', 'exportar'],
@@ -194,20 +177,20 @@ const PERMISOS_POR_ROL = {
   operador: {
     dashboard: ['ver'],
     clientes: ['ver'],
-    inventario: ['ver', 'ajustar', 'alertas'],
-    operaciones: ['ver', 'crear', 'editar'],
-    despachos: ['ver', 'crear', 'editar'],
-    reportes: ['ver'],
+    inventario: ['ver', 'alertas'],
+    operaciones: ['ver', 'exportar', 'reenviar_correo'],
     auditoria: ['ver'],
-    kardex: ['ver'],
+    reportes: ['ver', 'exportar'],
+    configuracion: ['ver', 'editar'],
+    notificaciones: ['ver'],
     caja_menor: ['ver'],
     movimientos: ['ver', 'crear', 'editar'],
-    notificaciones: ['ver'],
     perfil: ['ver', 'cambiar_password'],
   },
 
   conductor: {
     dashboard: ['ver'],
+    configuracion: ['ver', 'editar'],
     notificaciones: ['ver'],
     vehiculos: ['ver'],
     viajes: ['ver', 'crear', 'editar'],
@@ -220,10 +203,9 @@ const PERMISOS_POR_ROL = {
     dashboard: ['ver'],
     inventario: ['ver', 'alertas'],
     operaciones: ['ver'],
-    despachos: ['ver'],
+    clientes: ['ver'],
     reportes: ['ver', 'exportar'],
-    auditoria: ['ver'],
-    kardex: ['ver'],
+    configuracion: ['ver', 'editar'],
     notificaciones: ['ver'],
     perfil: ['ver', 'cambiar_password'],
   },

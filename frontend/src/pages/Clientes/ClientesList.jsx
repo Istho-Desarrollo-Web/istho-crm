@@ -13,7 +13,7 @@
 
 import { useState, useRef } from 'react';
 import { Menu, MenuItem, IconButton } from '@mui/material';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { useThemeContext } from '../../context/ThemeContext';
 import {
   Plus,
@@ -188,7 +188,12 @@ const RowActions = ({ cliente, onView, onEdit, onDelete, onChangeStatus }) => {
 const ClientesList = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user: _user } = useAuth();
+  const { user: _user, user } = useAuth();
+
+  // Portal cliente → redirigir directamente a su empresa
+  if (user?.rol === 'cliente' && user?.cliente_id) {
+    return <Navigate to={`/clientes/${user.cliente_id}`} replace />;
+  }
 
   // ──────────────────────────────────────────────────────────────────────────
   // HOOKS
@@ -334,7 +339,7 @@ const ClientesList = () => {
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
 
   // Modales
-  const [viewMode, setViewMode] = useState('table');
+  const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
   const [formModal, setFormModal] = useState({ isOpen: false, cliente: null });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, cliente: null });
   const [statusModal, setStatusModal] = useState({ isOpen: false, cliente: null });
@@ -441,7 +446,7 @@ const ClientesList = () => {
   // ──────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
 
 
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
@@ -463,13 +468,13 @@ const ClientesList = () => {
             />
 
             <ProtectedAction module="clientes" action="exportar">
-              <Button variant="outline" icon={Download} size="md" onClick={handleExport}>
+              <Button variant="outline" icon={Download} size="md" onClick={handleExport} title="Exportar">
                 <span className="hidden sm:inline">Exportar</span>
               </Button>
             </ProtectedAction>
 
             <ProtectedAction module="clientes" action="importar">
-              <Button variant="outline" icon={Upload} size="md" onClick={handleOpenImport}>
+              <Button variant="outline" icon={Upload} size="md" onClick={handleOpenImport} title="Importar">
                 <span className="hidden sm:inline">Importar</span>
               </Button>
             </ProtectedAction>

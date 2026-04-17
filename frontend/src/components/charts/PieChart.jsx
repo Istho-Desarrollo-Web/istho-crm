@@ -1,18 +1,13 @@
 /**
  * ISTHO CRM - PieChart Component
  * Gráfico circular para distribución
- * 
- * CORRECCIÓN v2.1.0:
- * - Manejo de datos vacíos
- * - Protección contra división por 0 (NaN)
- * - Validación de valores numéricos
- * 
+ *
  * @author Coordinación TI ISTHO
- * @version 2.1.0
- * @date Enero 2026
+ * @version 2.2.0
+ * @date Abril 2026
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 const COLORS = [
@@ -34,18 +29,24 @@ const PieChart = ({
   headerActions = null,
 }) => {
   const [hoveredSlice, setHoveredSlice] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+
+  const handleMouseMove = (e) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
 
   // ══════════════════════════════════════════════════════════════════════════
   // VALIDACIÓN DE DATOS
   // ══════════════════════════════════════════════════════════════════════════
 
-  // Filtrar datos válidos (con valores numéricos > 0)
   const validData = (data || []).filter(item => {
     const value = Number(item?.value);
     return !isNaN(value) && value > 0;
   });
 
-  // Si no hay datos válidos, mostrar estado vacío
   if (validData.length === 0) {
     return (
       <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
@@ -58,12 +59,12 @@ const PieChart = ({
         </div>
         <div className="flex items-center justify-center" style={{ height: size }}>
           <div className="text-center">
-            <svg 
-              width="64" 
-              height="64" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
               strokeWidth="1.5"
               className="mx-auto text-slate-300 mb-3"
             >
@@ -81,24 +82,22 @@ const PieChart = ({
   // CÁLCULOS
   // ══════════════════════════════════════════════════════════════════════════
 
-  // Calcular total (ya sabemos que es > 0 por la validación)
   const total = validData.reduce((sum, item) => sum + Number(item.value), 0);
-  
-  // Calcular paths del pie
+
   const radius = size / 2 - 10;
   const centerX = size / 2;
   const centerY = size / 2;
-  
+  const hoverOffset = 8; // px que se desplaza el slice al hacer hover
+
   const slices = validData.reduce((acc, item, idx) => {
     const angleStart = acc.currentAngle;
     const value = Number(item.value);
     const percentage = (value / total) * 100;
     const angle = (value / total) * 360;
-    const startAngle = angleStart;
     const endAngle = angleStart + angle;
+    const midAngle = angleStart + angle / 2; // ángulo del centroide del slice
 
-    // Calcular puntos del arco
-    const startRad = (startAngle * Math.PI) / 180;
+    const startRad = (angleStart * Math.PI) / 180;
     const endRad = (endAngle * Math.PI) / 180;
 
     const x1 = centerX + radius * Math.cos(startRad);
@@ -106,17 +105,14 @@ const PieChart = ({
     const x2 = centerX + radius * Math.cos(endRad);
     const y2 = centerY + radius * Math.sin(endRad);
 
-    // Validar que los puntos son números válidos
     if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
       return { ...acc, currentAngle: endAngle };
     }
 
     const largeArcFlag = angle > 180 ? 1 : 0;
 
-    // Caso especial: si solo hay un elemento (100%), dibujar círculo completo
     let path;
     if (validData.length === 1) {
-      // Dibujar círculo completo
       path = `
         M ${centerX} ${centerY - radius}
         A ${radius} ${radius} 0 1 1 ${centerX} ${centerY + radius}
@@ -137,11 +133,12 @@ const PieChart = ({
       value,
       path,
       percentage,
+      midAngle,
       color: item.color || COLORS[idx % COLORS.length],
     };
 
     return { currentAngle: endAngle, items: [...acc.items, slice] };
-  }, { currentAngle: -90, items: [] }).items; // Empezar desde arriba
+  }, { currentAngle: -90, items: [] }).items;
 
   // ══════════════════════════════════════════════════════════════════════════
   // RENDER
@@ -160,22 +157,35 @@ const PieChart = ({
 
       <div className="flex items-center gap-6">
         {/* Pie Chart */}
-        <div className="relative flex-shrink-0">
-          <svg width={size} height={size} className="transform -rotate-0">
-            {slices.map((slice, idx) => (
-              <path
-                key={idx}
-                d={slice.path}
-                fill={slice.color}
-                opacity={hoveredSlice === idx ? 1 : 0.85}
-                onMouseEnter={() => setHoveredSlice(idx)}
-                onMouseLeave={() => setHoveredSlice(null)}
-                className="cursor-pointer transition-opacity duration-200"
-                stroke="white"
-                strokeWidth="2"
-              />
-            ))}
-            
+        <div
+          ref={containerRef}
+          className="relative flex-shrink-0"
+          onMouseMove={handleMouseMove}
+        >
+          <svg width={size} height={size}>
+            {slices.map((slice, idx) => {
+              const isHovered = hoveredSlice === idx;
+              const midRad = (slice.midAngle * Math.PI) / 180;
+              const tx = isHovered ? (hoverOffset * Math.cos(midRad)).toFixed(2) : 0;
+              const ty = isHovered ? (hoverOffset * Math.sin(midRad)).toFixed(2) : 0;
+
+              return (
+                <path
+                  key={idx}
+                  d={slice.path}
+                  fill={slice.color}
+                  opacity={hoveredSlice !== null && !isHovered ? 0.45 : 1}
+                  transform={isHovered ? `translate(${tx}, ${ty})` : undefined}
+                  onMouseEnter={() => setHoveredSlice(idx)}
+                  onMouseLeave={() => setHoveredSlice(null)}
+                  className="cursor-pointer"
+                  style={{ transition: 'opacity 0.2s, transform 0.2s' }}
+                  stroke="white"
+                  strokeWidth="2"
+                />
+              );
+            })}
+
             {/* Center circle (donut effect) */}
             <circle
               cx={centerX}
@@ -183,7 +193,7 @@ const PieChart = ({
               r={radius * 0.5}
               className="fill-white dark:fill-slate-800"
             />
-            
+
             {/* Center text */}
             <text
               x={centerX}
@@ -203,49 +213,56 @@ const PieChart = ({
             </text>
           </svg>
 
-          {/* Tooltip */}
+          {/* Tooltip flotante junto al cursor */}
           {hoveredSlice !== null && slices[hoveredSlice] && (
-            <div 
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
-                         bg-slate-800 text-white px-3 py-2 rounded-lg text-sm pointer-events-none
-                         shadow-lg z-10"
+            <div
+              className="absolute pointer-events-none z-20 whitespace-nowrap"
+              style={{
+                left: mousePos.x + 14,
+                top: mousePos.y - 48,
+              }}
             >
-              <p className="font-medium">{slices[hoveredSlice].label || slices[hoveredSlice].name}</p>
-              <p className="text-slate-300">
-                {slices[hoveredSlice].value.toLocaleString()} ({slices[hoveredSlice].percentage.toFixed(1)}%)
-              </p>
+              <div className="bg-slate-800 dark:bg-slate-700 text-white px-3 py-1.5 rounded-lg shadow-xl text-xs border border-slate-600">
+                <p className="font-semibold leading-snug">
+                  {slices[hoveredSlice].label || slices[hoveredSlice].name}
+                </p>
+                <p className="text-slate-300 leading-snug">
+                  {slices[hoveredSlice].value.toLocaleString()} &middot;{' '}
+                  <span className="font-bold text-white">
+                    {slices[hoveredSlice].percentage.toFixed(1)}%
+                  </span>
+                </p>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Legend */}
+        {/* Legend — sin porcentajes */}
         {showLegend && (
-          <div className="flex-1 space-y-2">
+          <div className="flex-1 space-y-1.5">
             {slices.map((slice, idx) => (
-              <div 
+              <div
                 key={idx}
                 onMouseEnter={() => setHoveredSlice(idx)}
                 onMouseLeave={() => setHoveredSlice(null)}
                 className={`
-                  flex items-center justify-between p-2 rounded-lg cursor-pointer
-                  transition-colors duration-200
-                  ${hoveredSlice === idx ? 'bg-slate-50 dark:bg-slate-700/50' : ''}
+                  flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer
+                  transition-colors duration-150
+                  ${hoveredSlice === idx
+                    ? 'bg-slate-100 dark:bg-slate-700/60'
+                    : hoveredSlice !== null
+                      ? 'opacity-50'
+                      : ''
+                  }
                 `}
               >
-                <div className="flex items-center gap-3">
-                  <span 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: slice.color }}
-                  />
-                  <span className="text-sm text-slate-700 dark:text-slate-300">
-                    {slice.label || slice.name || `Segmento ${idx + 1}`}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                    {slice.percentage.toFixed(1)}%
-                  </span>
-                </div>
+                <span
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: slice.color }}
+                />
+                <span className="text-sm text-slate-700 dark:text-slate-300">
+                  {slice.label || slice.name || `Segmento ${idx + 1}`}
+                </span>
               </div>
             ))}
           </div>
@@ -256,7 +273,6 @@ const PieChart = ({
 };
 
 PieChart.propTypes = {
-  /** Datos del gráfico [{label, value, color?}] */
   data: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.string,
@@ -265,15 +281,10 @@ PieChart.propTypes = {
       color: PropTypes.string,
     })
   ),
-  /** Título del gráfico */
   title: PropTypes.string.isRequired,
-  /** Subtítulo opcional */
   subtitle: PropTypes.string,
-  /** Tamaño del gráfico en px */
   size: PropTypes.number,
-  /** Mostrar leyenda */
   showLegend: PropTypes.bool,
-  /** Contenido adicional en la cabecera (p.ej. selectores de filtro) */
   headerActions: PropTypes.node,
 };
 

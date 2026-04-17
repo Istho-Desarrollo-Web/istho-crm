@@ -20,6 +20,7 @@ const Button = ({
   type = 'button',
   onClick,
   className = '',
+  title,
 }) => {
   const baseClasses = `
     inline-flex items-center justify-center gap-2
@@ -41,13 +42,13 @@ const Button = ({
       focus:ring-slate-500
     `,
     outline: `
-      bg-white text-slate-700 border border-slate-200
-      hover:bg-slate-50 hover:border-slate-300
+      bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600
+      hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-500
       focus:ring-slate-500
     `,
     ghost: `
-      bg-transparent text-slate-600
-      hover:bg-slate-100 hover:text-slate-800
+      bg-transparent text-slate-600 dark:text-slate-300
+      hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-100
       focus:ring-slate-500
     `,
     danger: `
@@ -79,6 +80,7 @@ const Button = ({
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
+      title={title}
       className={`
         ${baseClasses}
         ${variantClasses[variant]}
@@ -123,7 +125,7 @@ const Button = ({
 };
 
 Button.propTypes = {
-  children: PropTypes.node.isRequired,
+  children: PropTypes.node,
   variant: PropTypes.oneOf(['primary', 'secondary', 'outline', 'ghost', 'danger', 'success']),
   size: PropTypes.oneOf(['sm', 'md', 'lg']),
   icon: PropTypes.elementType,
@@ -134,6 +136,7 @@ Button.propTypes = {
   type: PropTypes.oneOf(['button', 'submit', 'reset']),
   onClick: PropTypes.func,
   className: PropTypes.string,
+  title: PropTypes.string,
 };
 
 export default Button;

@@ -64,7 +64,7 @@ const resolveFileUrl = (url) => {
 const STEPS = [
   { key: 'pendiente', label: 'Pendiente', icon: Clock, description: 'Documento recibido del WMS' },
   { key: 'en_proceso', label: 'En Proceso', icon: Loader2, description: 'Verificando líneas y datos' },
-  { key: 'cerrado', label: 'Cerrado', icon: CheckCircle2, description: 'Auditoría completada' },
+  { key: 'cerrado', label: 'Cerrado', icon: CheckCircle2, description: 'Operación completada' },
 ];
 
 const StatusStepper = ({ currentStatus }) => {
@@ -802,7 +802,7 @@ const SalidaAuditoria = () => {
   const totalProgress = Math.round((lineasProgress + formProgress + evidenceProgress) / 3);
   const canClose = lineasProgress === 100 && formProgress === 100 && evidenceProgress === 100;
   const isCerrado = estado === 'cerrado';
-  const puedeEditar = hasPermission('auditoria', 'exportar') && !isCerrado;
+  const puedeEditar = hasPermission('auditoria', 'ver') && !isCerrado;
 
   const handleCerrarAuditoria = () => {
     if (!canClose || closing) return;
@@ -891,7 +891,7 @@ const SalidaAuditoria = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <main className="pt-28 px-4 pb-8 max-w-5xl mx-auto">
           <button
-            onClick={() => navigate('/inventario/salidas')}
+            onClick={() => navigate('/operaciones/salidas')}
             className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 mb-6 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -915,7 +915,7 @@ const SalidaAuditoria = () => {
                 Reintentar
               </button>
               <button
-                onClick={() => navigate('/inventario/salidas')}
+                onClick={() => navigate('/operaciones/salidas')}
                 className="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-xl transition-colors"
               >
                 Volver al listado
@@ -932,7 +932,7 @@ const SalidaAuditoria = () => {
       <main className="pt-28 px-4 pb-32 max-w-5xl mx-auto">
 
         <button
-          onClick={() => navigate('/inventario/salidas')}
+          onClick={() => navigate('/operaciones/salidas')}
           className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 mb-6 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -1355,7 +1355,7 @@ const SalidaAuditoria = () => {
                   <Shield className="w-5 h-5 text-emerald-500" />
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
                     {isCerrado
-                      ? `Auditoría cerrada — ${files.length} evidencia${files.length !== 1 ? 's' : ''} registrada${files.length !== 1 ? 's' : ''}`
+                      ? `Operación completada — ${files.length} evidencia${files.length !== 1 ? 's' : ''} registrada${files.length !== 1 ? 's' : ''}`
                       : 'No tienes permiso para agregar evidencias'}
                   </p>
                 </div>
@@ -1402,7 +1402,7 @@ const SalidaAuditoria = () => {
                 }`}
               >
                 {closing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                {closing ? 'Cerrando...' : 'Completar Auditoría'}
+                {closing ? 'Completando...' : 'Completar Operación'}
               </button>
             </div>
           </div>
@@ -1414,9 +1414,9 @@ const SalidaAuditoria = () => {
           <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5" />
-              <span className="font-semibold">Auditoría de despacho completada y cerrada</span>
+              <span className="font-semibold">Operación completada exitosamente</span>
             </div>
-            {hasPermission('auditoria', 'reenviar_correo') && (
+            {hasPermission('operaciones', 'reenviar_correo') && (
               <button
                 onClick={handleReenviarCorreo}
                 disabled={reenviando}

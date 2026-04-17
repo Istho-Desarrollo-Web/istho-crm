@@ -162,7 +162,7 @@ const ReporteDespachos = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Reporte de Operaciones</h1>
-                <p className="text-slate-500 dark:text-slate-400">Entradas y salidas del WMS</p>
+                <p className="text-slate-500 dark:text-slate-400">Entradas, salidas y kardex del WMS</p>
               </div>
             </div>
           </div>

@@ -16,6 +16,7 @@ import SortIcon from '@components/common/SortIcon';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useThemeContext } from '../../../context/ThemeContext';
+import { useAuth } from '../../../context/AuthContext';
 import auditoriasService from '../../../api/auditorias.service';
 import {
   Eye,
@@ -114,6 +115,8 @@ const ProgressBar = ({ verified, total }) => {
 const RowActions = ({ salida, onView }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const { isDark } = useThemeContext();
+  const { user } = useAuth();
+  const esPortal = user?.rol === 'cliente';
   const open = Boolean(anchorEl);
 
   return (
@@ -149,7 +152,7 @@ const RowActions = ({ salida, onView }) => {
       >
         <MenuItem onClick={() => { onView(salida); setAnchorEl(null); }}>
           <Eye className="w-4 h-4" />
-          {salida.estado === 'pendiente' ? 'Iniciar Auditoría' : 'Ver Auditoría'}
+          {salida.estado === 'pendiente' && !esPortal ? 'Iniciar Operación' : 'Ver Operación'}
         </MenuItem>
       </Menu>
     </>
@@ -227,7 +230,7 @@ const SalidasList = () => {
   const totalCerradas = salidas.filter((s) => s.estado === 'cerrado').length;
 
   const handleView = (salida) => {
-    navigate(`/inventario/salidas/${salida.id}`);
+    navigate(`/operaciones/salidas/${salida.id}`);
   };
 
   const handleExportExcel = () => {
@@ -256,7 +259,7 @@ const SalidasList = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Salidas de Inventario</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Auditoría y verificación de despachos desde el WMS</p>
+              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestión de despachos desde el WMS</p>
             </div>
           </div>
           {filtered.length > 0 && (

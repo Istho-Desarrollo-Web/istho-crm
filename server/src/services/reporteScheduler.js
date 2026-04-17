@@ -73,7 +73,7 @@ const ejecutarReporte = async (reporte) => {
   const excelService = require('./excelService');
   const pdfService = require('./pdfService');
   const emailService = require('./emailService');
-  const { Operacion, Inventario, Cliente, Contacto, Viaje, Vehiculo, CajaMenor, MovimientoCajaMenor, Usuario, sequelize } = require('../models');
+  const { Operacion, Inventario, CajaInventario, Cliente, Contacto, Viaje, Vehiculo, CajaMenor, MovimientoCajaMenor, Usuario, sequelize } = require('../models');
   const path = require('path');
   const fs = require('fs');
 
@@ -142,6 +142,19 @@ const ejecutarReporte = async (reporte) => {
       });
       break;
     }
+    case 'inventario_ubicacion':
+      datos = await CajaInventario.findAll({
+        where: { estado: 'disponible' },
+        include: [{
+          model: Inventario, as: 'inventario',
+          attributes: ['id', 'producto', 'sku', 'unidad_medida', 'cliente_id'],
+          where: reporte.cliente_id ? { cliente_id: reporte.cliente_id } : undefined,
+          required: true,
+          include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }]
+        }],
+        order: [['ubicacion', 'ASC'], ['numero_caja', 'ASC']],
+      });
+      break;
     default:
       logger.warn(`[SCHEDULER] Tipo desconocido: ${reporte.tipo_reporte}`);
       return;
@@ -151,6 +164,7 @@ const ejecutarReporte = async (reporte) => {
   const generadores = {
     operaciones: { excel: () => excelService.exportarOperaciones(datos), pdf: () => pdfService.generarPDFOperaciones(datos) },
     inventario: { excel: () => excelService.exportarInventario(datos), pdf: () => pdfService.generarPDFInventario(datos) },
+    inventario_ubicacion: { excel: () => excelService.exportarInventarioUbicacion(datos), pdf: () => pdfService.generarPDFInventarioUbicacion(datos) },
     clientes: { excel: () => excelService.exportarClientes(datos), pdf: () => pdfService.generarPDFClientes(datos) },
     viajes: { excel: () => excelService.exportarViajes(datos), pdf: () => pdfService.generarPDFOperaciones(datos) },
     cajas_menores: { excel: () => excelService.exportarCajasMenores(datos), pdf: () => pdfService.generarPDFOperaciones(datos) },

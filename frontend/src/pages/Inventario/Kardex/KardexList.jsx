@@ -16,6 +16,7 @@ import SortIcon from '@components/common/SortIcon';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useThemeContext } from '../../../context/ThemeContext';
+import { useAuth } from '../../../context/AuthContext';
 import auditoriasService from '../../../api/auditorias.service';
 import {
   ClipboardList,
@@ -95,6 +96,8 @@ const ProgressBar = ({ verified, total }) => {
 const RowActions = ({ item, onView }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const { isDark } = useThemeContext();
+  const { user } = useAuth();
+  const esPortal = user?.rol === 'cliente';
   const open = Boolean(anchorEl);
 
   return (
@@ -130,7 +133,7 @@ const RowActions = ({ item, onView }) => {
       >
         <MenuItem onClick={() => { onView(item); setAnchorEl(null); }}>
           <Eye className="w-4 h-4" />
-          {item.estado === 'pendiente' ? 'Iniciar Auditoría' : 'Ver Auditoría'}
+          {item.estado === 'pendiente' && !esPortal ? 'Iniciar Operación' : 'Ver Operación'}
         </MenuItem>
       </Menu>
     </>
@@ -201,7 +204,7 @@ const KardexList = () => {
   const totalCerradas = items.filter((e) => e.estado === 'cerrado').length;
 
   const handleView = (item) => {
-    navigate(`/inventario/kardex/${item.id}`);
+    navigate(`/operaciones/kardex/${item.id}`);
   };
 
   const handleExportExcel = () => {
@@ -226,7 +229,7 @@ const KardexList = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Kardex</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Auditoría de ajustes de unidades desde el WMS</p>
+              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestión de ajustes de unidades desde el WMS</p>
             </div>
           </div>
           {filtered.length > 0 && (

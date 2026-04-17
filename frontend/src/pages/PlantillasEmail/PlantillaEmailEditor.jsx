@@ -17,6 +17,7 @@ import {
   Star,
   Copy,
   Check,
+  X,
   ToggleLeft,
   ToggleRight,
   Upload,
@@ -602,7 +603,7 @@ const PlantillaEmailEditor = () => {
                 onClick={() => setShowPreview(false)}
                 className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
             <div className="flex-1 overflow-auto p-4 bg-slate-100 dark:bg-slate-900">

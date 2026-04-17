@@ -23,38 +23,7 @@ html, body {
   flex-direction: column;
 }
 
-/* Scrollbar personalizado (estilo WMS) */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* Tema oscuro - Scrollbar */
-.dark-theme ::-webkit-scrollbar-track {
-  background: #2D2D2D;
-}
-
-.dark-theme ::-webkit-scrollbar-thumb {
-  background: #555;
-}
-
-.dark-theme ::-webkit-scrollbar-thumb:hover {
-  background: #777;
-}
+/* Scrollbar — definido en index.css */
 
 /* Links */
 a {
