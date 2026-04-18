@@ -109,7 +109,7 @@ const getAprobacionEstado = (mov) => {
 const DashboardConductor = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { showError } = useNotification();
+  const { error: showError } = useNotification();
   const socket = useSocket();
 
   const [cajaActiva, setCajaActiva] = useState(null);

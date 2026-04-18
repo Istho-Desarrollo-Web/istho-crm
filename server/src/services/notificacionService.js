@@ -154,7 +154,7 @@ const notificarStockBajo = async (producto) => {
     titulo: `Stock bajo: ${nombre}`,
     mensaje: `El producto ${sku} tiene ${cantidad} unidades, por debajo del mínimo de ${minimo}.`,
     prioridad: 'alta',
-    accion_url: `/inventario/${producto.id}`,
+    accion_url: `/inventario/productos/${producto.id}`,
     accion_label: 'Ver producto',
     metadata: { producto_id: producto.id, sku, cantidad, stock_minimo: minimo },
   });
@@ -172,7 +172,7 @@ const notificarProductoAgotado = async (producto) => {
     titulo: `Producto agotado: ${nombre}`,
     mensaje: `El producto ${sku} se ha quedado sin stock (0 unidades).`,
     prioridad: 'urgente',
-    accion_url: `/inventario/${producto.id}`,
+    accion_url: `/inventario/productos/${producto.id}`,
     accion_label: 'Ver producto',
     metadata: { producto_id: producto.id, sku },
   });
@@ -192,7 +192,7 @@ const notificarStockSobreMaximo = async (producto) => {
     titulo: `Stock sobre máximo: ${nombre}`,
     mensaje: `El producto ${sku} tiene ${cantidad} unidades, superando el máximo de ${maximo}.`,
     prioridad: 'normal',
-    accion_url: `/inventario/${producto.id}`,
+    accion_url: `/inventario/productos/${producto.id}`,
     accion_label: 'Ver producto',
     metadata: { producto_id: producto.id, sku, cantidad, stock_maximo: maximo },
   });
@@ -222,7 +222,7 @@ const notificarOperacionCerrada = async (operacion, usuario_nombre) => {
     titulo: `${tipo_op} cerrada: ${doc}`,
     mensaje: `La operación ${doc} fue cerrada por ${usuario_nombre}.`,
     prioridad: 'normal',
-    accion_url: `/inventario/${operacion.tipo === 'entrada' ? 'entradas' : 'salidas'}/${operacion.id}`,
+    accion_url: `/operaciones/${operacion.tipo === 'entrada' ? 'entradas' : 'salidas'}/${operacion.id}`,
     accion_label: `Ver ${tipo_op.toLowerCase()}`,
     metadata: { operacion_id: operacion.id, tipo: operacion.tipo, documento: doc, cliente_id: operacion.cliente_id },
   });
@@ -287,7 +287,7 @@ const notificarEntradaWms = async (resultado) => {
     titulo: `Entrada WMS: ${resultado.numero_operacion}`,
     mensaje: `Se sincronizó entrada ${resultado.documento_wms} para ${resultado.cliente} (${resultado.total_lineas} líneas, ${resultado.total_unidades} uds).`,
     prioridad: 'normal',
-    accion_url: `/inventario/entradas/${resultado.operacion_id}`,
+    accion_url: `/operaciones/entradas/${resultado.operacion_id}`,
     accion_label: 'Ver entrada',
     metadata: resultado,
   });
@@ -303,7 +303,7 @@ const notificarSalidaWms = async (resultado) => {
     titulo: `Salida WMS: ${resultado.numero_operacion}`,
     mensaje: `Se sincronizó salida picking ${resultado.numero_picking} para ${resultado.cliente} (${resultado.total_lineas} líneas, ${resultado.total_unidades} uds).`,
     prioridad: 'normal',
-    accion_url: `/inventario/salidas/${resultado.operacion_id}`,
+    accion_url: `/operaciones/salidas/${resultado.operacion_id}`,
     accion_label: 'Ver salida',
     metadata: resultado,
   });

@@ -7,7 +7,7 @@ import { Mail, Send, FileSpreadsheet, FileText, Loader2, X, Check } from 'lucide
 import useNotification from '@hooks/useNotification';
 
 const EnviarReporteModal = ({ isOpen, onClose, tipoReporte, onSend }) => {
-  const { showSuccess, showError } = useNotification();
+  const { success: showSuccess, error: showError } = useNotification();
   const [destinatarios, setDestinatarios] = useState('');
   const [formatoExcel, setFormatoExcel] = useState(true);
   const [formatoPdf, setFormatoPdf] = useState(false);

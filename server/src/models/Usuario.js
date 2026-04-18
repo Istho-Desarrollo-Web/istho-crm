@@ -28,7 +28,7 @@ const PERMISOS_CLIENTE_DEFAULT = {
   despachos: { ver: true, crear_solicitud: false, descargar_documentos: true },
   reportes: { ver: true, descargar: false },
   facturacion: { ver: true, descargar: true },
-  perfil: { editar: true, cambiar_password: true }
+  perfil: { ver: true, editar: true, cambiar_password: true }
 };
 
 const PERMISOS_CLIENTE_CATALOGO = {
@@ -460,9 +460,10 @@ module.exports = (sequelize) => {
         clienteId: this.cliente_id,
         permisos: {
           ...permisosBase,
-          clientes: { ver: true },       // siempre puede ver su propia empresa
-          operaciones: { ver: true },    // entradas, salidas, kardex (solo lectura)
-          configuracion: { ver: true, editar: true }, // preferencias de usuario
+          clientes: { ver: true },
+          operaciones: { ver: true },
+          configuracion: { ver: true, editar: true },
+          perfil: { ver: true, editar: true, cambiar_password: true },
         }
       };
     }

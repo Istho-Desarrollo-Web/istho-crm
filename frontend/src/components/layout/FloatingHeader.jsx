@@ -792,9 +792,12 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
             </div>
           </div>
 
-          {/* Portal Cliente Badge (móvil) */}
+          {/* Portal Cliente Badge (móvil) - clickeable */}
           {user?.rol === 'cliente' && user?.cliente_info && (
-            <div className="flex items-center gap-3 mt-3 p-3 bg-violet-50 dark:bg-violet-900/20 rounded-xl border border-violet-200 dark:border-violet-800">
+            <button
+              onClick={() => { onNavigate(`/clientes/${user.cliente_id}`); onClose(); }}
+              className="flex items-center gap-3 mt-3 p-3 bg-violet-50 dark:bg-violet-900/20 rounded-xl border border-violet-200 dark:border-violet-800 w-full text-left hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
+            >
               {user.cliente_info.logo_url ? (
                 <img
                   src={`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'}${user.cliente_info.logo_url}`}
@@ -810,7 +813,7 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
                 <p className="text-xs font-semibold text-violet-600 dark:text-violet-400">Portal Cliente</p>
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{user.cliente_info.razon_social}</p>
               </div>
-            </div>
+            </button>
           )}
         </div>
 
@@ -1023,6 +1026,18 @@ AvatarDropdown.propTypes = {
   onLogout: PropTypes.func.isRequired,
 };
 
+// Normaliza URLs antiguas de notificaciones guardadas en BD
+const normalizarUrlNotificacion = (url) => {
+  if (!url) return url;
+  // /inventario/entradas/:id → /operaciones/entradas/:id
+  if (/^\/inventario\/entradas\/\d+/.test(url)) return url.replace('/inventario/entradas/', '/operaciones/entradas/');
+  // /inventario/salidas/:id → /operaciones/salidas/:id
+  if (/^\/inventario\/salidas\/\d+/.test(url)) return url.replace('/inventario/salidas/', '/operaciones/salidas/');
+  // /inventario/:id (solo número) → /inventario/productos/:id
+  if (/^\/inventario\/\d+$/.test(url)) return url.replace('/inventario/', '/inventario/productos/');
+  return url;
+};
+
 /**
  * Header Flotante Principal
  */
@@ -1143,9 +1158,12 @@ const FloatingHeader = () => {
                 </span>
               </div>
 
-              {/* Portal Cliente - Logo y nombre del cliente */}
+              {/* Portal Cliente - Logo y nombre del cliente (clickeable) */}
               {user?.rol === 'cliente' && user?.cliente_info && (
-                <div className="hidden sm:flex items-center gap-2 ml-2 pl-3 border-l border-slate-200 dark:border-slate-700">
+                <button
+                  onClick={() => navigate(`/clientes/${user.cliente_id}`)}
+                  className="hidden sm:flex items-center gap-2 ml-2 pl-3 border-l border-slate-200 dark:border-slate-700 hover:opacity-80 transition-opacity cursor-pointer"
+                >
                   {user.cliente_info.logo_url ? (
                     <img
                       src={`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'}${user.cliente_info.logo_url}`}
@@ -1157,7 +1175,7 @@ const FloatingHeader = () => {
                       <Building2 className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                     </div>
                   )}
-                  <div className="flex flex-col">
+                  <div className="flex flex-col text-left">
                     <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 leading-tight">
                       Portal Cliente
                     </span>
@@ -1165,7 +1183,7 @@ const FloatingHeader = () => {
                       {user.cliente_info.razon_social}
                     </span>
                   </div>
-                </div>
+                </button>
               )}
 
               {/* Badge de Rol (no-cliente) */}
@@ -1290,7 +1308,8 @@ const FloatingHeader = () => {
                                 onClick={() => {
                                   if (!notif.leida) marcarLeida(notif.id);
                                   if (notif.accion_url) {
-                                    navigate(notif.accion_url);
+                                    const url = normalizarUrlNotificacion(notif.accion_url);
+                                    navigate(url);
                                     setIsNotifOpen(false);
                                   }
                                 }}

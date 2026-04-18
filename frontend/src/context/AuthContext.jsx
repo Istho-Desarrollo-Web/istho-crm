@@ -86,7 +86,7 @@ const PERMISOS_POR_ROL = {
     usuarios: ['ver'],
     configuracion: ['ver', 'editar'],
     configuracion_wms: ['ver'],
-    notificaciones: ['ver', 'editar'],
+    notificaciones: ['ver'],
     vehiculos: ['ver', 'crear', 'editar', 'eliminar'],
     viajes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
     caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'eliminar', 'exportar'],

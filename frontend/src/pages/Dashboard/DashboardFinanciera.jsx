@@ -144,7 +144,7 @@ const formatFecha = (fecha) => formatDate(fecha);
 const DashboardFinanciera = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { showSuccess, showError } = useNotification();
+  const { success: showSuccess, error: showError } = useNotification();
   const socket = useSocket();
 
   // Estado
