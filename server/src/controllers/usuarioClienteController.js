@@ -116,8 +116,7 @@ const listar = async (req, res) => {
         'telefono', 'cargo', 'departamento', 'avatar_url', 'rol', 'activo',
         'cliente_id', 'permisos_cliente', 'requiere_cambio_password',
         'invitado_por', 'fecha_invitacion', 'ultimo_acceso',
-        'reset_token', 'reset_token_expires', 'intentos_fallidos',
-        'bloqueado_hasta', 'created_at', 'updated_at'
+        'intentos_fallidos', 'bloqueado_hasta', 'created_at', 'updated_at'
       ],
       include: [
         {
@@ -154,7 +153,7 @@ const obtenerPorId = async (req, res) => {
         cliente_id: clienteId,
         rol: 'cliente'
       },
-      attributes: { exclude: ['password_hash'] },
+      attributes: { exclude: ['password_hash', 'reset_token', 'reset_token_expires'] },
       include: [
         {
           model: Usuario,
