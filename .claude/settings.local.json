@@ -16,7 +16,10 @@
       "Bash(npx eslint *)",
       "Bash(powershell -Command ' *)",
       "Bash(grep -c \"^\" frontend/src/index.css)",
-      "Bash(wc -c frontend/src/index.css)"
+      "Bash(wc -c frontend/src/index.css)",
+      "Bash(powershell *)",
+      "Bash(git commit *)",
+      "Bash(tee eslint-output.txt)"
     ]
   }
 }
