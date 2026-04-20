@@ -65,7 +65,7 @@ const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage }) => {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full" aria-busy={false}>
+      <table className="w-full">
         <thead>
           <tr className="border-b border-gray-100 dark:border-slate-700">
             {columns.map((col, idx) => (

@@ -27,17 +27,44 @@ const Modal = ({
   const titleId = useId();
   const descId = useId();
 
-  // Focus trap: guardar foco previo y mover al primer elemento enfocable
+  // Focus trap: guardar foco previo, mover al primer elemento enfocable y atrapar Tab dentro del modal
   useEffect(() => {
-    if (isOpen) {
-      previousFocusRef.current = document.activeElement;
-      const focusable = modalRef.current?.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      focusable?.[0]?.focus();
-    } else {
+    if (!isOpen) {
       previousFocusRef.current?.focus();
+      return;
     }
+
+    previousFocusRef.current = document.activeElement;
+
+    const getFocusable = () =>
+      Array.from(
+        modalRef.current?.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ) ?? []
+      );
+
+    const focusable = getFocusable();
+    (focusable[0] ?? modalRef.current)?.focus();
+
+    const handleTab = (e) => {
+      if (e.key !== 'Tab') return;
+      const els = getFocusable();
+      if (els.length === 0) { e.preventDefault(); return; }
+      if (e.shiftKey) {
+        if (document.activeElement === els[0]) {
+          e.preventDefault();
+          els[els.length - 1]?.focus();
+        }
+      } else {
+        if (document.activeElement === els[els.length - 1]) {
+          e.preventDefault();
+          els[0]?.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleTab);
+    return () => window.removeEventListener('keydown', handleTab);
   }, [isOpen]);
 
   // Prevenir scroll del body cuando el modal está abierto
@@ -77,6 +104,7 @@ const Modal = ({
         ref={modalRef}
         role="dialog"
         aria-modal="true"
+        tabIndex={-1}
         aria-labelledby={titleId}
         aria-describedby={subtitle ? descId : undefined}
         className={`

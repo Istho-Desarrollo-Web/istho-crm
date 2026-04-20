@@ -1075,6 +1075,7 @@ const FloatingHeader = () => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const notifRef = useRef(null);
   const lastNotifRef = useRef(null);
+  const liveRegionTimeoutRef = useRef(null);
 
   // Toast cuando llega notificación en tiempo real
   useEffect(() => {
@@ -1090,7 +1091,11 @@ const FloatingHeader = () => {
       const liveRegion = document.getElementById('centhrix-live-region');
       if (liveRegion && ultimaNotificacion.mensaje) {
         liveRegion.textContent = `Nueva notificación: ${ultimaNotificacion.mensaje}`;
-        setTimeout(() => { liveRegion.textContent = ''; }, 3000);
+        clearTimeout(liveRegionTimeoutRef.current);
+        liveRegionTimeoutRef.current = setTimeout(() => {
+          const lr = document.getElementById('centhrix-live-region');
+          if (lr) lr.textContent = '';
+        }, 3000);
       }
     }
   }, [ultimaNotificacion, enqueueSnackbar]);
