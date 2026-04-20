@@ -34,6 +34,7 @@ import clientesService from '../../api/clientes.service';
 import { useSnackbar } from 'notistack';
 import { useAuth } from '../../context/AuthContext';
 import { formatDateShort } from '../../utils/formatDate';
+import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 
 // ============================================
 // MAIN COMPONENT
@@ -104,17 +105,23 @@ const ReporteClientes = () => {
 
   const buildFilterParams = () => {
     const params = new URLSearchParams();
-    const token = localStorage.getItem('istho_token');
-    if (token) params.set('token', token);
     if (filters.fecha_desde) params.set('fecha_desde', filters.fecha_desde);
     if (filters.fecha_hasta) params.set('fecha_hasta', filters.fecha_hasta);
     return params.toString();
   };
 
-  const handleExport = (format) => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-    const endpoint = format === 'excel' ? '/reportes/clientes/excel' : '/reportes/clientes/pdf';
-    window.open(`${baseUrl}${endpoint}?${buildFilterParams()}`, '_blank');
+  const handleExport = async (format) => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const endpoint = format === 'excel' ? '/reportes/clientes/excel' : '/reportes/clientes/pdf';
+      const ext = format === 'excel' ? 'xlsx' : 'pdf';
+      await descargarArchivo(
+        `${baseUrl}${endpoint}?${buildFilterParams()}`,
+        `reporte-clientes-${fechaDescarga()}.${ext}`
+      );
+    } catch {
+      enqueueSnackbar('Error al exportar reporte', { variant: 'error' });
+    }
   };
 
   // Datos para gráficos

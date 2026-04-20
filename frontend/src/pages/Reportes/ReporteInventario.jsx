@@ -30,6 +30,7 @@ import reportesService from '../../api/reportes.service';
 import inventarioService from '../../api/inventario.service';
 import { useAuth } from '../../context/AuthContext';
 import { useSnackbar } from 'notistack';
+import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 
 // ============================================
 // ALERTA ITEM
@@ -137,18 +138,24 @@ const ReporteInventario = () => {
 
   const buildFilterParams = () => {
     const params = new URLSearchParams();
-    const token = localStorage.getItem('istho_token');
-    if (token) params.set('token', token);
     if (filters.fecha_desde) params.set('fecha_desde', filters.fecha_desde);
     if (filters.fecha_hasta) params.set('fecha_hasta', filters.fecha_hasta);
     if (filters.cliente_id) params.set('cliente_id', filters.cliente_id);
     return params.toString();
   };
 
-  const handleExport = (format) => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-    const endpoint = format === 'excel' ? '/reportes/inventario/excel' : '/reportes/inventario/pdf';
-    window.open(`${baseUrl}${endpoint}?${buildFilterParams()}`, '_blank');
+  const handleExport = async (format) => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const endpoint = format === 'excel' ? '/reportes/inventario/excel' : '/reportes/inventario/pdf';
+      const ext = format === 'excel' ? 'xlsx' : 'pdf';
+      await descargarArchivo(
+        `${baseUrl}${endpoint}?${buildFilterParams()}`,
+        `reporte-inventario-${fechaDescarga()}.${ext}`
+      );
+    } catch {
+      enqueueSnackbar('Error al exportar reporte', { variant: 'error' });
+    }
   };
 
   const formatCurrency = (value) => {
