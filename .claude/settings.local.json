@@ -21,7 +21,8 @@
       "Bash(git commit *)",
       "Bash(tee eslint-output.txt)",
       "Bash(git branch *)",
-      "Bash(echo \"exit:$?\")"
+      "Bash(echo \"exit:$?\")",
+      "Bash(echo \"Exit code: $?\")"
     ]
   }
 }
