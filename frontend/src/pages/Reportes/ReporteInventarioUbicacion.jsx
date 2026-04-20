@@ -19,6 +19,7 @@ import reportesService from '../../api/reportes.service';
 import clientesService from '../../api/clientes.service';
 import { useAuth } from '../../context/AuthContext';
 import { formatDateShort } from '../../utils/formatDate';
+import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 
 const ReporteInventarioUbicacion = () => {
   const navigate = useNavigate();
@@ -78,17 +79,17 @@ const ReporteInventarioUbicacion = () => {
     setSearchParams(params, { replace: true });
   };
 
-  const buildFilterParams = () => {
-    const params = new URLSearchParams();
-    const token = localStorage.getItem('istho_token');
-    if (token) params.set('token', token);
-    if (clienteId) params.set('cliente_id', clienteId);
-    return params.toString();
-  };
-
-  const handleExport = (format) => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-    window.open(`${baseUrl}/reportes/inventario-ubicacion/${format}?${buildFilterParams()}`, '_blank');
+  const handleExport = async (format) => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const params = new URLSearchParams();
+      if (clienteId) params.set('cliente_id', clienteId);
+      const url = `${baseUrl}/reportes/inventario-ubicacion/${format}?${params.toString()}`;
+      const ext = format === 'excel' ? 'xlsx' : 'pdf';
+      await descargarArchivo(url, `reporte-inventario-ubicacion-${fechaDescarga()}.${ext}`);
+    } catch {
+      console.error('Error al exportar reporte inventario ubicacion');
+    }
   };
 
   const kpis = data?.kpis || {};

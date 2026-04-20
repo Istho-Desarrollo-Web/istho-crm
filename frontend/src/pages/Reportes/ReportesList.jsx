@@ -26,6 +26,7 @@ import { Button } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import useNotification from '../../hooks/useNotification';
 import PageFooter from '@components/common/PageFooter';
+import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 
 // ============================================
 // REPORTES POR CATEGORIA
@@ -162,27 +163,11 @@ const ReporteCard = ({ reporte, canExport }) => {
     }
   };
 
-  const descargarArchivo = async (url, nombreArchivo) => {
-    const token = localStorage.getItem('istho_token');
-    const response = await fetch(url, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    });
-    if (!response.ok) throw new Error('Error al descargar archivo');
-    const blob = await response.blob();
-    const blobUrl = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = nombreArchivo;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(blobUrl);
-  };
-
   const handleExportExcel = async () => {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      await descargarArchivo(`${baseUrl}${reporte.exportEndpoints.excel}`, `reporte-${Date.now()}.xlsx`);
+      const slug = reporte?.titulo?.toLowerCase()?.replace(/\s+/g, '-') || 'exportado';
+      await descargarArchivo(`${baseUrl}${reporte.exportEndpoints.excel}`, `reporte-${slug}-${fechaDescarga()}.xlsx`);
     } catch {
       notifyError('Error al exportar el reporte Excel');
     }
@@ -192,7 +177,8 @@ const ReporteCard = ({ reporte, canExport }) => {
     if (!reporte.exportEndpoints?.pdf) return;
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      await descargarArchivo(`${baseUrl}${reporte.exportEndpoints.pdf}`, `reporte-${Date.now()}.pdf`);
+      const slug = reporte?.titulo?.toLowerCase()?.replace(/\s+/g, '-') || 'exportado';
+      await descargarArchivo(`${baseUrl}${reporte.exportEndpoints.pdf}`, `reporte-${slug}-${fechaDescarga()}.pdf`);
     } catch {
       notifyError('Error al exportar el reporte PDF');
     }

@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Truck, CheckCircle, DollarSign, FileSpreadsheet, FileText, Calendar, ArrowLeft, RefreshCw, Mail, Filter, X, Search, Loader2 } from 'lucide-react';
+import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 import { KpiCard, AccionesDropdown } from '../../components/common';
 import { BarChart, PieChart } from '../../components/charts';
 import reportesService from '../../api/reportes.service';
@@ -49,13 +50,18 @@ const ReporteViajes = () => {
     setFiltrosAplicados({ desde: '', hasta: '' });
   };
 
-  const handleExport = (format) => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-    const token = localStorage.getItem('istho_token');
-    const params = new URLSearchParams({ token });
-    if (filtrosAplicados.desde) params.set('fecha_desde', filtrosAplicados.desde);
-    if (filtrosAplicados.hasta) params.set('fecha_hasta', filtrosAplicados.hasta);
-    window.open(`${baseUrl}/reportes/viajes/${format}?${params}`, '_blank');
+  const handleExport = async (format) => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const params = new URLSearchParams();
+      if (filtrosAplicados.desde) params.set('fecha_desde', filtrosAplicados.desde);
+      if (filtrosAplicados.hasta) params.set('fecha_hasta', filtrosAplicados.hasta);
+      const url = `${baseUrl}/reportes/viajes/${format}?${params.toString()}`;
+      const ext = format === 'excel' ? 'xlsx' : 'pdf';
+      await descargarArchivo(url, `reporte-viajes-${fechaDescarga()}.${ext}`);
+    } catch {
+      console.error('Error al exportar reporte viajes');
+    }
   };
 
   const hasPendingChanges = inputDesde !== filtrosAplicados.desde || inputHasta !== filtrosAplicados.hasta;

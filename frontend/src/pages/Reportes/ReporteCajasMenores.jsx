@@ -7,6 +7,7 @@ import reportesService from '../../api/reportes.service';
 import EnviarReporteModal from '../../components/common/EnviarReporteModal';
 import useNotification from '../../hooks/useNotification';
 import PageFooter from '@components/common/PageFooter';
+import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 
 const ReporteCajasMenores = () => {
   const navigate = useNavigate();
@@ -34,21 +35,9 @@ const ReporteCajasMenores = () => {
   const handleExport = async (format) => {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      const token = localStorage.getItem('istho_token');
       const url = `${baseUrl}/reportes/cajas-menores/${format}`;
-      const response = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error('Error al descargar archivo');
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = `cajas-menores-${Date.now()}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(blobUrl);
+      const ext = format === 'excel' ? 'xlsx' : 'pdf';
+      await descargarArchivo(url, `cajas-menores-${fechaDescarga()}.${ext}`);
     } catch {
       showError('Error al exportar el reporte');
     }
