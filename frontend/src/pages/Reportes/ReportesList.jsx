@@ -318,8 +318,8 @@ const ReportesList = () => {
           </div>
         )}
 
-        {/* Reportes Programados - Solo supervisor+ */}
-        {(hasPermission('reportes', 'exportar')) && (
+        {/* Reportes Programados - Solo roles internos con permiso exportar */}
+        {!user?.permisos?.esCliente && hasPermission('reportes', 'exportar') && (
           <div className="mb-8">
             <button
               onClick={() => navigate('/reportes/programados')}

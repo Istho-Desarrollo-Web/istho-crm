@@ -85,7 +85,6 @@ const allMenuConfig = [
     items: [
       { icon: LayoutDashboard, label: 'Vista General', href: '/dashboard', shortcut: 'G D' },
       { icon: BarChart3, label: 'Reportes', href: '/reportes', shortcut: 'G R' },
-      { icon: Building2, label: 'Mi Empresa', href: '/mi-empresa', soloPortal: true },
     ],
   },
   {

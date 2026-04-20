@@ -23,7 +23,11 @@
       "Bash(git branch *)",
       "Bash(echo \"exit:$?\")",
       "Bash(echo \"Exit code: $?\")",
-      "Skill(update-docs)"
+      "Skill(update-docs)",
+      "Bash(git stash *)",
+      "Bash(git checkout *)",
+      "Bash(grep -v \"//\")",
+      "Bash(grep -v \"node_modules\\\\|\\\\.bak\\\\|//\")"
     ]
   }
 }

@@ -460,6 +460,7 @@ module.exports = (sequelize) => {
         clienteId: this.cliente_id,
         permisos: {
           ...permisosBase,
+          dashboard: { ver: true },
           clientes: { ver: true },
           operaciones: { ver: true },
           configuracion: { ver: true, editar: true },
