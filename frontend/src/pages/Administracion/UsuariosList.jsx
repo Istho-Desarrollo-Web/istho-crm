@@ -206,10 +206,10 @@ const UsuariosList = () => {
           {pagination.total} usuario{pagination.total !== 1 ? 's' : ''} encontrado{pagination.total !== 1 ? 's' : ''}
         </p>
         <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-lg p-1">
-          <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+          <button onClick={() => setViewMode('table')} aria-label="Ver como tabla" className={`p-2 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
             <List className="w-4 h-4" />
           </button>
-          <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+          <button onClick={() => setViewMode('cards')} aria-label="Ver como tarjetas" className={`p-2 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
             <LayoutGrid className="w-4 h-4" />
           </button>
         </div>
@@ -408,7 +408,7 @@ const UsuariosList = () => {
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center shrink-0">
                         {user.avatar ? (
-                          <img src={user.avatar} alt="" className="w-12 h-12 rounded-full object-cover" />
+                          <img src={user.avatar} alt={user.nombre_completo || user.username || 'Avatar de usuario'} className="w-12 h-12 rounded-full object-cover" />
                         ) : (
                           <span className="text-sm font-bold text-orange-600 dark:text-orange-400">{initials}</span>
                         )}
