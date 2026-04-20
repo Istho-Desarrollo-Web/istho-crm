@@ -21,6 +21,7 @@ const Button = ({
   onClick,
   className = '',
   title,
+  ariaLabel,
 }) => {
   const baseClasses = `
     inline-flex items-center justify-center gap-2
@@ -81,6 +82,7 @@ const Button = ({
       onClick={onClick}
       disabled={disabled || loading}
       title={title}
+      aria-label={ariaLabel ?? title}
       className={`
         ${baseClasses}
         ${variantClasses[variant]}
@@ -137,6 +139,7 @@ Button.propTypes = {
   onClick: PropTypes.func,
   className: PropTypes.string,
   title: PropTypes.string,
+  ariaLabel: PropTypes.string,
 };
 
 export default Button;

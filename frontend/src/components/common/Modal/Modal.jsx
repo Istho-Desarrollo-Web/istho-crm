@@ -1,12 +1,13 @@
 /**
  * ISTHO CRM - Modal Component
  * Modal reutilizable para formularios y confirmaciones
- * 
+ * ARIA completo: role="dialog", aria-modal, aria-labelledby, focus trap
+ *
  * @author Coordinación TI ISTHO
  * @date Enero 2026
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useId } from 'react';
 import PropTypes from 'prop-types';
 import { X } from 'lucide-react';
 
@@ -21,27 +22,34 @@ const Modal = ({
   closeOnOverlay = true,
   footer,
 }) => {
-  // Prevenir scroll del body cuando el modal está abierto
+  const modalRef = useRef(null);
+  const previousFocusRef = useRef(null);
+  const titleId = useId();
+  const descId = useId();
+
+  // Focus trap: guardar foco previo y mover al primer elemento enfocable
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      previousFocusRef.current = document.activeElement;
+      const focusable = modalRef.current?.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      focusable?.[0]?.focus();
     } else {
-      document.body.style.overflow = 'unset';
+      previousFocusRef.current?.focus();
     }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
+  }, [isOpen]);
+
+  // Prevenir scroll del body cuando el modal está abierto
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : 'unset';
+    return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
   // Cerrar con ESC
   useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') onClose?.();
-    };
-    
-    if (isOpen) {
-      window.addEventListener('keydown', handleEsc);
-    }
+    const handleEsc = (e) => { if (e.key === 'Escape') onClose?.(); };
+    if (isOpen) window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [isOpen, onClose]);
 
@@ -61,10 +69,16 @@ const Modal = ({
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={closeOnOverlay ? onClose : undefined}
+        aria-hidden="true"
       />
 
       {/* Modal */}
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={subtitle ? descId : undefined}
         className={`
           relative w-full ${sizeClasses[size]}
           bg-white rounded-2xl shadow-2xl
@@ -75,17 +89,18 @@ const Modal = ({
         {/* Header */}
         <div className="flex items-start justify-between p-6 border-b border-gray-100">
           <div>
-            <h2 className="text-xl font-semibold text-slate-800">{title}</h2>
+            <h2 id={titleId} className="text-xl font-semibold text-slate-800">{title}</h2>
             {subtitle && (
-              <p className="text-sm text-slate-500 mt-1">{subtitle}</p>
+              <p id={descId} className="text-sm text-slate-500 mt-1">{subtitle}</p>
             )}
           </div>
           {showCloseButton && (
             <button
               onClick={onClose}
+              aria-label="Cerrar modal"
               className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5" aria-hidden="true" />
             </button>
           )}
         </div>

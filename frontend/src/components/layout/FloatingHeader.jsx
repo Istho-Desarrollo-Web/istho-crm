@@ -9,7 +9,7 @@
  * @date Enero 2026
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import {
@@ -529,6 +529,7 @@ KeyboardShortcutsModal.propTypes = {
  */
 const DropdownMenuItem = ({ icon: Icon, label, href, isActive, onClick, badge, shortcut }) => (
   <button
+    role="menuitem"
     onClick={() => onClick(href)}
     className={`
       flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors
@@ -568,6 +569,7 @@ DropdownMenuItem.propTypes = {
  */
 const DropdownMenu = ({ menu, isActive, isCurrentSection, onMouseEnter, onMouseLeave, onNavigate, currentPath }) => {
   const Icon = menu.icon;
+  const menuId = useId();
   return (
     <div
       className="relative"
@@ -583,11 +585,14 @@ const DropdownMenu = ({ menu, isActive, isCurrentSection, onMouseEnter, onMouseL
           }
         `}
         aria-expanded={isActive}
-        aria-haspopup="true"
+        aria-haspopup="menu"
+        aria-controls={isActive ? menuId : undefined}
+        aria-label={menu.label}
       >
-        {Icon && <Icon className="w-5 h-5" />}
+        {Icon && <Icon className="w-5 h-5" aria-hidden="true" />}
         <ChevronDown
           className={`w-3 h-3 transition-transform duration-200 ${isActive ? 'rotate-180' : ''}`}
+          aria-hidden="true"
         />
         {!isActive && (
           <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 px-2 py-1 text-xs font-medium text-white bg-slate-800 dark:bg-slate-600 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-[60]">
@@ -598,7 +603,7 @@ const DropdownMenu = ({ menu, isActive, isCurrentSection, onMouseEnter, onMouseL
 
       {isActive && (
         <div className="absolute top-full left-0 pt-2 w-56 z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 animate-fadeIn">
+          <div id={menuId} role="menu" className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 animate-fadeIn">
             {menu.items.map((item, idx) => (
               <DropdownMenuItem
                 key={idx}
@@ -911,6 +916,7 @@ MobileMenu.propTypes = {
 const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const avatarMenuId = useId();
 
   useClickOutside(dropdownRef, () => setIsOpen(false));
   useEscapeKey(() => setIsOpen(false));
@@ -942,6 +948,10 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
     <div ref={dropdownRef} className="hidden sm:flex items-center ml-2 relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? avatarMenuId : undefined}
+        aria-label="Menú de usuario"
         className="flex items-center gap-3 p-1 pr-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all"
       >
         {user?.avatar_url ? (
@@ -954,7 +964,7 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50 animate-fadeIn">
+        <div id={avatarMenuId} role="menu" className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50 animate-fadeIn">
           {/* User Info */}
           <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
@@ -980,26 +990,29 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
           {/* Menu Items */}
           <div className="py-1">
             <button
+              role="menuitem"
               onClick={() => handleNavigate('/perfil')}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
             >
-              <UserCircle className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              <UserCircle className="w-4 h-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
               Ver Perfil
             </button>
 
             <button
+              role="menuitem"
               onClick={() => handleNavigate('/configuracion')}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
             >
-              <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
               Configuración
             </button>
 
             <button
+              role="menuitem"
               onClick={() => handleNavigate('/notificaciones')}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
             >
-              <Bell className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              <Bell className="w-4 h-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
               Notificaciones
             </button>
           </div>
@@ -1007,10 +1020,11 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
           {/* Logout */}
           <div className="border-t border-gray-100 dark:border-slate-700 py-1">
             <button
+              role="menuitem"
               onClick={() => { setIsOpen(false); onLogout(); }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-4 h-4" aria-hidden="true" />
               Cerrar Sesión
             </button>
           </div>
@@ -1134,9 +1148,12 @@ const FloatingHeader = () => {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
+                aria-haspopup="menu"
+                aria-expanded={isMobileMenuOpen}
+                aria-label="Abrir menú de navegación"
                 className="md:hidden p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="w-6 h-6" aria-hidden="true" />
               </button>
 
               <div
@@ -1233,8 +1250,9 @@ const FloatingHeader = () => {
                 onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
                 className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                 title="Buscar (Ctrl+K)"
+                aria-label="Buscar (Ctrl+K)"
               >
-                <Search className="w-5 h-5" />
+                <Search className="w-5 h-5" aria-hidden="true" />
               </button>
 
               <div className="flex items-center gap-1 sm:gap-2 border-l border-gray-200 dark:border-slate-700 pl-2 sm:pl-4">
@@ -1242,8 +1260,9 @@ const FloatingHeader = () => {
                   onClick={toggleDark}
                   className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors relative"
                   title={`Modo ${isDark ? 'Claro' : 'Oscuro'} (⌘B)`}
+                  aria-label={`Cambiar a modo ${isDark ? 'claro' : 'oscuro'}`}
                 >
-                  {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                  {isDark ? <Sun className="w-5 h-5" aria-hidden="true" /> : <Moon className="w-5 h-5" aria-hidden="true" />}
                 </button>
 
                 <div ref={notifRef} className="relative">
