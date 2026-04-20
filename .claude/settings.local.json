@@ -19,7 +19,8 @@
       "Bash(wc -c frontend/src/index.css)",
       "Bash(powershell *)",
       "Bash(git commit *)",
-      "Bash(tee eslint-output.txt)"
+      "Bash(tee eslint-output.txt)",
+      "Bash(git branch *)"
     ]
   }
 }
