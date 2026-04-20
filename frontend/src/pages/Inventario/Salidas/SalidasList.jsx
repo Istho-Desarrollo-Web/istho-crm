@@ -17,7 +17,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useThemeContext } from '../../../context/ThemeContext';
 import { useAuth } from '../../../context/AuthContext';
+import useNotification from '../../../hooks/useNotification';
 import auditoriasService from '../../../api/auditorias.service';
+import { descargarArchivo, fechaDescarga } from '../../../utils/descargas';
 import {
   Eye,
   Search,
@@ -233,14 +235,21 @@ const SalidasList = () => {
     navigate(`/operaciones/salidas/${salida.id}`);
   };
 
-  const handleExportExcel = () => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-    const token = localStorage.getItem('istho_token');
-    const params = new URLSearchParams();
-    if (token) params.set('token', token);
-    if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
-    if (searchTerm) params.set('search', searchTerm);
-    window.open(`${baseUrl}/auditorias/salidas/excel?${params.toString()}`, '_blank');
+  const notify = useNotification();
+
+  const handleExportExcel = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const params = new URLSearchParams();
+      if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
+      if (searchTerm) params.set('search', searchTerm);
+      const url = `${baseUrl}/auditorias/salidas/excel?${params.toString()}`;
+      await descargarArchivo(url, `salidas-inventario-${fechaDescarga()}.xlsx`);
+      notify.success('Archivo descargado correctamente');
+    } catch (error) {
+      notify.error('Error al exportar el archivo');
+      console.error('Export error:', error);
+    }
   };
 
   // ──────────────────────────────────────────────────────────────────────────
