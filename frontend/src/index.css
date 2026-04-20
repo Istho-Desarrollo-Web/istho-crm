@@ -20,6 +20,9 @@
   --color-centhrix-bg: #0F1023;
   --color-centhrix-surface: #151631;
   --color-centhrix-card: #1A1B3A;
+
+  /* Tipografía display — headings de páginas principales */
+  --font-display: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
 }
 
 body {
@@ -179,6 +182,6 @@ body {
 
 /* Tipografía display para headings de páginas principales */
 .font-display {
-  font-family: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-display, 'Rajdhani', 'Segoe UI', system-ui, sans-serif);
   letter-spacing: 0.01em;
 }
