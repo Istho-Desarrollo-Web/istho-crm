@@ -341,6 +341,52 @@ const authService = {
    * @returns {boolean}
    */
   isAuthenticated: () => !!localStorage.getItem('istho_token'),
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // 2FA / TOTP
+  // ──────────────────────────────────────────────────────────────────────────
+
+  validarTotp: async ({ temp_token, codigo }) => {
+    try {
+      const response = await apiClient.post(AUTH_ENDPOINTS.TOTP_VALIDAR, { temp_token, codigo });
+      if (response.success) {
+        const { token, refreshToken, user } = response.data;
+        setAuthToken(token, refreshToken);
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        return { success: true, data: response.data };
+      }
+      return { success: false, message: response.message, code: response.code };
+    } catch (error) {
+      return { success: false, message: error.message, code: error.code || 'TOTP_ERROR' };
+    }
+  },
+
+  setup2FA: async () => {
+    try {
+      const response = await apiClient.post(AUTH_ENDPOINTS.TOTP_SETUP);
+      return response;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  },
+
+  activar2FA: async ({ codigo }) => {
+    try {
+      const response = await apiClient.post(AUTH_ENDPOINTS.TOTP_ACTIVAR, { codigo });
+      return response;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  },
+
+  deshabilitar2FA: async ({ password }) => {
+    try {
+      const response = await apiClient.post(AUTH_ENDPOINTS.TOTP_DESHABILITAR, { password });
+      return response;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  },
 };
 
 // ============================================================================

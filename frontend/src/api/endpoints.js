@@ -25,6 +25,10 @@ export const AUTH_ENDPOINTS = {
   CAMBIAR_PASSWORD: '/auth/cambiar-password',
   FORGOT_PASSWORD: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',
+  TOTP_VALIDAR: '/auth/2fa/validar',
+  TOTP_SETUP: '/auth/2fa/setup',
+  TOTP_ACTIVAR: '/auth/2fa/activar',
+  TOTP_DESHABILITAR: '/auth/2fa/deshabilitar',
 };
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -256,6 +260,10 @@ export const ADMIN_ENDPOINTS = {
   SESIONES: '/admin/sesiones',
   SESION_CERRAR: (id) => `/admin/sesiones/${id}/cerrar`,
   SESIONES_CERRAR_TODAS: '/admin/sesiones/cerrar-todas',
+
+  // Seguridad
+  SEGURIDAD: '/admin/seguridad',
+  USUARIO_DESBLOQUEAR: (id) => `/admin/usuarios/${id}/desbloquear`,
 
   // Configuración WMS
   CONFIGURACION_WMS: '/admin/configuracion-wms',

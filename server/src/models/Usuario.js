@@ -221,6 +221,13 @@ module.exports = (sequelize) => {
       defaultValue: false,
       comment: 'Forzar cambio en primer login'
     },
+
+    password_expira_en: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null,
+      comment: 'Fecha en que vence la contraseña (null = no expira)'
+    },
     
     invitado_por: {
       type: DataTypes.INTEGER,
@@ -257,10 +264,42 @@ module.exports = (sequelize) => {
       type: DataTypes.INTEGER,
       defaultValue: 0
     },
-    
+
     bloqueado_hasta: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // AUTENTICACIÓN DE DOS FACTORES (2FA/TOTP)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    totp_secret: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      defaultValue: null,
+      comment: 'Secreto TOTP base32 para autenticación de dos factores'
+    },
+
+    totp_habilitado: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Indica si el usuario tiene 2FA activado'
+    },
+
+    totp_backup_codes: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null,
+      comment: 'Códigos de respaldo para 2FA (array de strings, one-time use)',
+      get() {
+        const val = this.getDataValue('totp_backup_codes');
+        if (!val) return null;
+        if (typeof val === 'string') {
+          try { return JSON.parse(val); } catch { return null; }
+        }
+        return val;
+      }
     }
   }, {
     tableName: 'usuarios',
@@ -525,7 +564,9 @@ module.exports = (sequelize) => {
       // Campos de cliente (solo si aplica)
       cliente_id: this.cliente_id || null,
       permisos: this.getPermisos(permisosDB),
-      requiere_cambio_password: this.requiere_cambio_password || false
+      requiere_cambio_password: this.requiere_cambio_password || false,
+      password_vencida: !!(this.password_expira_en && new Date(this.password_expira_en) < new Date()),
+      totp_habilitado: this.totp_habilitado || false
     };
   };
   

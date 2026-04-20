@@ -69,10 +69,10 @@ const registroValidator = [
   body('password')
     .notEmpty().withMessage('La contraseña es requerida')
     .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage(
-      'La contraseña debe contener al menos una mayúscula, una minúscula y un número'
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])/).withMessage(
+      'La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial'
     ),
-  
+
   body('nombre_completo')
     .trim()
     .notEmpty().withMessage('El nombre completo es requerido')
@@ -95,8 +95,8 @@ const cambiarPasswordValidator = [
   body('password_nuevo')
     .notEmpty().withMessage('La nueva contraseña es requerida')
     .isLength({ min: 8 }).withMessage('La nueva contraseña debe tener al menos 8 caracteres')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage(
-      'La contraseña debe contener al menos una mayúscula, una minúscula y un número'
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])/).withMessage(
+      'La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial'
     ),
   
   body('confirmar_password')
@@ -134,10 +134,10 @@ const resetPasswordValidator = [
   body('password')
     .notEmpty().withMessage('La nueva contraseña es requerida')
     .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage(
-      'La contraseña debe contener al menos una mayúscula, una minúscula y un número'
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])/).withMessage(
+      'La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial'
     ),
-  
+
   validar
 ];
 

@@ -11,10 +11,14 @@ const router = express.Router();
 const reporteController = require('../controllers/reporteController');
 const { verificarToken, filtrarPorCliente } = require('../middleware/auth');
 const { requiereRolMinimo, requierePermiso } = require('../middleware/roles');
+const { limiterExport } = require('../middleware/rateLimiter');
 
 // Todas las rutas requieren autenticación y filtro por cliente
 router.use(verificarToken);
 router.use(filtrarPorCliente);
+
+// Rate limit a todas las exportaciones de este router
+router.use(/\/(excel|pdf|csv)$/, limiterExport);
 
 // =============================================
 // DASHBOARD

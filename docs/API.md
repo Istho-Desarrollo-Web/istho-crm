@@ -225,6 +225,94 @@ Elimina la foto de perfil del usuario.
 
 ---
 
+### POST `/auth/2fa/validar`
+**Acceso:** Público
+
+Paso 2 del login cuando el usuario tiene 2FA habilitado. Verifica el código TOTP o un código de respaldo y, si es correcto, entrega los tokens de sesión completos.
+
+**Body:**
+```json
+{
+  "temp_token": "eyJhbGciOiJIUzI1NiIs...",
+  "codigo": "123456"
+}
+```
+
+**Respuesta exitosa (200):** igual que `/auth/login` (token + refreshToken + user)
+
+**Respuesta cuando se requiere 2FA en login (200):**
+```json
+{
+  "success": true,
+  "message": "Se requiere verificación de dos factores",
+  "data": {
+    "requiere_2fa": true,
+    "temp_token": "eyJhbGciOiJIUzI1NiIs...",
+    "usuario_nombre": "Juan Pérez"
+  }
+}
+```
+
+**Errores:**
+- `401 TEMP_TOKEN_EXPIRED` — el temp_token expiró (TTL 5 min), debe iniciar sesión de nuevo
+- `401 TOTP_INVALID` — código incorrecto
+
+---
+
+### POST `/auth/2fa/setup`
+**Acceso:** Autenticado
+
+Genera el secreto TOTP y el QR para configurar el autenticador. El 2FA **no** queda activo hasta confirmar con `/2fa/activar`.
+
+**Respuesta (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "secret": "JBSWY3DPEHPK3PXP",
+    "qr_code": "data:image/png;base64,...",
+    "otpauth_url": "otpauth://totp/CenthriX%20CRM:usuario%40istho.com?secret=..."
+  }
+}
+```
+
+---
+
+### POST `/auth/2fa/activar`
+**Acceso:** Autenticado
+
+Confirma el setup con un código generado por el autenticador y activa el 2FA. Devuelve 8 códigos de respaldo (mostrados una sola vez).
+
+**Body:**
+```json
+{ "codigo": "123456" }
+```
+
+**Respuesta (200):**
+```json
+{
+  "success": true,
+  "message": "2FA activado correctamente",
+  "data": {
+    "backup_codes": ["A1B2C3D4E5", "..."]
+  }
+}
+```
+
+---
+
+### POST `/auth/2fa/deshabilitar`
+**Acceso:** Autenticado
+
+Desactiva el 2FA. Requiere confirmación de contraseña.
+
+**Body:**
+```json
+{ "password": "contraseñaActual" }
+```
+
+---
+
 ### POST `/auth/refresh`
 **Acceso:** Público (no requiere header Authorization)
 

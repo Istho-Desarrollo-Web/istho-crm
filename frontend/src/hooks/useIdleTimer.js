@@ -2,46 +2,63 @@
  * useIdleTimer — cierra sesión automáticamente después de inactividad.
  *
  * Lee `user.preferencias.tiempo_sesion` (minutos). Si es 0 → nunca.
- * Resetea el timer con cualquier interacción del usuario.
+ * Muestra aviso 2 minutos antes del logout para que el usuario pueda continuar.
  */
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@context/AuthContext';
 
 const EVENTOS_ACTIVIDAD = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'];
+const AVISO_ANTES_MS = 2 * 60 * 1000; // 2 minutos antes del logout
 
 const useIdleTimer = () => {
   const { user, logout } = useAuth();
-  const timerRef = useRef(null);
+  const timerLogoutRef = useRef(null);
+  const timerAvisoRef = useRef(null);
+  const [mostrarAviso, setMostrarAviso] = useState(false);
+
+  const extenderSesion = useCallback(() => {
+    setMostrarAviso(false);
+  }, []);
 
   useEffect(() => {
     const minutos = user?.preferencias?.tiempo_sesion ?? 30;
-    if (!minutos || minutos === 0) return; // 0 = nunca
+    if (!minutos || minutos === 0) return;
 
     const ms = minutos * 60 * 1000;
+    // Mostrar aviso al menos 30s antes (por si tiempo_sesion es muy corto)
+    const avisoMs = Math.max(ms - AVISO_ANTES_MS, 30_000);
 
     const resetTimer = () => {
-      clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
+      setMostrarAviso(false);
+      clearTimeout(timerAvisoRef.current);
+      clearTimeout(timerLogoutRef.current);
+
+      timerAvisoRef.current = setTimeout(() => {
+        setMostrarAviso(true);
+      }, avisoMs);
+
+      timerLogoutRef.current = setTimeout(() => {
         logout();
       }, ms);
     };
 
-    // Arrancar timer inicial
     resetTimer();
 
-    // Registrar eventos de actividad
     EVENTOS_ACTIVIDAD.forEach(ev =>
       window.addEventListener(ev, resetTimer, { passive: true })
     );
 
     return () => {
-      clearTimeout(timerRef.current);
+      clearTimeout(timerAvisoRef.current);
+      clearTimeout(timerLogoutRef.current);
       EVENTOS_ACTIVIDAD.forEach(ev =>
         window.removeEventListener(ev, resetTimer)
       );
     };
   }, [user?.preferencias?.tiempo_sesion, logout]);
+
+  return { mostrarAviso, extenderSesion };
 };
 
 export default useIdleTimer;

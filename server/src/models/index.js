@@ -34,6 +34,8 @@ const CajaMenorModel = require('./CajaMenor');
 const ViajeModel = require('./Viaje');
 const MovimientoCajaMenorModel = require('./MovimientoCajaMenor');
 const BackupRegistroModel = require('./BackupRegistro');
+const PasswordHistoricoModel = require('./PasswordHistorico');
+const TokenBlacklistModel = require('./TokenBlacklist');
 const Notificacion = require('./Notificacion')(sequelize);
 
 // Inicializar modelos
@@ -60,6 +62,8 @@ const CajaMenor = CajaMenorModel(sequelize);
 const Viaje = ViajeModel(sequelize);
 const MovimientoCajaMenor = MovimientoCajaMenorModel(sequelize);
 const BackupRegistro = BackupRegistroModel(sequelize);
+const PasswordHistorico = PasswordHistoricoModel(sequelize);
+const TokenBlacklist = TokenBlacklistModel(sequelize);
 
 // ============================================
 // DEFINIR ASOCIACIONES
@@ -265,6 +269,14 @@ CajaInventario.belongsTo(OperacionDetalle, {
 Notificacion.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
 Usuario.hasMany(Notificacion, { foreignKey: 'usuario_id', as: 'notificaciones' });
 
+// Usuario <-> PasswordHistorico (1:N)
+Usuario.hasMany(PasswordHistorico, { foreignKey: 'usuario_id', as: 'password_historico', onDelete: 'CASCADE' });
+PasswordHistorico.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
+
+// Usuario <-> TokenBlacklist (1:N)
+Usuario.hasMany(TokenBlacklist, { foreignKey: 'usuario_id', as: 'tokens_revocados', onDelete: 'CASCADE' });
+TokenBlacklist.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
+
 // Usuario <-> Usuario (invitaciones)
 Usuario.belongsTo(Usuario, {
   foreignKey: 'invitado_por',
@@ -394,6 +406,8 @@ const db = {
   Viaje,
   MovimientoCajaMenor,
   BackupRegistro,
+  PasswordHistorico,
+  TokenBlacklist,
 };
 
 /**

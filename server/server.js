@@ -12,6 +12,32 @@ const db = require('./src/models');
 const logger = require('./src/utils/logger');
 const socketService = require('./src/services/socketService');
 
+// ══════════════════════════════════════════════════════════════════════════
+// VALIDACIÓN DE VARIABLES CRÍTICAS (falla rápido en lugar de errores tardíos)
+// ══════════════════════════════════════════════════════════════════════════
+const isProduccion = process.env.NODE_ENV === 'production';
+const erroresConfig = [];
+
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  erroresConfig.push('JWT_SECRET debe tener al menos 32 caracteres');
+}
+if (isProduccion && process.env.JWT_SECRET?.includes('cambiar')) {
+  erroresConfig.push('JWT_SECRET usa el valor por defecto — configura uno seguro en producción');
+}
+if (!process.env.DB_NAME || !process.env.DB_USER || !process.env.DB_HOST) {
+  erroresConfig.push('Variables de base de datos (DB_NAME, DB_USER, DB_HOST) son requeridas');
+}
+if (isProduccion && !process.env.CORS_ORIGIN) {
+  erroresConfig.push('CORS_ORIGIN es requerido en producción');
+}
+
+if (erroresConfig.length > 0) {
+  console.error('\n❌ ERROR DE CONFIGURACIÓN — El servidor no puede iniciar:\n');
+  erroresConfig.forEach(e => console.error(`   • ${e}`));
+  console.error('\nRevisa tu archivo .env y compáralo con .env.example\n');
+  process.exit(1);
+}
+
 const PORT = process.env.PORT || 5000;
 
 // Estado global de inicialización

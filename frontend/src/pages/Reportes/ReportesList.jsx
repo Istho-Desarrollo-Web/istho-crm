@@ -166,7 +166,7 @@ const ReporteCard = ({ reporte, canExport }) => {
   const handleExportExcel = async () => {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      const slug = reporte?.titulo?.toLowerCase()?.replace(/\s+/g, '-') || 'exportado';
+      const slug = (reporte?.titulo ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^reporte\s+(de\s+)?/i, '').replace(/\s+/g, '-') || 'exportado';
       await descargarArchivo(`${baseUrl}${reporte.exportEndpoints.excel}`, `reporte-${slug}-${fechaDescarga()}.xlsx`);
     } catch {
       notifyError('Error al exportar el reporte Excel');
@@ -177,7 +177,7 @@ const ReporteCard = ({ reporte, canExport }) => {
     if (!reporte.exportEndpoints?.pdf) return;
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      const slug = reporte?.titulo?.toLowerCase()?.replace(/\s+/g, '-') || 'exportado';
+      const slug = (reporte?.titulo ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^reporte\s+(de\s+)?/i, '').replace(/\s+/g, '-') || 'exportado';
       await descargarArchivo(`${baseUrl}${reporte.exportEndpoints.pdf}`, `reporte-${slug}-${fechaDescarga()}.pdf`);
     } catch {
       notifyError('Error al exportar el reporte PDF');

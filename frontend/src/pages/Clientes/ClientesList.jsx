@@ -253,11 +253,11 @@ const ClientesList = () => {
     setImportResultados(null);
     setImportPreview(null);
     try {
-      const XLSX = await import('xlsx');
-      const buffer = await file.arrayBuffer();
-      const wb = XLSX.read(buffer, { type: 'array' });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      const readXlsxFile = (await import('read-excel-file/browser')).default;
+      const rawRows = await readXlsxFile(file);
+      if (rawRows.length < 2) { notifyError('El archivo no contiene datos'); return; }
+      const [headers, ...dataRows] = rawRows;
+      const rows = dataRows.map(row => Object.fromEntries(headers.map((h, i) => [String(h ?? ''), row[i] ?? ''])));
       if (rows.length === 0) { notifyError('El archivo no contiene datos'); return; }
       setImportPreview(rows.slice(0, 20));
     } catch (_err) {

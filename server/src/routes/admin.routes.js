@@ -58,6 +58,13 @@ router.post('/sesiones/cerrar-todas', adminController.cerrarTodasSesiones);
 router.post('/sesiones/:id/cerrar', adminController.cerrarSesion);
 
 // =============================================
+// SEGURIDAD
+// =============================================
+
+router.get('/seguridad', adminController.dashboardSeguridad);
+router.post('/usuarios/:id/desbloquear', adminController.desbloquearUsuario);
+
+// =============================================
 // CONFIGURACIÓN WMS
 // =============================================
 

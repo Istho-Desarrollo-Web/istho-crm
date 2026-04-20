@@ -91,7 +91,7 @@ const ForceChangePasswordModal = () => {
       if (result.success) {
         setSuccess(true);
         // Actualizar el estado del usuario para quitar el flag
-        updateUser({ requiere_cambio_password: false });
+        updateUser({ requiere_cambio_password: false, password_vencida: false });
       } else {
         setError(result.message || 'Error al cambiar la contraseña');
       }
@@ -139,7 +139,9 @@ const ForceChangePasswordModal = () => {
             Cambio de contraseña requerido
           </h2>
           <p className="text-orange-100 text-xs mt-0.5">
-            Debes cambiar tu contraseña temporal antes de continuar
+            {user?.password_vencida
+              ? 'Tu contraseña ha vencido. Debes establecer una nueva para continuar'
+              : 'Debes cambiar tu contraseña temporal antes de continuar'}
           </p>
         </div>
 

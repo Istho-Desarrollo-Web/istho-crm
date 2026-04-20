@@ -113,6 +113,9 @@
 | `reset_token_expires` | DATE | | Expiración del token (15 min) |
 | `intentos_fallidos` | INTEGER | DEFAULT 0 | Intentos de login fallidos |
 | `bloqueado_hasta` | DATE | | Bloqueo hasta (15 min tras 5 intentos) |
+| `totp_secret` | STRING(255) | NULL | Secreto base32 TOTP (cifrado en tránsito) |
+| `totp_habilitado` | BOOLEAN | DEFAULT false | Indica si el 2FA está activo |
+| `totp_backup_codes` | JSON | NULL | Array de 8 códigos de respaldo de un solo uso |
 
 **Índices:** email, username, rol, activo, cliente_id, rol_id
 

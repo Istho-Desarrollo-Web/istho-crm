@@ -33,6 +33,7 @@ import usuarioService from '../../api/usuarioService';
 import backupService from '../../api/backupService';
 import useNotification from '../../hooks/useNotification';
 import PageFooter from '@components/common/PageFooter';
+import Configuracion2FA from '@components/perfil/Configuracion2FA';
 
 // ════════════════════════════════════════════════════════════════════════════
 // TOGGLE SWITCH
@@ -532,6 +533,11 @@ const Configuracion = () => {
                 ]}
               />
             </SettingRow>
+
+            {/* 2FA */}
+            <div className="pt-4 border-t border-slate-100 dark:border-centhrix-surface">
+              <Configuracion2FA />
+            </div>
           </SectionCard>
 
           {/* ═══ INFO SISTEMA (solo admin) ═══ */}

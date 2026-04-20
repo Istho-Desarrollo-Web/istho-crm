@@ -12,10 +12,13 @@
  */
 
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { Op } = require('sequelize');
+const { generateSecret: totpGenerateSecret, generateSync: totpGenerate, verifySync: totpVerify, generateURI: totpURI } = require('otplib');
+const QRCode = require('qrcode');
 const jwtConfig = require('../config/jwt');
-const { Usuario, Cliente, Auditoria } = require('../models');
+const { Usuario, Cliente, Auditoria, PasswordHistorico, TokenBlacklist } = require('../models');
 const {
   success,
   successMessage,
@@ -37,10 +40,44 @@ const { getClientIP } = require('../utils/helpers');
 
 const MAX_INTENTOS_LOGIN = 5;
 const TIEMPO_BLOQUEO_MINUTOS = 15;
+const MAX_HISTORICO = PasswordHistorico.MAX_HISTORICO ?? 5;
 
 // ============================================================================
 // HELPERS PRIVADOS
 // ============================================================================
+
+/**
+ * Verifica que la nueva contraseña no coincida con ninguna de las últimas N.
+ * Devuelve true si es reutilizada (rechazar), false si es nueva (aceptar).
+ */
+const esPasswordReutilizada = async (usuarioId, passwordNueva) => {
+  const historial = await PasswordHistorico.findAll({
+    where: { usuario_id: usuarioId },
+    order: [['created_at', 'DESC']],
+    limit: MAX_HISTORICO,
+    attributes: ['password_hash']
+  });
+  for (const registro of historial) {
+    if (await bcrypt.compare(passwordNueva, registro.password_hash)) return true;
+  }
+  return false;
+};
+
+/**
+ * Guarda la contraseña actual en el historial y elimina registros más antiguos.
+ */
+const guardarEnHistorial = async (usuarioId, passwordHashActual) => {
+  await PasswordHistorico.create({ usuario_id: usuarioId, password_hash: passwordHashActual });
+  const registros = await PasswordHistorico.findAll({
+    where: { usuario_id: usuarioId },
+    order: [['created_at', 'DESC']],
+    attributes: ['id']
+  });
+  if (registros.length > MAX_HISTORICO) {
+    const idsAEliminar = registros.slice(MAX_HISTORICO).map(r => r.id);
+    await PasswordHistorico.destroy({ where: { id: idsAEliminar } });
+  }
+};
 
 /**
  * Generar token JWT
@@ -91,6 +128,78 @@ const registrarAuditoria = async (data) => {
   } catch (error) {
     logger.warn('Error registrando auditoría:', error.message);
   }
+};
+
+// ============================================================================
+// HELPERS DE 2FA
+// ============================================================================
+
+const TOTP_ISSUER = 'CenthriX CRM';
+const BACKUP_CODES_COUNT = 8;
+
+const generarBackupCodes = () => {
+  return Array.from({ length: BACKUP_CODES_COUNT }, () =>
+    crypto.randomBytes(5).toString('hex').toUpperCase()
+  );
+};
+
+/**
+ * Finalizar login exitoso: actualizar usuario, registrar auditoría, devolver tokens.
+ * Usado por login normal y por validarTotp.
+ */
+const completarLogin = async (usuario, req, res) => {
+  usuario.intentos_fallidos = 0;
+  usuario.bloqueado_hasta = null;
+  usuario.ultimo_acceso = new Date();
+
+  if (usuario.password_expira_en && new Date(usuario.password_expira_en) < new Date()) {
+    usuario.requiere_cambio_password = true;
+  }
+
+  await usuario.save();
+
+  const token = generarToken(usuario);
+
+  await registrarAuditoria({
+    tabla: 'usuarios',
+    registro_id: usuario.id,
+    accion: 'login',
+    usuario_id: usuario.id,
+    usuario_nombre: usuario.getNombreDisplay(),
+    ip_address: getClientIP(req),
+    user_agent: req.get('user-agent'),
+    descripcion: `Login exitoso: ${usuario.email}`
+  });
+
+  logger.info('Login exitoso:', { userId: usuario.id, email: usuario.email });
+
+  await cargarCachePermisos();
+  const permisosDB = usuario.rol_id ? getPermisosForRol(usuario.rol_id) : null;
+  const userData = usuario.toPublicJSON(permisosDB);
+
+  if (usuario.rol === 'cliente' && usuario.cliente_id) {
+    const cliente = await Cliente.findByPk(usuario.cliente_id, {
+      attributes: ['id', 'razon_social', 'codigo_cliente', 'logo_url'],
+    });
+    if (cliente) {
+      userData.cliente_info = {
+        id: cliente.id,
+        razon_social: cliente.razon_social,
+        codigo_cliente: cliente.codigo_cliente,
+        logo_url: cliente.logo_url,
+      };
+    }
+  }
+
+  const refreshTokenJwt = generarRefreshToken(usuario);
+
+  return successMessage(res, 'Inicio de sesión exitoso', {
+    user: userData,
+    token,
+    refreshToken: refreshTokenJwt,
+    expiresIn: jwtConfig.expiresIn,
+    refreshExpiresIn: jwtConfig.refreshExpiresIn
+  });
 };
 
 // ============================================================================
@@ -155,57 +264,25 @@ const login = async (req, res) => {
       return unauthorized(res, 'Credenciales inválidas');
     }
 
-    // Login exitoso
-    usuario.intentos_fallidos = 0;
-    usuario.bloqueado_hasta = null;
-    usuario.ultimo_acceso = new Date();
-    await usuario.save();
+    // Login exitoso — verificar si tiene 2FA habilitado
+    if (usuario.totp_habilitado && usuario.totp_secret) {
+      // Emitir token temporal de 5 minutos para el paso de TOTP
+      const tempToken = jwt.sign(
+        { id: usuario.id, scope: 'totp_pending' },
+        jwtConfig.secret,
+        { expiresIn: '5m', issuer: jwtConfig.issuer, audience: jwtConfig.audience }
+      );
 
-    const token = generarToken(usuario);
+      logger.info('Login paso 1 (2FA requerido):', { userId: usuario.id });
 
-    // Auditoría
-    await registrarAuditoria({
-      tabla: 'usuarios',
-      registro_id: usuario.id,
-      accion: 'login',
-      usuario_id: usuario.id,
-      usuario_nombre: usuario.getNombreDisplay(),
-      ip_address: getClientIP(req),
-      user_agent: req.get('user-agent'),
-      descripcion: `Login exitoso: ${usuario.email}`
-    });
-
-    logger.info('Login exitoso:', { userId: usuario.id, email: usuario.email });
-
-    // Cargar cache de permisos dinámicos y construir datos de respuesta
-    await cargarCachePermisos();
-    const permisosDB = usuario.rol_id ? getPermisosForRol(usuario.rol_id) : null;
-    const userData = usuario.toPublicJSON(permisosDB);
-
-    // Si es usuario de cliente, incluir datos del cliente (logo, nombre)
-    if (usuario.rol === 'cliente' && usuario.cliente_id) {
-      const cliente = await Cliente.findByPk(usuario.cliente_id, {
-        attributes: ['id', 'razon_social', 'codigo_cliente', 'logo_url'],
+      return successMessage(res, 'Se requiere verificación de dos factores', {
+        requiere_2fa: true,
+        temp_token: tempToken,
+        usuario_nombre: usuario.getNombreDisplay()
       });
-      if (cliente) {
-        userData.cliente_info = {
-          id: cliente.id,
-          razon_social: cliente.razon_social,
-          codigo_cliente: cliente.codigo_cliente,
-          logo_url: cliente.logo_url,
-        };
-      }
     }
 
-    const refreshTokenJwt = generarRefreshToken(usuario);
-
-    return successMessage(res, 'Inicio de sesión exitoso', {
-      user: userData,
-      token,
-      refreshToken: refreshTokenJwt,
-      expiresIn: jwtConfig.expiresIn,
-      refreshExpiresIn: jwtConfig.refreshExpiresIn
-    });
+    await completarLogin(usuario, req, res);
 
   } catch (error) {
     logger.error('Error en login:', { message: error.message });
@@ -372,6 +449,19 @@ const registro = async (req, res) => {
  */
 const logout = async (req, res) => {
   try {
+    // Invalidar el token actual añadiéndolo a la lista negra
+    const rawToken = req.token;
+    if (rawToken) {
+      try {
+        const decoded = jwt.decode(rawToken);
+        const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+        const expiresAt = decoded?.exp ? new Date(decoded.exp * 1000) : new Date(Date.now() + 60 * 60 * 1000);
+        await TokenBlacklist.create({ token_hash: tokenHash, usuario_id: req.user.id, expires_at: expiresAt });
+      } catch (blacklistError) {
+        logger.warn('No se pudo invalidar el token en blacklist:', { error: blacklistError.message });
+      }
+    }
+
     await registrarAuditoria({
       tabla: 'usuarios',
       registro_id: req.user.id,
@@ -426,9 +516,17 @@ const cambiarPassword = async (req, res) => {
       return errorResponse(res, 'La contraseña debe contener al menos un carácter especial', 400);
     }
 
+    if (await esPasswordReutilizada(usuario.id, password_nuevo)) {
+      return errorResponse(res, `No puedes reutilizar ninguna de tus últimas ${MAX_HISTORICO} contraseñas`, 400, null, 'PASSWORD_REUSED');
+    }
+
+    // Guardar contraseña actual en historial antes de reemplazarla
+    await guardarEnHistorial(usuario.id, usuario.password_hash);
+
     usuario.password_hash = password_nuevo;
     usuario.requiere_cambio_password = false;
     usuario.changed('requiere_cambio_password', true);
+    usuario.password_expira_en = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
     await usuario.save();
 
     await registrarAuditoria({
@@ -528,11 +626,19 @@ const resetPassword = async (req, res) => {
       return errorResponse(res, 'La contraseña debe contener al menos un carácter especial', 400);
     }
 
+    if (await esPasswordReutilizada(usuario.id, password)) {
+      return errorResponse(res, `No puedes reutilizar ninguna de tus últimas ${MAX_HISTORICO} contraseñas`, 400, null, 'PASSWORD_REUSED');
+    }
+
+    await guardarEnHistorial(usuario.id, usuario.password_hash);
+
     usuario.password_hash = password;
     usuario.reset_token = null;
     usuario.reset_token_expires = null;
     usuario.intentos_fallidos = 0;
     usuario.bloqueado_hasta = null;
+    usuario.requiere_cambio_password = false;
+    usuario.password_expira_en = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
     await usuario.save();
 
     await registrarAuditoria({
@@ -746,6 +852,202 @@ const eliminarAvatar = async (req, res) => {
 };
 
 // ============================================================================
+// 2FA / TOTP
+// ============================================================================
+
+/**
+ * POST /auth/2fa/setup
+ * Generar secreto TOTP y QR code para configurar el autenticador.
+ * El 2FA no queda activo hasta confirmar con /activar.
+ */
+const setup2FA = async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(req.user.id);
+    if (!usuario) return notFound(res, 'Usuario no encontrado');
+
+    if (usuario.totp_habilitado) {
+      return errorResponse(res, 'El 2FA ya está activado en esta cuenta', 400);
+    }
+
+    const secret = totpGenerateSecret();
+    const otpAuthUrl = totpURI({ secret, label: usuario.email, issuer: TOTP_ISSUER, type: 'totp' });
+    const qrDataUrl = await QRCode.toDataURL(otpAuthUrl);
+
+    // Guardar secreto temporal (sin activar aún)
+    usuario.totp_secret = secret;
+    await usuario.save();
+
+    return success(res, {
+      secret,
+      qr_code: qrDataUrl,
+      otpauth_url: otpAuthUrl
+    });
+  } catch (error) {
+    logger.error('Error en setup2FA:', { message: error.message });
+    return serverError(res, 'Error al configurar 2FA', error);
+  }
+};
+
+/**
+ * POST /auth/2fa/activar
+ * Verificar código TOTP y habilitar 2FA. Devuelve códigos de respaldo.
+ */
+const activar2FA = async (req, res) => {
+  try {
+    const { codigo } = req.body;
+    if (!codigo) return errorResponse(res, 'El código TOTP es requerido', 400);
+
+    const usuario = await Usuario.findByPk(req.user.id);
+    if (!usuario) return notFound(res, 'Usuario no encontrado');
+
+    if (usuario.totp_habilitado) {
+      return errorResponse(res, 'El 2FA ya está activado', 400);
+    }
+
+    if (!usuario.totp_secret) {
+      return errorResponse(res, 'Primero ejecuta el setup de 2FA', 400);
+    }
+
+    const esValido = totpVerify({ token: codigo.replace(/\s/g, ''), secret: usuario.totp_secret, type: 'totp' })?.valid === true;
+    if (!esValido) {
+      return errorResponse(res, 'Código incorrecto. Verifica la hora de tu dispositivo', 400, null, 'TOTP_INVALID');
+    }
+
+    const backupCodes = generarBackupCodes();
+    usuario.totp_habilitado = true;
+    usuario.totp_backup_codes = backupCodes;
+    await usuario.save();
+
+    await registrarAuditoria({
+      tabla: 'usuarios',
+      registro_id: usuario.id,
+      accion: 'actualizar',
+      usuario_id: usuario.id,
+      usuario_nombre: usuario.getNombreDisplay(),
+      ip_address: getClientIP(req),
+      descripcion: '2FA activado por el usuario'
+    });
+
+    return successMessage(res, '2FA activado correctamente', { backup_codes: backupCodes });
+  } catch (error) {
+    logger.error('Error en activar2FA:', { message: error.message });
+    return serverError(res, 'Error al activar 2FA', error);
+  }
+};
+
+/**
+ * POST /auth/2fa/deshabilitar
+ * Deshabilitar 2FA (requiere contraseña actual para confirmar).
+ */
+const deshabilitar2FA = async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password) return errorResponse(res, 'La contraseña es requerida para desactivar el 2FA', 400);
+
+    const usuario = await Usuario.findByPk(req.user.id);
+    if (!usuario) return notFound(res, 'Usuario no encontrado');
+
+    if (!usuario.totp_habilitado) {
+      return errorResponse(res, 'El 2FA no está activado', 400);
+    }
+
+    const passwordValido = await usuario.verificarPassword(password);
+    if (!passwordValido) {
+      return errorResponse(res, 'Contraseña incorrecta', 400);
+    }
+
+    usuario.totp_secret = null;
+    usuario.totp_habilitado = false;
+    usuario.totp_backup_codes = null;
+    await usuario.save();
+
+    await registrarAuditoria({
+      tabla: 'usuarios',
+      registro_id: usuario.id,
+      accion: 'actualizar',
+      usuario_id: usuario.id,
+      usuario_nombre: usuario.getNombreDisplay(),
+      ip_address: getClientIP(req),
+      descripcion: '2FA desactivado por el usuario'
+    });
+
+    return successMessage(res, '2FA desactivado correctamente');
+  } catch (error) {
+    logger.error('Error en deshabilitar2FA:', { message: error.message });
+    return serverError(res, 'Error al desactivar 2FA', error);
+  }
+};
+
+/**
+ * POST /auth/2fa/validar
+ * Paso 2 del login: verificar código TOTP con el temp_token.
+ * Devuelve tokens completos si el código es correcto.
+ */
+const validarTotp = async (req, res) => {
+  try {
+    const { temp_token, codigo } = req.body;
+
+    if (!temp_token || !codigo) {
+      return errorResponse(res, 'Token temporal y código son requeridos', 400);
+    }
+
+    // Verificar temp_token
+    let decoded;
+    try {
+      decoded = jwt.verify(temp_token, jwtConfig.secret, {
+        issuer: jwtConfig.issuer,
+        audience: jwtConfig.audience
+      });
+    } catch (jwtError) {
+      if (jwtError.name === 'TokenExpiredError') {
+        return errorResponse(res, 'El código de verificación ha expirado. Inicia sesión nuevamente', 401, null, 'TEMP_TOKEN_EXPIRED');
+      }
+      return errorResponse(res, 'Token temporal inválido', 401, null, 'TEMP_TOKEN_INVALID');
+    }
+
+    if (decoded.scope !== 'totp_pending') {
+      return errorResponse(res, 'Token inválido para esta operación', 401);
+    }
+
+    const usuario = await Usuario.findByPk(decoded.id);
+    if (!usuario || !usuario.activo) {
+      return errorResponse(res, 'Usuario no válido', 401);
+    }
+
+    if (!usuario.totp_habilitado || !usuario.totp_secret) {
+      return errorResponse(res, '2FA no está configurado en esta cuenta', 400);
+    }
+
+    const codigoLimpio = codigo.replace(/\s/g, '');
+
+    // Verificar código TOTP
+    const esValido = totpVerify({ token: codigoLimpio, secret: usuario.totp_secret, type: 'totp' })?.valid === true;
+
+    if (!esValido) {
+      // Intentar con códigos de respaldo
+      const backups = usuario.totp_backup_codes || [];
+      const idxBackup = backups.indexOf(codigoLimpio.toUpperCase());
+
+      if (idxBackup === -1) {
+        return errorResponse(res, 'Código incorrecto', 401, null, 'TOTP_INVALID');
+      }
+
+      // Consumir el código de respaldo (one-time)
+      backups.splice(idxBackup, 1);
+      usuario.totp_backup_codes = backups;
+      await usuario.save();
+
+      logger.warn('Login con código de respaldo:', { userId: usuario.id });
+    }
+
+    return await completarLogin(usuario, req, res);
+  } catch (error) {
+    logger.error('Error en validarTotp:', { message: error.message });
+    return serverError(res, 'Error al verificar código 2FA', error);
+  }
+};
+
+// ============================================================================
 // EXPORTS
 // ============================================================================
 
@@ -761,5 +1063,9 @@ module.exports = {
   refreshToken,
   subirAvatar,
   eliminarAvatar,
-  actualizarPreferencias
+  actualizarPreferencias,
+  setup2FA,
+  activar2FA,
+  deshabilitar2FA,
+  validarTotp
 };

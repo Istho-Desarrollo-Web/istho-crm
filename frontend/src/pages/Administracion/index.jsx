@@ -8,16 +8,18 @@
  */
 
 import { useState } from 'react';
-import { Users, Shield, Settings, Wifi } from 'lucide-react';
+import { Users, Shield, Settings, Wifi, ShieldAlert } from 'lucide-react';
 import UsuariosList from './UsuariosList';
 import RolesList from './RolesList';
 import SesionesActivas from './SesionesActivas';
+import DashboardSeguridad from './DashboardSeguridad';
 import PageFooter from '@components/common/PageFooter';
 
 const TABS = [
   { id: 'usuarios', label: 'Usuarios', icon: Users },
   { id: 'roles', label: 'Roles y Permisos', icon: Shield },
   { id: 'sesiones', label: 'Sesiones Activas', icon: Wifi },
+  { id: 'seguridad', label: 'Seguridad', icon: ShieldAlert },
 ];
 
 const Administracion = () => {
@@ -71,6 +73,7 @@ const Administracion = () => {
         {activeTab === 'usuarios' && <UsuariosList />}
         {activeTab === 'roles' && <RolesList />}
         {activeTab === 'sesiones' && <SesionesActivas />}
+        {activeTab === 'seguridad' && <DashboardSeguridad />}
 
         {/* Footer */}
         <PageFooter />

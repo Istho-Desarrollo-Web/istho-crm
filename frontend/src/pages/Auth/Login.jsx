@@ -21,6 +21,7 @@ import logoNegro from '../../assets/logo-negro.png';
 import logoBlanco from '../../assets/logo-blanco.png';
 import logoCenthrix from '../../assets/Centhrix WMS - ISTHO-03.svg';
 import LoadingScreen from '../../components/common/LoadingScreen';
+import PoliticaDatosModal from '../../components/common/PoliticaDatosModal';
 import {
     User,
     Lock,
@@ -33,6 +34,8 @@ import {
     BarChart3,
     Shield,
     ArrowRight,
+    Smartphone,
+    ChevronLeft,
 } from 'lucide-react';
 
 // ============================================================================
@@ -46,6 +49,8 @@ const slideUp = { animation: 'slideUp 0.5s ease-out' };
 // ESQUEMA DE VALIDACIÓN
 // ============================================================================
 
+const POLITICA_VERSION = 'v1-2026';
+
 const loginSchema = yup.object({
     email: yup
         .string()
@@ -54,6 +59,9 @@ const loginSchema = yup.object({
         .string()
         .required('La contraseña es requerida')
         .min(6, 'La contraseña debe tener al menos 6 caracteres'),
+    aceptaPolitica: yup
+        .boolean()
+        .oneOf([true], 'Debes aceptar la política de tratamiento de datos'),
 });
 
 // ============================================================================
@@ -74,11 +82,18 @@ const features = [
 const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { login, isAuthenticated, isLoading: authLoading, error: authError, clearError, user } = useAuth();
+    const { login, validarTotp, isAuthenticated, isLoading: authLoading, error: authError, clearError, user } = useAuth();
 
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [mensajePendiente, setMensajePendiente] = useState(null);
+    const [politicaOpen, setPoliticaOpen] = useState(false);
+
+    // Estado para el paso de 2FA
+    const [paso2FA, setPaso2FA] = useState(null); // { temp_token, usuario_nombre }
+    const [codigoTotp, setCodigoTotp] = useState('');
+    const [error2FA, setError2FA] = useState(null);
+    const [submitting2FA, setSubmitting2FA] = useState(false);
 
     // Obtener la ruta de origen (si viene de una redirección)
     const getDefaultRoute = (rol) => {
@@ -98,6 +113,8 @@ const LoginPage = () => {
         pending ? getDefaultRoute(rol) : (from || getDefaultRoute(rol));
 
     // React Hook Form
+    const yaAcepto = localStorage.getItem('politica_aceptada') === POLITICA_VERSION;
+
     const {
         register,
         handleSubmit,
@@ -108,6 +125,7 @@ const LoginPage = () => {
         defaultValues: {
             email: '',
             password: '',
+            aceptaPolitica: yaAcepto,
         },
     });
 
@@ -150,6 +168,33 @@ const LoginPage = () => {
 
     const [serverWaking, setServerWaking] = useState(false);
 
+    const onSubmit2FA = async (e) => {
+        e.preventDefault();
+        if (!codigoTotp.trim()) return;
+        setSubmitting2FA(true);
+        setError2FA(null);
+
+        try {
+            const result = await validarTotp(paso2FA.temp_token, codigoTotp.replace(/\s/g, ''));
+
+            if (result.success) {
+                localStorage.setItem('politica_aceptada', POLITICA_VERSION);
+                const destino = getDestino(result.data?.user?.rol);
+                navigate(destino, { replace: true });
+            } else if (result.code === 'TEMP_TOKEN_EXPIRED') {
+                setPaso2FA(null);
+                setCodigoTotp('');
+                setError2FA(null);
+            } else {
+                setError2FA(result.message || 'Código incorrecto');
+            }
+        } catch (err) {
+            setError2FA(err.message || 'Error al verificar el código');
+        } finally {
+            setSubmitting2FA(false);
+        }
+    };
+
     const onSubmit = async (data) => {
         setIsSubmitting(true);
         setServerWaking(false);
@@ -157,7 +202,14 @@ const LoginPage = () => {
         try {
             const result = await login(data.email, data.password);
 
+            if (result.requiere_2fa) {
+                setIsSubmitting(false);
+                setPaso2FA({ temp_token: result.temp_token, usuario_nombre: result.usuario_nombre });
+                return;
+            }
+
             if (result.success) {
+                localStorage.setItem('politica_aceptada', POLITICA_VERSION);
                 const destino = getDestino(result.data?.user?.rol);
                 navigate(destino, { replace: true });
             } else if (result.code === 'NETWORK_ERROR' || result.code === 'TIMEOUT') {
@@ -211,8 +263,84 @@ const LoginPage = () => {
         />;
     }
 
+    // ── Pantalla de verificación 2FA ──────────────────────────────────────────
+    if (paso2FA) {
+        return (
+            <div className="h-screen flex items-center justify-center bg-white dark:bg-centhrix-bg" style={fadeIn}>
+                <div className="w-full max-w-sm px-6" style={slideUp}>
+                    {/* Icono */}
+                    <div className="flex flex-col items-center mb-8">
+                        <div className="w-16 h-16 rounded-2xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-4 shadow-lg">
+                            <Smartphone className="w-8 h-8 text-orange-500" />
+                        </div>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
+                            Verificación de dos factores
+                        </h1>
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-2 text-center">
+                            Hola <strong>{paso2FA.usuario_nombre}</strong>. Ingresa el código de tu aplicación autenticadora o un código de respaldo.
+                        </p>
+                    </div>
+
+                    {/* Error */}
+                    {error2FA && (
+                        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-red-700 dark:text-red-300">{error2FA}</p>
+                        </div>
+                    )}
+
+                    {/* Formulario TOTP */}
+                    <form onSubmit={onSubmit2FA} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+                                Código de verificación
+                            </label>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
+                                placeholder="000000"
+                                maxLength={8}
+                                autoFocus
+                                value={codigoTotp}
+                                onChange={(e) => { setCodigoTotp(e.target.value); setError2FA(null); }}
+                                className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-centhrix-card dark:text-white text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C] transition-all"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={submitting2FA || !codigoTotp.trim()}
+                            className="w-full py-3 px-4 rounded-2xl font-semibold text-white bg-gradient-to-r from-[#E74C3C] to-[#C0392B] hover:from-[#C0392B] hover:to-orange-800 focus:outline-none focus:ring-2 focus:ring-[#E74C3C] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
+                        >
+                            {submitting2FA ? (
+                                <><Loader2 className="w-5 h-5 animate-spin" /><span>Verificando...</span></>
+                            ) : (
+                                <><span>Verificar</span><ArrowRight className="w-5 h-5" /></>
+                            )}
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => { setPaso2FA(null); setCodigoTotp(''); setError2FA(null); }}
+                            className="w-full py-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 flex items-center justify-center gap-1 transition-colors"
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                            Volver al inicio de sesión
+                        </button>
+                    </form>
+
+                    <p className="mt-6 text-center text-xs text-gray-400 dark:text-slate-500">
+                        ¿Sin acceso al autenticador? Usa uno de tus códigos de respaldo.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
+            <PoliticaDatosModal isOpen={politicaOpen} onClose={() => setPoliticaOpen(false)} />
             <style>{`
                 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
                 @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -414,6 +542,34 @@ const LoginPage = () => {
                                 >
                                     ¿Olvidaste tu contraseña?
                                 </Link>
+                            </div>
+
+                            {/* Política de tratamiento de datos — Ley 1581 */}
+                            <div>
+                                <label className="flex items-start gap-2.5 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        {...register('aceptaPolitica')}
+                                        className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-[#E74C3C] focus:ring-[#E74C3C] dark:bg-centhrix-surface flex-shrink-0"
+                                    />
+                                    <span className="text-sm text-gray-600 dark:text-slate-400 leading-snug">
+                                        Acepto la{' '}
+                                        <button
+                                            type="button"
+                                            onClick={() => setPoliticaOpen(true)}
+                                            className="text-[#E74C3C] hover:text-[#C0392B] dark:text-red-400 font-medium underline underline-offset-2 transition-colors"
+                                        >
+                                            Política de Tratamiento de Datos Personales
+                                        </button>
+                                        {' '}(Ley 1581 de 2012)
+                                    </span>
+                                </label>
+                                {errors.aceptaPolitica && (
+                                    <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                                        <AlertCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+                                        {errors.aceptaPolitica.message}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Botón Submit */}

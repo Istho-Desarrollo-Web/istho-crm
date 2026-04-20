@@ -27,6 +27,9 @@ const {
   resetPasswordValidator
 } = require('../validators/authValidator');
 
+// Rate limiters específicos
+const { limiterLogin, limiterForgotPassword, limiterTotp } = require('../middleware/rateLimiter');
+
 // =============================================
 // RUTAS PÚBLICAS (sin autenticación)
 // =============================================
@@ -36,14 +39,14 @@ const {
  * @desc    Iniciar sesión
  * @access  Público
  */
-router.post('/login', loginValidator, authController.login);
+router.post('/login', limiterLogin, loginValidator, authController.login);
 
 /**
  * @route   POST /auth/forgot-password
  * @desc    Solicitar recuperación de contraseña
  * @access  Público
  */
-router.post('/forgot-password', forgotPasswordValidator, authController.forgotPassword);
+router.post('/forgot-password', limiterForgotPassword, forgotPasswordValidator, authController.forgotPassword);
 
 /**
  * @route   POST /auth/reset-password
@@ -110,11 +113,18 @@ router.post('/refresh', authController.refreshToken);
 // RUTAS DE ADMINISTRACIÓN
 // =============================================
 
-/**
- * @route   POST /auth/registro
- * @desc    Registrar nuevo usuario
- * @access  Solo Admin
- */
 router.post('/registro', verificarToken, soloAdmin, registroValidator, authController.registro);
+
+// =============================================
+// RUTAS DE 2FA / TOTP
+// =============================================
+
+// Pública: paso 2 del login con temp_token
+router.post('/2fa/validar', limiterTotp, authController.validarTotp);
+
+// Protegidas: gestión del 2FA desde el perfil
+router.post('/2fa/setup', verificarToken, authController.setup2FA);
+router.post('/2fa/activar', verificarToken, authController.activar2FA);
+router.post('/2fa/deshabilitar', verificarToken, authController.deshabilitar2FA);
 
 module.exports = router;

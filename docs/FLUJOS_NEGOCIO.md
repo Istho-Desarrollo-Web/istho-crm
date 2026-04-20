@@ -493,12 +493,20 @@ Usuario                    Frontend                   Backend
   │                           │  │ 2. Cuenta activa?   │  │
   │                           │  │ 3. No bloqueada?    │  │
   │                           │  │ 4. Password válido? │  │
-  │                           │  │ 5. Reset intentos   │  │
-  │                           │  │ 6. Log auditoría    │  │
+  │                           │  │ 5. ¿2FA habilitado? │  │
   │                           │  └─────────────────────┘  │
   │                           │                          │
+  │                           │  SI 2FA → { requiere_2fa: true, temp_token (5 min) }
+  │                           │  NO 2FA → { token, refreshToken, user }
+  │                           │<─────────────────────────┤
+  │                           │                          │
+  │  SI 2FA: pantalla TOTP    │                          │
+  │  ingresa código de 6 dígitos                         │
+  │  ├──────────────────────────>│                       │
+  │                           │  POST /auth/2fa/validar  │
+  │                           ├─────────────────────────>│
   │                           │  { token, refreshToken,  │
-  │                           │    user, expiresIn }     │
+  │                           │    user }                │
   │                           │<─────────────────────────┤
   │                           │                          │
   │                           │  Guardar en localStorage │
@@ -552,6 +560,41 @@ Intento fallido #5 → intentos_fallidos = 5
 Intento #6 (dentro de 15 min) → "Cuenta bloqueada"
 Intento (después de 15 min) → Se desbloquea, reset intentos
 ```
+
+### 5.4 Autenticación de Dos Factores (2FA/TOTP)
+
+El 2FA es opcional por usuario. Se configura desde **Perfil → Configuración → Seguridad**.
+
+**Flujo de activación:**
+```
+1. POST /auth/2fa/setup   → genera secreto base32 + QR code (data URL)
+2. Usuario escanea QR en Google Authenticator / Authy
+3. POST /auth/2fa/activar { codigo: "123456" }
+   → verifica código, activa totp_habilitado=true, devuelve 8 backup codes (mostrados una sola vez)
+```
+
+**Flujo de login con 2FA activo:**
+```
+POST /auth/login → { requiere_2fa: true, temp_token (JWT scope=totp_pending, TTL 5 min) }
+     │
+     ▼
+POST /auth/2fa/validar { temp_token, codigo }
+     ├── código TOTP válido → completarLogin() → token + refreshToken + user
+     ├── código de respaldo válido → consume backup code (one-time) → completarLogin()
+     └── inválido → 401 TOTP_INVALID
+```
+
+**Flujo de desactivación:**
+```
+POST /auth/2fa/deshabilitar { password }  →  limpia totp_secret, totp_habilitado=false, totp_backup_codes=null
+```
+
+**Detalles técnicos:**
+- Librería: `otplib` v13 — funciones `generateSecret`, `generateURI`, `verifySync` (type: 'totp')
+- QR: `qrcode` vía `QRCode.toDataURL(otpAuthUrl)` → data URL PNG
+- Backup codes: 8 × `crypto.randomBytes(5).toString('hex').toUpperCase()`, almacenados en JSON
+- `temp_token`: JWT separado con `scope: 'totp_pending'` — no puede usarse como access token
+- `completarLogin()` helper: extrae lógica post-autenticación compartida entre login normal y validarTotp
 
 ---
 

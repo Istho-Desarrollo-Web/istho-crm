@@ -9,7 +9,7 @@
 
 const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
-const { Usuario, Rol, Permiso, RolPermiso, Cliente, Auditoria, sequelize } = require('../models');
+const { Usuario, Rol, Permiso, RolPermiso, Cliente, Auditoria, TokenBlacklist, sequelize } = require('../models');
 const { success, successMessage, created, serverError, notFound, badRequest, forbidden } = require('../utils/responses');
 const { invalidarCachePermisos } = require('../middleware/auth');
 const logger = require('../utils/logger');
@@ -235,12 +235,17 @@ const actualizarUsuario = async (req, res) => {
       ]
     });
 
+    const camposModificados = Object.keys(req.body).join(', ');
+    const descripcion = req.body.rol_id && req.body.rol_id !== resultado.rol_id
+      ? `Rol de usuario "${usuario.username}" cambiado`
+      : `Usuario "${usuario.username}" actualizado (${camposModificados})`;
+
     logger.info('Usuario actualizado:', { id: usuario.id, modificadoPor: req.user.id });
     Auditoria.registrar({
       tabla: 'usuarios', registro_id: usuario.id, accion: 'actualizar',
       usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
       datos_nuevos: req.body, ip_address: getClientIP(req),
-      descripcion: `Usuario "${usuario.username}" actualizado`
+      descripcion
     });
     return successMessage(res, 'Usuario actualizado exitosamente', resultado);
   } catch (error) {
@@ -477,6 +482,12 @@ const actualizarPermisosUsuario = async (req, res) => {
       await usuario.update({ permisos_cliente });
       invalidarCachePermisos();
       logger.info('Permisos de cliente actualizados:', { usuarioId: usuario.id, por: req.user.id });
+      Auditoria.registrar({
+        tabla: 'usuarios', registro_id: usuario.id, accion: 'actualizar',
+        usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
+        datos_nuevos: { permisos_cliente }, ip_address: getClientIP(req),
+        descripcion: `Permisos de cliente del usuario #${usuario.id} actualizados`
+      });
       return successMessage(res, 'Permisos del usuario actualizados exitosamente', { permisos_cliente });
     }
 
@@ -488,6 +499,12 @@ const actualizarPermisosUsuario = async (req, res) => {
       await usuario.update({ permisos_personalizados: null });
       invalidarCachePermisos();
       logger.info('Permisos personalizados eliminados (restaurar rol):', { usuarioId: usuario.id, por: req.user.id });
+      Auditoria.registrar({
+        tabla: 'usuarios', registro_id: usuario.id, accion: 'actualizar',
+        usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
+        ip_address: getClientIP(req),
+        descripcion: `Permisos del usuario #${usuario.id} restaurados a los del rol`
+      });
       return successMessage(res, 'Permisos restaurados a los del rol');
     }
 
@@ -799,6 +816,142 @@ const listarPermisos = async (req, res) => {
   }
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// DASHBOARD DE SEGURIDAD
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * GET /admin/seguridad
+ * Métricas de seguridad: usuarios bloqueados, intentos fallidos, actividad reciente
+ */
+const dashboardSeguridad = async (req, res) => {
+  try {
+    const ahora = new Date();
+    const hace24h = new Date(ahora - 24 * 60 * 60 * 1000);
+    const hace7d = new Date(ahora - 7 * 24 * 60 * 60 * 1000);
+    const inicioDia = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+
+    const [
+      totalActivos,
+      totalInactivos,
+      bloqueadosCount,
+      conIntentosFallidosCount,
+      requiereCambioPasswordCount,
+      tokensRevocadosHoy,
+      usuariosBloqueados,
+      actividadReciente,
+      loginsRecientes,
+      statsAuditoria7d
+    ] = await Promise.all([
+      // KPIs
+      Usuario.count({ where: { activo: true } }),
+      Usuario.count({ where: { activo: false } }),
+      Usuario.count({ where: { bloqueado_hasta: { [Op.gt]: ahora } } }),
+      Usuario.count({ where: { intentos_fallidos: { [Op.gt]: 0 }, bloqueado_hasta: { [Op.or]: [null, { [Op.lte]: ahora }] } } }),
+      Usuario.count({ where: { requiere_cambio_password: true, activo: true } }),
+      TokenBlacklist.count({ where: { created_at: { [Op.gte]: inicioDia } } }),
+
+      // Usuarios actualmente bloqueados
+      Usuario.findAll({
+        where: { bloqueado_hasta: { [Op.gt]: ahora } },
+        attributes: ['id', 'username', 'email', 'nombre_completo', 'intentos_fallidos', 'bloqueado_hasta', 'ultimo_acceso', 'rol'],
+        include: [{ model: Rol, as: 'rolInfo', attributes: ['nombre', 'codigo', 'color'] }],
+        order: [['bloqueado_hasta', 'DESC']],
+        limit: 20
+      }),
+
+      // Actividad reciente (cambios sensibles)
+      Auditoria.findAll({
+        where: {
+          created_at: { [Op.gte]: hace24h },
+          accion: { [Op.in]: ['login', 'logout', 'crear', 'actualizar', 'eliminar'] }
+        },
+        order: [['created_at', 'DESC']],
+        limit: 30,
+        attributes: ['id', 'tabla', 'registro_id', 'accion', 'usuario_nombre', 'descripcion', 'ip_address', 'created_at']
+      }),
+
+      // Logins recientes (éxitos)
+      Auditoria.findAll({
+        where: { accion: 'login', created_at: { [Op.gte]: hace7d } },
+        order: [['created_at', 'DESC']],
+        limit: 20,
+        attributes: ['id', 'usuario_nombre', 'usuario_id', 'ip_address', 'descripcion', 'created_at']
+      }),
+
+      // Estadísticas de auditoría últimos 7 días
+      Auditoria.findAll({
+        where: { created_at: { [Op.gte]: hace7d } },
+        attributes: [
+          'accion',
+          [sequelize.fn('COUNT', sequelize.col('id')), 'total']
+        ],
+        group: ['accion'],
+        raw: true
+      })
+    ]);
+
+    const sesionesActivas = socketService.getConnectedCount();
+
+    return success(res, {
+      kpis: {
+        usuarios_activos: totalActivos,
+        usuarios_inactivos: totalInactivos,
+        sesiones_activas: sesionesActivas,
+        bloqueados: bloqueadosCount,
+        con_intentos_fallidos: conIntentosFallidosCount,
+        requiere_cambio_password: requiereCambioPasswordCount,
+        tokens_revocados_hoy: tokensRevocadosHoy
+      },
+      usuarios_bloqueados: usuariosBloqueados,
+      actividad_reciente: actividadReciente,
+      logins_recientes: loginsRecientes,
+      stats_auditoria_7d: statsAuditoria7d
+    });
+  } catch (error) {
+    logger.error('Error en dashboard de seguridad:', { message: error.message });
+    return serverError(res, 'Error al obtener métricas de seguridad', error);
+  }
+};
+
+/**
+ * POST /admin/usuarios/:id/desbloquear
+ * Desbloquea manualmente un usuario y resetea intentos fallidos
+ */
+const desbloquearUsuario = async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(req.params.id, {
+      attributes: ['id', 'username', 'email', 'nombre_completo', 'intentos_fallidos', 'bloqueado_hasta', 'activo']
+    });
+
+    if (!usuario) return notFound(res, 'Usuario no encontrado');
+    if (!usuario.activo) return badRequest(res, 'No se puede desbloquear un usuario inactivo');
+
+    const estabaBloquedado = usuario.intentos_fallidos > 0 || (usuario.bloqueado_hasta && usuario.bloqueado_hasta > new Date());
+
+    usuario.intentos_fallidos = 0;
+    usuario.bloqueado_hasta = null;
+    await usuario.save();
+
+    await Auditoria.registrar({
+      tabla: 'usuarios',
+      registro_id: usuario.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_anteriores: { intentos_fallidos: usuario._previousDataValues?.intentos_fallidos },
+      datos_nuevos: { intentos_fallidos: 0, bloqueado_hasta: null },
+      ip_address: req.ip,
+      descripcion: `Usuario "${usuario.username}" desbloqueado manualmente por admin`
+    });
+
+    return success(res, { id: usuario.id, desbloqueado: estabaBloquedado }, 'Usuario desbloqueado correctamente');
+  } catch (error) {
+    logger.error('Error al desbloquear usuario:', { message: error.message });
+    return serverError(res, 'Error al desbloquear usuario', error);
+  }
+};
+
 module.exports = {
   // Usuarios
   listarUsuarios,
@@ -810,6 +963,7 @@ module.exports = {
   reenviarCredenciales,
   obtenerPermisosUsuario,
   actualizarPermisosUsuario,
+  desbloquearUsuario,
   // Roles
   listarRoles,
   obtenerRol,
@@ -822,6 +976,8 @@ module.exports = {
   listarSesionesActivas,
   cerrarSesion,
   cerrarTodasSesiones,
+  // Seguridad
+  dashboardSeguridad,
 };
 
 // =============================================

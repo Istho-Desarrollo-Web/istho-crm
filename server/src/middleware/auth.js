@@ -16,8 +16,10 @@
  */
 
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { Op } = require('sequelize');
 const jwtConfig = require('../config/jwt');
-const { Usuario, Rol, Permiso } = require('../models');
+const { Usuario, Rol, Permiso, TokenBlacklist } = require('../models');
 const { unauthorized, forbidden } = require('../utils/responses');
 const logger = require('../utils/logger');
 
@@ -139,13 +141,26 @@ const verificarToken = async (req, res, next) => {
     if (!token) {
       return unauthorized(res, 'Token de acceso requerido');
     }
-    
+
     // Verificar token
     const decoded = jwt.verify(token, jwtConfig.secret, {
       issuer: jwtConfig.issuer,
       audience: jwtConfig.audience
     });
-    
+
+    // Verificar que el token no haya sido revocado (blacklist)
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const revocado = await TokenBlacklist.findOne({
+      where: { token_hash: tokenHash, expires_at: { [Op.gt]: new Date() } },
+      attributes: ['id']
+    });
+    if (revocado) {
+      return unauthorized(res, 'Sesión cerrada. Inicie sesión nuevamente.');
+    }
+
+    // Exponer token raw para uso en controllers (ej: logout)
+    req.token = token;
+
     // Cargar cache de permisos dinámicos
     await cargarCachePermisos();
 

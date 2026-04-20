@@ -293,10 +293,58 @@ export const AuthProvider = ({ children }) => {
    */
   const login = useCallback(async (email, password) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
-    
+
     try {
       const result = await authService.login({ email, password });
-      
+
+      if (result.success) {
+        // Verificar si el servidor requiere 2FA
+        if (result.data?.requiere_2fa) {
+          setState(prev => ({ ...prev, isLoading: false, error: null }));
+          return {
+            success: false,
+            requiere_2fa: true,
+            temp_token: result.data.temp_token,
+            usuario_nombre: result.data.usuario_nombre,
+          };
+        }
+
+        setState({
+          user: result.data.user,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+
+        return { success: true, data: result.data, user: result.data.user };
+      }
+
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: result.message || 'Error al iniciar sesión',
+      }));
+
+      return { success: false, message: result.message, code: result.code };
+    } catch (error) {
+      const errorMessage = error.message || 'Error al iniciar sesión';
+
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: errorMessage,
+      }));
+
+      return { success: false, message: errorMessage, code: error.code };
+    }
+  }, []);
+
+  const validarTotp = useCallback(async (temp_token, codigo) => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      const result = await authService.validarTotp({ temp_token, codigo });
+
       if (result.success) {
         setState({
           user: result.data.user,
@@ -304,27 +352,19 @@ export const AuthProvider = ({ children }) => {
           isLoading: false,
           error: null,
         });
-        
-        return { success: true, user: result.data.user };
+        return { success: true, data: result.data, user: result.data.user };
       }
-      
+
       setState(prev => ({
         ...prev,
         isLoading: false,
-        error: result.message || 'Error al iniciar sesión',
+        error: result.message || 'Código incorrecto',
       }));
-      
-      return { success: false, message: result.message };
+
+      return { success: false, message: result.message, code: result.code };
     } catch (error) {
-      const errorMessage = error.message || 'Error al iniciar sesión';
-      
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: errorMessage,
-      }));
-      
-      return { success: false, message: errorMessage };
+      setState(prev => ({ ...prev, isLoading: false, error: error.message }));
+      return { success: false, message: error.message };
     }
   }, []);
   
@@ -546,6 +586,7 @@ export const AuthProvider = ({ children }) => {
     
     // Acciones
     login,
+    validarTotp,
     logout,
     updateUser,
     refreshUser,
@@ -566,6 +607,7 @@ export const AuthProvider = ({ children }) => {
   }), [
     state,
     login,
+    validarTotp,
     logout,
     updateUser,
     refreshUser,

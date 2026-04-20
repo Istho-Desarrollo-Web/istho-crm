@@ -27,7 +27,9 @@
       "Bash(git stash *)",
       "Bash(git checkout *)",
       "Bash(grep -v \"//\")",
-      "Bash(grep -v \"node_modules\\\\|\\\\.bak\\\\|//\")"
+      "Bash(grep -v \"node_modules\\\\|\\\\.bak\\\\|//\")",
+      "WebSearch",
+      "Bash(find c:\\\\\\\\Users\\\\\\\\PC_PRACTIDS\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\istho-crm-p\\\\\\\\server\\\\\\\\src -name \"*security*\" -o -name \"*auth*\")"
     ]
   }
 }

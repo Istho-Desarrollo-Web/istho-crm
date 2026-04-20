@@ -34,6 +34,7 @@ import { AlertTriangle, Wrench } from 'lucide-react';
 import FloatingHeader from './components/layout/FloatingHeader';
 import ForceChangePasswordModal from './components/auth/ForceChangePasswordModal';
 import GlobalSearch from './components/common/GlobalSearch';
+import IdleWarningModal from './components/common/IdleWarningModal';
 import apiClient from './api/client';
 import * as allEndpoints from './api/endpoints';
 
@@ -189,12 +190,13 @@ const SEARCH_ENDPOINTS = {
 };
 
 const ProtectedLayout = () => {
-  useIdleTimer();
+  const { mostrarAviso, extenderSesion } = useIdleTimer();
   return (
     <>
       <FloatingHeader />
       <ForceChangePasswordModal />
       <GlobalSearch apiClient={apiClient} endpoints={SEARCH_ENDPOINTS} />
+      <IdleWarningModal isOpen={mostrarAviso} onExtender={extenderSesion} />
       <Outlet />
     </>
   );
