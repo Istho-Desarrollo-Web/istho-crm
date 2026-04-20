@@ -775,7 +775,7 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
           {/* User Info */}
           <div className="flex items-center gap-3 p-3 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
             {user?.avatar_url ? (
-              <img src={getServerFileUrl(user.avatar_url)} alt="" className="w-12 h-12 rounded-full object-cover flex-shrink-0 shadow-md" />
+              <img src={getServerFileUrl(user.avatar_url)} alt={user?.nombre_completo || user?.username || 'Avatar'} className="w-12 h-12 rounded-full object-cover flex-shrink-0 shadow-md" />
             ) : (
               <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
                 <span className="text-white font-bold">
@@ -955,7 +955,7 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
         className="flex items-center gap-3 p-1 pr-3 hover:bg-slate-50 dark:hover:bg-centhrix-card rounded-full border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all"
       >
         {user?.avatar_url ? (
-          <img src={getServerFileUrl(user.avatar_url)} alt="" className="w-8 h-8 rounded-full object-cover shadow-md" />
+          <img src={getServerFileUrl(user.avatar_url)} alt={user?.nombre_completo || user?.username || 'Avatar'} className="w-8 h-8 rounded-full object-cover shadow-md" />
         ) : (
           <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-medium shadow-md text-sm">
             {getInitials(user)}
@@ -969,7 +969,7 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
           <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               {user?.avatar_url ? (
-                <img src={getServerFileUrl(user.avatar_url)} alt="" className="w-10 h-10 rounded-full object-cover shadow-md" />
+                <img src={getServerFileUrl(user.avatar_url)} alt={user?.nombre_completo || user?.username || 'Avatar'} className="w-10 h-10 rounded-full object-cover shadow-md" />
               ) : (
                 <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold shadow-md">
                   {getInitials(user)}

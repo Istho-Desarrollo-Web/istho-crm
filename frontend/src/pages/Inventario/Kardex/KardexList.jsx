@@ -86,7 +86,7 @@ const ProgressBar = ({ verified, total }) => {
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-2 bg-slate-100 dark:bg-centhrix-surface rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${pct}%` }} />
+        <div className={`h-full w-full rounded-full transition-transform duration-500 origin-left ${color}`} style={{ transform: `scaleX(${pct / 100})` }} />
       </div>
       <span className="text-xs font-mono text-slate-500 dark:text-slate-400 whitespace-nowrap">{verified}/{total}</span>
     </div>

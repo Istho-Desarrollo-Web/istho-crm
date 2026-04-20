@@ -1389,7 +1389,7 @@ const SalidaAuditoria = () => {
             <div className="flex items-center gap-4 flex-1 sm:flex-none">
               <div className="flex-1 sm:w-48">
                 <div className="h-2 bg-slate-100 dark:bg-centhrix-surface rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full transition-all duration-700 ${canClose ? 'bg-emerald-500' : 'bg-blue-500'}`} style={{ width: `${totalProgress}%` }} />
+                  <div className={`h-full w-full rounded-full transition-transform duration-700 origin-left ${canClose ? 'bg-emerald-500' : 'bg-blue-500'}`} style={{ transform: `scaleX(${totalProgress / 100})` }} />
                 </div>
               </div>
               <button
