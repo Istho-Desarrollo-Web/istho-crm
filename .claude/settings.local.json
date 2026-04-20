@@ -22,7 +22,8 @@
       "Bash(tee eslint-output.txt)",
       "Bash(git branch *)",
       "Bash(echo \"exit:$?\")",
-      "Bash(echo \"Exit code: $?\")"
+      "Bash(echo \"Exit code: $?\")",
+      "Skill(update-docs)"
     ]
   }
 }
