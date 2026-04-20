@@ -96,7 +96,7 @@ body {
 }
 
 .animate-zoomIn {
-  animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: zoomIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes pulse {

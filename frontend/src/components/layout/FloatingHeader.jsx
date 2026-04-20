@@ -1181,7 +1181,7 @@ const FloatingHeader = () => {
                   alt="ISTHO"
                   className="w-10 h-10 rounded-lg shadow-lg shadow-orange-500/20 hidden dark:block"
                 />
-                <span className="hidden sm:block text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300">
+                <span className="hidden sm:block text-xl font-bold text-slate-800 dark:text-white font-display">
                   CRM
                 </span>
               </div>
