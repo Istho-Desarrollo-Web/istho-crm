@@ -1070,7 +1070,7 @@ const MovimientosList = () => {
               </ProtectedAction>
               <button
                 onClick={() => setSelected([])}
-                className="px-3 py-2 bg-slate-600 dark:bg-centhrix-surface hover:bg-slate-500 dark:hover:bg-slate-500 text-white text-sm rounded-xl transition-colors"
+                className="px-3 py-2 bg-slate-600 dark:bg-centhrix-surface hover:bg-slate-500 dark:hover:bg-centhrix-surface text-white text-sm rounded-xl transition-colors"
               >
                 Cancelar
               </button>
