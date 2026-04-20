@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import {
   ArrowLeft,
   Save,
@@ -610,7 +611,12 @@ const PlantillaEmailEditor = () => {
               <div
                 className="bg-white rounded-xl shadow-sm mx-auto max-w-2xl"
                 style={{ colorScheme: 'light' }}
-                dangerouslySetInnerHTML={{ __html: previewHtml }}
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(previewHtml, {
+                    FORCE_BODY: true,
+                    ADD_ATTR: ['target'],
+                  }),
+                }}
               />
             </div>
           </div>

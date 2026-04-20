@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import {
   Mail,
   Plus,
@@ -277,7 +278,12 @@ const PlantillasEmailList = () => {
             <div className="flex-1 overflow-auto p-4">
               <div
                 className="bg-slate-50 dark:bg-centhrix-bg rounded-xl p-6"
-                dangerouslySetInnerHTML={{ __html: previewModal.html }}
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(previewModal.html, {
+                    FORCE_BODY: true,
+                    ADD_ATTR: ['target'],
+                  }),
+                }}
               />
             </div>
           </div>
