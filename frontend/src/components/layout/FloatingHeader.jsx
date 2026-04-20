@@ -1086,6 +1086,12 @@ const FloatingHeader = () => {
           : 'info',
         autoHideDuration: 5000,
       });
+      // Anunciar la notificación a lectores de pantalla
+      const liveRegion = document.getElementById('centhrix-live-region');
+      if (liveRegion && ultimaNotificacion.mensaje) {
+        liveRegion.textContent = `Nueva notificación: ${ultimaNotificacion.mensaje}`;
+        setTimeout(() => { liveRegion.textContent = ''; }, 3000);
+      }
     }
   }, [ultimaNotificacion, enqueueSnackbar]);
 
@@ -1402,6 +1408,14 @@ const FloatingHeader = () => {
       <KeyboardShortcutsModal
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
+      />
+
+      {/* Live region para screen readers */}
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        id="centhrix-live-region"
       />
     </>
   );
