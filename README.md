@@ -22,6 +22,7 @@ Sistema integral de gestión logística, transporte y almacenamiento para **ISTH
 | **Fechas** | date-fns | 4.x |
 | **Exportación Excel** | XLSX (SheetJS) | 0.18.x |
 | **Compresión imágenes** | browser-image-compression | 2.x |
+| **Sanitización HTML** | DOMPurify | 3.x |
 | **Observabilidad** | Vercel Analytics + Speed Insights | 2.x |
 
 ### Backend
@@ -225,7 +226,7 @@ Los seeds de roles, permisos, plantillas de email y configuración WMS se ejecut
 | Variable | Descripción |
 |----------|-------------|
 | `DATABASE_URL` / `MYSQL_URL` | Conexión MySQL |
-| `JWT_SECRET` | Secreto para access tokens |
+| `JWT_SECRET` | Secreto para access tokens — **obligatorio, mínimo 32 caracteres** (el servidor lanza error en startup si no está configurado) |
 | `JWT_REFRESH_SECRET` | Secreto para refresh tokens |
 | `RESEND_API_KEY` | API key de Resend (email producción) |
 | `CLOUDINARY_CLOUD_NAME` | Nombre del cloud en Cloudinary |
@@ -252,11 +253,15 @@ Para detalles completos de deploy ver [DEPLOY.md](DEPLOY.md).
 
 | Token | Valor |
 |-------|-------|
-| Accent | `#E74C3C` (Rojo Energía) |
-| Hover | `#C0392B` |
-| Primary Dark | `#0F1023` / `#151631` / `#1A1B3A` |
+| Accent | `#E74C3C` (Rojo Energía) · clase: `orange-500` |
+| Hover | `#C0392B` · clase: `orange-700` |
+| Dark BG | `#0F1023` · clase: `centhrix-bg` |
+| Dark Surface | `#151631` · clase: `centhrix-surface` |
+| Dark Card | `#1A1B3A` · clase: `centhrix-card` |
 | Success | `#2ECC71` (Verde Logístico) |
-| Font | Segoe UI |
+| Font Body | Segoe UI (datos, tablas, inputs) |
+| Font Display | Rajdhani (headings de páginas — clase `font-display`) |
+| Charts | `frontend/src/utils/chartColors.js` → `CHART_COLORS` |
 | Logo | `frontend/src/assets/Centhrix WMS - ISTHO-03.svg` |
 
 ## Documentación

@@ -57,7 +57,16 @@ Flujo: Routes → `verifyToken → cargarCachePermisos → requierePermiso` → 
 - PDFKit: `margins:{top:0,bottom:0,left:0,right:0}` para paginación manual; sin glifo U+258C — usar `doc.rect().fill()`
 
 ## Identidad Visual
-Acento `#E74C3C` hover `#C0392B` · Fondo dark `#0F1023`/`#151631`/`#1A1B3A` · Éxito `#2ECC71` · Tipografía: Segoe UI
+Acento `#E74C3C` hover `#C0392B` · Fondo dark `#0F1023`/`#151631`/`#1A1B3A` · Éxito `#2ECC71`  
+Tipografía: **Segoe UI** (body/datos) · **Rajdhani** (display font, headings de páginas — clase `font-display`)  
+Dark mode tokens: `dark:bg-centhrix-bg` / `dark:bg-centhrix-card` / `dark:bg-centhrix-surface` — **NO** usar `dark:bg-slate-[6-9]`  
+Colores de charts centralizados en `frontend/src/utils/chartColors.js` → exporta `CHART_COLORS`
+
+## Seguridad (Crítico)
+- **Descargas de archivos** (reportes Excel/PDF, plantillas): usar `fetch + blob URL` con `Authorization: Bearer` en header — **NUNCA** pasar `?token=JWT` en la URL (queda en logs, historial, Referer)
+- **Respuestas API**: excluir siempre `password_hash`, `reset_token`, `reset_token_expires` con `attributes: { exclude: [...] }`
+- **JWT_SECRET**: obligatorio con ≥ 32 caracteres — el servidor lanza error en startup si no está configurado
+- **HTML de usuario**: sanitizar con `DOMPurify` antes de `dangerouslySetInnerHTML` (ver `PlantillasEmail`)
 
 ## Roles (nivel jerárquico)
 admin(100) · supervisor(75) · financiera(60) · operador(50) · conductor(30) · cliente(10)

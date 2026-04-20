@@ -901,3 +901,73 @@ indexes: [
   { fields: ['tipo', 'estado'] },  // Para WHERE tipo='x' AND estado='y'
 ]
 ```
+
+---
+
+## 8. Patrones de Seguridad
+
+### 8.1 Descargas de archivos (Excel, PDF, plantillas)
+
+**Nunca** pasar el JWT como query parameter (`?token=...`). El token queda expuesto en logs del servidor, historial del navegador y cabeceras `Referer`.
+
+```javascript
+// ❌ MAL — token en URL
+const token = localStorage.getItem('istho_token');
+window.open(`${baseUrl}/reportes/excel?token=${token}`, '_blank');
+
+// ✅ BIEN — token en header Authorization, archivo via blob
+const descargarArchivo = async (url, nombreArchivo) => {
+  const token = localStorage.getItem('istho_token');
+  const response = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('Error al descargar');
+  const blob = await response.blob();
+  const blobUrl = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = nombreArchivo;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(blobUrl);
+};
+```
+
+### 8.2 Respuestas API — excluir campos sensibles
+
+Los campos `password_hash`, `reset_token` y `reset_token_expires` **nunca** deben aparecer en respuestas API, ni siquiera en endpoints de administración.
+
+```javascript
+// ❌ MAL — allowlist que incluye campos sensibles
+attributes: ['id', 'email', 'nombre', 'reset_token', 'reset_token_expires']
+
+// ✅ BIEN — excluir explícitamente
+attributes: { exclude: ['password_hash', 'reset_token', 'reset_token_expires'] }
+```
+
+### 8.3 Renderizado de HTML de usuario
+
+Usar `dangerouslySetInnerHTML` requiere sanitización obligatoria con **DOMPurify**:
+
+```javascript
+import DOMPurify from 'dompurify';
+
+// ❌ MAL — HTML sin sanitizar
+<div dangerouslySetInnerHTML={{ __html: htmlDelUsuario }} />
+
+// ✅ BIEN — sanitizado
+<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(htmlDelUsuario, {
+  FORCE_BODY: true,
+  ADD_ATTR: ['target'],
+}) }} />
+```
+
+### 8.4 Variables de entorno críticas
+
+`JWT_SECRET` es obligatorio y debe tener ≥ 32 caracteres. El servidor lanza error en startup si no está configurado — esto es intencional para evitar ejecución con secretos débiles o por defecto.
+
+```bash
+# Generar un JWT_SECRET seguro:
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
