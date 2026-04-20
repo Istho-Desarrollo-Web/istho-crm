@@ -211,6 +211,7 @@ const AuditoriaAcciones = () => {
 
             <button
               onClick={() => { fetchRegistros(); fetchMeta(); }}
+              aria-label="Actualizar auditoría"
               className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl"
             >
               <RefreshCw className="w-4 h-4" />
@@ -366,8 +367,8 @@ const AuditoriaAcciones = () => {
                           {hasDetails && (
                             <button
                               onClick={() => setExpandedRow(isExpanded ? null : reg.id)}
+                              aria-label={isExpanded ? 'Contraer detalles' : 'Expandir detalles'}
                               className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface text-slate-400 transition-colors"
-                              title="Ver detalles"
                             >
                               <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                             </button>
@@ -391,6 +392,7 @@ const AuditoriaAcciones = () => {
                 <button
                   disabled={pagination.page <= 1}
                   onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
+                  aria-label="Página anterior"
                   className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -401,6 +403,7 @@ const AuditoriaAcciones = () => {
                 <button
                   disabled={pagination.page >= pagination.totalPages}
                   onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
+                  aria-label="Página siguiente"
                   className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
                 >
                   <ChevronRight className="w-4 h-4" />
