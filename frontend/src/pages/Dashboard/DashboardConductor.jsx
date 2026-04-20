@@ -87,13 +87,13 @@ const getEstadoBadge = (estado) => {
   return map[estado] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
 };
 
-const getGastoBorder = (estado) => {
+const getGastoTint = (estado) => {
   const map = {
-    pendiente: 'border-l-orange-400',
-    aprobado: 'border-l-green-400',
-    rechazado: 'border-l-red-400',
+    pendiente: 'bg-orange-50 dark:bg-orange-900/15',
+    aprobado: 'bg-green-50 dark:bg-green-900/15',
+    rechazado: 'bg-red-50 dark:bg-red-900/15',
   };
-  return map[estado] || 'border-l-gray-400';
+  return map[estado] || 'bg-gray-50 dark:bg-gray-800/50';
 };
 
 // Derivar estado de aprobación desde booleans del movimiento
@@ -524,7 +524,7 @@ const DashboardConductor = () => {
             {gastos.map((gasto) => (
               <div
                 key={gasto.id}
-                className={`rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 ${getGastoBorder(
+                className={`rounded-xl border border-gray-200 dark:border-gray-700 ${getGastoTint(
                   getAprobacionEstado(gasto)
                 )} p-4`}
               >
