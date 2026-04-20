@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - Página de Login
  * ============================================================================
@@ -237,7 +237,7 @@ const LoginPage = () => {
                 .centhrix-title:hover .letter-x { transform: scale(1.2) rotate(12deg); filter: drop-shadow(0 0 8px rgba(46, 204, 113, 0.6)); }
             `}</style>
 
-            <div className="h-screen flex relative bg-white dark:bg-slate-900 overflow-hidden" style={fadeIn}>
+            <div className="h-screen flex relative bg-white dark:bg-centhrix-bg overflow-hidden" style={fadeIn}>
                 {/* ════════════════════════════════════════════════════════════════════ */}
                 {/* LADO IZQUIERDO - Formulario */}
                 {/* ════════════════════════════════════════════════════════════════════ */}
@@ -333,7 +333,7 @@ const LoginPage = () => {
                                         placeholder="usuario o correo@istho.com.co"
                                         {...register('email')}
                                         className={`
-                                            w-full pl-12 pr-4 py-3.5 rounded-2xl border bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
+                                            w-full pl-12 pr-4 py-3.5 rounded-2xl border bg-gray-50 dark:bg-centhrix-card dark:text-white dark:placeholder-slate-500
                                             focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]
                                             transition-all duration-300 ease-in-out
                                             ${errors.email
@@ -370,7 +370,7 @@ const LoginPage = () => {
                                         placeholder="••••••••"
                                         {...register('password')}
                                         className={`
-                                            w-full pl-12 pr-12 py-3.5 rounded-2xl border bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
+                                            w-full pl-12 pr-12 py-3.5 rounded-2xl border bg-gray-50 dark:bg-centhrix-card dark:text-white dark:placeholder-slate-500
                                             focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]
                                             transition-all duration-300 ease-in-out
                                             ${errors.password
@@ -404,7 +404,7 @@ const LoginPage = () => {
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="checkbox"
-                                        className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-[#E74C3C] focus:ring-[#E74C3C] dark:bg-slate-700"
+                                        className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-[#E74C3C] focus:ring-[#E74C3C] dark:bg-centhrix-surface"
                                     />
                                     <span className="text-sm text-gray-600 dark:text-slate-400">Recordarme</span>
                                 </label>

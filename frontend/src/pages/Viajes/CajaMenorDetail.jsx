@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - CajaMenorDetail
  * ============================================================================
@@ -216,13 +216,13 @@ const CajaMenorDetail = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 dark:bg-slate-700 rounded w-48" />
+            <div className="h-8 bg-gray-200 dark:bg-centhrix-surface rounded w-48" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="h-28 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+                <div key={i} className="h-28 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
               ))}
             </div>
-            <div className="h-64 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+            <div className="h-64 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
           </div>
         </main>
       </div>
@@ -368,7 +368,7 @@ const CajaMenorDetail = () => {
         {/* TABS                                                          */}
         {/* ════════════════════════════════════════════════════════════════ */}
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
@@ -469,7 +469,7 @@ const CajaMenorDetail = () => {
                           return (
                             <tr
                               key={mov.id}
-                              className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                              className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors"
                             >
                               <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200">#{mov.consecutivo || '-'}</td>
                               <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{mov.concepto || '-'}</td>
@@ -559,7 +559,7 @@ const CajaMenorDetail = () => {
                 {/* Observaciones */}
                 <div className="space-y-2">
                   <h4 className="font-semibold text-slate-800 dark:text-slate-200">Observaciones</h4>
-                  <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                  <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-centhrix-card p-4 rounded-xl border border-slate-100 dark:border-slate-700">
                     {caja.observaciones || 'Sin observaciones'}
                   </p>
                 </div>
@@ -568,7 +568,7 @@ const CajaMenorDetail = () => {
                 {caja.caja_anterior && (
                   <div className="space-y-2">
                     <h4 className="font-semibold text-slate-800 dark:text-slate-200">Caja Anterior</h4>
-                    <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 space-y-2 text-sm">
+                    <div className="bg-slate-50 dark:bg-centhrix-card p-4 rounded-xl border border-slate-100 dark:border-slate-700 space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-slate-500 dark:text-slate-400">Número</span>
                         <span className="text-slate-800 dark:text-slate-200 font-medium">{caja.caja_anterior.numero || '-'}</span>
@@ -590,7 +590,7 @@ const CajaMenorDetail = () => {
                 {/* Registro */}
                 <div className="space-y-2">
                   <h4 className="font-semibold text-slate-800 dark:text-slate-200">Registro</h4>
-                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 space-y-2 text-sm">
+                  <div className="bg-slate-50 dark:bg-centhrix-card p-4 rounded-xl border border-slate-100 dark:border-slate-700 space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-slate-500 dark:text-slate-400">Creado por</span>
                       <span className="text-slate-800 dark:text-slate-200 font-medium">
@@ -616,7 +616,7 @@ const CajaMenorDetail = () => {
                 {caja.fecha_cierre && (
                   <div className="space-y-2">
                     <h4 className="font-semibold text-slate-800 dark:text-slate-200">Cierre</h4>
-                    <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 space-y-2 text-sm">
+                    <div className="bg-slate-50 dark:bg-centhrix-card p-4 rounded-xl border border-slate-100 dark:border-slate-700 space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-slate-500 dark:text-slate-400">Fecha de cierre</span>
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">
@@ -668,7 +668,7 @@ const CajaMenorDetail = () => {
           </div>
 
           {/* Resumen de saldos */}
-          <div className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl space-y-2">
+          <div className="p-4 bg-slate-50 dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-sm text-slate-500 dark:text-slate-400">
                 Saldo Inicial
@@ -763,7 +763,7 @@ const CajaMenorDetail = () => {
               rows={3}
               value={observacionesCierre}
               onChange={(e) => setObservacionesCierre(e.target.value)}
-              className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200"
+              className="w-full px-4 py-2.5 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200"
             />
           </div>
         </div>

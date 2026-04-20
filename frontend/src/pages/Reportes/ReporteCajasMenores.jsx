@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Wallet, DollarSign, Clock, FileSpreadsheet, FileText, TrendingDown, ArrowLeft, RefreshCw, Mail } from 'lucide-react';
 import { KpiCard, AccionesDropdown } from '../../components/common';
@@ -47,7 +47,7 @@ const ReporteCajasMenores = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/reportes')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -81,7 +81,7 @@ const ReporteCajasMenores = () => {
           <PieChart title="Egresos vs Ingresos" subtitle="En cajas activas" data={data?.egresosVsIngresos || []} size={180} loading={loading} />
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
           <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Últimas Cajas Menores</h3>
             <p className="text-xs text-slate-400">10 cajas más recientes</p>
@@ -89,7 +89,7 @@ const ReporteCajasMenores = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50/50 dark:bg-slate-900/30">
+                <tr className="bg-slate-50/50 dark:bg-centhrix-bg/30">
                   <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Número</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Asignado a</th>
                   <th className="text-right py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Saldo Inicial</th>
@@ -101,7 +101,7 @@ const ReporteCajasMenores = () => {
               </thead>
               <tbody>
                 {(data?.ultimas || []).map((c) => (
-                  <tr key={c.id} onClick={() => navigate(`/viajes/cajas-menores/${c.id}`)} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/20 cursor-pointer transition-colors">
+                  <tr key={c.id} onClick={() => navigate(`/viajes/cajas-menores/${c.id}`)} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 cursor-pointer transition-colors">
                     <td className="py-3 px-4 font-medium text-amber-600 dark:text-amber-400">{c.numero}</td>
                     <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{c.asignado}</td>
                     <td className="py-3 px-4 text-right text-slate-600 dark:text-slate-300">{formatCOP(c.saldo_inicial)}</td>
@@ -112,7 +112,7 @@ const ReporteCajasMenores = () => {
                       <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
                         c.estado === 'abierta' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                         : c.estado === 'en_revision' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                        : 'bg-slate-100 text-slate-600 dark:bg-centhrix-surface dark:text-slate-300'
                       }`}>{c.estado}</span>
                     </td>
                   </tr>

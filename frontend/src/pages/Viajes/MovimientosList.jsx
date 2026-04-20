@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - MovimientosList (Movimientos de Caja Menor)
  * ============================================================================
@@ -118,7 +118,7 @@ const StatusBadge = ({ aprobado, rechazado }) => {
 
 const KpiMini = ({ icon: Icon, label, value, color }) => (
   <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}>
-    <div className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80">
+    <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
       <Icon className="w-5 h-5" />
     </div>
     <div>
@@ -269,7 +269,7 @@ const AprobarMovimientoDialog = ({ isOpen, onClose, movimiento, onAprobar, onRec
             inputMode="numeric"
             value={valorRaw}
             onChange={handleValorChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
             placeholder="0"
           />
           {valorRaw && (
@@ -287,7 +287,7 @@ const AprobarMovimientoDialog = ({ isOpen, onClose, movimiento, onAprobar, onRec
             value={observaciones}
             onChange={(e) => setObservaciones(e.target.value)}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all resize-none"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all resize-none"
             placeholder="Observaciones de aprobación..."
           />
         </div>
@@ -311,7 +311,7 @@ const AprobarMovimientoDialog = ({ isOpen, onClose, movimiento, onAprobar, onRec
         <button
           onClick={onClose}
           disabled={loading}
-          className="px-4 py-2.5 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
+          className="px-4 py-2.5 bg-gray-100 dark:bg-centhrix-surface hover:bg-gray-200 dark:hover:bg-centhrix-card text-slate-700 dark:text-slate-200 text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
         >
           Cancelar
         </button>
@@ -627,7 +627,7 @@ const MovimientosList = () => {
               <>
                 <button
                   onClick={handleExportExcel}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
                   Excel
@@ -675,7 +675,7 @@ const MovimientosList = () => {
         )}
 
         {/* FILTERS BAR */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
@@ -685,12 +685,12 @@ const MovimientosList = () => {
                 placeholder="Buscar por consecutivo, concepto o usuario..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
               />
             </div>
 
             {/* Tipo Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl overflow-x-auto flex-nowrap whitespace-nowrap">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-bg p-1 rounded-xl overflow-x-auto flex-nowrap whitespace-nowrap">
               {[
                 { key: 'todos', label: 'Todos' },
                 { key: 'ingreso', label: 'Ingresos' },
@@ -701,7 +701,7 @@ const MovimientosList = () => {
                   onClick={() => setTipoFilter(tab.key)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     tipoFilter === tab.key
-                      ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-sm'
+                      ? 'bg-white dark:bg-centhrix-surface text-purple-600 dark:text-purple-400 shadow-sm'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                   }`}
                 >
@@ -711,7 +711,7 @@ const MovimientosList = () => {
             </div>
 
             {/* Aprobación Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl overflow-x-auto flex-nowrap whitespace-nowrap">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-bg p-1 rounded-xl overflow-x-auto flex-nowrap whitespace-nowrap">
               {[
                 { key: 'todos', label: 'Todos' },
                 { key: 'pendiente', label: 'Pendientes' },
@@ -723,7 +723,7 @@ const MovimientosList = () => {
                   onClick={() => setAprobadoFilter(tab.key)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     aprobadoFilter === tab.key
-                      ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-sm'
+                      ? 'bg-white dark:bg-centhrix-surface text-purple-600 dark:text-purple-400 shadow-sm'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                   }`}
                 >
@@ -750,17 +750,17 @@ const MovimientosList = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {pagination.total} movimiento{pagination.total !== 1 && 's'} encontrado{pagination.total !== 1 && 's'}
           </p>
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card p-1 rounded-lg">
             <button
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-purple-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface text-purple-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               title="Vista tabla"
             >
               <LayoutList className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('cards')}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 text-purple-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface text-purple-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               title="Vista tarjetas"
             >
               <LayoutGrid className="w-4 h-4" />
@@ -769,7 +769,7 @@ const MovimientosList = () => {
         </div>
 
         {/* TABLE */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
           {loading ? (
             <div className="p-8 text-center">
               <Loader2 className="w-8 h-8 text-purple-500 animate-spin mx-auto mb-3" />
@@ -777,7 +777,7 @@ const MovimientosList = () => {
             </div>
           ) : movimientos.length === 0 ? (
             <div className="py-16 text-center">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-centhrix-surface rounded-full flex items-center justify-center mx-auto mb-4">
                 <Receipt className="w-8 h-8 text-slate-400" />
               </div>
               <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
@@ -851,7 +851,7 @@ const MovimientosList = () => {
                     <tr
                       key={mov.id}
                       onClick={() => handleView(mov)}
-                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group cursor-pointer"
+                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors group cursor-pointer"
                     >
                       {/* Checkbox (solo si puede aprobar) */}
                       {canAprobar && (
@@ -971,7 +971,7 @@ const MovimientosList = () => {
                 <div
                   key={mov.id}
                   onClick={() => handleView(mov)}
-                  className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-purple-200 dark:hover:border-purple-800 transition-all cursor-pointer"
+                  className="bg-white dark:bg-centhrix-card rounded-xl border border-gray-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-purple-200 dark:hover:border-purple-800 transition-all cursor-pointer"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -1054,7 +1054,7 @@ const MovimientosList = () => {
         {/* MASS APPROVAL FLOATING BAR */}
         {selected.length > 0 && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-            <div className="bg-slate-800 dark:bg-slate-700 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-4">
+            <div className="bg-slate-800 dark:bg-centhrix-surface text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-4">
               <span className="text-sm font-medium">
                 {selected.length} seleccionado{selected.length !== 1 && 's'}
               </span>
@@ -1070,7 +1070,7 @@ const MovimientosList = () => {
               </ProtectedAction>
               <button
                 onClick={() => setSelected([])}
-                className="px-3 py-2 bg-slate-600 dark:bg-slate-600 hover:bg-slate-500 dark:hover:bg-slate-500 text-white text-sm rounded-xl transition-colors"
+                className="px-3 py-2 bg-slate-600 dark:bg-centhrix-surface hover:bg-slate-500 dark:hover:bg-slate-500 text-white text-sm rounded-xl transition-colors"
               >
                 Cancelar
               </button>

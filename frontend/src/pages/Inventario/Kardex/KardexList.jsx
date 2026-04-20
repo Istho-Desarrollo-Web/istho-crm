@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - KardexList (Auditoría de Ajustes Kardex)
  * ============================================================================
@@ -82,10 +82,10 @@ const StatusBadge = ({ estado }) => {
 
 const ProgressBar = ({ verified, total }) => {
   const pct = total > 0 ? Math.round((verified / total) * 100) : 0;
-  const color = pct === 100 ? 'bg-emerald-500' : pct > 0 ? 'bg-blue-500' : 'bg-slate-300 dark:bg-slate-600';
+  const color = pct === 100 ? 'bg-emerald-500' : pct > 0 ? 'bg-blue-500' : 'bg-slate-300 dark:bg-centhrix-surface';
   return (
     <div className="flex items-center gap-2">
-      <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-slate-100 dark:bg-centhrix-surface rounded-full overflow-hidden">
         <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${pct}%` }} />
       </div>
       <span className="text-xs font-mono text-slate-500 dark:text-slate-400 whitespace-nowrap">{verified}/{total}</span>
@@ -142,7 +142,7 @@ const RowActions = ({ item, onView }) => {
 
 const KpiMini = ({ icon: Icon, label, value, color }) => (
   <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}>
-    <div className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80">
+    <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
       <Icon className="w-5 h-5" />
     </div>
     <div>
@@ -236,7 +236,7 @@ const KardexList = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleExportExcel}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
               >
                 <FileSpreadsheet className="w-4 h-4" />
                 Excel
@@ -261,7 +261,7 @@ const KardexList = () => {
         )}
 
         {/* FILTERS BAR */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -270,10 +270,10 @@ const KardexList = () => {
                 placeholder="Buscar por documento, motivo o cliente..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
               />
             </div>
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-bg p-1 rounded-xl">
               {[
                 { key: 'todos', label: 'Todos' },
                 { key: 'pendiente', label: 'Pendientes' },
@@ -285,7 +285,7 @@ const KardexList = () => {
                   onClick={() => setEstadoFilter(tab.key)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     estadoFilter === tab.key
-                      ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-sm'
+                      ? 'bg-white dark:bg-centhrix-surface text-purple-600 dark:text-purple-400 shadow-sm'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                   }`}
                 >
@@ -301,16 +301,16 @@ const KardexList = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {filtered.length} kardex encontrado{filtered.length !== 1 && 's'}
           </p>
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-lg p-1">
             <button
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
             >
               <List className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('cards')}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
@@ -319,13 +319,13 @@ const KardexList = () => {
 
         {/* TABLE / CARDS */}
         {loading ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-8 text-center">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-8 text-center">
             <Loader2 className="w-8 h-8 text-purple-500 animate-spin mx-auto mb-3" />
             <p className="text-slate-500">Cargando kardex del WMS...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
-            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-centhrix-surface rounded-full flex items-center justify-center mx-auto mb-4">
               <ClipboardList className="w-8 h-8 text-slate-400" />
             </div>
             <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">No se encontraron kardex</h3>
@@ -334,24 +334,24 @@ const KardexList = () => {
             </p>
           </div>
         ) : viewMode === 'table' ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50" onClick={() => handleSort('numero_operacion')}>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50" onClick={() => handleSort('numero_operacion')}>
                       <span className="inline-flex items-center gap-1">Documento <SortIcon field="numero_operacion" sortField={sortField} sortDir={sortDir} /></span>
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cliente</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">Doc. Externo</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50" onClick={() => handleSort('tipo')}>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50" onClick={() => handleSort('tipo')}>
                       <span className="inline-flex items-center gap-1">Tipo Doc. <SortIcon field="tipo" sortField={sortField} sortDir={sortDir} /></span>
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50" onClick={() => handleSort('fecha_operacion')}>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50" onClick={() => handleSort('fecha_operacion')}>
                       <span className="inline-flex items-center gap-1">Fecha <SortIcon field="fecha_operacion" sortField={sortField} sortDir={sortDir} /></span>
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Líneas</th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50" onClick={() => handleSort('estado')}>
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50" onClick={() => handleSort('estado')}>
                       <span className="inline-flex items-center gap-1">Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} /></span>
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16"></th>
@@ -361,7 +361,7 @@ const KardexList = () => {
                   {filtered.map((item) => (
                     <tr
                       key={item.id}
-                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer group"
+                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors cursor-pointer group"
                       onClick={() => handleView(item)}
                     >
                       <td className="py-4 px-4">
@@ -438,7 +438,7 @@ const KardexList = () => {
               {filtered.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-700 hover:shadow-md transition-all cursor-pointer group"
+                  className="bg-white dark:bg-centhrix-card/50 rounded-xl border border-gray-100 dark:border-slate-700 hover:shadow-md transition-all cursor-pointer group"
                   onClick={() => handleView(item)}
                 >
                   {/* Card Header */}

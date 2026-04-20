@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Modal para enviar reporte por email
  * Permite seleccionar uno o ambos formatos (Excel y/o PDF)
  */
@@ -61,7 +61,7 @@ const EnviarReporteModal = ({ isOpen, onClose, tipoReporte, onSend }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full">
+      <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-md w-full">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
           <div className="flex items-center gap-2">
@@ -84,7 +84,7 @@ const EnviarReporteModal = ({ isOpen, onClose, tipoReporte, onSend }) => {
               value={destinatarios}
               onChange={(e) => { setDestinatarios(e.target.value); setError(''); }}
               placeholder="correo@ejemplo.com, otro@ejemplo.com"
-              className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+              className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
               autoFocus
             />
             <p className="text-xs text-slate-400 mt-1">Separa varios emails con coma</p>

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Sesiones Activas
  * Muestra usuarios con sesion activa y permite cerrar sesiones.
  *
@@ -145,7 +145,7 @@ const SesionesActivas = () => {
           <button
             onClick={() => fetchSesiones(true)}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors text-slate-600 dark:text-slate-300 disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
             Actualizar
@@ -178,7 +178,7 @@ const SesionesActivas = () => {
             return (
               <div
                 key={s.id}
-                className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border p-5 transition-all ${
+                className={`bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border p-5 transition-all ${
                   isMe
                     ? 'border-emerald-300 dark:border-emerald-700 ring-1 ring-emerald-200 dark:ring-emerald-800'
                     : 'border-gray-100 dark:border-slate-700'

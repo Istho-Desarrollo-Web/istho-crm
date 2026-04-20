@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - Dashboard (Refactored v3.0 - Auditoría WMS)
  * ============================================================================
@@ -138,7 +138,7 @@ const OperationRow = ({ op, type, onClick }) => {
   return (
     <tr
       onClick={() => onClick(op)}
-      className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/20 cursor-pointer transition-colors group"
+      className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 cursor-pointer transition-colors group"
     >
       <td className="px-4 py-3">
         <p className={`text-sm font-semibold text-${accentColor}-600 dark:text-${accentColor}-400`}>{op.documento}</p>
@@ -151,7 +151,7 @@ const OperationRow = ({ op, type, onClick }) => {
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
-          <div className="flex-1 max-w-[60px] h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+          <div className="flex-1 max-w-[60px] h-1.5 bg-slate-100 dark:bg-centhrix-surface rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all bg-${accentColor}-500`}
               style={{ width: `${progress}%` }}
@@ -175,7 +175,7 @@ const OperationRow = ({ op, type, onClick }) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 const OperationsCard = ({ title, subtitle, icon: Icon, accentColor, operations, type, onRowClick, onViewAll }) => (
-  <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+  <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
     <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <div className={`p-2 rounded-lg bg-${accentColor}-100 dark:bg-${accentColor}-900/30`}>
@@ -196,7 +196,7 @@ const OperationsCard = ({ title, subtitle, icon: Icon, accentColor, operations, 
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="bg-slate-50/50 dark:bg-slate-900/30">
+          <tr className="bg-slate-50/50 dark:bg-centhrix-bg/30">
             <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Doc</th>
             <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Cliente</th>
             <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider hidden md:table-cell">Tipo</th>
@@ -227,7 +227,7 @@ const OperationsCard = ({ title, subtitle, icon: Icon, accentColor, operations, 
 const QuickAction = ({ icon: Icon, label, description, color, onClick }) => (
   <button
     onClick={onClick}
-    className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 hover:border-transparent hover:shadow-md dark:hover:shadow-lg transition-all group text-left w-full"
+    className="flex items-center gap-4 p-4 bg-white dark:bg-centhrix-card rounded-xl border border-gray-100 dark:border-slate-700 hover:border-transparent hover:shadow-md dark:hover:shadow-lg transition-all group text-left w-full"
   >
     <div className={`p-3 rounded-xl bg-${color}-100 dark:bg-${color}-900/30 group-hover:scale-110 transition-transform`}>
       <Icon className={`w-6 h-6 text-${color}-600 dark:text-${color}-400`} />
@@ -406,7 +406,7 @@ const Dashboard = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 dark:text-slate-100">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
               {getGreeting()}, {user?.nombre_completo?.split(' ')[0] || 'Usuario'}
             </h1>
             <p className="text-slate-500 mt-1 dark:text-slate-400">
@@ -424,10 +424,10 @@ const Dashboard = () => {
             disabled={isRefreshing}
             className={`
               flex items-center gap-2 px-4 py-2 
-              bg-white dark:bg-slate-800
+              bg-white dark:bg-centhrix-card
               border border-gray-200 dark:border-slate-700
               rounded-xl 
-              hover:bg-gray-50 dark:hover:bg-slate-700
+              hover:bg-gray-50 dark:hover:bg-centhrix-surface
               transition-colors shadow-sm
               ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}
             `}
@@ -538,7 +538,7 @@ const Dashboard = () => {
                 <select
                   value={mesFiltro}
                   onChange={e => setMesFiltro(Number(e.target.value))}
-                  className="text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:focus:ring-blue-500 cursor-pointer"
+                  className="text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:focus:ring-blue-500 cursor-pointer"
                 >
                   {mesesDisponibles.map(({ value, label }) => (
                     <option key={value} value={value}>{label}</option>
@@ -547,7 +547,7 @@ const Dashboard = () => {
                 <select
                   value={anioFiltro}
                   onChange={e => setAnioFiltro(Number(e.target.value))}
-                  className="text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:focus:ring-blue-500 cursor-pointer"
+                  className="text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:focus:ring-blue-500 cursor-pointer"
                 >
                   {aniosDisponibles.map(a => (
                     <option key={a} value={a}>{a}</option>
@@ -591,7 +591,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
           {/* Resumen Rápido de Auditoría */}
-          <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+          <div className="lg:col-span-2 bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
                 <Activity className="w-5 h-5 text-orange-600 dark:text-orange-400" />
@@ -655,7 +655,7 @@ const Dashboard = () => {
             />
 
             {!loadingAlertas && realAlertas.length > 0 && (
-              <div className="mt-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
+              <div className="mt-4 bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
                 <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Resumen de Alertas</h4>
                 <div className="space-y-2">
                   {alertasCounts.agotado > 0 && (

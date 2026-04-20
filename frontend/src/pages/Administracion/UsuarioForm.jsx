@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Formulario de Usuario (Modal)
  *
  * Crear/editar usuarios del sistema.
@@ -96,13 +96,13 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-700">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
             {isEdit ? 'Editar Usuario' : 'Nuevo Usuario'}
           </h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface">
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
@@ -125,7 +125,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
                 onChange={handleChange}
                 disabled={isEdit}
                 required
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 disabled:opacity-50"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200 disabled:opacity-50"
                 placeholder="usuario123"
               />
             </div>
@@ -139,7 +139,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
                 value={form.email}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                 placeholder="correo@ejemplo.com"
               />
             </div>
@@ -155,7 +155,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
                 value={form.password}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                 placeholder="Mínimo 6 caracteres"
               />
             </div>
@@ -168,7 +168,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
                 name="nombre"
                 value={form.nombre}
                 onChange={handleChange}
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
               />
             </div>
             <div>
@@ -177,7 +177,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
                 name="apellido"
                 value={form.apellido}
                 onChange={handleChange}
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
               />
             </div>
           </div>
@@ -189,7 +189,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
                 name="telefono"
                 value={form.telefono}
                 onChange={handleChange}
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
               />
             </div>
             <div>
@@ -198,7 +198,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
                 name="cargo"
                 value={form.cargo}
                 onChange={handleChange}
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
               />
             </div>
           </div>
@@ -211,7 +211,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               value={form.rol_id}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
             >
               <option value="">Seleccionar rol...</option>
               {roles.filter(r => r.activo).map(r => (
@@ -229,7 +229,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
                 value={form.cliente_id}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
               >
                 <option value="">Seleccionar cliente...</option>
                 {clientes.map(c => (
@@ -244,7 +244,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"
+              className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-xl"
             >
               Cancelar
             </button>

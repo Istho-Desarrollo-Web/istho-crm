@@ -176,3 +176,9 @@ body {
 .dark ::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+/* Tipografía display para headings de páginas principales */
+.font-display {
+  font-family: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: 0.01em;
+}

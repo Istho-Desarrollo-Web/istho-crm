@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Reportes Programados
  * CRUD de reportes automáticos con cron
  *
@@ -96,11 +96,11 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
     });
   };
 
-  const inputCls = 'w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
+  const inputCls = 'w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
           <h3 className="font-semibold text-slate-800 dark:text-slate-100">
             {reporte ? 'Editar Reporte Programado' : 'Nuevo Reporte Programado'}
@@ -162,7 +162,7 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
 
           <div className="flex gap-2 justify-end pt-2">
             <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl">
+              className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-xl">
               Cancelar
             </button>
             <button type="submit" disabled={loading || !form.nombre || !form.destinatarios}
@@ -267,7 +267,7 @@ const ReportesProgramados = () => {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <button onClick={() => navigate('/reportes')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors">
+              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors">
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-3">
@@ -291,7 +291,7 @@ const ReportesProgramados = () => {
         </div>
 
         {/* Lista */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
           {loading ? (
             <div className="p-8 text-center">
               <Loader2 className="w-8 h-8 text-orange-500 animate-spin mx-auto mb-3" />
@@ -312,7 +312,7 @@ const ReportesProgramados = () => {
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-slate-700">
               {reportes.map((r) => (
-                <div key={r.id} className="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                <div key={r.id} className="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors">
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -352,7 +352,7 @@ const ReportesProgramados = () => {
                     className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
                       r.activo
                         ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
-                        : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200'
+                        : 'bg-slate-100 dark:bg-centhrix-surface text-slate-500 dark:text-slate-400 hover:bg-slate-200'
                     }`}
                   >
                     {r.activo ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}

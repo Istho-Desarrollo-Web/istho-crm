@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - ViajeForm Page
  * Formulario de página completa para crear y editar viajes.
  * Validación con React Hook Form + Yup.
@@ -49,12 +49,12 @@ const Section = ({ icon: Icon, title, color = 'blue', badge, collapsible, open, 
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+    <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
       {collapsible ? (
         <button
           type="button"
           onClick={onToggle}
-          className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+          className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${colors[color]}`}>
@@ -106,7 +106,7 @@ const FormField = ({ label, icon: Icon, required, error, children, className = '
 );
 
 const inputCls = (hasIcon = false, hasError = false) =>
-  `w-full bg-slate-50 dark:bg-slate-900 border rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 ${hasIcon ? 'pl-10' : ''} ${hasError ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'}`;
+  `w-full bg-slate-50 dark:bg-centhrix-bg border rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 ${hasIcon ? 'pl-10' : ''} ${hasError ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'}`;
 
 const selectCls = (hasIcon = false, hasError = false) => `${inputCls(hasIcon, hasError)} appearance-none cursor-pointer`;
 
@@ -301,7 +301,7 @@ const ViajeForm = () => {
           </button>
 
           {/* ── HEADER CARD ── */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
@@ -321,7 +321,7 @@ const ViajeForm = () => {
                   type="button"
                   onClick={() => navigate('/viajes/viajes')}
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-centhrix-surface rounded-xl hover:bg-slate-200 dark:hover:bg-centhrix-card transition-colors disabled:opacity-50"
                 >
                   Cancelar
                 </button>

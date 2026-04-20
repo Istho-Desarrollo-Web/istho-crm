@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Página de Acceso No Autorizado
  *
  * Se muestra cuando un usuario autenticado intenta acceder
@@ -53,7 +53,7 @@ const Unauthorized = () => {
         <div className="flex items-center justify-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver

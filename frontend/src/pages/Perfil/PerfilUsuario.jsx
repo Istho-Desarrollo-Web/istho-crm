@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - PerfilUsuario
  * ============================================================================
@@ -78,8 +78,8 @@ const EditProfileModal = ({ isOpen, onClose, usuario, onSave, loading }) => {
     onSave(formData);
   };
 
-  const inputClasses = 'w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
-  const readOnlyClasses = 'w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400';
+  const inputClasses = 'w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
+  const readOnlyClasses = 'w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm bg-slate-50 dark:bg-centhrix-card text-slate-500 dark:text-slate-400';
 
   return (
     <Modal
@@ -159,7 +159,7 @@ const EditProfileModal = ({ isOpen, onClose, usuario, onSave, loading }) => {
 // ════════════════════════════════════════════════════════════════════════════
 // INPUT DE CONTRASEÑA (fuera del modal para evitar re-mount en cada render)
 // ════════════════════════════════════════════════════════════════════════════
-const passwordInputClasses = 'w-full px-4 py-2.5 pr-10 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
+const passwordInputClasses = 'w-full px-4 py-2.5 pr-10 border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
 
 const PasswordInput = ({ label, field, value, show, onChange, onToggleShow }) => (
   <div>
@@ -258,7 +258,7 @@ const ChangePasswordModal = ({ isOpen, onClose, onSubmit, loading }) => {
           </div>
         )}
 
-        <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-3 space-y-1">
+        <div className="bg-slate-50 dark:bg-centhrix-surface/50 rounded-xl p-3 space-y-1">
           <p className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Requisitos:</p>
           {[
             { ok: formData.newPassword.length >= 8, text: 'Mínimo 8 caracteres' },
@@ -268,7 +268,7 @@ const ChangePasswordModal = ({ isOpen, onClose, onSubmit, loading }) => {
           ].map((req, i) => (
             <div key={i} className="flex items-center gap-2 text-xs">
               <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center ${
-                req.ok ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
+                req.ok ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-centhrix-surface'
               }`}>
                 {req.ok && <Check className="w-2 h-2 text-white" />}
               </div>
@@ -288,7 +288,7 @@ const ChangePasswordModal = ({ isOpen, onClose, onSubmit, loading }) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 const InfoCard = ({ title, icon: Icon, children, action }) => (
-  <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+  <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
     <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-700">
       <div className="flex items-center gap-2">
         {Icon && <Icon className="w-5 h-5 text-slate-500 dark:text-slate-400" />}
@@ -301,7 +301,7 @@ const InfoCard = ({ title, icon: Icon, children, action }) => (
 );
 
 const StatCardMini = ({ icon: Icon, label, value, color }) => (
-  <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-transparent dark:border-slate-700">
+  <div className="text-center p-4 bg-slate-50 dark:bg-centhrix-card rounded-xl border border-transparent dark:border-slate-700">
     <div className={`w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-2 ${color}`}>
       <Icon className="w-5 h-5 text-white" />
     </div>
@@ -506,10 +506,10 @@ const PerfilUsuario = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
-            <div className="h-48 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+            <div className="h-48 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
             <div className="grid grid-cols-3 gap-6">
-              <div className="col-span-2 h-96 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
-              <div className="h-96 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+              <div className="col-span-2 h-96 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
+              <div className="h-96 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
             </div>
           </div>
         </main>
@@ -611,7 +611,7 @@ const PerfilUsuario = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* HEADER CARD */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center gap-6">
             {/* Avatar */}
             <div className="relative group">
@@ -632,7 +632,7 @@ const PerfilUsuario = () => {
                 </div>
               ) : (
                 <div className="absolute -bottom-2 -right-2 flex gap-1">
-                  <label className="p-2 bg-white dark:bg-slate-700 rounded-xl shadow-md hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors cursor-pointer">
+                  <label className="p-2 bg-white dark:bg-centhrix-surface rounded-xl shadow-md hover:bg-slate-50 dark:hover:bg-centhrix-card transition-colors cursor-pointer">
                     <Camera className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                     <input
                       type="file"
@@ -644,7 +644,7 @@ const PerfilUsuario = () => {
                   {user.avatar_url && (
                     <button
                       onClick={handleAvatarDelete}
-                      className="p-2 bg-white dark:bg-slate-700 rounded-xl shadow-md hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                      className="p-2 bg-white dark:bg-centhrix-surface rounded-xl shadow-md hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                       title="Eliminar foto"
                     >
                       <X className="w-4 h-4 text-red-500" />
@@ -721,7 +721,7 @@ const PerfilUsuario = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+            <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
               {/* Tabs */}
               <div className="border-b border-gray-100 dark:border-slate-700">
                 <nav className="flex px-6">
@@ -863,7 +863,7 @@ const PerfilUsuario = () => {
                       /* Todos los roles: tarjetas con pills por módulo */
                       <div className="space-y-3">
                         {permisosTabla.map((permiso, idx) => (
-                          <div key={idx} className="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-4">
+                          <div key={idx} className="bg-slate-50 dark:bg-centhrix-surface/30 rounded-lg p-4">
                             <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2 capitalize">
                               {PORTAL_MODULO_LABELS[permiso.modulo] || permiso.modulo}
                             </h4>
@@ -874,7 +874,7 @@ const PerfilUsuario = () => {
                                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
                                     habilitado
                                       ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                                      : 'bg-slate-200 dark:bg-slate-600/30 text-slate-400 dark:text-slate-500 line-through'
+                                      : 'bg-slate-200 dark:bg-centhrix-surface/30 text-slate-400 dark:text-slate-500 line-through'
                                   }`}
                                 >
                                   {habilitado ? (

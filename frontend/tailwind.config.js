@@ -47,6 +47,7 @@ export default {
       },
       fontFamily: {
         sans: ['"Segoe UI"', 'Calibri', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+        display: ['Rajdhani', '"Segoe UI"', 'system-ui', 'sans-serif'],
       },
     },
   },

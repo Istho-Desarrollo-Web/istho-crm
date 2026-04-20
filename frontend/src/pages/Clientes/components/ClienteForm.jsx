@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - ClienteForm Component
  * ============================================================================
@@ -80,7 +80,7 @@ const InputField = ({ label, icon: Icon, required, error, children }) => (
 
 const inputCls = (hasIcon, hasError) => `
   w-full px-4 py-2.5
-  bg-white dark:bg-slate-800 border rounded-xl
+  bg-white dark:bg-centhrix-card border rounded-xl
   text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400
   focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
   transition-all duration-200
@@ -257,7 +257,7 @@ const ClienteForm = ({
 
               {/* Estado (solo edición) */}
               {isEditing && (
-                <div className="md:col-span-2 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                <div className="md:col-span-2 p-4 bg-slate-50 dark:bg-centhrix-card/50 rounded-xl">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Estado del Cliente
                   </label>

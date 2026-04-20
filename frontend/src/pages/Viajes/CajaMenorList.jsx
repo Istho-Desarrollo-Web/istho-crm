@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - CajaMenorList
  * ============================================================================
@@ -78,7 +78,7 @@ const ESTADO_CONFIG = {
     text: 'text-slate-700',
     border: 'border-slate-200',
     dot: 'bg-slate-500',
-    darkBg: 'dark:bg-slate-700/30',
+    darkBg: 'dark:bg-centhrix-surface/30',
     darkText: 'dark:text-slate-300',
     darkBorder: 'dark:border-slate-600',
   },
@@ -197,7 +197,7 @@ const RowActions = ({ caja, onView, onEdit, onClose, onDelete }) => {
 
 const KpiMini = ({ icon: Icon, label, value, color }) => (
   <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}>
-    <div className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80">
+    <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
       <Icon className="w-5 h-5" />
     </div>
     <div>
@@ -420,7 +420,7 @@ const CajaMenorList = () => {
             {cajas.length > 0 && (
               <button
                 onClick={handleExportExcel}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
               >
                 <FileSpreadsheet className="w-4 h-4" />
                 Excel
@@ -446,7 +446,7 @@ const CajaMenorList = () => {
             icon={Lock}
             label="Cerradas"
             value={stats.cerradas ?? 0}
-            color="bg-slate-50 border-slate-200 text-slate-700 dark:bg-slate-700/20 dark:border-slate-600 dark:text-slate-300"
+            color="bg-slate-50 border-slate-200 text-slate-700 dark:bg-centhrix-surface/20 dark:border-slate-600 dark:text-slate-300"
           />
           <KpiMini
             icon={DollarSign}
@@ -465,7 +465,7 @@ const CajaMenorList = () => {
         )}
 
         {/* FILTERS BAR */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
@@ -475,12 +475,12 @@ const CajaMenorList = () => {
                 placeholder="Buscar por número o usuario asignado..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
               />
             </div>
 
             {/* Estado Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-bg p-1 rounded-xl">
               {[
                 { key: 'todos', label: 'Todas' },
                 { key: 'abierta', label: 'Abiertas' },
@@ -492,7 +492,7 @@ const CajaMenorList = () => {
                   onClick={() => setEstadoFilter(tab.key)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     estadoFilter === tab.key
-                      ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                      ? 'bg-white dark:bg-centhrix-surface text-emerald-600 dark:text-emerald-400 shadow-sm'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                   }`}
                 >
@@ -521,17 +521,17 @@ const CajaMenorList = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {cajas.length} caja{cajas.length !== 1 && 's'} menor{cajas.length !== 1 && 'es'} encontrada{cajas.length !== 1 && 's'}
           </p>
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card p-1 rounded-lg">
             <button
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               title="Vista tabla"
             >
               <LayoutList className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('cards')}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               title="Vista tarjetas"
             >
               <LayoutGrid className="w-4 h-4" />
@@ -540,7 +540,7 @@ const CajaMenorList = () => {
         </div>
 
         {/* TABLE */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
           {loading ? (
             <div className="p-8 text-center">
               <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mx-auto mb-3" />
@@ -548,7 +548,7 @@ const CajaMenorList = () => {
             </div>
           ) : cajas.length === 0 ? (
             <div className="py-16 text-center">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-centhrix-surface rounded-full flex items-center justify-center mx-auto mb-4">
                 <Wallet className="w-8 h-8 text-slate-400" />
               </div>
               <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
@@ -565,7 +565,7 @@ const CajaMenorList = () => {
                   <tr className="border-b border-gray-100 dark:border-slate-700">
                     <th
                       onClick={() => handleSort('numero')}
-                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center gap-1">
                         Número <SortIcon field="numero" sortField={sortField} sortDir={sortDir} />
@@ -576,7 +576,7 @@ const CajaMenorList = () => {
                     </th>
                     <th
                       onClick={() => handleSort('saldo_inicial')}
-                      className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center justify-end gap-1">
                         Saldo Inicial <SortIcon field="saldo_inicial" sortField={sortField} sortDir={sortDir} />
@@ -584,7 +584,7 @@ const CajaMenorList = () => {
                     </th>
                     <th
                       onClick={() => handleSort('saldo_actual')}
-                      className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center justify-end gap-1">
                         Saldo Actual <SortIcon field="saldo_actual" sortField={sortField} sortDir={sortDir} />
@@ -592,7 +592,7 @@ const CajaMenorList = () => {
                     </th>
                     <th
                       onClick={() => handleSort('estado')}
-                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center justify-center gap-1">
                         Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} />
@@ -607,7 +607,7 @@ const CajaMenorList = () => {
                   {cajas.map((caja) => (
                     <tr
                       key={caja.id}
-                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer group"
+                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors cursor-pointer group"
                       onClick={() => handleView(caja)}
                     >
                       {/* Número */}
@@ -677,7 +677,7 @@ const CajaMenorList = () => {
                 <div
                   key={caja.id}
                   onClick={() => handleView(caja)}
-                  className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-amber-200 dark:hover:border-amber-800 transition-all cursor-pointer"
+                  className="bg-white dark:bg-centhrix-card rounded-xl border border-gray-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-amber-200 dark:hover:border-amber-800 transition-all cursor-pointer"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -783,7 +783,7 @@ const CajaMenorList = () => {
                 </p>
               </div>
 
-              <div className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl space-y-2">
+              <div className="p-4 bg-slate-50 dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-500 dark:text-slate-400">
                     Saldo Inicial
@@ -848,7 +848,7 @@ const CajaMenorList = () => {
                   rows={3}
                   value={observacionesCierre}
                   onChange={(e) => setObservacionesCierre(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
                 />
               </div>
             </div>

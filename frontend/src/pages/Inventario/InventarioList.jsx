@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - InventarioList (Versión Corregida)
  * ============================================================================
@@ -226,7 +226,7 @@ const StockIndicator = ({ actual, minimo }) => {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="w-20 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+      <div className="w-20 h-2 bg-slate-200 dark:bg-centhrix-surface rounded-full overflow-hidden">
         <div
           className={`h-full transition-all duration-300 ${colorClass}`}
           style={{ width: `${porcentaje}%` }}
@@ -589,7 +589,7 @@ const InventarioList = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Inventario</h1>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Inventario</h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">
               Gestiona el inventario de productos
             </p>
@@ -668,7 +668,7 @@ const InventarioList = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* SEARCH & FILTERS */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <SearchBar
@@ -739,11 +739,11 @@ const InventarioList = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {pagination?.total || productos.length} producto{(pagination?.total || productos.length) !== 1 ? 's' : ''} encontrado{(pagination?.total || productos.length) !== 1 ? 's' : ''}
           </p>
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-            <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-lg p-1">
+            <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
               <List className="w-4 h-4" />
             </button>
-            <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+            <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
               <LayoutGrid className="w-4 h-4" />
             </button>
           </div>
@@ -773,7 +773,7 @@ const InventarioList = () => {
         {/* TABLE / CARDS */}
         {/* ════════════════════════════════════════════════════════════════ */}
         {loading ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
             {[0, 1, 2, 3, 4].map((i) => (
               <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 animate-pulse">
                 <div className="w-10 h-10 bg-gray-200 rounded-lg" />
@@ -786,7 +786,7 @@ const InventarioList = () => {
             ))}
           </div>
         ) : productos.length === 0 ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Package className="w-8 h-8 text-slate-400" />
             </div>
@@ -805,14 +805,14 @@ const InventarioList = () => {
             )}
           </div>
         ) : viewMode === 'table' ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
                     <th
                       onClick={() => handleSort('producto')}
-                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center gap-1">
                         Producto <SortIcon field="producto" sortField={sortField} sortDir={sortDir} />
@@ -823,7 +823,7 @@ const InventarioList = () => {
                     </th>
                     <th
                       onClick={() => handleSort('cantidad')}
-                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center gap-1">
                         Stock <SortIcon field="cantidad" sortField={sortField} sortDir={sortDir} />
@@ -831,7 +831,7 @@ const InventarioList = () => {
                     </th>
                     <th
                       onClick={() => handleSort('estado')}
-                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center justify-center gap-1">
                         Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} />
@@ -854,11 +854,11 @@ const InventarioList = () => {
                     return (
                       <tr
                         key={producto.id}
-                        className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                        className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors"
                       >
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                            <div className="w-10 h-10 bg-slate-100 dark:bg-centhrix-surface rounded-lg flex items-center justify-center">
                               <Package className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                             </div>
                             <div>
@@ -935,7 +935,7 @@ const InventarioList = () => {
                 return (
                   <div
                     key={producto.id}
-                    className="bg-white dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition p-5 cursor-pointer relative group"
+                    className="bg-white dark:bg-centhrix-card/50 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition p-5 cursor-pointer relative group"
                     onClick={() => handleView(producto)}
                   >
                     {/* Actions menu */}
@@ -954,7 +954,7 @@ const InventarioList = () => {
 
                     {/* Icon + Name */}
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center shrink-0">
+                      <div className="w-12 h-12 bg-slate-100 dark:bg-centhrix-surface rounded-xl flex items-center justify-center shrink-0">
                         <Package className="w-6 h-6 text-slate-500 dark:text-slate-400" />
                       </div>
                       <div className="min-w-0">
@@ -992,7 +992,7 @@ const InventarioList = () => {
             </div>
 
             {!loading && pagination && pagination.totalPages > 1 && (
-              <div className="mt-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+              <div className="mt-4 bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
                 <Pagination
                   currentPage={pagination.page}
                   totalPages={pagination.totalPages}
@@ -1054,7 +1054,7 @@ const InventarioList = () => {
         <div className="space-y-5">
 
           {/* Paso 1 — Descargar plantilla */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-centhrix-card/60 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
                 <FileDown className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -1135,7 +1135,7 @@ const InventarioList = () => {
               <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-auto max-h-64">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0">
-                    <tr className="bg-slate-50 dark:bg-slate-800">
+                    <tr className="bg-slate-50 dark:bg-centhrix-card">
                       <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">#</th>
                       {Object.keys(importPreview[0] || {}).slice(0, 8).map((key) => (
                         <th key={key} className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase whitespace-nowrap">
@@ -1146,7 +1146,7 @@ const InventarioList = () => {
                   </thead>
                   <tbody>
                     {importPreview.map((row, idx) => (
-                      <tr key={idx} className="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                      <tr key={idx} className="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-card/30">
                         <td className="py-2 px-3 text-slate-400 text-xs">{idx + 1}</td>
                         {Object.values(row).slice(0, 8).map((val, i) => (
                           <td key={i} className="py-2 px-3 text-slate-700 dark:text-slate-300 whitespace-nowrap max-w-[180px] truncate text-xs">
@@ -1176,7 +1176,7 @@ const InventarioList = () => {
                   <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{importResultados.actualizados}</p>
                   <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">Actualizados</p>
                 </div>
-                <div className={`rounded-xl p-3 border text-center ${importResultados.errores?.length > 0 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                <div className={`rounded-xl p-3 border text-center ${importResultados.errores?.length > 0 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : 'bg-slate-50 dark:bg-centhrix-card border-slate-200 dark:border-slate-700'}`}>
                   <p className={`text-2xl font-bold ${importResultados.errores?.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}`}>
                     {importResultados.errores?.length || 0}
                   </p>
@@ -1203,7 +1203,7 @@ const InventarioList = () => {
                   {importErroresExpanded && (
                     <div className="max-h-48 overflow-y-auto divide-y divide-red-100 dark:divide-red-900/30">
                       {importResultados.errores.map((err, idx) => (
-                        <div key={idx} className="px-4 py-2 flex items-start gap-3 bg-white dark:bg-slate-800">
+                        <div key={idx} className="px-4 py-2 flex items-start gap-3 bg-white dark:bg-centhrix-card">
                           <span className="text-xs text-slate-400 shrink-0 mt-0.5">Fila {err.fila}</span>
                           {err.sku && (
                             <span className="text-xs font-mono text-slate-500 dark:text-slate-400 shrink-0 mt-0.5">{err.sku}</span>

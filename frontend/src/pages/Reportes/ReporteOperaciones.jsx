@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - ReporteDespachos Page
  * Reporte de operaciones (entradas/salidas) con exportación real y filtros
  *
@@ -112,15 +112,15 @@ const ReporteDespachos = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
-            <div className="h-10 bg-gray-200 dark:bg-slate-700 rounded w-64" />
+            <div className="h-10 bg-gray-200 dark:bg-centhrix-surface rounded w-64" />
             <div className="grid grid-cols-4 gap-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+                <div key={i} className="h-32 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
               ))}
             </div>
             <div className="grid grid-cols-2 gap-6">
-              <div className="h-80 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
-              <div className="h-80 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+              <div className="h-80 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
+              <div className="h-80 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
             </div>
           </div>
         </main>
@@ -152,7 +152,7 @@ const ReporteDespachos = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/reportes')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -265,7 +265,7 @@ const ReporteDespachos = () => {
               { label: 'Entradas', ...comparativo.comparacion.entradas },
               { label: 'Salidas', ...comparativo.comparacion.salidas },
             ].map(({ label, actual, anterior, variacion }) => (
-              <div key={label} className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
+              <div key={label} className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{label} vs mes anterior</p>
                 <div className="flex items-end justify-between">
                   <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{actual}</p>
@@ -282,7 +282,7 @@ const ReporteDespachos = () => {
         )}
 
         {/* Resumen */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
           <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-4">Resumen por Estado</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Object.entries(porEstado).map(([estado, cantidad]) => {

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * LoadingScreen — Pantalla de carga unificada con logo CenthriX
  * Se usa en:
  * - Suspense fallback (lazy loading de páginas)
@@ -54,7 +54,7 @@ const LoadingScreen = ({
         {/* Barra de progreso para reconexión */}
         {isReconectando && (
           <div className="mt-4 w-48 mx-auto">
-            <div className="h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-1 bg-slate-200 dark:bg-centhrix-surface rounded-full overflow-hidden">
               <div
                 className="h-full bg-[#E74C3C] rounded-full"
                 style={{ animation: 'progressIndeterminate 1.5s ease-in-out infinite' }}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - ProductoDetail (Versión Corregida v2.4.0)
  * ============================================================================
@@ -152,10 +152,10 @@ const StockGauge = ({ actual, minimo, maximo, onUpdateLimits, canEdit }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
+    <div className="bg-white dark:bg-centhrix-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
       <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Nivel de Stock</h3>
 
-      <div className="relative h-8 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-4">
+      <div className="relative h-8 bg-slate-100 dark:bg-centhrix-surface rounded-full overflow-hidden mb-4">
         {minimoPos > 0 && (
           <div
             className="absolute top-0 bottom-0 left-0 bg-red-100 dark:bg-red-900/30 opacity-50"
@@ -303,7 +303,7 @@ const MovimientoItem = ({ movimiento }) => {
               <span className={`text-sm font-semibold ${isEntrada ? 'text-emerald-600' : isAjuste ? 'text-amber-600' : 'text-red-600'}`}>
                 {cantidad > 0 ? '+' : ''}{formatNumber(cantidad)}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300">
                 {iconConfig.label}
               </span>
             </div>
@@ -581,13 +581,13 @@ const ProductoDetail = () => {
 
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 dark:bg-slate-700 rounded w-48" />
+            <div className="h-8 bg-gray-200 dark:bg-centhrix-surface rounded w-48" />
             <div className="grid grid-cols-4 gap-4">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="h-32 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+                <div key={i} className="h-32 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
               ))}
             </div>
-            <div className="h-96 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+            <div className="h-96 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
           </div>
         </main>
       </div>
@@ -628,12 +628,12 @@ const ProductoDetail = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/inventario')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-centhrix-surface rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center">
+              <div className="w-14 h-14 bg-slate-100 dark:bg-centhrix-surface rounded-2xl flex items-center justify-center">
                 <Package className="w-7 h-7 text-slate-600 dark:text-slate-300" />
               </div>
               <div>
@@ -762,7 +762,7 @@ const ProductoDetail = () => {
 
           {/* Right Column - Tabs */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+            <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
               <div className="border-b border-gray-100 dark:border-slate-700">
                 <nav className="flex px-6">
                   {tabs.map((tab) => (
@@ -840,7 +840,7 @@ const ProductoDetail = () => {
                     {producto.descripcion && (
                       <div className="space-y-4 md:col-span-2">
                         <h4 className="font-semibold text-slate-800 dark:text-slate-100">Descripción</h4>
-                        <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700 p-4 rounded-xl">
+                        <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-centhrix-surface p-4 rounded-xl">
                           {producto.descripcion}
                         </p>
                       </div>
@@ -854,7 +854,7 @@ const ProductoDetail = () => {
                     {loadingCajas ? (
                       <div className="space-y-3">
                         {[0, 1, 2, 3].map((i) => (
-                          <div key={i} className="h-16 bg-gray-100 dark:bg-slate-700 rounded-lg animate-pulse" />
+                          <div key={i} className="h-16 bg-gray-100 dark:bg-centhrix-surface rounded-lg animate-pulse" />
                         ))}
                       </div>
                     ) : cajas.length === 0 ? (
@@ -880,7 +880,7 @@ const ProductoDetail = () => {
                           </thead>
                           <tbody>
                             {cajas.map((caja) => (
-                              <tr key={caja.id} className="border-b border-gray-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                              <tr key={caja.id} className="border-b border-gray-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors">
                                 <td className="py-3 px-2 font-mono text-slate-700 dark:text-slate-300">{caja.numero_caja}</td>
                                 <td className="py-3 px-2 font-mono text-slate-600 dark:text-slate-400">{caja.lote}</td>
                                 <td className="py-3 px-2 font-mono text-slate-600 dark:text-slate-400">{caja.ubicacion || '-'}</td>
@@ -934,7 +934,7 @@ const ProductoDetail = () => {
                     {loadingMovimientos ? (
                       <div className="space-y-3">
                         {[0, 1, 2, 3].map((i) => (
-                          <div key={i} className="h-20 bg-gray-100 dark:bg-slate-700 rounded-lg animate-pulse" />
+                          <div key={i} className="h-20 bg-gray-100 dark:bg-centhrix-surface rounded-lg animate-pulse" />
                         ))}
                       </div>
                     ) : (movimientos || []).length === 0 ? (
@@ -954,7 +954,7 @@ const ProductoDetail = () => {
                 {activeTab === 'estadisticas' && (
                   <div>
                     {loadingEstadisticas ? (
-                      <div className="h-64 bg-gray-100 dark:bg-slate-700 rounded-lg animate-pulse" />
+                      <div className="h-64 bg-gray-100 dark:bg-centhrix-surface rounded-lg animate-pulse" />
                     ) : chartData.length > 0 ? (
                       <BarChart
                         title="Entradas vs Salidas"

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - ReportesList Page
  * Dashboard principal de reportes con acceso a diferentes tipos.
  * Filtra reportes visibles segun el rol del usuario.
@@ -174,7 +174,7 @@ const ReporteCard = ({ reporte, canExport }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md hover:border-orange-200 dark:hover:border-orange-800 transition-all">
+    <div className="bg-white dark:bg-centhrix-card rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md hover:border-orange-200 dark:hover:border-orange-800 transition-all">
       <div className="flex items-start justify-between mb-4">
         <div className={`w-12 h-12 ${reporte.color} rounded-xl flex items-center justify-center`}>
           <Icon className="w-6 h-6 text-white" />
@@ -258,7 +258,7 @@ const ReportesList = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                 <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -269,7 +269,7 @@ const ReportesList = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
                 <FileSpreadsheet className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
@@ -280,7 +280,7 @@ const ReportesList = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center">
                 <Activity className="w-6 h-6 text-violet-600 dark:text-violet-400" />
@@ -301,7 +301,7 @@ const ReportesList = () => {
             ))}
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-slate-700 text-center mb-6">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-slate-700 text-center mb-6">
             <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
             <p className="text-slate-500 dark:text-slate-400">No hay reportes disponibles para tu rol</p>
           </div>
@@ -312,7 +312,7 @@ const ReportesList = () => {
           <div className="mb-8">
             <button
               onClick={() => navigate('/reportes/programados')}
-              className="w-full bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md hover:border-orange-200 dark:hover:border-orange-800 transition-all flex items-center gap-4 text-left"
+              className="w-full bg-white dark:bg-centhrix-card rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md hover:border-orange-200 dark:hover:border-orange-800 transition-all flex items-center gap-4 text-left"
             >
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
                 <Calendar className="w-6 h-6 text-orange-600 dark:text-orange-400" />

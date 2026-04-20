@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - ReporteInventario Page
  * Reporte de inventario con datos reales, gráficos y filtros persistentes en URL
  *
@@ -210,10 +210,10 @@ const ReporteInventario = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
-            <div className="h-10 bg-gray-200 dark:bg-slate-700 rounded w-64" />
+            <div className="h-10 bg-gray-200 dark:bg-centhrix-surface rounded w-64" />
             <div className="grid grid-cols-4 gap-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+                <div key={i} className="h-32 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
               ))}
             </div>
           </div>
@@ -232,7 +232,7 @@ const ReporteInventario = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/reportes')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -321,7 +321,7 @@ const ReporteInventario = () => {
 
         {/* Alertas */}
         {alertas.length > 0 && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-800 dark:text-slate-100">Alertas de Inventario</h3>
               <Button variant="ghost" size="sm" onClick={() => navigate('/inventario/alertas')}>
@@ -340,7 +340,7 @@ const ReporteInventario = () => {
         {productosPorCliente.length > 0 && (
           <div className="space-y-6 mb-6">
             {productosPorCliente.map(({ cliente, items }) => (
-              <div key={cliente ?? '__all__'} className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+              <div key={cliente ?? '__all__'} className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold text-slate-800 dark:text-slate-100">
@@ -350,14 +350,14 @@ const ReporteInventario = () => {
                       Top {items.length} productos por cantidad en stock
                     </p>
                   </div>
-                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-centhrix-surface px-2.5 py-1 rounded-full">
                     {items.length} productos
                   </span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-700/50">
+                      <tr className="bg-slate-50 dark:bg-centhrix-surface/50">
                         <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-8">#</th>
                         <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">SKU</th>
                         <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Producto</th>
@@ -386,7 +386,7 @@ const ReporteInventario = () => {
                           agotado: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
                         }[estado];
                         return (
-                          <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                          <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors">
                             <td className="px-4 py-3 text-slate-400 dark:text-slate-500">{idx + 1}</td>
                             <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-300">{p.sku}</td>
                             <td className="px-4 py-3 text-slate-800 dark:text-slate-200 max-w-[200px] truncate" title={p.producto}>{p.producto}</td>
@@ -421,7 +421,7 @@ const ReporteInventario = () => {
 
         {/* Export Info */}
         {canDownload && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
           <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-3">Exportar Inventario Completo</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
             Descarga el listado completo de inventario con cantidades, costos, lotes y fechas de vencimiento.

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - Página de Restablecer Contraseña
  * ============================================================================
@@ -167,7 +167,7 @@ const ResetPassword = () => {
             <>
                 <style>{styles}</style>
                 <div className="min-h-screen bg-gradient-to-br from-gray-50 via-red-50/30 to-gray-100 dark:from-[#0F1023] dark:via-[#151631] dark:to-[#1A1B3A] flex flex-col items-center justify-center p-4">
-                    <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/20 border border-gray-100 dark:border-slate-800 p-8 text-center animate-slideUp">
+                    <div className="max-w-md w-full bg-white dark:bg-centhrix-bg rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/20 border border-gray-100 dark:border-slate-800 p-8 text-center animate-slideUp">
                         {/* Logo */}
                         <div className="mb-6">
                             <img
@@ -222,7 +222,7 @@ const ResetPassword = () => {
             <>
                 <style>{styles}</style>
                 <div className="min-h-screen bg-gradient-to-br from-gray-50 via-red-50/30 to-gray-100 dark:from-[#0F1023] dark:via-[#151631] dark:to-[#1A1B3A] flex flex-col items-center justify-center p-4">
-                    <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/20 border border-gray-100 dark:border-slate-800 p-8 text-center animate-slideUp">
+                    <div className="max-w-md w-full bg-white dark:bg-centhrix-bg rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/20 border border-gray-100 dark:border-slate-800 p-8 text-center animate-slideUp">
                         {/* Logo */}
                         <div className="mb-6">
                             <img
@@ -284,7 +284,7 @@ const ResetPassword = () => {
         <>
             <style>{styles}</style>
             <div className="min-h-screen bg-gradient-to-br from-gray-50 via-red-50/30 to-gray-100 dark:from-[#0F1023] dark:via-[#151631] dark:to-[#1A1B3A] flex flex-col items-center justify-center p-4">
-                <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/20 border border-gray-100 dark:border-slate-800 overflow-hidden animate-slideUp">
+                <div className="max-w-md w-full bg-white dark:bg-centhrix-bg rounded-2xl shadow-xl dark:shadow-2xl dark:shadow-black/20 border border-gray-100 dark:border-slate-800 overflow-hidden animate-slideUp">
                     <div className="p-8">
                         {/* Logo */}
                         <div className="text-center mb-6">
@@ -341,7 +341,7 @@ const ResetPassword = () => {
                                         type={showPassword ? 'text' : 'password'}
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className="w-full pl-12 pr-12 py-3 rounded-xl border bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
+                                        className="w-full pl-12 pr-12 py-3 rounded-xl border bg-gray-50 dark:bg-centhrix-card dark:text-white dark:placeholder-slate-500
                                             focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]
                                             transition-all duration-200 border-gray-200 dark:border-slate-700"
                                         placeholder="••••••••"
@@ -368,7 +368,7 @@ const ResetPassword = () => {
                                                     className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
                                                         level <= passwordStrength.score
                                                             ? passwordStrength.color
-                                                            : 'bg-gray-200 dark:bg-slate-700'
+                                                            : 'bg-gray-200 dark:bg-centhrix-surface'
                                                     }`}
                                                 />
                                             ))}
@@ -406,7 +406,7 @@ const ResetPassword = () => {
                                         type={showConfirmPassword ? 'text' : 'password'}
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
-                                        className={`w-full pl-12 pr-12 py-3 rounded-xl border bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
+                                        className={`w-full pl-12 pr-12 py-3 rounded-xl border bg-gray-50 dark:bg-centhrix-card dark:text-white dark:placeholder-slate-500
                                             focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]
                                             transition-all duration-200
                                             ${formData.confirmPassword.length > 0 && !passwordsMatch

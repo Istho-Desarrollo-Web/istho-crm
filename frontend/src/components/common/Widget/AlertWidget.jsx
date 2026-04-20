@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - AlertWidget Component
  * Widget de alertas del sistema con modo oscuro
  *
@@ -98,7 +98,7 @@ const AlertWidget = ({
   const hasMore = alerts.length > maxItems;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
+    <div className="bg-white dark:bg-centhrix-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -126,17 +126,17 @@ const AlertWidget = ({
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex items-start gap-3 p-3 rounded-xl animate-pulse">
-              <div className="w-8 h-8 bg-gray-200 dark:bg-slate-700 rounded-lg" />
+              <div className="w-8 h-8 bg-gray-200 dark:bg-centhrix-surface rounded-lg" />
               <div className="flex-1 space-y-1.5">
-                <div className="h-3.5 bg-gray-200 dark:bg-slate-700 rounded w-3/4" />
-                <div className="h-3 bg-gray-100 dark:bg-slate-600 rounded w-1/2" />
+                <div className="h-3.5 bg-gray-200 dark:bg-centhrix-surface rounded w-3/4" />
+                <div className="h-3 bg-gray-100 dark:bg-centhrix-surface rounded w-1/2" />
               </div>
             </div>
           ))}
         </div>
       ) : alerts.length === 0 ? (
         <div className="py-8 text-center">
-          <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 bg-slate-100 dark:bg-centhrix-surface rounded-full flex items-center justify-center mx-auto mb-3">
             <Bell className="w-6 h-6 text-slate-400 dark:text-slate-500" />
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400">{emptyMessage}</p>
@@ -155,7 +155,7 @@ const AlertWidget = ({
             <button
               onClick={onViewAll}
               className="w-full py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300
-                         hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                         hover:bg-slate-50 dark:hover:bg-centhrix-surface rounded-lg transition-colors"
             >
               +{alerts.length - maxItems} alertas más
             </button>

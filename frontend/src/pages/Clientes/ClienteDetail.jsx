@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - ClienteDetail
  * ============================================================================
@@ -103,14 +103,14 @@ const ContactCard = ({ contacto, onEdit, onDelete, canEdit }) => (
     p-4 rounded-xl border transition-colors
     ${contacto.es_principal
       ? 'border-orange-200 dark:border-orange-800/50 bg-orange-50 dark:bg-orange-900/20'
-      : 'border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+      : 'border-gray-100 dark:border-slate-700 bg-white dark:bg-centhrix-card hover:bg-slate-50 dark:hover:bg-centhrix-surface/50'
     }
   `}>
     <div className="flex items-start justify-between">
       <div className="flex items-center gap-3">
         <div className={`
           w-10 h-10 rounded-full flex items-center justify-center
-          ${contacto.es_principal ? 'bg-orange-200 dark:bg-orange-900/40' : 'bg-slate-200 dark:bg-slate-700'}
+          ${contacto.es_principal ? 'bg-orange-200 dark:bg-orange-900/40' : 'bg-slate-200 dark:bg-centhrix-surface'}
         `}>
           <User className={`w-5 h-5 ${contacto.es_principal ? 'text-orange-700 dark:text-orange-400' : 'text-slate-600 dark:text-slate-300'}`} />
         </div>
@@ -130,13 +130,13 @@ const ContactCard = ({ contacto, onEdit, onDelete, canEdit }) => (
         <div className="flex gap-1">
           <button
             onClick={() => onEdit?.(contacto)}
-            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-700 rounded-lg"
+            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-centhrix-surface rounded-lg"
           >
             <Pencil className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete?.(contacto)}
-            className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-white dark:hover:bg-slate-700 rounded-lg"
+            className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-white dark:hover:bg-centhrix-surface rounded-lg"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -167,7 +167,7 @@ const ESTADO_CONFIG = {
   cerrado: { label: 'Cerrado', bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-700 dark:text-emerald-400' },
   en_proceso: { label: 'En Proceso', bg: 'bg-blue-100 dark:bg-blue-900/30', color: 'text-blue-700 dark:text-blue-400' },
   anulado: { label: 'Anulado', bg: 'bg-red-100 dark:bg-red-900/30', color: 'text-red-700 dark:text-red-400' },
-  borrador: { label: 'Borrador', bg: 'bg-slate-100 dark:bg-slate-700', color: 'text-slate-700 dark:text-slate-300' },
+  borrador: { label: 'Borrador', bg: 'bg-slate-100 dark:bg-centhrix-surface', color: 'text-slate-700 dark:text-slate-300' },
 };
 
 const ActivityItem = ({ actividad }) => {
@@ -177,7 +177,7 @@ const ActivityItem = ({ actividad }) => {
     llamada: { icon: Phone, bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-600 dark:text-emerald-400' },
     documento: { icon: FileCheck, bg: 'bg-violet-100 dark:bg-violet-900/30', color: 'text-violet-600 dark:text-violet-400' },
     nota: { icon: MessageSquare, bg: 'bg-amber-100 dark:bg-amber-900/30', color: 'text-amber-600 dark:text-amber-400' },
-    creacion: { icon: Building2, bg: 'bg-slate-100 dark:bg-slate-700', color: 'text-slate-600 dark:text-slate-300' },
+    creacion: { icon: Building2, bg: 'bg-slate-100 dark:bg-centhrix-surface', color: 'text-slate-600 dark:text-slate-300' },
     actualizar: { icon: Pencil, bg: 'bg-orange-100 dark:bg-orange-900/30', color: 'text-orange-600 dark:text-orange-400' },
     login: { icon: User, bg: 'bg-green-100 dark:bg-green-900/30', color: 'text-green-600 dark:text-green-400' },
   };
@@ -288,7 +288,7 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
             type="text"
             value={formData.nombre || ''}
             onChange={(e) => handleChange('nombre', e.target.value)}
-            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${errors.nombre ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
+            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${errors.nombre ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
               }`}
             placeholder="Nombre del contacto"
           />
@@ -303,7 +303,7 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
             type="text"
             value={formData.cargo || ''}
             onChange={(e) => handleChange('cargo', e.target.value)}
-            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
             placeholder="Cargo en la empresa"
           />
         </div>
@@ -316,7 +316,7 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
             type="tel"
             value={formData.telefono || ''}
             onChange={(e) => handleChange('telefono', e.target.value)}
-            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${errors.telefono ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
+            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${errors.telefono ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
               }`}
             placeholder="+57 300 123 4567"
           />
@@ -331,7 +331,7 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
             type="email"
             value={formData.email || ''}
             onChange={(e) => handleChange('email', e.target.value)}
-            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${errors.email ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
+            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${errors.email ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
               }`}
             placeholder="email@empresa.com"
           />
@@ -393,7 +393,7 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
           ];
 
           return (
-            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-3 space-y-2 bg-slate-50 dark:bg-slate-800/50">
+            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-3 space-y-2 bg-slate-50 dark:bg-centhrix-card/50">
               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Tipos de notificación
               </p>
@@ -640,13 +640,13 @@ const ClienteDetail = () => {
 
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 dark:bg-slate-700 rounded w-48" />
+            <div className="h-8 bg-gray-200 dark:bg-centhrix-surface rounded w-48" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="h-32 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+                <div key={i} className="h-32 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
               ))}
             </div>
-            <div className="h-96 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+            <div className="h-96 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
           </div>
         </main>
       </div>
@@ -702,7 +702,7 @@ const ClienteDetail = () => {
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <button
               onClick={() => navigate('/clientes')}
-              className="p-2 flex-shrink-0 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="p-2 flex-shrink-0 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -712,7 +712,7 @@ const ClienteDetail = () => {
                   <img
                     src={`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'}${cliente.logo_url}`}
                     alt={cliente.razon_social}
-                    className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl object-contain bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600"
+                    className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl object-contain bg-white dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600"
                   />
                 ) : (
                   <div className="w-10 h-10 sm:w-14 sm:h-14 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center">
@@ -792,7 +792,7 @@ const ClienteDetail = () => {
         </div>
 
         {/* TABS */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 mb-6">
           <div className="border-b border-gray-100 dark:border-slate-700 overflow-x-auto">
             <nav className="flex px-2 sm:px-6 min-w-max">
               {tabs.map((tab) => {
@@ -897,7 +897,7 @@ const ClienteDetail = () => {
                 {cliente.notas && (
                   <div className="space-y-4">
                     <h4 className="font-semibold text-slate-800 dark:text-slate-100">Observaciones</h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl whitespace-pre-wrap">
+                    <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-centhrix-bg/50 p-4 rounded-xl whitespace-pre-wrap">
                       {cliente.notas}
                     </p>
                   </div>
@@ -926,7 +926,7 @@ const ClienteDetail = () => {
                 {loadingContactos ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[0, 1, 2].map((i) => (
-                      <div key={i} className="h-32 bg-gray-100 dark:bg-slate-700 rounded-xl animate-pulse" />
+                      <div key={i} className="h-32 bg-gray-100 dark:bg-centhrix-surface rounded-xl animate-pulse" />
                     ))}
                   </div>
                 ) : contactos.length === 0 ? (
@@ -978,7 +978,7 @@ const ClienteDetail = () => {
                 {loadingHistorial ? (
                   <div className="space-y-4">
                     {[0, 1, 2, 3].map((i) => (
-                      <div key={i} className="h-20 bg-gray-100 dark:bg-slate-700 rounded-xl animate-pulse" />
+                      <div key={i} className="h-20 bg-gray-100 dark:bg-centhrix-surface rounded-xl animate-pulse" />
                     ))}
                   </div>
                 ) : historial.length === 0 ? (

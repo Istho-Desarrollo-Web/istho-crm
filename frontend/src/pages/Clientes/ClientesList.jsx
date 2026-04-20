@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - ClientesList
  * ============================================================================
@@ -453,7 +453,7 @@ const ClientesList = () => {
         {/* PAGE HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Clientes</h1>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Clientes</h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">
               Gestiona la información de tus clientes
             </p>
@@ -497,7 +497,7 @@ const ClientesList = () => {
         )}
 
         {/* SEARCH & FILTERS BAR */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <SearchBar
@@ -571,11 +571,11 @@ const ClientesList = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {pagination.total} cliente{pagination.total !== 1 && 's'} encontrado{pagination.total !== 1 && 's'}
           </p>
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-            <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-lg p-1">
+            <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
               <List className="w-4 h-4" />
             </button>
-            <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+            <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
               <LayoutGrid className="w-4 h-4" />
             </button>
           </div>
@@ -583,7 +583,7 @@ const ClientesList = () => {
 
         {/* TABLE / CARDS */}
         {loading ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 animate-pulse">
                 <div className="w-10 h-10 bg-gray-200 rounded-full" />
@@ -596,7 +596,7 @@ const ClientesList = () => {
             ))}
           </div>
         ) : clientes.length === 0 ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Building2 className="w-8 h-8 text-slate-400" />
             </div>
@@ -617,14 +617,14 @@ const ClientesList = () => {
             )}
           </div>
         ) : viewMode === 'table' ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
                     <th
                       onClick={() => handleSort('razon_social')}
-                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center gap-1">
                         Cliente <SortIcon field="razon_social" sortField={sortField} sortDir={sortDir} />
@@ -638,7 +638,7 @@ const ClientesList = () => {
                     </th>
                     <th
                       onClick={() => handleSort('ciudad')}
-                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center gap-1">
                         Ciudad <SortIcon field="ciudad" sortField={sortField} sortDir={sortDir} />
@@ -646,7 +646,7 @@ const ClientesList = () => {
                     </th>
                     <th
                       onClick={() => handleSort('estado')}
-                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center justify-center gap-1">
                         Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} />
@@ -661,7 +661,7 @@ const ClientesList = () => {
                   {clientes.map((cliente) => (
                     <tr
                       key={cliente.id}
-                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors"
                     >
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
@@ -725,7 +725,7 @@ const ClientesList = () => {
               {clientes.map((cliente) => (
                 <div
                   key={cliente.id}
-                  className="bg-white dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition p-5 cursor-pointer relative group"
+                  className="bg-white dark:bg-centhrix-card/50 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition p-5 cursor-pointer relative group"
                   onClick={() => handleView(cliente)}
                 >
                   {/* Actions menu */}
@@ -776,7 +776,7 @@ const ClientesList = () => {
             </div>
 
             {!loading && pagination.totalPages > 1 && (
-              <div className="mt-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+              <div className="mt-4 bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
                 <Pagination
                   currentPage={pagination.page}
                   totalPages={pagination.totalPages}
@@ -827,7 +827,7 @@ const ClientesList = () => {
                 const isActual = statusModal.cliente?.estado === opt.value;
                 const colores = {
                   activo: { active: 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400', badge: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' },
-                  inactivo: { active: 'border-slate-400 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300', badge: 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400' },
+                  inactivo: { active: 'border-slate-400 bg-slate-50 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300', badge: 'bg-slate-100 dark:bg-centhrix-surface text-slate-500 dark:text-slate-400' },
                   suspendido: { active: 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400', badge: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' },
                 };
                 const c = colores[opt.value] || colores.inactivo;
@@ -840,7 +840,7 @@ const ClientesList = () => {
                       w-full p-3 flex items-center justify-between rounded-xl border-2 transition-all text-sm font-medium
                       ${isActual
                         ? `${c.active} cursor-not-allowed opacity-80`
-                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer'
+                        : 'bg-white dark:bg-centhrix-card border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer'
                       }
                     `}
                   >
@@ -868,7 +868,7 @@ const ClientesList = () => {
         <div className="space-y-5">
 
           {/* Plantilla */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-centhrix-card/60 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
                 <FileDown className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -949,7 +949,7 @@ const ClientesList = () => {
               <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-auto max-h-64">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0">
-                    <tr className="bg-slate-50 dark:bg-slate-800">
+                    <tr className="bg-slate-50 dark:bg-centhrix-card">
                       <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">#</th>
                       {Object.keys(importPreview[0] || {}).slice(0, 8).map((key) => (
                         <th key={key} className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase whitespace-nowrap">
@@ -960,7 +960,7 @@ const ClientesList = () => {
                   </thead>
                   <tbody>
                     {importPreview.map((row, idx) => (
-                      <tr key={idx} className="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                      <tr key={idx} className="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-card/30">
                         <td className="py-2 px-3 text-slate-400 text-xs">{idx + 1}</td>
                         {Object.values(row).slice(0, 8).map((val, i) => (
                           <td key={i} className="py-2 px-3 text-slate-700 dark:text-slate-300 whitespace-nowrap max-w-[180px] truncate text-xs">
@@ -988,7 +988,7 @@ const ClientesList = () => {
                   <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{importResultados.actualizados}</p>
                   <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">Actualizados</p>
                 </div>
-                <div className={`rounded-xl p-3 border text-center ${importResultados.errores?.length > 0 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                <div className={`rounded-xl p-3 border text-center ${importResultados.errores?.length > 0 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : 'bg-slate-50 dark:bg-centhrix-card border-slate-200 dark:border-slate-700'}`}>
                   <p className={`text-2xl font-bold ${importResultados.errores?.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}`}>
                     {importResultados.errores?.length || 0}
                   </p>
@@ -1013,7 +1013,7 @@ const ClientesList = () => {
                   {importErroresExpanded && (
                     <div className="max-h-48 overflow-y-auto divide-y divide-red-100 dark:divide-red-900/30">
                       {importResultados.errores.map((err, idx) => (
-                        <div key={idx} className="px-4 py-2 flex items-start gap-3 bg-white dark:bg-slate-800">
+                        <div key={idx} className="px-4 py-2 flex items-start gap-3 bg-white dark:bg-centhrix-card">
                           <span className="text-xs text-slate-400 shrink-0 mt-0.5 font-mono">F{err.fila}</span>
                           {err.nit && <span className="text-xs font-mono text-slate-500 shrink-0 mt-0.5">{err.nit}</span>}
                           <span className="text-xs text-red-600 dark:text-red-400">{err.error}</span>

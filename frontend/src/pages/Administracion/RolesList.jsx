@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Gestión de Roles y Permisos
  *
  * Muestra la matriz de permisos por rol con checkboxes editables.
@@ -218,7 +218,7 @@ const RolesList = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {roles.map(function(rol) {
           return (
-            <div key={rol.id} className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+            <div key={rol.id} className="bg-white dark:bg-centhrix-card rounded-xl border border-gray-200 dark:border-slate-700 p-4">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: rol.color }} />
                 <span className="font-medium text-slate-800 dark:text-slate-200 text-sm">{rol.nombre}</span>
@@ -241,7 +241,7 @@ const RolesList = () => {
       </div>
 
       {/* Matriz de Permisos */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+      <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700 overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-700">
           <h4 className="font-semibold text-slate-800 dark:text-slate-100">Matriz de Permisos</h4>
           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -252,8 +252,8 @@ const RolesList = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-900/50">
-                <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 min-w-[200px] sticky left-0 bg-slate-50 dark:bg-slate-900/50 z-10">
+              <tr className="bg-slate-50 dark:bg-centhrix-bg/50">
+                <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 min-w-[200px] sticky left-0 bg-slate-50 dark:bg-centhrix-bg/50 z-10">
                   Módulo / Acción
                 </th>
                 {rolesMatriz.map(function(rol) {
@@ -290,9 +290,9 @@ const RolesList = () => {
                 return (
                   <React.Fragment key={grupo.modulo}>
                     {/* Module header row */}
-                    <tr className="bg-slate-50/50 dark:bg-slate-900/30 border-t border-gray-100 dark:border-slate-700/50">
+                    <tr className="bg-slate-50/50 dark:bg-centhrix-bg/30 border-t border-gray-100 dark:border-slate-700/50">
                       <td
-                        className="px-4 py-2 font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none sticky left-0 bg-slate-50/50 dark:bg-slate-900/30 z-10"
+                        className="px-4 py-2 font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none sticky left-0 bg-slate-50/50 dark:bg-centhrix-bg/30 z-10"
                         onClick={() => toggleGroup(grupo.modulo)}
                       >
                         <span className="flex items-center gap-2">
@@ -317,7 +317,7 @@ const RolesList = () => {
                               ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }}
                               onChange={() => canEditRol && toggleModuloCompleto(rol.id, grupo.modulo)}
                               disabled={!canEditRol}
-                              className={`w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-orange-500 focus:ring-orange-500 dark:bg-slate-700 ${canEditRol ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+                              className={`w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-orange-500 focus:ring-orange-500 dark:bg-centhrix-surface ${canEditRol ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
                             />
                           </td>
                         );
@@ -330,8 +330,8 @@ const RolesList = () => {
                       if (!permiso) return null;
 
                       return (
-                        <tr key={permiso.id} className="border-t border-gray-50 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-700/20">
-                          <td className="pl-12 pr-4 py-2 text-slate-600 dark:text-slate-400 sticky left-0 bg-white dark:bg-slate-800 z-10">
+                        <tr key={permiso.id} className="border-t border-gray-50 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-centhrix-surface/20">
+                          <td className="pl-12 pr-4 py-2 text-slate-600 dark:text-slate-400 sticky left-0 bg-white dark:bg-centhrix-card z-10">
                             <span className="flex items-center gap-2">
                               {ACCION_LABELS[accion.accion] || accion.accion}
                               <span className="text-[10px] text-slate-400 hidden xl:inline">{accion.descripcion}</span>
@@ -348,7 +348,7 @@ const RolesList = () => {
                                   checked={checked}
                                   onChange={() => canEditRol && togglePermiso(rol.id, permiso.id)}
                                   disabled={!canEditRol}
-                                  className={`w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-orange-500 focus:ring-orange-500 dark:bg-slate-700 ${canEditRol ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+                                  className={`w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-orange-500 focus:ring-orange-500 dark:bg-centhrix-surface ${canEditRol ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
                                 />
                               </td>
                             );
@@ -366,12 +366,12 @@ const RolesList = () => {
 
       {/* Roles no sistema: delete option */}
       {roles.some(function(r) { return !r.es_sistema; }) && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
           <h4 className="font-semibold text-slate-800 dark:text-slate-100 mb-3">Roles Personalizados</h4>
           <div className="space-y-2">
             {roles.filter(function(r) { return !r.es_sistema; }).map(function(rol) {
               return (
-                <div key={rol.id} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                <div key={rol.id} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface/30">
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: rol.color }} />
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{rol.nombre}</span>
@@ -397,7 +397,7 @@ const RolesList = () => {
       {/* Modal: New Rol */}
       {showNewRol && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full p-6">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-md w-full p-6">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
               Crear Nuevo Rol
             </h3>
@@ -408,7 +408,7 @@ const RolesList = () => {
                   value={newRol.nombre}
                   onChange={(e) => setNewRol({ ...newRol, nombre: e.target.value })}
                   required
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   placeholder="Ej: Coordinador Bodega"
                 />
               </div>
@@ -418,7 +418,7 @@ const RolesList = () => {
                   value={newRol.codigo}
                   onChange={(e) => setNewRol({ ...newRol, codigo: e.target.value.toLowerCase().replace(/[^a-z_]/g, '') })}
                   required
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   placeholder="Ej: coordinador_bodega"
                 />
               </div>
@@ -427,7 +427,7 @@ const RolesList = () => {
                 <input
                   value={newRol.descripcion}
                   onChange={(e) => setNewRol({ ...newRol, descripcion: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -439,7 +439,7 @@ const RolesList = () => {
                     max="100"
                     value={newRol.nivel_jerarquia}
                     onChange={(e) => setNewRol({ ...newRol, nivel_jerarquia: parseInt(e.target.value) || 50 })}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                    className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   />
                 </div>
                 <div>
@@ -455,7 +455,7 @@ const RolesList = () => {
                       type="text"
                       value={newRol.color}
                       onChange={(e) => setNewRol({ ...newRol, color: e.target.value })}
-                      className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                      className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                     />
                   </div>
                 </div>
@@ -464,7 +464,7 @@ const RolesList = () => {
                 <button
                   type="button"
                   onClick={() => setShowNewRol(false)}
-                  className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"
+                  className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-xl"
                 >
                   Cancelar
                 </button>
@@ -483,7 +483,7 @@ const RolesList = () => {
       {/* Modal: Delete Confirm */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-6">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-sm w-full p-6">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Eliminar Rol
             </h3>
@@ -498,7 +498,7 @@ const RolesList = () => {
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setShowDeleteConfirm(null)}
-                className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"
+                className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-xl"
               >
                 Cancelar
               </button>

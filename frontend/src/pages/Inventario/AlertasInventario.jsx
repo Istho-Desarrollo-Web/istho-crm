@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - AlertasInventario (Versión Corregida v2.2)
  * ============================================================================
@@ -108,7 +108,7 @@ const AlertaCard = ({ alerta, onView, onAtender, onDescartar, canAtender }) => {
   const diasRestantes = alerta.dias_restantes;
 
   return (
-    <div className={`bg-white dark:bg-slate-800 rounded-2xl border ${config.border} shadow-sm overflow-hidden hover:shadow-md transition-shadow`}>
+    <div className={`bg-white dark:bg-centhrix-card rounded-2xl border ${config.border} shadow-sm overflow-hidden hover:shadow-md transition-shadow`}>
       <div className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
@@ -176,7 +176,7 @@ const AlertaCard = ({ alerta, onView, onAtender, onDescartar, canAtender }) => {
         </div>
 
         {(alerta.tipo === 'agotado' || alerta.tipo === 'bajo_stock') && (
-          <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-3 mb-4">
+          <div className="bg-slate-50 dark:bg-centhrix-bg/50 rounded-xl p-3 mb-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500 dark:text-slate-400">Stock Actual</span>
               <span className={`font-bold ${stockActual === 0 ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
@@ -189,7 +189,7 @@ const AlertaCard = ({ alerta, onView, onAtender, onDescartar, canAtender }) => {
                   <span className="text-slate-500 dark:text-slate-400">Stock Mínimo</span>
                   <span className="text-slate-700 dark:text-slate-300">{stockMinimo.toLocaleString()}</span>
                 </div>
-                <div className="mt-2 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div className="mt-2 h-2 bg-slate-200 dark:bg-centhrix-surface rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all ${stockActual === 0 ? 'bg-red-500' : 'bg-amber-500'}`}
                     style={{ width: `${Math.min((stockActual / stockMinimo) * 100, 100)}%` }}
@@ -278,7 +278,7 @@ const AlertasInventario = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-slate-200 dark:bg-centhrix-surface rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-8 h-8 text-slate-400" />
           </div>
           <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">Acceso restringido</h2>
@@ -370,7 +370,7 @@ const AlertasInventario = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/inventario')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -459,7 +459,7 @@ const AlertasInventario = () => {
         {/* FILTERS */}
         {/* ════════════════════════════════════════════════════════════════ */}
         {showFilters && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FilterDropdown
                 label="Tipo de Alerta"
@@ -501,11 +501,11 @@ const AlertasInventario = () => {
         {loadingAlertas ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[0, 1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-64 bg-gray-200 dark:bg-slate-700 rounded-2xl animate-pulse" />
+              <div key={i} className="h-64 bg-gray-200 dark:bg-centhrix-surface rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : filteredAlertas.length === 0 ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
             <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-emerald-500 dark:text-emerald-400" />
             </div>

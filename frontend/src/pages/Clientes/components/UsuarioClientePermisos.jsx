@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - Gestión de Permisos Usuario Cliente
  * ============================================================================
@@ -177,7 +177,7 @@ const ModuloPermisos = ({
     emerald: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
     violet: 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400',
     amber: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
-    slate: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+    slate: 'bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300'
   };
   
   const permisosActivos = Object.values(permisos || {}).filter(v => v).length;
@@ -202,7 +202,7 @@ const ModuloPermisos = ({
     <div className="border border-gray-100 dark:border-slate-700 rounded-xl overflow-hidden">
       {/* Header del módulo */}
       <div
-        className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700"
+        className="flex items-center justify-between p-4 bg-slate-50 dark:bg-centhrix-card cursor-pointer hover:bg-slate-100 dark:hover:bg-centhrix-surface"
         onClick={onToggleExpand}
       >
         <div className="flex items-center gap-3">
@@ -241,7 +241,7 @@ const ModuloPermisos = ({
       
       {/* Lista de permisos (expandible) */}
       {expanded && (
-        <div className="p-4 space-y-2 bg-white dark:bg-slate-800/50">
+        <div className="p-4 space-y-2 bg-white dark:bg-centhrix-card/50">
           {modulo.permisos.map((permiso) => {
             const PermisoIcon = permiso.icon;
             const activo = permisos?.[permiso.codigo] || false;
@@ -252,13 +252,13 @@ const ModuloPermisos = ({
                 className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${
                   activo
                     ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800'
-                    : 'bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600'
+                    : 'bg-slate-50 dark:bg-centhrix-card border border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600'
                 }`}
               >
                 <div className={`w-5 h-5 rounded-md flex items-center justify-center border-2 transition-colors ${
                   activo
                     ? 'bg-emerald-500 border-emerald-500'
-                    : 'bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-500'
+                    : 'bg-white dark:bg-centhrix-surface border-slate-300 dark:border-slate-500'
                 }`}>
                   {activo && <Check className="w-3 h-3 text-white" />}
                 </div>
@@ -412,7 +412,7 @@ const UsuarioClientePermisos = ({
         {/* HEADER INFO */}
         {/* ════════════════════════════════════════════════════════════════ */}
         
-        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-centhrix-card rounded-xl">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold">
               {usuario.nombre_completo?.charAt(0).toUpperCase()}

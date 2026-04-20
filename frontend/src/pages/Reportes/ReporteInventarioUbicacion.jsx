@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Reporte de Inventario por Ubicación
  * Detalle de cajas disponibles por ubicación en bodega, filtrado por cliente
  *
@@ -102,7 +102,7 @@ const ReporteInventarioUbicacion = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/reportes')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -126,7 +126,7 @@ const ReporteInventarioUbicacion = () => {
 
         {/* Filtro de cliente */}
         {!esPortal && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
             <div className="flex items-center gap-2 mb-3">
               <Filter className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Filtros</span>
@@ -146,7 +146,7 @@ const ReporteInventarioUbicacion = () => {
                 <select
                   value={clienteId}
                   onChange={(e) => handleClienteChange(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-400/50 focus:border-teal-400"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-400/50 focus:border-teal-400"
                 >
                   <option value="">Seleccionar cliente...</option>
                   {clientes.map(c => (
@@ -160,7 +160,7 @@ const ReporteInventarioUbicacion = () => {
 
         {/* Mensaje sin cliente */}
         {!clienteId && !esPortal && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-slate-700 text-center mb-6">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-slate-700 text-center mb-6">
             <MapPin className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
             <p className="text-slate-500 dark:text-slate-400">Selecciona un cliente para ver el inventario por ubicación</p>
           </div>
@@ -184,7 +184,7 @@ const ReporteInventarioUbicacion = () => {
             </div>
 
             {/* Tabla */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
+            <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
               <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
                 <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Detalle por Ubicación</h3>
                 <p className="text-xs text-slate-400">{rows.length} registros · {data?.cliente?.razon_social || ''}</p>
@@ -192,7 +192,7 @@ const ReporteInventarioUbicacion = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-slate-50/50 dark:bg-slate-900/30">
+                    <tr className="bg-slate-50/50 dark:bg-centhrix-bg/30">
                       <th className="text-center py-3 px-3 text-xs font-semibold text-slate-400 uppercase">#</th>
                       <th className="text-right py-3 px-3 text-xs font-semibold text-slate-400 uppercase">Ref.</th>
                       <th className="text-right py-3 px-3 text-xs font-semibold text-slate-400 uppercase">Caja</th>
@@ -216,7 +216,7 @@ const ReporteInventarioUbicacion = () => {
                               : 'text-slate-600 dark:text-slate-300'
                         : 'text-slate-400';
                       return (
-                        <tr key={idx} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors">
+                        <tr key={idx} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 transition-colors">
                           <td className="py-2.5 px-3 text-center text-slate-400">{idx + 1}</td>
                           <td className="py-2.5 px-3 text-right font-medium text-teal-600 dark:text-teal-400">{r.referencia}</td>
                           <td className="py-2.5 px-3 text-right text-slate-600 dark:text-slate-300">{r.numero_caja}</td>

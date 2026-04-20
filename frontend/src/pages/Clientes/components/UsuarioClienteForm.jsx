@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - Formulario Usuario Cliente
  * ============================================================================
@@ -114,7 +114,7 @@ const UsuarioClienteForm = ({
   const inputCls = (hasError) => `
     w-full px-4 py-2.5 pl-10 border rounded-xl text-sm
     focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
-    dark:bg-slate-800/50 dark:text-slate-100
+    dark:bg-centhrix-card/50 dark:text-slate-100
     ${hasError ? 'border-red-300 bg-red-50 dark:bg-red-900/10' : 'border-slate-200 dark:border-slate-700'}
   `.trim();
 
@@ -177,7 +177,7 @@ const UsuarioClienteForm = ({
                 type="email"
                 placeholder="usuario@empresa.com"
                 disabled={isEditing}
-                className={`${inputCls(!!errors.email)} ${isEditing ? 'bg-slate-50 dark:bg-slate-800 cursor-not-allowed' : ''}`}
+                className={`${inputCls(!!errors.email)} ${isEditing ? 'bg-slate-50 dark:bg-centhrix-card cursor-not-allowed' : ''}`}
               />
             </div>
             {errors.email && (
@@ -236,7 +236,7 @@ const UsuarioClienteForm = ({
             </h4>
 
             {/* Toggle generar automático */}
-            <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/30">
+            <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-centhrix-surface/30">
               <input
                 type="checkbox"
                 checked={generarPassword}
@@ -282,7 +282,7 @@ const UsuarioClienteForm = ({
             )}
 
             {/* Enviar email */}
-            <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/30">
+            <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-centhrix-surface/30">
               <input
                 {...register('enviar_email')}
                 type="checkbox"

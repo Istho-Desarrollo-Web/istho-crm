@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - ProductoForm
  * ============================================================================
@@ -172,7 +172,7 @@ const ProductoForm = ({
   const fieldCls = (hasError) => `
     w-full px-4 py-2.5 border rounded-xl
     focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
-    dark:bg-slate-800/50 dark:text-slate-100
+    dark:bg-centhrix-card/50 dark:text-slate-100
     ${hasError ? 'border-red-300 bg-red-50 dark:bg-red-900/10' : 'border-gray-200 dark:border-slate-700'}
   `.trim();
 
@@ -196,7 +196,7 @@ const ProductoForm = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30 rounded-lg"
+              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface/30 rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
@@ -249,7 +249,7 @@ const ProductoForm = ({
                     Cliente *
                   </label>
                   {loadingClientes ? (
-                    <div className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                    <div className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-centhrix-card/50">
                       <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
                       <span className="text-sm text-slate-500 dark:text-slate-400">Cargando clientes...</span>
                     </div>
@@ -285,7 +285,7 @@ const ProductoForm = ({
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                     Cliente
                   </label>
-                  <div className="px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <div className="px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-centhrix-card/50">
                     <span className="text-slate-700 dark:text-slate-300">
                       {producto.cliente.codigo_cliente ? `${producto.cliente.codigo_cliente} - ` : ''}
                       {producto.cliente.razon_social || producto.cliente.nombre || `Cliente ID: ${producto.cliente_id}`}

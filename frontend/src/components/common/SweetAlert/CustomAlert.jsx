@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Custom Alert Component
  * Alertas y confirmaciones con estilo premium y animaciones.
  * 
@@ -62,7 +62,7 @@ const CustomAlert = ({
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md bg-black/40 animate-fadeIn">
       <div 
-        className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl overflow-hidden border border-white/20 dark:border-slate-800 animate-zoomIn"
+        className="relative w-full max-w-sm bg-white dark:bg-centhrix-bg rounded-[2rem] shadow-2xl overflow-hidden border border-white/20 dark:border-slate-800 animate-zoomIn"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Decoración superior */}
@@ -101,7 +101,7 @@ const CustomAlert = ({
               <button
                 onClick={onCancel}
                 disabled={loading}
-                className="w-full py-3 px-6 rounded-2xl text-slate-500 dark:text-slate-400 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="w-full py-3 px-6 rounded-2xl text-slate-500 dark:text-slate-400 font-semibold hover:bg-slate-100 dark:hover:bg-centhrix-card transition-colors"
               >
                 {cancelText}
               </button>

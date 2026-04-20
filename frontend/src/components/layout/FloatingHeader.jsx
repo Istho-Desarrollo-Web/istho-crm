@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - FloatingHeader (Ultimate Edition)
  * ============================================================================
@@ -395,7 +395,7 @@ const ShortcutBadge = ({ shortcut }) => {
   if (!shortcut) return null;
 
   return (
-    <span className="ml-auto text-xs text-slate-400 dark:text-slate-500 font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">
+    <span className="ml-auto text-xs text-slate-400 dark:text-slate-500 font-mono bg-slate-100 dark:bg-centhrix-surface px-1.5 py-0.5 rounded">
       {shortcut}
     </span>
   );
@@ -466,9 +466,9 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
         onClick={onClose}
       />
       <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
           {/* Header */}
-          <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between">
+          <div className="sticky top-0 bg-white dark:bg-centhrix-card border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-[#E74C3C] to-[#C0392B] rounded-lg flex items-center justify-center">
                 <Keyboard className="w-5 h-5 text-white" />
@@ -480,7 +480,7 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              className="p-2 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-lg transition-colors"
             >
               <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             </button>
@@ -495,13 +495,13 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
                 </h3>
                 <div className="space-y-2">
                   {section.items.map((item, itemIdx) => (
-                    <div key={itemIdx} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <div key={itemIdx} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors">
                       <span className="text-sm text-slate-700 dark:text-slate-200">{item.description}</span>
                       <div className="flex items-center gap-1">
                         {item.keys.map((key, keyIdx) => (
                           <kbd
                             key={keyIdx}
-                            className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-mono rounded border border-slate-300 dark:border-slate-600 shadow-sm"
+                            className="px-2 py-1 bg-slate-100 dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 text-xs font-mono rounded border border-slate-300 dark:border-slate-600 shadow-sm"
                           >
                             {key}
                           </kbd>
@@ -535,7 +535,7 @@ const DropdownMenuItem = ({ icon: Icon, label, href, isActive, onClick, badge, s
       flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors
       ${isActive
         ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 font-medium'
-        : 'text-slate-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-slate-700'
+        : 'text-slate-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-centhrix-surface'
       }
     `}
   >
@@ -581,7 +581,7 @@ const DropdownMenu = ({ menu, isActive, isCurrentSection, onMouseEnter, onMouseL
           group relative flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200
           ${isCurrentSection
             ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/20'
-            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
+            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-centhrix-surface'
           }
         `}
         aria-expanded={isActive}
@@ -595,7 +595,7 @@ const DropdownMenu = ({ menu, isActive, isCurrentSection, onMouseEnter, onMouseL
           aria-hidden="true"
         />
         {!isActive && (
-          <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 px-2 py-1 text-xs font-medium text-white bg-slate-800 dark:bg-slate-600 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-[60]">
+          <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 px-2 py-1 text-xs font-medium text-white bg-slate-800 dark:bg-centhrix-surface rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-[60]">
             {menu.label}
           </span>
         )}
@@ -603,7 +603,7 @@ const DropdownMenu = ({ menu, isActive, isCurrentSection, onMouseEnter, onMouseL
 
       {isActive && (
         <div className="absolute top-full left-0 pt-2 w-56 z-50">
-          <div id={menuId} role="menu" className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 animate-fadeIn">
+          <div id={menuId} role="menu" className="bg-white dark:bg-centhrix-card rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 animate-fadeIn">
             {menu.items.map((item, idx) => (
               <DropdownMenuItem
                 key={idx}
@@ -645,7 +645,7 @@ const MobileMenuSection = ({ menu, isExpanded, onToggle, onNavigate, currentPath
   <div className="border-b border-gray-100 dark:border-slate-700 last:border-0">
     <button
       onClick={onToggle}
-      className="flex items-center justify-between w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+      className="flex items-center justify-between w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors"
       aria-expanded={isExpanded}
     >
       <span className="font-medium text-slate-800 dark:text-white">{menu.label}</span>
@@ -655,7 +655,7 @@ const MobileMenuSection = ({ menu, isExpanded, onToggle, onNavigate, currentPath
     </button>
 
     {isExpanded && (
-      <div className="pb-2 bg-slate-50/50 dark:bg-slate-800/50">
+      <div className="pb-2 bg-slate-50/50 dark:bg-centhrix-card/50">
         {menu.items.map((item, idx) => {
           const Icon = item.icon;
           const isActive = currentPath === item.href.split('?')[0];
@@ -668,7 +668,7 @@ const MobileMenuSection = ({ menu, isExpanded, onToggle, onNavigate, currentPath
                 flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors
                 ${isActive
                   ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 font-medium'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-centhrix-surface'
                 }
               `}
             >
@@ -753,10 +753,10 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
 
       <div
         ref={menuRef}
-        className="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white dark:bg-slate-900 z-50 shadow-2xl md:hidden overflow-y-auto transform transition-transform duration-300"
+        className="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white dark:bg-centhrix-bg z-50 shadow-2xl md:hidden overflow-y-auto transform transition-transform duration-300"
       >
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-700 px-4 py-4 z-10">
+        <div className="sticky top-0 bg-white dark:bg-centhrix-bg border-b border-gray-100 dark:border-slate-700 px-4 py-4 z-10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <img src={logoBlanco} alt="ISTHO" className="w-8 h-8 rounded-lg dark:hidden" />
@@ -765,7 +765,7 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              className="p-2 hover:bg-slate-100 dark:hover:bg-centhrix-card rounded-lg transition-colors"
               aria-label="Cerrar menú"
             >
               <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
@@ -844,7 +844,7 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
           {!['conductor', 'cliente'].includes(user?.rol) && (
             <button
               onClick={() => handleNavigation('/reportes')}
-              className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-card rounded-lg transition-colors"
             >
               <FileSpreadsheet className="w-4 h-4" />
               Reportes
@@ -852,21 +852,21 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
           )}
           <button
             onClick={() => handleNavigation('/perfil')}
-            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-card rounded-lg transition-colors"
           >
             <UserCircle className="w-4 h-4" />
             Mi Perfil
           </button>
           <button
             onClick={() => handleNavigation('/configuracion')}
-            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-card rounded-lg transition-colors"
           >
             <Settings className="w-4 h-4" />
             Configuración
           </button>
           <button
             onClick={onToggleDark}
-            className="flex items-center justify-between w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="flex items-center justify-between w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-card rounded-lg transition-colors"
           >
             <div className="flex items-center gap-3">
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -952,7 +952,7 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
         aria-expanded={isOpen}
         aria-controls={isOpen ? avatarMenuId : undefined}
         aria-label="Menú de usuario"
-        className="flex items-center gap-3 p-1 pr-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all"
+        className="flex items-center gap-3 p-1 pr-3 hover:bg-slate-50 dark:hover:bg-centhrix-card rounded-full border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all"
       >
         {user?.avatar_url ? (
           <img src={getServerFileUrl(user.avatar_url)} alt="" className="w-8 h-8 rounded-full object-cover shadow-md" />
@@ -964,7 +964,7 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
       </button>
 
       {isOpen && (
-        <div id={avatarMenuId} role="menu" className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50 animate-fadeIn">
+        <div id={avatarMenuId} role="menu" className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-centhrix-card rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50 animate-fadeIn">
           {/* User Info */}
           <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
@@ -992,7 +992,7 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
             <button
               role="menuitem"
               onClick={() => handleNavigate('/perfil')}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-centhrix-card transition-colors"
             >
               <UserCircle className="w-4 h-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
               Ver Perfil
@@ -1001,7 +1001,7 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
             <button
               role="menuitem"
               onClick={() => handleNavigate('/configuracion')}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-centhrix-card transition-colors"
             >
               <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
               Configuración
@@ -1010,7 +1010,7 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
             <button
               role="menuitem"
               onClick={() => handleNavigate('/notificaciones')}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-centhrix-card transition-colors"
             >
               <Bell className="w-4 h-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
               Notificaciones
@@ -1145,7 +1145,7 @@ const FloatingHeader = () => {
           fixed z-40 transition-all duration-500 ease-in-out
           left-4 right-4 md:left-8 md:right-8 lg:left-1/2 lg:w-full lg:max-w-7xl lg:-translate-x-1/2
           ${isVisible ? 'top-4 translate-y-0' : '-top-24 -translate-y-full'}
-          bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700
+          bg-white dark:bg-centhrix-bg rounded-2xl border border-gray-100 dark:border-slate-700
           ${isAtTop
             ? 'shadow-lg shadow-gray-200/50 dark:shadow-black/20'
             : 'shadow-xl shadow-gray-200/50 dark:shadow-black/40 ring-1 ring-black/5'
@@ -1162,7 +1162,7 @@ const FloatingHeader = () => {
                 aria-haspopup="menu"
                 aria-expanded={isMobileMenuOpen}
                 aria-label="Abrir menú de navegación"
-                className="md:hidden p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="md:hidden p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-card rounded-lg transition-colors"
               >
                 <Menu className="w-6 h-6" aria-hidden="true" />
               </button>
@@ -1259,7 +1259,7 @@ const FloatingHeader = () => {
               {/* Search - abre GlobalSearch modal */}
               <button
                 onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
-                className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-card rounded-lg transition-colors"
                 title="Buscar (Ctrl+K)"
                 aria-label="Buscar (Ctrl+K)"
               >
@@ -1269,7 +1269,7 @@ const FloatingHeader = () => {
               <div className="flex items-center gap-1 sm:gap-2 border-l border-gray-200 dark:border-slate-700 pl-2 sm:pl-4">
                 <button
                   onClick={toggleDark}
-                  className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors relative"
+                  className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-card rounded-lg transition-colors relative"
                   title={`Modo ${isDark ? 'Claro' : 'Oscuro'} (⌘B)`}
                   aria-label={`Cambiar a modo ${isDark ? 'claro' : 'oscuro'}`}
                 >
@@ -1279,7 +1279,7 @@ const FloatingHeader = () => {
                 <div ref={notifRef} className="relative">
                   <button
                     onClick={handleBellClick}
-                    className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors relative"
+                    className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-card rounded-lg transition-colors relative"
                     title="Notificaciones"
                   >
                     <Bell className="w-5 h-5" />
@@ -1288,7 +1288,7 @@ const FloatingHeader = () => {
 
                   {/* Dropdown de notificaciones */}
                   {isNotifOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-[384px] bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50 -mr-2 sm:mr-0">
+                    <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-[384px] bg-white dark:bg-centhrix-card rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50 -mr-2 sm:mr-0">
                       {/* Header */}
                       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-700">
                         <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">Notificaciones</h3>
@@ -1310,7 +1310,7 @@ const FloatingHeader = () => {
                         {loadingNotifs ? (
                           <div className="p-4 space-y-3">
                             {[0, 1, 2].map(i => (
-                              <div key={i} className="h-14 bg-gray-100 dark:bg-slate-700 rounded-lg animate-pulse" />
+                              <div key={i} className="h-14 bg-gray-100 dark:bg-centhrix-surface rounded-lg animate-pulse" />
                             ))}
                           </div>
                         ) : notificaciones.length === 0 ? (
@@ -1325,7 +1325,7 @@ const FloatingHeader = () => {
                               alerta: { icon: AlertTriangle, bg: 'bg-amber-100 dark:bg-amber-900/30', color: 'text-amber-600' },
                               cliente: { icon: Users, bg: 'bg-violet-100 dark:bg-violet-900/30', color: 'text-violet-600' },
                               reporte: { icon: FileText, bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-600' },
-                              sistema: { icon: Info, bg: 'bg-slate-100 dark:bg-slate-700', color: 'text-slate-600 dark:text-slate-300' },
+                              sistema: { icon: Info, bg: 'bg-slate-100 dark:bg-centhrix-surface', color: 'text-slate-600 dark:text-slate-300' },
                               inventario: { icon: Package, bg: 'bg-orange-100 dark:bg-orange-900/30', color: 'text-orange-600' },
                             };
                             const cfg = typeConfig[notif.tipo] || typeConfig.sistema;
@@ -1343,7 +1343,7 @@ const FloatingHeader = () => {
                                     setIsNotifOpen(false);
                                   }
                                 }}
-                                className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-gray-50 dark:border-slate-700/50 last:border-0 ${!notif.leida ? 'bg-orange-50/50 dark:bg-orange-900/10' : ''}`}
+                                className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors border-b border-gray-50 dark:border-slate-700/50 last:border-0 ${!notif.leida ? 'bg-orange-50/50 dark:bg-orange-900/10' : ''}`}
                               >
                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${cfg.bg}`}>
                                   <Icon className={`w-4 h-4 ${cfg.color}`} />

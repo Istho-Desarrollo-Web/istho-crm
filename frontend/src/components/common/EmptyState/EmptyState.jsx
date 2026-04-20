@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+﻿import PropTypes from 'prop-types';
 
 /**
  * Componente para mostrar estados vacíos
@@ -11,8 +11,8 @@ const EmptyState = ({
     action
 }) => {
     return (
-        <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl border-dashed">
-            <div className="w-12 h-12 bg-white dark:bg-slate-700 rounded-full flex items-center justify-center shadow-sm mb-4">
+        <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50 dark:bg-centhrix-card/50 border border-gray-100 dark:border-slate-700 rounded-xl border-dashed">
+            <div className="w-12 h-12 bg-white dark:bg-centhrix-surface rounded-full flex items-center justify-center shadow-sm mb-4">
                 {Icon && <Icon className="w-6 h-6 text-slate-400 dark:text-slate-500" />}
             </div>
 

@@ -218,7 +218,7 @@ const ConfiguracionWms = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-centhrix-card transition-colors">
               <ArrowLeft className="w-5 h-5 text-slate-400" />
             </button>
             <div className="p-2.5 bg-red-100 dark:bg-red-900/30 rounded-xl">
@@ -233,8 +233,8 @@ const ConfiguracionWms = () => {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300 transition-all hover:scale-[1.02]">
-            <div className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border bg-slate-50 border-slate-200 text-slate-700 dark:bg-centhrix-card/50 dark:border-slate-700 dark:text-slate-300 transition-all hover:scale-[1.02]">
+            <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
               <Database className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             </div>
             <div>
@@ -243,7 +243,7 @@ const ConfiguracionWms = () => {
             </div>
           </div>
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-300 transition-all hover:scale-[1.02]">
-            <div className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80">
+            <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
               <ToggleRight className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
@@ -252,7 +252,7 @@ const ConfiguracionWms = () => {
             </div>
           </div>
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl border bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300 transition-all hover:scale-[1.02]">
-            <div className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80">
+            <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
               <ToggleLeft className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             </div>
             <div>
@@ -263,7 +263,7 @@ const ConfiguracionWms = () => {
         </div>
 
         {/* Info box */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex items-start gap-3">
             <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
               <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -286,7 +286,7 @@ const ConfiguracionWms = () => {
           const items = data[categoria] || [];
 
           return (
-            <div key={categoria} className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
+            <div key={categoria} className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
               {/* Título de sección */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
@@ -339,7 +339,7 @@ const ConfiguracionWms = () => {
                           onCancelar={cancelar}
                         />
                       ) : (
-                        <div className={`flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 transition-all hover:shadow-sm ${!item.activo ? 'opacity-50' : ''}`}>
+                        <div className={`flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-slate-700 bg-slate-50 dark:bg-centhrix-bg/50 transition-all hover:shadow-sm ${!item.activo ? 'opacity-50' : ''}`}>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
@@ -368,7 +368,7 @@ const ConfiguracionWms = () => {
                           <div className="flex items-center gap-1 ml-4">
                             <button
                               onClick={() => handleToggle(item.id)}
-                              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-centhrix-surface transition-colors"
                               title={item.activo ? 'Desactivar' : 'Activar'}
                             >
                               {item.activo
@@ -378,7 +378,7 @@ const ConfiguracionWms = () => {
                             </button>
                             <button
                               onClick={() => iniciarEdicion(item)}
-                              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-centhrix-surface transition-colors"
                               title="Editar"
                             >
                               <Edit3 className="w-4 h-4 text-blue-500 dark:text-blue-400" />
@@ -415,7 +415,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
   };
 
   return (
-    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-gray-100 dark:border-slate-700 mb-3 space-y-3">
+    <div className="p-4 rounded-xl bg-slate-50 dark:bg-centhrix-bg/50 border border-gray-100 dark:border-slate-700 mb-3 space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Valor WMS */}
         <div>
@@ -425,7 +425,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
             value={formData.valor_wms || ''}
             onChange={(e) => handleChange('valor_wms', e.target.value)}
             placeholder="Ej: Recarga, Picking, Finalizada"
-            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]"
+            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]"
           />
         </div>
 
@@ -437,7 +437,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
             value={formData.valor_crm || ''}
             onChange={(e) => handleChange('valor_crm', e.target.value)}
             placeholder="Ej: Recarga de stock, Salida (PK)"
-            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]"
+            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]"
           />
         </div>
 
@@ -448,7 +448,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
             <select
               value={formData.tipo_documento || 'CO'}
               onChange={(e) => handleChange('tipo_documento', e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]"
+              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]"
             >
               <option value="CO">CO — Entrada (Recepción)</option>
               <option value="PK">PK — Salida (Picking)</option>
@@ -464,7 +464,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
               type="checkbox"
               checked={formData.requiere_detalle || false}
               onChange={(e) => handleChange('requiere_detalle', e.target.checked)}
-              className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-[#E74C3C] focus:ring-[#E74C3C]"
+              className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 dark:bg-centhrix-surface text-[#E74C3C] focus:ring-[#E74C3C]"
             />
             <label className="text-sm text-slate-600 dark:text-slate-400">Requiere detalle adicional del WMS</label>
           </div>
@@ -478,7 +478,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
             value={formData.descripcion || ''}
             onChange={(e) => handleChange('descripcion', e.target.value)}
             placeholder="Nota para el administrador"
-            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]"
+            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]"
           />
         </div>
       </div>
@@ -495,7 +495,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
         </button>
         <button
           onClick={onCancelar}
-          className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+          className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-200 dark:hover:bg-centhrix-card transition-colors"
         >
           <X className="w-4 h-4" />
           Cancelar

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - Lista de Plantillas de Email
  * ============================================================================
@@ -51,7 +51,7 @@ const TIPO_CONFIG = {
   general: {
     label: 'General',
     icon: FileText,
-    bg: 'bg-slate-100 dark:bg-slate-700',
+    bg: 'bg-slate-100 dark:bg-centhrix-surface',
     color: 'text-slate-600 dark:text-slate-300',
   },
 };
@@ -61,7 +61,7 @@ const PlantillaCard = ({ plantilla, onEdit, onDelete, onPreview, canEdit, canDel
   const Icon = config.icon;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
@@ -186,7 +186,7 @@ const PlantillasEmailList = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/configuracion')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -212,11 +212,11 @@ const PlantillasEmailList = () => {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-48 bg-gray-200 dark:bg-slate-700 rounded-2xl animate-pulse" />
+              <div key={i} className="h-48 bg-gray-200 dark:bg-centhrix-surface rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : plantillas.length === 0 ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
             <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Mail className="w-8 h-8 text-orange-500 dark:text-orange-400" />
             </div>
@@ -261,7 +261,7 @@ const PlantillasEmailList = () => {
       {/* Preview Modal */}
       {previewModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
               <div>
                 <h3 className="font-semibold text-slate-800 dark:text-slate-100">Vista Previa</h3>
@@ -276,7 +276,7 @@ const PlantillasEmailList = () => {
             </div>
             <div className="flex-1 overflow-auto p-4">
               <div
-                className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6"
+                className="bg-slate-50 dark:bg-centhrix-bg rounded-xl p-6"
                 dangerouslySetInnerHTML={{ __html: previewModal.html }}
               />
             </div>

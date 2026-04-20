@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - VehiculoForm Component
  * Formulario modal para crear y editar vehículos.
  * Validación con React Hook Form + Yup.
@@ -40,7 +40,7 @@ const InputField = ({ label, icon: Icon, required, error, children }) => (
 
 const inputClasses = (hasIcon, hasError) => `
   w-full px-4 py-2.5
-  bg-white dark:bg-slate-800 border rounded-xl
+  bg-white dark:bg-centhrix-card border rounded-xl
   text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
   focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
   transition-all duration-200
@@ -282,7 +282,7 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
 
                   {/* Estado (solo edición) */}
                   {isEditing && !readOnly && (
-                    <div className="md:col-span-2 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                    <div className="md:col-span-2 p-4 bg-slate-50 dark:bg-centhrix-card rounded-xl">
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Estado del Vehículo
                       </label>

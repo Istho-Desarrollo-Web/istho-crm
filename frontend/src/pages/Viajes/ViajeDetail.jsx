@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - ViajeDetail
  * ============================================================================
@@ -117,7 +117,7 @@ const getEstadoChipProps = (estado) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 const SummaryCard = ({ title, value, icon: Icon, iconColor }) => (
-  <div className="rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800">
+  <div className="rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 bg-white dark:bg-centhrix-card">
     <div className="flex items-start justify-between">
       <div>
         <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{title}</p>
@@ -228,18 +228,18 @@ const ViajeDetail = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 dark:bg-slate-700 rounded w-48" />
+            <div className="h-8 bg-gray-200 dark:bg-centhrix-surface rounded w-48" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="h-28 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+                <div key={i} className="h-28 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
               ))}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="h-28 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+                <div key={i} className="h-28 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
               ))}
             </div>
-            <div className="h-64 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+            <div className="h-64 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
           </div>
         </main>
       </div>
@@ -417,7 +417,7 @@ const ViajeDetail = () => {
         {/* SECCION: Informacion Basica                                   */}
         {/* ════════════════════════════════════════════════════════════════ */}
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
           <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
             <FileText className="w-5 h-5 text-slate-400" />
             Informacion Basica
@@ -455,7 +455,7 @@ const ViajeDetail = () => {
         {/* SECCION: Datos de Facturacion                                 */}
         {/* ════════════════════════════════════════════════════════════════ */}
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
           <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
             <Receipt className="w-5 h-5 text-slate-400" />
             Datos de Facturacion
@@ -485,13 +485,13 @@ const ViajeDetail = () => {
         {/* SECCION: Gastos Asociados                                     */}
         {/* ════════════════════════════════════════════════════════════════ */}
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
           <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-700">
             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-slate-400" />
               Gastos Asociados
               {gastos.length > 0 && (
-                <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full">
+                <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 rounded-full">
                   {gastos.length}
                 </span>
               )}
@@ -510,7 +510,7 @@ const ViajeDetail = () => {
 
           {gastos.length === 0 ? (
             <div className="py-16 text-center">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-centhrix-surface rounded-full flex items-center justify-center mx-auto mb-4">
                 <Receipt className="w-8 h-8 text-slate-400 dark:text-slate-500" />
               </div>
               <h4 className="text-lg font-medium text-slate-800 dark:text-slate-200 mb-1">
@@ -549,7 +549,7 @@ const ViajeDetail = () => {
                   {gastos.map((gasto) => (
                     <tr
                       key={gasto.id}
-                      className="border-b border-gray-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                      className="border-b border-gray-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors"
                     >
                       <td className="py-3 px-4 font-mono font-medium text-slate-800 dark:text-slate-200">
                         {gasto.consecutivo || gasto.id || '-'}
@@ -642,7 +642,7 @@ const ViajeDetail = () => {
               Al completar el viaje se marcará como finalizado. Esta acción no se puede deshacer.
             </p>
           </div>
-          <div className="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl space-y-2">
+          <div className="p-4 bg-slate-50 dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-slate-500 dark:text-slate-400">Ruta</span>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{viaje?.origen} → {viaje?.destino}</span>
@@ -686,7 +686,7 @@ const ViajeDetail = () => {
               rows={3}
               value={motivoAnulacion}
               onChange={(e) => setMotivoAnulacion(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
             />
           </div>
         </div>

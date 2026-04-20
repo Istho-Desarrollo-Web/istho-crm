@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - PieChart Component
  * Gráfico circular para distribución
  *
@@ -9,16 +9,7 @@
 
 import { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-
-const COLORS = [
-  '#3b82f6', // blue
-  '#10b981', // emerald
-  '#f59e0b', // amber
-  '#8b5cf6', // violet
-  '#ef4444', // red
-  '#06b6d4', // cyan
-  '#f97316', // orange
-];
+import { CHART_COLORS } from '../../utils/chartColors';
 
 const PieChart = ({
   data = [],
@@ -49,7 +40,7 @@ const PieChart = ({
 
   if (validData.length === 0) {
     return (
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
+      <div className="bg-white dark:bg-centhrix-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
@@ -134,7 +125,7 @@ const PieChart = ({
       path,
       percentage,
       midAngle,
-      color: item.color || COLORS[idx % COLORS.length],
+      color: item.color || CHART_COLORS[idx % CHART_COLORS.length],
     };
 
     return { currentAngle: endAngle, items: [...acc.items, slice] };
@@ -145,7 +136,7 @@ const PieChart = ({
   // ══════════════════════════════════════════════════════════════════════════
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
+    <div className="bg-white dark:bg-centhrix-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
       {/* Header */}
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
@@ -222,7 +213,7 @@ const PieChart = ({
                 top: mousePos.y - 48,
               }}
             >
-              <div className="bg-slate-800 dark:bg-slate-700 text-white px-3 py-1.5 rounded-lg shadow-xl text-xs border border-slate-600">
+              <div className="bg-slate-800 dark:bg-centhrix-surface text-white px-3 py-1.5 rounded-lg shadow-xl text-xs border border-slate-600">
                 <p className="font-semibold leading-snug">
                   {slices[hoveredSlice].label || slices[hoveredSlice].name}
                 </p>
@@ -249,7 +240,7 @@ const PieChart = ({
                   flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer
                   transition-colors duration-150
                   ${hoveredSlice === idx
-                    ? 'bg-slate-100 dark:bg-slate-700/60'
+                    ? 'bg-slate-100 dark:bg-centhrix-surface/60'
                     : hoveredSlice !== null
                       ? 'opacity-50'
                       : ''

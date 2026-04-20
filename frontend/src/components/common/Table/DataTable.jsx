@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - DataTable Component
  * Tabla de datos con tabs reutilizable
  *
@@ -43,7 +43,7 @@ const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage }) => {
               >
                 {columns.map((_, colIdx) => (
                   <td key={colIdx} className="py-4 px-4">
-                    <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" />
+                    <div className="h-4 bg-gray-200 dark:bg-centhrix-surface rounded animate-pulse" />
                   </td>
                 ))}
               </tr>
@@ -91,7 +91,7 @@ const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage }) => {
               onClick={() => onRowClick?.(row)}
               className={`
                 border-b border-gray-50 dark:border-slate-700
-                hover:bg-slate-50 dark:hover:bg-slate-700
+                hover:bg-slate-50 dark:hover:bg-centhrix-surface
                 transition-colors
                 ${onRowClick ? 'cursor-pointer' : ''}
               `}
@@ -171,7 +171,7 @@ const DataTable = ({
   if (!tabs || tabs.length === 0) {
     return (
       <div className="
-        bg-white dark:bg-slate-800
+        bg-white dark:bg-centhrix-card
         rounded-2xl shadow-sm
         border border-gray-100 dark:border-slate-700
         overflow-hidden
@@ -197,7 +197,7 @@ const DataTable = ({
 
   return (
     <div className="
-      bg-white dark:bg-slate-800
+      bg-white dark:bg-centhrix-card
       rounded-2xl shadow-sm
       border border-gray-100 dark:border-slate-700
       overflow-hidden
@@ -219,7 +219,7 @@ const DataTable = ({
             >
               {tab.label}
               {tab.count !== undefined && (
-                <span className="ml-2 text-xs bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">
+                <span className="ml-2 text-xs bg-slate-100 dark:bg-centhrix-surface px-2 py-0.5 rounded-full">
                   {tab.count}
                 </span>
               )}

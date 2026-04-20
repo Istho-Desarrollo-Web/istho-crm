@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Pagination Component
  * Componente de paginación reutilizable
  *
@@ -47,7 +47,7 @@ const Pagination = ({
         w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-200
         ${currentPage === page
           ? 'bg-orange-500 text-white shadow-sm'
-          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface'
         }
       `}
     >
@@ -56,7 +56,7 @@ const Pagination = ({
   );
 
   return (
-    <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 px-4 py-3 bg-white dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-700">
+    <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 px-4 py-3 bg-white dark:bg-centhrix-card/50 border-t border-gray-100 dark:border-slate-700">
 
       {/* Info — compacta en móvil, completa en sm+ */}
       {showInfo && (
@@ -79,7 +79,7 @@ const Pagination = ({
         <button
           onClick={() => onPageChange?.(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-1.5 sm:p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent transition-colors duration-200"
+          className="p-1.5 sm:p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-surface hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent transition-colors duration-200"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -111,7 +111,7 @@ const Pagination = ({
         <button
           onClick={() => onPageChange?.(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-1.5 sm:p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent transition-colors duration-200"
+          className="p-1.5 sm:p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-surface hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent transition-colors duration-200"
         >
           <ChevronRight className="w-4 h-4" />
         </button>

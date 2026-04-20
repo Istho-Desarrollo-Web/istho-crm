@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - ViajesList
  * ============================================================================
@@ -202,7 +202,7 @@ const RowActions = ({ viaje, onView, onEdit, onDelete, onCompletar, onAnular }) 
 
 const KpiMini = ({ icon: Icon, label, value, color }) => (
   <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}>
-    <div className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80">
+    <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
       <Icon className="w-5 h-5" />
     </div>
     <div>
@@ -403,7 +403,7 @@ const ViajesList = () => {
               <MapPin className="w-7 h-7 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Viajes</h1>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Viajes</h1>
               <p className="text-slate-500 dark:text-slate-400 mt-0.5">Registro y seguimiento de viajes</p>
             </div>
           </div>
@@ -412,7 +412,7 @@ const ViajesList = () => {
               <>
                 <button
                   onClick={handleExportExcel}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
                   Excel
@@ -453,7 +453,7 @@ const ViajesList = () => {
         )}
 
         {/* FILTERS BAR */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
@@ -463,12 +463,12 @@ const ViajesList = () => {
                 placeholder="Buscar por número, destino, cliente o documento..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
 
             {/* Estado Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl overflow-x-auto flex-nowrap whitespace-nowrap">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-bg p-1 rounded-xl overflow-x-auto flex-nowrap whitespace-nowrap">
               {[
                 { key: 'todos', label: 'Todos' },
                 { key: 'activo', label: 'Activos' },
@@ -480,7 +480,7 @@ const ViajesList = () => {
                   onClick={() => setEstadoFilter(tab.key)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     estadoFilter === tab.key
-                      ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                      ? 'bg-white dark:bg-centhrix-surface text-blue-600 dark:text-blue-400 shadow-sm'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                   }`}
                 >
@@ -497,7 +497,7 @@ const ViajesList = () => {
                   type="date"
                   value={fechaDesde}
                   onChange={(e) => setFechaDesde(e.target.value)}
-                  className="pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   title="Fecha desde"
                 />
               </div>
@@ -508,7 +508,7 @@ const ViajesList = () => {
                   type="date"
                   value={fechaHasta}
                   onChange={(e) => setFechaHasta(e.target.value)}
-                  className="pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   title="Fecha hasta"
                 />
               </div>
@@ -532,17 +532,17 @@ const ViajesList = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {viajes.length} viaje{viajes.length !== 1 && 's'} encontrado{viajes.length !== 1 && 's'}
           </p>
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card p-1 rounded-lg">
             <button
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               title="Vista tabla"
             >
               <LayoutList className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('cards')}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               title="Vista tarjetas"
             >
               <LayoutGrid className="w-4 h-4" />
@@ -551,7 +551,7 @@ const ViajesList = () => {
         </div>
 
         {/* TABLE */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
           {loading ? (
             <div className="p-8 text-center">
               <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
@@ -559,7 +559,7 @@ const ViajesList = () => {
             </div>
           ) : viajes.length === 0 ? (
             <div className="py-16 text-center">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-centhrix-surface rounded-full flex items-center justify-center mx-auto mb-4">
                 <MapPin className="w-8 h-8 text-slate-400" />
               </div>
               <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
@@ -576,7 +576,7 @@ const ViajesList = () => {
                   <tr className="border-b border-gray-100 dark:border-slate-700">
                     <th
                       onClick={() => handleSort('numero')}
-                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center gap-1">
                         Número <SortIcon field="numero" sortField={sortField} sortDir={sortDir} />
@@ -584,7 +584,7 @@ const ViajesList = () => {
                     </th>
                     <th
                       onClick={() => handleSort('destino')}
-                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center gap-1">
                         Ruta <SortIcon field="destino" sortField={sortField} sortDir={sortDir} />
@@ -592,7 +592,7 @@ const ViajesList = () => {
                     </th>
                     <th
                       onClick={() => handleSort('cliente_nombre')}
-                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center gap-1">
                         Cliente <SortIcon field="cliente_nombre" sortField={sortField} sortDir={sortDir} />
@@ -609,7 +609,7 @@ const ViajesList = () => {
                     </th>
                     <th
                       onClick={() => handleSort('estado')}
-                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center justify-center gap-1">
                         Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} />
@@ -624,7 +624,7 @@ const ViajesList = () => {
                   {viajes.map((viaje) => (
                     <tr
                       key={viaje.id}
-                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer group"
+                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors cursor-pointer group"
                       onClick={() => handleView(viaje)}
                     >
                       {/* Número */}
@@ -690,7 +690,7 @@ const ViajesList = () => {
                             <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                           </span>
                         ) : (
-                          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700">
+                          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 dark:bg-centhrix-surface">
                             <X className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                           </span>
                         )}
@@ -723,7 +723,7 @@ const ViajesList = () => {
                 <div
                   key={viaje.id}
                   onClick={() => handleView(viaje)}
-                  className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all cursor-pointer"
+                  className="bg-white dark:bg-centhrix-card rounded-xl border border-gray-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all cursor-pointer"
                 >
                   {/* Header: número + estado + acciones */}
                   <div className="flex items-center justify-between mb-3">
@@ -774,7 +774,7 @@ const ViajesList = () => {
                           <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                         </span>
                       ) : (
-                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-centhrix-surface">
                           <X className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                         </span>
                       )}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - MovimientoForm Component
  * ============================================================================
@@ -98,7 +98,7 @@ const InputField = ({ label, icon: Icon, required, children, error }) => (
 
 const inputCls = (hasIcon = false, hasError = false) => `
   w-full px-4 py-2.5
-  bg-white dark:bg-slate-800 border rounded-xl
+  bg-white dark:bg-centhrix-card border rounded-xl
   text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
   focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
   transition-all duration-200
@@ -485,11 +485,11 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                         Soporte actual
                       </label>
                       {isImage && (
-                        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900">
+                        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-bg">
                           <img src={soporteUrl} alt="Soporte" className="w-full max-h-48 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
                         </div>
                       )}
-                      <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl">
+                      <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl">
                         <FileText className="h-5 w-5 text-slate-400 flex-shrink-0" />
                         <a href={soporteUrl} target="_blank" rel="noopener noreferrer" download={soporteExistente.nombre} className="text-sm text-blue-600 dark:text-blue-400 hover:underline truncate">
                           {soporteExistente.nombre}
@@ -503,7 +503,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                 {soporte && soporte.type?.startsWith('image/') && (
                   <div className="space-y-1">
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Vista previa</label>
-                    <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900">
+                    <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-bg">
                       <img src={URL.createObjectURL(soporte)} alt="Vista previa" className="w-full max-h-48 object-contain" />
                     </div>
                   </div>
@@ -519,7 +519,7 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center gap-3 cursor-pointer w-full px-4 py-3 text-left bg-white dark:bg-slate-800 border border-dashed rounded-xl text-sm text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-slate-700 transition-all duration-200"
+                      className="flex items-center gap-3 cursor-pointer w-full px-4 py-3 text-left bg-white dark:bg-centhrix-card border border-dashed rounded-xl text-sm text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-centhrix-surface transition-all duration-200"
                     >
                       <Upload className="h-5 w-5 text-slate-400 flex-shrink-0" />
                       <span className="truncate">{soporte ? soporte.name : 'Seleccionar archivo (PDF, JPG o PNG)'}</span>

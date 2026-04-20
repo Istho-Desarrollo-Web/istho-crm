@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Modal de Permisos por Usuario
  *
  * Permite editar permisos individuales por usuario.
@@ -271,7 +271,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-700 shrink-0">
           <div className="flex items-center gap-3">
@@ -300,7 +300,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface">
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
@@ -338,7 +338,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
                   <div key={modulo} className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
                     <button
                       onClick={() => toggleGroup(modulo)}
-                      className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-900/70 transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-centhrix-bg/50 hover:bg-slate-100 dark:hover:bg-centhrix-bg/70 transition-colors"
                     >
                       <span className="flex items-center gap-2 font-medium text-sm text-slate-700 dark:text-slate-200">
                         {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
@@ -353,7 +353,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
                         {acciones.map((accion) => (
                           <label
                             key={accion.codigo}
-                            className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/20 cursor-pointer"
+                            className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 cursor-pointer"
                           >
                             <div>
                               <span className="text-sm text-slate-700 dark:text-slate-200">{accion.nombre}</span>
@@ -408,7 +408,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
 
                 return (
                   <div key={grupo.modulo} className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
-                    <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 dark:bg-slate-900/50">
+                    <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 dark:bg-centhrix-bg/50">
                       <input
                         type="checkbox"
                         checked={allChecked}
@@ -440,7 +440,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
                           return (
                             <label
                               key={permiso.id}
-                              className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/20 cursor-pointer"
+                              className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 cursor-pointer"
                             >
                               <div className="flex items-center gap-2">
                                 <span className="text-sm text-slate-700 dark:text-slate-200">
@@ -482,7 +482,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"
+              className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-xl"
             >
               Cancelar
             </button>

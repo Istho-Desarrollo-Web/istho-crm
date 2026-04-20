@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Truck, CheckCircle, DollarSign, FileSpreadsheet, FileText, Calendar, ArrowLeft, RefreshCw, Mail, Filter, X, Search, Loader2 } from 'lucide-react';
 import { KpiCard, AccionesDropdown } from '../../components/common';
@@ -72,7 +72,7 @@ const ReporteViajes = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/reportes')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -95,7 +95,7 @@ const ReporteViajes = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex items-center gap-2 mb-3">
             <Filter className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Filtros</span>
@@ -113,14 +113,14 @@ const ReporteViajes = () => {
                   <Calendar className="w-3 h-3 inline mr-1" />
                   Desde
                 </label>
-                <input type="date" value={inputDesde} onChange={e => setInputDesde(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400" />
+                <input type="date" value={inputDesde} onChange={e => setInputDesde(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400" />
               </div>
               <div className="flex-1">
                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
                   <Calendar className="w-3 h-3 inline mr-1" />
                   Hasta
                 </label>
-                <input type="date" value={inputHasta} onChange={e => setInputHasta(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400" />
+                <input type="date" value={inputHasta} onChange={e => setInputHasta(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400" />
               </div>
             </div>
             <div className="flex items-end">
@@ -130,7 +130,7 @@ const ReporteViajes = () => {
                 className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all ${
                   hasPendingChanges && !loading
                     ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                    : 'bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-centhrix-card'
                 }`}
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
@@ -160,7 +160,7 @@ const ReporteViajes = () => {
         </div>
 
         {/* Últimos viajes table */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
           <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Últimos Viajes</h3>
             <p className="text-xs text-slate-400">10 viajes más recientes</p>
@@ -168,7 +168,7 @@ const ReporteViajes = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50/50 dark:bg-slate-900/30">
+                <tr className="bg-slate-50/50 dark:bg-centhrix-bg/30">
                   <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Número</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Ruta</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Conductor</th>
@@ -179,7 +179,7 @@ const ReporteViajes = () => {
               </thead>
               <tbody>
                 {(data?.ultimos || []).map((v) => (
-                  <tr key={v.id} onClick={() => navigate(`/viajes/viajes/${v.id}`)} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/20 cursor-pointer transition-colors">
+                  <tr key={v.id} onClick={() => navigate(`/viajes/viajes/${v.id}`)} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 cursor-pointer transition-colors">
                     <td className="py-3 px-4 font-medium text-blue-600 dark:text-blue-400">{v.numero}</td>
                     <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{v.origen} → {v.destino}</td>
                     <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{v.conductor}</td>

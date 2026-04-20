@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - Forgot Password Page
  * ============================================================================
@@ -107,7 +107,7 @@ const ForgotPassword = () => {
                     <div className="absolute bottom-20 left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
 
                     <div
-                        className="relative z-10 w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700/50 p-8 text-center"
+                        className="relative z-10 w-full max-w-md bg-white dark:bg-centhrix-bg rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700/50 p-8 text-center"
                         style={{ animation: 'forgotFadeIn 0.4s ease-out' }}
                     >
                         {/* Animated checkmark */}
@@ -189,7 +189,7 @@ const ForgotPassword = () => {
 
                 {/* Card */}
                 <div
-                    className="relative z-10 w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700/50 overflow-hidden"
+                    className="relative z-10 w-full max-w-md bg-white dark:bg-centhrix-bg rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700/50 overflow-hidden"
                     style={{ animation: 'forgotFadeIn 0.4s ease-out' }}
                 >
                     <div className="p-8">
@@ -249,7 +249,7 @@ const ForgotPassword = () => {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-centhrix-card dark:text-white dark:placeholder-slate-500
                                             focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]
                                             transition-all duration-200"
                                         placeholder="ejemplo@istho.com"

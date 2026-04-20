@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - LineChart Component (reemplaza BarChart)
  * Gráfico de líneas con puntos interactivos
  * Mantiene la misma API de props para compatibilidad
@@ -26,9 +26,9 @@ const BarChart = ({
     return (
       <div className="bg-white dark:bg-[#1A1B3A] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700/50">
         <div className="animate-pulse">
-          <div className="h-5 bg-gray-200 dark:bg-slate-700 rounded w-40 mb-2" />
-          <div className="h-3 bg-gray-200 dark:bg-slate-700 rounded w-56 mb-6" />
-          <div className={`bg-gray-200 dark:bg-slate-700 rounded-xl`} style={{ height }} />
+          <div className="h-5 bg-gray-200 dark:bg-centhrix-surface rounded w-40 mb-2" />
+          <div className="h-3 bg-gray-200 dark:bg-centhrix-surface rounded w-56 mb-6" />
+          <div className={`bg-gray-200 dark:bg-centhrix-surface rounded-xl`} style={{ height }} />
         </div>
       </div>
     );

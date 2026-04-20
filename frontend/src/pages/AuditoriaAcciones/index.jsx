@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Módulo Auditoría de Acciones
  *
  * Visualización del log de actividad del sistema.
@@ -23,7 +23,7 @@ const ACCION_CONFIG = {
   actualizar: { label: 'Actualizar', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: Pencil },
   eliminar: { label: 'Eliminar', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: Trash2 },
   login: { label: 'Login', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400', icon: LogIn },
-  logout: { label: 'Logout', color: 'bg-slate-100 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300', icon: LogIn },
+  logout: { label: 'Logout', color: 'bg-slate-100 text-slate-700 dark:bg-centhrix-surface/50 dark:text-slate-300', icon: LogIn },
 };
 
 const TABLA_LABELS = {
@@ -156,7 +156,7 @@ const AuditoriaAcciones = () => {
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+            <div className="bg-white dark:bg-centhrix-card rounded-xl border border-gray-200 dark:border-slate-700 p-4">
               <div className="flex items-center gap-2 mb-1">
                 <Activity className="w-4 h-4 text-orange-500" />
                 <span className="text-xs text-slate-500 dark:text-slate-400">Últimos {stats.dias} días</span>
@@ -167,7 +167,7 @@ const AuditoriaAcciones = () => {
             {stats.por_accion?.map((a) => {
               const config = ACCION_CONFIG[a.accion] || {};
               return (
-                <div key={a.accion} className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+                <div key={a.accion} className="bg-white dark:bg-centhrix-card rounded-xl border border-gray-200 dark:border-slate-700 p-4">
                   <div className="flex items-center gap-2 mb-1">
                     {config.icon && <config.icon className="w-4 h-4 text-slate-400" />}
                     <span className="text-xs text-slate-500 dark:text-slate-400">{config.label || a.accion}</span>
@@ -180,7 +180,7 @@ const AuditoriaAcciones = () => {
         )}
 
         {/* Toolbar */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 mb-4">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700 mb-4">
           <div className="flex flex-wrap items-center gap-3 p-4">
             {/* Search */}
             <div className="relative flex-1 min-w-[200px]">
@@ -190,7 +190,7 @@ const AuditoriaAcciones = () => {
                 placeholder="Buscar por descripción, usuario o tabla..."
                 value={search}
                 onChange={handleSearch}
-                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
             </div>
 
@@ -226,7 +226,7 @@ const AuditoriaAcciones = () => {
                   <select
                     value={filtroAccion}
                     onChange={(e) => { setFiltroAccion(e.target.value); setPagination(p => ({ ...p, page: 1 })); }}
-                    className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                    className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   >
                     <option value="">Todas</option>
                     <option value="crear">Crear</option>
@@ -242,7 +242,7 @@ const AuditoriaAcciones = () => {
                   <select
                     value={filtroTabla}
                     onChange={(e) => { setFiltroTabla(e.target.value); setPagination(p => ({ ...p, page: 1 })); }}
-                    className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                    className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   >
                     <option value="">Todas</option>
                     {tablas.map(t => (
@@ -257,7 +257,7 @@ const AuditoriaAcciones = () => {
                     type="date"
                     value={fechaDesde}
                     onChange={(e) => { setFechaDesde(e.target.value); setPagination(p => ({ ...p, page: 1 })); }}
-                    className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                    className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   />
                 </div>
 
@@ -267,7 +267,7 @@ const AuditoriaAcciones = () => {
                     type="date"
                     value={fechaHasta}
                     onChange={(e) => { setFechaHasta(e.target.value); setPagination(p => ({ ...p, page: 1 })); }}
-                    className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+                    className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   />
                 </div>
 
@@ -285,11 +285,11 @@ const AuditoriaAcciones = () => {
         </div>
 
         {/* Table */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700">
           <div className="overflow-x-auto rounded-t-2xl">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-gray-200 dark:border-slate-700">
+                <tr className="bg-slate-50 dark:bg-centhrix-bg/50 border-b border-gray-200 dark:border-slate-700">
                   <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-[170px]">Fecha</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Usuario</th>
                   <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-[100px]">Acción</th>
@@ -320,7 +320,7 @@ const AuditoriaAcciones = () => {
                     const hasDetails = reg.datos_anteriores || reg.datos_nuevos;
 
                     return (
-                      <tr key={reg.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
+                      <tr key={reg.id} className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors group">
                         <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
                             <Clock className="w-3 h-3 text-slate-300" />
@@ -329,7 +329,7 @@ const AuditoriaAcciones = () => {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-500 dark:text-slate-400 shrink-0">
+                            <div className="w-7 h-7 bg-slate-200 dark:bg-centhrix-surface rounded-full flex items-center justify-center text-[10px] font-bold text-slate-500 dark:text-slate-400 shrink-0">
                               {(reg.usuario?.nombre_completo || reg.usuario_nombre || '?').charAt(0).toUpperCase()}
                             </div>
                             <div>
@@ -349,7 +349,7 @@ const AuditoriaAcciones = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 rounded-md">
+                          <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-centhrix-surface/50 text-slate-600 dark:text-slate-300 rounded-md">
                             {TABLA_LABELS[reg.tabla] || reg.tabla}
                           </span>
                         </td>
@@ -366,7 +366,7 @@ const AuditoriaAcciones = () => {
                           {hasDetails && (
                             <button
                               onClick={() => setExpandedRow(isExpanded ? null : reg.id)}
-                              className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 transition-colors"
+                              className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface text-slate-400 transition-colors"
                               title="Ver detalles"
                             >
                               <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
@@ -391,7 +391,7 @@ const AuditoriaAcciones = () => {
                 <button
                   disabled={pagination.page <= 1}
                   onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
-                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40"
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -401,7 +401,7 @@ const AuditoriaAcciones = () => {
                 <button
                   disabled={pagination.page >= pagination.totalPages}
                   onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
-                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40"
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

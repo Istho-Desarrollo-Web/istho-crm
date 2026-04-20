@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - MovimientoForm
  * ============================================================================
@@ -159,7 +159,7 @@ const MovimientoForm = ({
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/30 rounded-lg"
+              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface/30 rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
@@ -167,7 +167,7 @@ const MovimientoForm = ({
 
           {/* INFO PRODUCTO */}
           {producto && (
-            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-700">
+            <div className="px-6 py-4 bg-slate-50 dark:bg-centhrix-card/50 border-b border-gray-100 dark:border-slate-700">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium text-slate-800 dark:text-slate-100">{productoNombre}</p>
@@ -195,7 +195,7 @@ const MovimientoForm = ({
                 <input
                   {...register('cantidad')}
                   type="number"
-                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 ${
+                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-centhrix-card/50 dark:text-slate-100 ${
                     errors.cantidad ? 'border-red-300 bg-red-50 dark:bg-red-900/10' : 'border-gray-200 dark:border-slate-700'
                   }`}
                   placeholder="0"
@@ -223,7 +223,7 @@ const MovimientoForm = ({
                         key={percent}
                         type="button"
                         onClick={() => setValue('cantidad', value.toString())}
-                        className="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors"
+                        className="px-2 py-1 text-xs bg-slate-100 dark:bg-centhrix-surface hover:bg-slate-200 dark:hover:bg-centhrix-card text-slate-600 dark:text-slate-300 rounded-lg transition-colors"
                       >
                         {percent}% ({value})
                       </button>
@@ -240,7 +240,7 @@ const MovimientoForm = ({
               </label>
               <select
                 {...register('motivo')}
-                className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 ${
+                className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-centhrix-card/50 dark:text-slate-100 ${
                   errors.motivo ? 'border-red-300 bg-red-50 dark:bg-red-900/10' : 'border-gray-200 dark:border-slate-700'
                 }`}
               >
@@ -265,7 +265,7 @@ const MovimientoForm = ({
               <input
                 {...register('documento_referencia')}
                 type="text"
-                className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100"
+                className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-centhrix-card/50 dark:text-slate-100"
                 placeholder="Ej: OC-2026-001, FAC-12345"
               />
               <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
@@ -281,14 +281,14 @@ const MovimientoForm = ({
               <textarea
                 {...register('observaciones')}
                 rows={3}
-                className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-slate-800/50 dark:text-slate-100 resize-none"
+                className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-centhrix-card/50 dark:text-slate-100 resize-none"
                 placeholder="Información adicional..."
               />
             </div>
 
             {/* Preview resultado */}
             {showPreview && (
-              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+              <div className="bg-slate-50 dark:bg-centhrix-card/50 rounded-xl p-4">
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Resultado del movimiento:</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

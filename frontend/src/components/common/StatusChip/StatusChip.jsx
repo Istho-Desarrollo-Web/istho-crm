@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - StatusChip Component
  * Chip de estado reutilizable con colores dinámicos
  *
@@ -44,7 +44,7 @@ const STATUS_CONFIG = {
     label: 'cancelado',
   },
   pendiente: {
-    bg: 'bg-gray-100 dark:bg-slate-700',
+    bg: 'bg-gray-100 dark:bg-centhrix-surface',
     text: 'text-gray-700 dark:text-slate-300',
     label: 'pendiente',
   },
@@ -78,7 +78,7 @@ const STATUS_CONFIG = {
     label: 'activo',
   },
   inactivo: {
-    bg: 'bg-gray-100 dark:bg-slate-700',
+    bg: 'bg-gray-100 dark:bg-centhrix-surface',
     text: 'text-gray-700 dark:text-slate-300',
     label: 'inactivo',
   },
@@ -111,7 +111,7 @@ const STATUS_CONFIG = {
 // ======================================================
 const StatusChip = ({ status, customLabel, size = 'md' }) => {
   const config = STATUS_CONFIG[status] || {
-    bg: 'bg-gray-100 dark:bg-slate-700',
+    bg: 'bg-gray-100 dark:bg-centhrix-surface',
     text: 'text-gray-700 dark:text-slate-300',
     label: status,
   };

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - ReporteClientes Page
  * Reporte de clientes con gráficos, PDF y filtros persistentes en URL
  *
@@ -142,10 +142,10 @@ const ReporteClientes = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
-            <div className="h-10 bg-gray-200 dark:bg-slate-700 rounded w-64" />
+            <div className="h-10 bg-gray-200 dark:bg-centhrix-surface rounded w-64" />
             <div className="grid grid-cols-3 gap-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+                <div key={i} className="h-32 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
               ))}
             </div>
           </div>
@@ -165,7 +165,7 @@ const ReporteClientes = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/reportes')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -246,14 +246,14 @@ const ReporteClientes = () => {
         )}
 
         {/* Tabla de Clientes */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-6">
           <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700">
             <h3 className="font-semibold text-slate-800 dark:text-slate-100">Últimos Clientes Registrados</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-900/30">
+                <tr className="bg-slate-50 dark:bg-centhrix-bg/30">
                   <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Cliente</th>
                   <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">NIT/ID</th>
                   <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Productos</th>
@@ -272,7 +272,7 @@ const ReporteClientes = () => {
                   clientesRecientes.map((cliente) => (
                     <tr
                       key={cliente.id}
-                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/20 cursor-pointer transition-colors"
+                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 cursor-pointer transition-colors"
                       onClick={() => navigate(`/clientes/${cliente.id}`)}
                     >
                       <td className="py-3 px-4">
@@ -329,7 +329,7 @@ const ReporteClientes = () => {
 
         {/* Export Info */}
         {canDownload && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
           <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-3">Exportar Listado Completo</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
             Descarga el listado completo de clientes con sus contactos, estado y datos comerciales.

@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+﻿import PropTypes from 'prop-types';
 
 const KpiCard = ({
   title,
@@ -18,18 +18,18 @@ const KpiCard = ({
         aria-busy="true"
         aria-label="Cargando indicador"
         className="
-        bg-white dark:bg-slate-800
+        bg-white dark:bg-centhrix-card
         rounded-2xl p-5
         shadow-sm border border-gray-100 dark:border-slate-700
         animate-pulse
       ">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-24 mb-2" />
-            <div className="h-8 bg-gray-200 dark:bg-slate-700 rounded w-32 mb-2" />
-            <div className="h-3 bg-gray-200 dark:bg-slate-700 rounded w-28" />
+            <div className="h-4 bg-gray-200 dark:bg-centhrix-surface rounded w-24 mb-2" />
+            <div className="h-8 bg-gray-200 dark:bg-centhrix-surface rounded w-32 mb-2" />
+            <div className="h-3 bg-gray-200 dark:bg-centhrix-surface rounded w-28" />
           </div>
-          <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700 rounded-xl" />
+          <div className="w-12 h-12 bg-gray-200 dark:bg-centhrix-surface rounded-xl" />
         </div>
       </div>
     );
@@ -39,7 +39,7 @@ const KpiCard = ({
     <div 
       onClick={onClick}
       className={`
-        bg-white dark:bg-slate-800
+        bg-white dark:bg-centhrix-card
         rounded-2xl p-5 
         shadow-sm border border-gray-100 dark:border-slate-700
         hover:shadow-md dark:hover:shadow-lg

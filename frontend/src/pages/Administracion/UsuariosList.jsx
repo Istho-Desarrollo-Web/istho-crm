@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Lista de Usuarios (Administración)
  *
  * CRUD completo de usuarios del sistema.
@@ -155,7 +155,7 @@ const UsuariosList = () => {
             placeholder="Buscar por nombre, usuario o email..."
             value={search}
             onChange={handleSearch}
-            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-card text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
           />
         </div>
 
@@ -163,7 +163,7 @@ const UsuariosList = () => {
         <select
           value={filtroRol}
           onChange={(e) => { setFiltroRol(e.target.value); setPagination(prev => ({ ...prev, page: 1 })); }}
-          className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+          className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-card text-slate-700 dark:text-slate-200"
         >
           <option value="">Todos los roles</option>
           {roles.map(r => (
@@ -175,7 +175,7 @@ const UsuariosList = () => {
         <select
           value={filtroActivo}
           onChange={(e) => { setFiltroActivo(e.target.value); setPagination(prev => ({ ...prev, page: 1 })); }}
-          className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+          className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-card text-slate-700 dark:text-slate-200"
         >
           <option value="">Todos</option>
           <option value="true">Activos</option>
@@ -205,11 +205,11 @@ const UsuariosList = () => {
         <p className="text-sm text-slate-500 dark:text-slate-400">
           {pagination.total} usuario{pagination.total !== 1 ? 's' : ''} encontrado{pagination.total !== 1 ? 's' : ''}
         </p>
-        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-          <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-lg p-1">
+          <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
             <List className="w-4 h-4" />
           </button>
-          <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+          <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
             <LayoutGrid className="w-4 h-4" />
           </button>
         </div>
@@ -217,14 +217,14 @@ const UsuariosList = () => {
 
       {/* Table / Cards */}
       {viewMode === 'table' ? (
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700">
+      <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700">
         <div className="overflow-x-auto rounded-t-2xl">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-gray-200 dark:border-slate-700">
+              <tr className="bg-slate-50 dark:bg-centhrix-bg/50 border-b border-gray-200 dark:border-slate-700">
                 <th
                   onClick={() => handleSort('nombre_completo')}
-                  className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                  className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                 >
                   <span className="inline-flex items-center gap-1">
                     Usuario <SortIcon field="nombre_completo" sortField={sortField} sortDir={sortDir} />
@@ -232,7 +232,7 @@ const UsuariosList = () => {
                 </th>
                 <th
                   onClick={() => handleSort('email')}
-                  className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                  className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                 >
                   <span className="inline-flex items-center gap-1">
                     Email <SortIcon field="email" sortField={sortField} sortDir={sortDir} />
@@ -243,7 +243,7 @@ const UsuariosList = () => {
                 <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Estado</th>
                 <th
                   onClick={() => handleSort('ultimo_acceso')}
-                  className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                  className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                 >
                   <span className="inline-flex items-center gap-1">
                     Último acceso <SortIcon field="ultimo_acceso" sortField={sortField} sortDir={sortDir} />
@@ -268,7 +268,7 @@ const UsuariosList = () => {
                 </tr>
               ) : (
                 usuarios.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                  <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors">
                     <td className="px-4 py-3">
                       <div>
                         <div className="font-medium text-slate-800 dark:text-slate-200">
@@ -319,7 +319,7 @@ const UsuariosList = () => {
                             setMenuOpen(user.id);
                           }
                         }}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500"
+                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface text-slate-500"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -341,7 +341,7 @@ const UsuariosList = () => {
               <button
                 disabled={pagination.page <= 1}
                 onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
-                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40"
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -351,7 +351,7 @@ const UsuariosList = () => {
               <button
                 disabled={pagination.page >= pagination.totalPages}
                 onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
-                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40"
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -363,12 +363,12 @@ const UsuariosList = () => {
         /* CARD VIEW */
         <>
           {loading ? (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-12 text-center">
+            <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700 p-12 text-center">
               <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
               <p className="text-slate-500 dark:text-slate-400 text-sm">Cargando usuarios...</p>
             </div>
           ) : usuarios.length === 0 ? (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 py-12 text-center text-slate-400">
+            <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700 py-12 text-center text-slate-400">
               No se encontraron usuarios
             </div>
           ) : (
@@ -384,7 +384,7 @@ const UsuariosList = () => {
                 return (
                   <div
                     key={user.id}
-                    className="bg-white dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-700/80 shadow-sm hover:shadow-md transition p-5 relative group"
+                    className="bg-white dark:bg-centhrix-card/50 rounded-2xl border border-gray-100 dark:border-slate-700/80 shadow-sm hover:shadow-md transition p-5 relative group"
                   >
                     {/* Actions menu */}
                     <div className="absolute top-3 right-3">
@@ -398,7 +398,7 @@ const UsuariosList = () => {
                             setMenuOpen(user.id);
                           }
                         }}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600"
+                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface text-slate-400 hover:text-slate-600"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -468,7 +468,7 @@ const UsuariosList = () => {
 
           {/* Pagination for cards */}
           {pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 mt-4">
+            <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700 mt-4">
               <span className="text-sm text-slate-500 dark:text-slate-400">
                 {pagination.total} usuario(s) en total
               </span>
@@ -476,7 +476,7 @@ const UsuariosList = () => {
                 <button
                   disabled={pagination.page <= 1}
                   onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
-                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40"
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -486,7 +486,7 @@ const UsuariosList = () => {
                 <button
                   disabled={pagination.page >= pagination.totalPages}
                   onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
-                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40"
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -509,7 +509,7 @@ const UsuariosList = () => {
       {/* Modal: Reset Password */}
       {showResetPassword && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-5">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-sm w-full p-5">
             <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-0.5">
               Resetear Contraseña
             </h3>
@@ -521,16 +521,16 @@ const UsuariosList = () => {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Nueva contraseña (mínimo 6 caracteres)"
-              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 mb-3"
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200 mb-3"
             />
             {/* Opción de enviar correo */}
             {showResetPassword.email && (
-              <label className="flex items-start gap-2.5 p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl mb-3 cursor-pointer">
+              <label className="flex items-start gap-2.5 p-2.5 bg-slate-50 dark:bg-centhrix-bg/50 rounded-xl mb-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={enviarCorreoReset}
                   onChange={(e) => setEnviarCorreoReset(e.target.checked)}
-                  className="w-4 h-4 mt-0.5 rounded border-gray-300 dark:border-slate-600 text-orange-500 focus:ring-orange-500 dark:bg-slate-700"
+                  className="w-4 h-4 mt-0.5 rounded border-gray-300 dark:border-slate-600 text-orange-500 focus:ring-orange-500 dark:bg-centhrix-surface"
                 />
                 <div>
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -545,7 +545,7 @@ const UsuariosList = () => {
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => { setShowResetPassword(null); setNewPassword(''); setEnviarCorreoReset(false);  }}
-                className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"
+                className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-xl"
               >
                 Cancelar
               </button>
@@ -578,13 +578,13 @@ const UsuariosList = () => {
           <>
             <div className="fixed inset-0 z-50" onClick={() => setMenuOpen(null)} />
             <div
-              className="fixed z-50 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg py-1 min-w-[180px]"
+              className="fixed z-50 bg-white dark:bg-centhrix-card border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg py-1 min-w-[180px]"
               style={{ top: menuPos.top, right: menuPos.right }}
             >
               {hasPermission('usuarios', 'editar') && (
                 <button
                   onClick={() => { setEditingUser(user); setShowForm(true); setMenuOpen(null); }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
                 >
                   <Pencil className="w-3.5 h-3.5" /> Editar
                 </button>
@@ -592,7 +592,7 @@ const UsuariosList = () => {
               {hasPermission('usuarios', 'editar') && (
                 <button
                   onClick={() => { setShowResetPassword(user); setMenuOpen(null); }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
                 >
                   <KeyRound className="w-3.5 h-3.5" /> Resetear contraseña
                 </button>
@@ -600,7 +600,7 @@ const UsuariosList = () => {
               {hasPermission('usuarios', 'editar') && user.rol !== 'admin' && (
                 <button
                   onClick={() => { setShowPermisos(user); setMenuOpen(null); }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
                 >
                   <Shield className="w-3.5 h-3.5" /> Permisos
                 </button>
@@ -609,7 +609,7 @@ const UsuariosList = () => {
                 <button
                   onClick={() => handleReenviarCredenciales(user)}
                   disabled={sendingCredentials === user.id}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface disabled:opacity-50"
                 >
                   <Mail className="w-3.5 h-3.5" />
                   {sendingCredentials === user.id ? 'Enviando...' : 'Reenviar credenciales'}

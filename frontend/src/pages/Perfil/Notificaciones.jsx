@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - Centro de Notificaciones
  * ============================================================================
@@ -45,15 +45,15 @@ const TIPO_CONFIG = {
   alerta: { icon: AlertTriangle, bg: 'bg-amber-100 dark:bg-amber-900/30', color: 'text-amber-600 dark:text-amber-400', label: 'Alerta' },
   cliente: { icon: Users, bg: 'bg-violet-100 dark:bg-violet-900/30', color: 'text-violet-600 dark:text-violet-400', label: 'Cliente' },
   reporte: { icon: FileText, bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-600 dark:text-emerald-400', label: 'Reporte' },
-  sistema: { icon: Info, bg: 'bg-slate-100 dark:bg-slate-700', color: 'text-slate-600 dark:text-slate-400', label: 'Sistema' },
+  sistema: { icon: Info, bg: 'bg-slate-100 dark:bg-centhrix-surface', color: 'text-slate-600 dark:text-slate-400', label: 'Sistema' },
   inventario: { icon: Package, bg: 'bg-orange-100 dark:bg-orange-900/30', color: 'text-orange-600 dark:text-orange-400', label: 'Inventario' },
 };
 
 const PRIORIDAD_CONFIG = {
   urgente: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', label: 'Urgente' },
   alta: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-400', label: 'Alta' },
-  normal: { bg: 'bg-slate-100 dark:bg-slate-700', text: 'text-slate-600 dark:text-slate-400', label: 'Normal' },
-  baja: { bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-500 dark:text-slate-500', label: 'Baja' },
+  normal: { bg: 'bg-slate-100 dark:bg-centhrix-surface', text: 'text-slate-600 dark:text-slate-400', label: 'Normal' },
+  baja: { bg: 'bg-slate-50 dark:bg-centhrix-card', text: 'text-slate-500 dark:text-slate-500', label: 'Baja' },
 };
 
 const FILTER_OPTIONS = [
@@ -112,7 +112,7 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
   return (
     <div className={`relative p-4 rounded-2xl border transition-all ${
       notificacion.leida
-        ? 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700'
+        ? 'bg-white dark:bg-centhrix-card border-gray-100 dark:border-slate-700'
         : 'bg-orange-50/50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800/50'
     }`}>
       {/* Indicador no leída */}
@@ -147,7 +147,7 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
             <div className="relative flex-shrink-0">
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-lg transition-colors"
               >
                 <MoreVertical className="w-4 h-4" />
               </button>
@@ -155,11 +155,11 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 py-1 z-20">
+                  <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-centhrix-card rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 py-1 z-20">
                     {!notificacion.leida && (
                       <button
                         onClick={() => { onMarcarLeida(notificacion.id); setMenuOpen(false); }}
-                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
                       >
                         <Check className="w-4 h-4" />
                         Marcar leída
@@ -168,7 +168,7 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
                     {(notificacion.accion_url || notificacion.url) && (
                       <button
                         onClick={() => { handleAccion(); setMenuOpen(false); }}
-                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
                       >
                         <Eye className="w-4 h-4" />
                         Ver detalle
@@ -425,7 +425,7 @@ const Notificaciones = () => {
         )}
 
         {/* FILTROS */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <SearchBar
@@ -447,7 +447,7 @@ const Notificaciones = () => {
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
                       isActive
                         ? 'bg-orange-500 text-white'
-                        : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                        : 'bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-centhrix-card'
                     }`}
                   >
                     <FilterIcon className="w-4 h-4" />
@@ -463,21 +463,21 @@ const Notificaciones = () => {
         {loading ? (
           <div className="space-y-4">
             {[0, 1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 animate-pulse border border-gray-100 dark:border-slate-700">
+              <div key={i} className="bg-white dark:bg-centhrix-card rounded-2xl p-4 animate-pulse border border-gray-100 dark:border-slate-700">
                 <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700 rounded-xl" />
+                  <div className="w-12 h-12 bg-gray-200 dark:bg-centhrix-surface rounded-xl" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-1/2" />
-                    <div className="h-3 bg-gray-100 dark:bg-slate-600 rounded w-3/4" />
-                    <div className="h-3 bg-gray-100 dark:bg-slate-600 rounded w-1/4" />
+                    <div className="h-4 bg-gray-200 dark:bg-centhrix-surface rounded w-1/2" />
+                    <div className="h-3 bg-gray-100 dark:bg-centhrix-surface rounded w-3/4" />
+                    <div className="h-3 bg-gray-100 dark:bg-centhrix-surface rounded w-1/4" />
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : filteredNotificaciones.length === 0 ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-12 text-center shadow-sm border border-gray-100 dark:border-slate-700">
-            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl p-12 text-center shadow-sm border border-gray-100 dark:border-slate-700">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-centhrix-surface rounded-full flex items-center justify-center mx-auto mb-4">
               <Bell className="w-8 h-8 text-slate-400 dark:text-slate-500" />
             </div>
             <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200 mb-1">Sin notificaciones</h3>
@@ -507,7 +507,7 @@ const Notificaciones = () => {
                 <button
                   onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page <= 1}
-                  className="p-2 rounded-lg border border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 rounded-lg border border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-centhrix-surface disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -517,7 +517,7 @@ const Notificaciones = () => {
                 <button
                   onClick={() => handlePageChange(pagination.page + 1)}
                   disabled={pagination.page >= pagination.totalPages}
-                  className="p-2 rounded-lg border border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 rounded-lg border border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-centhrix-surface disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -542,7 +542,7 @@ const Notificaciones = () => {
         {/* Modal de confirmación - Borrar todas */}
         {confirmBorrarTodas && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 p-6 max-w-sm mx-4 w-full">
+            <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 p-6 max-w-sm mx-4 w-full">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
                   <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />

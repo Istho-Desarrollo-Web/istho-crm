@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - Dashboard Financiera
  * ============================================================================
@@ -113,7 +113,7 @@ const KPI_CONFIG = [
 const QuickAction = ({ icon: Icon, label, description, color, onClick }) => (
   <button
     onClick={onClick}
-    className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 hover:border-transparent hover:shadow-md dark:hover:shadow-lg transition-all group text-left w-full"
+    className="flex items-center gap-4 p-4 bg-white dark:bg-centhrix-card rounded-xl border border-gray-100 dark:border-slate-700 hover:border-transparent hover:shadow-md dark:hover:shadow-lg transition-all group text-left w-full"
   >
     <div className={`p-3 rounded-xl bg-${color}-100 dark:bg-${color}-900/30 group-hover:scale-110 transition-transform`}>
       <Icon className={`w-6 h-6 text-${color}-600 dark:text-${color}-400`} />
@@ -433,10 +433,10 @@ const DashboardFinanciera = () => {
             disabled={isRefreshing}
             className={`
               flex items-center gap-2 px-4 py-2
-              bg-white dark:bg-slate-800
+              bg-white dark:bg-centhrix-card
               border border-gray-200 dark:border-slate-700
               rounded-xl
-              hover:bg-gray-50 dark:hover:bg-slate-700
+              hover:bg-gray-50 dark:hover:bg-centhrix-surface
               transition-colors shadow-sm
               ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}
             `}
@@ -507,7 +507,7 @@ const DashboardFinanciera = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
           {/* ─── GASTOS PENDIENTES DE APROBACION (2/3) ─── */}
-          <div className="xl:col-span-2 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+          <div className="xl:col-span-2 bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-700">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
@@ -551,7 +551,7 @@ const DashboardFinanciera = () => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-slate-50/50 dark:bg-slate-900/30">
+                    <tr className="bg-slate-50/50 dark:bg-centhrix-bg/30">
                       <th className="px-4 py-2.5 text-left">
                         <input
                           type="checkbox"
@@ -587,7 +587,7 @@ const DashboardFinanciera = () => {
                     {pendientes.map((mov) => (
                       <tr
                         key={mov.id}
-                        className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors"
+                        className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 transition-colors"
                       >
                         <td className="px-4 py-3">
                           <input
@@ -609,7 +609,7 @@ const DashboardFinanciera = () => {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                          <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-slate-100 text-slate-700 dark:bg-centhrix-surface dark:text-slate-300">
                             {CONCEPTO_LABELS[mov.concepto] || mov.concepto || '-'}
                           </span>
                         </td>
@@ -655,7 +655,7 @@ const DashboardFinanciera = () => {
           {/* ─── PANEL LATERAL (1/3) ─── */}
           <div className="space-y-6">
             {/* CAJAS MENORES ABIERTAS */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+            <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-700">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
@@ -684,7 +684,7 @@ const DashboardFinanciera = () => {
                     <button
                       key={caja.id}
                       onClick={() => navigate(`/viajes/cajas-menores/${caja.id}`)}
-                      className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors text-left"
+                      className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 transition-colors text-left"
                     >
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-slate-800 dark:text-white truncate">
@@ -711,7 +711,7 @@ const DashboardFinanciera = () => {
             </div>
 
             {/* ALERTAS VEHICULOS */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+            <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
               <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-slate-700">
                 <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
                   <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />

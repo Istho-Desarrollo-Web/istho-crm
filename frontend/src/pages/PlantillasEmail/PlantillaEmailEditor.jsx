@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - Editor de Plantilla de Email
  * ============================================================================
@@ -57,7 +57,7 @@ const VariableChip = ({ variable, label, ejemplo, onInsert }) => {
   return (
     <button
       onClick={handleClick}
-      className="group flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-700/50 hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-slate-200 dark:border-slate-600 hover:border-orange-300 dark:hover:border-orange-700 rounded-lg transition-colors text-left"
+      className="group flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-centhrix-surface/50 hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-slate-200 dark:border-slate-600 hover:border-orange-300 dark:hover:border-orange-700 rounded-lg transition-colors text-left"
       title={`Ejemplo: ${ejemplo}`}
     >
       <Code className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-orange-500" />
@@ -245,7 +245,7 @@ const PlantillaEmailEditor = () => {
     }
   };
 
-  const inputClass = "w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500";
+  const inputClass = "w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500";
   const labelClass = "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1";
 
   if (loading) {
@@ -253,8 +253,8 @@ const PlantillaEmailEditor = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 dark:bg-slate-700 rounded w-64" />
-            <div className="h-96 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+            <div className="h-8 bg-gray-200 dark:bg-centhrix-surface rounded w-64" />
+            <div className="h-96 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
           </div>
         </main>
       </div>
@@ -269,7 +269,7 @@ const PlantillaEmailEditor = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/plantillas-email')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -299,7 +299,7 @@ const PlantillaEmailEditor = () => {
           {/* ════════════════════════════════════════════════════════ */}
           <div className="lg:col-span-2 space-y-6">
             {/* Datos básicos */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+            <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
               <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-4">Información Básica</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -392,7 +392,7 @@ const PlantillaEmailEditor = () => {
             </div>
 
             {/* Cuerpo del email */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+            <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-slate-800 dark:text-slate-100">
                   Cuerpo del Correo (HTML)
@@ -408,7 +408,7 @@ const PlantillaEmailEditor = () => {
                 value={formData.cuerpo_html}
                 onChange={(e) => handleChange('cuerpo_html', e.target.value)}
                 onFocus={() => handleFieldFocus('cuerpo_html')}
-                className={`w-full h-80 px-4 py-3 border rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-y ${activeField === 'cuerpo_html' ? 'border-orange-400 dark:border-orange-600' : 'border-slate-200 dark:border-slate-600'}`}
+                className={`w-full h-80 px-4 py-3 border rounded-xl text-sm font-mono bg-slate-50 dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-y ${activeField === 'cuerpo_html' ? 'border-orange-400 dark:border-orange-600' : 'border-slate-200 dark:border-slate-600'}`}
                 placeholder={`<h2>{{tipoOperacion}} Completado</h2>\n\n<p>Estimado(a) cliente,</p>\n\n<p>Le informamos que la operación <strong>{{numeroOperacion}}</strong> fue cerrada por {{cerradoPor}}.</p>\n\n{{#if observaciones}}\n<p><strong>Observaciones:</strong> {{observaciones}}</p>\n{{/if}}`}
               />
 
@@ -418,7 +418,7 @@ const PlantillaEmailEditor = () => {
             </div>
 
             {/* Firma */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+            <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-slate-800 dark:text-slate-100">Firma ISTHO S.A.S.</h3>
                 <button
@@ -459,11 +459,11 @@ const PlantillaEmailEditor = () => {
                     <textarea
                       value={formData.firma_html}
                       onChange={(e) => handleChange('firma_html', e.target.value)}
-                      className="w-full h-40 px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-mono bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-y"
+                      className="w-full h-40 px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-mono bg-slate-50 dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-y"
                       placeholder="HTML de la firma personalizada..."
                     />
                   ) : (
-                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-200 dark:border-slate-600">
+                    <div className="bg-slate-50 dark:bg-centhrix-bg/50 rounded-xl p-4 border border-slate-200 dark:border-slate-600">
                       <div className="flex items-center gap-3">
                         {logoFirma ? (
                           <img src={logoFirma} alt="Logo" className="w-12 h-12 rounded-xl object-cover" />
@@ -481,13 +481,13 @@ const PlantillaEmailEditor = () => {
                   )}
 
                   {/* Upload Logo de Firma */}
-                  <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-dashed border-slate-300 dark:border-slate-600">
+                  <div className="mt-3 p-3 bg-slate-50 dark:bg-centhrix-bg/30 rounded-xl border border-dashed border-slate-300 dark:border-slate-600">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0">
                         {logoFirma ? (
                           <img src={logoFirma} alt="Logo firma" className="w-10 h-10 rounded-lg object-cover" />
                         ) : (
-                          <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                          <div className="w-10 h-10 bg-slate-200 dark:bg-centhrix-surface rounded-lg flex items-center justify-center">
                             <Image className="w-5 h-5 text-slate-400" />
                           </div>
                         )}
@@ -538,12 +538,12 @@ const PlantillaEmailEditor = () => {
           {/* SIDEBAR - Variables disponibles 1/3 */}
           {/* ════════════════════════════════════════════════════════ */}
           <div className="space-y-6">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-5 sticky top-32">
+            <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-5 sticky top-32">
               <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">Variables Disponibles</h3>
               <p className="text-xs text-slate-400 dark:text-slate-500 mb-2">
                 Haz clic para insertar en el campo activo
               </p>
-              <div className={`text-xs px-3 py-1.5 rounded-lg mb-4 font-medium ${activeField === 'asunto_template' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
+              <div className={`text-xs px-3 py-1.5 rounded-lg mb-4 font-medium ${activeField === 'asunto_template' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300'}`}>
                 Insertando en: {activeField === 'asunto_template' ? 'Asunto' : 'Cuerpo HTML'}
               </div>
 
@@ -570,13 +570,13 @@ const PlantillaEmailEditor = () => {
                 <div className="space-y-1.5">
                   <button
                     onClick={() => handleInsertVariable('{{#if variable}}\n  <!-- contenido si existe -->\n{{/if}}')}
-                    className="w-full text-left px-3 py-1.5 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                    className="w-full text-left px-3 py-1.5 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-centhrix-surface/50 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
                   >
                     {'{{#if}}...{{/if}}'}
                   </button>
                   <button
                     onClick={() => handleInsertVariable('{{#each lista}}\n  <tr><td>{{this.campo}}</td></tr>\n{{/each}}')}
-                    className="w-full text-left px-3 py-1.5 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                    className="w-full text-left px-3 py-1.5 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-centhrix-surface/50 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
                   >
                     {'{{#each}}...{{/each}}'}
                   </button>
@@ -593,7 +593,7 @@ const PlantillaEmailEditor = () => {
       {/* Preview Modal */}
       {showPreview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
               <div>
                 <h3 className="font-semibold text-slate-800 dark:text-slate-100">Vista Previa del Email</h3>
@@ -606,7 +606,7 @@ const PlantillaEmailEditor = () => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex-1 overflow-auto p-4 bg-slate-100 dark:bg-slate-900">
+            <div className="flex-1 overflow-auto p-4 bg-slate-100 dark:bg-centhrix-bg">
               <div
                 className="bg-white rounded-xl shadow-sm mx-auto max-w-2xl"
                 style={{ colorScheme: 'light' }}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - Modal de Cambio Obligatorio de Contraseña
  * ============================================================================
@@ -108,7 +108,7 @@ const ForceChangePasswordModal = () => {
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-        <div className="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 text-center">
+        <div className="relative w-full max-w-md bg-white dark:bg-centhrix-card rounded-2xl shadow-2xl p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
             <Shield className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
           </div>
@@ -129,7 +129,7 @@ const ForceChangePasswordModal = () => {
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
       {/* Modal */}
-      <div className="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
+      <div className="relative w-full max-w-sm bg-white dark:bg-centhrix-card rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
         {/* Header compacto */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-5 py-4 text-center flex-shrink-0">
           <div className="w-10 h-10 mx-auto mb-2 bg-white/20 rounded-full flex items-center justify-center">
@@ -164,7 +164,7 @@ const ForceChangePasswordModal = () => {
                 value={form.password_actual}
                 onChange={(e) => handleChange('password_actual', e.target.value)}
                 placeholder="Ingresa la contraseña que recibiste"
-                className="w-full px-3 py-2 pr-9 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="w-full px-3 py-2 pr-9 border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 autoFocus
               />
               <button
@@ -188,7 +188,7 @@ const ForceChangePasswordModal = () => {
                 value={form.password_nuevo}
                 onChange={(e) => handleChange('password_nuevo', e.target.value)}
                 placeholder="Mínimo 8 caracteres"
-                className="w-full px-3 py-2 pr-9 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="w-full px-3 py-2 pr-9 border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
               <button
                 type="button"
@@ -206,7 +206,7 @@ const ForceChangePasswordModal = () => {
                     <div
                       key={i}
                       className={`h-1 flex-1 rounded-full transition-colors ${
-                        i <= strength.level ? strength.color : 'bg-slate-200 dark:bg-slate-600'
+                        i <= strength.level ? strength.color : 'bg-slate-200 dark:bg-centhrix-surface'
                       }`}
                     />
                   ))}
@@ -232,7 +232,7 @@ const ForceChangePasswordModal = () => {
                 value={form.password_confirmar}
                 onChange={(e) => handleChange('password_confirmar', e.target.value)}
                 placeholder="Repite la nueva contraseña"
-                className="w-full px-3 py-2 pr-9 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="w-full px-3 py-2 pr-9 border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
               <button
                 type="button"
@@ -248,7 +248,7 @@ const ForceChangePasswordModal = () => {
           </div>
 
           {/* Requisitos */}
-          <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-2.5 space-y-0.5">
+          <div className="bg-slate-50 dark:bg-centhrix-surface/50 rounded-xl p-2.5 space-y-0.5">
             <p className="text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-0.5">Requisitos:</p>
             {[
               { ok: form.password_nuevo.length >= 8, text: 'Mínimo 8 caracteres' },
@@ -259,7 +259,7 @@ const ForceChangePasswordModal = () => {
             ].map((req, i) => (
               <div key={i} className="flex items-center gap-1.5 text-[11px]">
                 <div className={`w-3 h-3 rounded-full flex items-center justify-center ${
-                  req.ok ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
+                  req.ok ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-centhrix-surface'
                 }`}>
                   {req.ok && <Check className="w-2 h-2 text-white" />}
                 </div>

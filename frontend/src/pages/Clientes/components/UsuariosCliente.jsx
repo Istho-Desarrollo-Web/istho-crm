@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * ISTHO CRM - Componente UsuariosCliente
  * ============================================================================
@@ -72,8 +72,8 @@ const UsuarioRow = ({
   return (
     <div className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
       usuario.activo
-        ? 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 hover:border-gray-200 dark:hover:border-slate-600'
-        : 'bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 opacity-75'
+        ? 'bg-white dark:bg-centhrix-card border-gray-100 dark:border-slate-700 hover:border-gray-200 dark:hover:border-slate-600'
+        : 'bg-gray-50 dark:bg-centhrix-card/50 border-gray-200 dark:border-slate-700 opacity-75'
     }`}>
       {/* Avatar */}
       <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${
@@ -140,7 +140,7 @@ const UsuarioRow = ({
       <div className="relative">
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-lg transition-colors"
         >
           <MoreVertical className="w-5 h-5" />
         </button>
@@ -151,17 +151,17 @@ const UsuarioRow = ({
               className="fixed inset-0 z-10"
               onClick={() => setMenuOpen(false)}
             />
-            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 py-1 z-20">
+            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-centhrix-card rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 py-1 z-20">
               <button
                 onClick={() => { onEdit(usuario); setMenuOpen(false); }}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
               >
                 <Pencil className="w-4 h-4" />
                 Editar información
               </button>
               <button
                 onClick={() => { onPermisos(usuario); setMenuOpen(false); }}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
               >
                 <Shield className="w-4 h-4" />
                 Gestionar permisos
@@ -169,14 +169,14 @@ const UsuarioRow = ({
               <hr className="my-1 border-gray-100 dark:border-slate-700" />
               <button
                 onClick={() => { onResetPassword(usuario); setMenuOpen(false); }}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
               >
                 <Key className="w-4 h-4" />
                 Resetear contraseña
               </button>
               <button
                 onClick={() => { onReenviarInvitacion(usuario); setMenuOpen(false); }}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
               >
                 <Send className="w-4 h-4" />
                 Reenviar invitación
@@ -404,7 +404,7 @@ const UsuariosCliente = ({ clienteId, clienteNombre }) => {
       {/* ════════════════════════════════════════════════════════════════════ */}
       
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 text-center">
+        <div className="bg-slate-50 dark:bg-centhrix-card rounded-xl p-4 text-center">
           <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{stats.total}</p>
           <p className="text-xs text-slate-500 dark:text-slate-400">Total</p>
         </div>
@@ -435,19 +435,19 @@ const UsuariosCliente = ({ clienteId, clienteNombre }) => {
             placeholder="Buscar por nombre o email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-card text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
         </div>
         
         {/* Filtro de estado */}
-        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-centhrix-card rounded-xl p-1">
           {['todos', 'activos', 'inactivos'].map((filtro) => (
             <button
               key={filtro}
               onClick={() => setFiltroActivo(filtro)}
               className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                 filtroActivo === filtro
-                  ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm'
+                  ? 'bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 shadow-sm'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
@@ -474,7 +474,7 @@ const UsuariosCliente = ({ clienteId, clienteNombre }) => {
           // Loading skeleton
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-20 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse" />
+              <div key={i} className="h-20 bg-gray-100 dark:bg-centhrix-card rounded-xl animate-pulse" />
             ))}
           </div>
         ) : usuarios.length === 0 ? (

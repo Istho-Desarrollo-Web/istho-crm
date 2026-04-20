@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Búsqueda Global (Ctrl+K)
  * v2.0 — Con permisos, recientes, prefijo de módulo, "Ver todos" y resaltado
  */
@@ -392,13 +392,13 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
       {/* Modal */}
       <div
         ref={containerRef}
-        className="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
+        className="relative w-full max-w-lg bg-white dark:bg-centhrix-card rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
       >
         {/* Input */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-700">
           <Search className="w-5 h-5 text-slate-400 flex-shrink-0" />
           {activePrefix && (
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md font-medium bg-slate-100 dark:bg-slate-700 ${activePrefix.color}`}>
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md font-medium bg-slate-100 dark:bg-centhrix-surface ${activePrefix.color}`}>
               <activePrefix.icon className="w-3 h-3" />
               {activePrefix.label}
             </span>
@@ -413,7 +413,7 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
             className="flex-1 bg-transparent text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none"
           />
           {loading && <Loader2 className="w-4 h-4 text-orange-500 animate-spin flex-shrink-0" />}
-          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-700 rounded">
+          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-centhrix-surface rounded">
             ESC
           </kbd>
         </div>
@@ -443,7 +443,7 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
                       <button
                         key={item.path}
                         onClick={() => handleSelect(item)}
-                        className="w-full text-left px-3 py-2 flex items-center gap-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group"
+                        className="w-full text-left px-3 py-2 flex items-center gap-3 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors group"
                       >
                         <Clock className="w-4 h-4 text-slate-300 dark:text-slate-600 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
@@ -469,10 +469,10 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
                   {allowedModules.map(mod => {
                     const Icon = mod.icon;
                     return (
-                      <span key={mod.key} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-700">
+                      <span key={mod.key} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-centhrix-surface/50 rounded-lg border border-slate-100 dark:border-slate-700">
                         <Icon className={`w-3 h-3 ${mod.color}`} />
                         {mod.label}
-                        <kbd className="font-mono text-[9px] px-1 py-0.5 bg-slate-200 dark:bg-slate-600 rounded text-slate-500 dark:text-slate-400">
+                        <kbd className="font-mono text-[9px] px-1 py-0.5 bg-slate-200 dark:bg-centhrix-surface rounded text-slate-500 dark:text-slate-400">
                           {mod.prefix}
                         </kbd>
                       </span>
@@ -504,7 +504,7 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
 
             return (
               <div key={moduleKey}>
-                <div className="px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
+                <div className="px-4 py-2 bg-slate-50 dark:bg-centhrix-bg/50 border-b border-slate-100 dark:border-slate-700">
                   <div className="flex items-center gap-2">
                     <Icon className={`w-3.5 h-3.5 ${mod.color}`} />
                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -524,7 +524,7 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
                       className={`w-full text-left px-4 py-2.5 flex items-center gap-3 transition-colors ${
                         isSelected
                           ? 'bg-orange-50 dark:bg-orange-900/20'
-                          : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                          : 'hover:bg-slate-50 dark:hover:bg-centhrix-surface/50'
                       }`}
                     >
                       <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />
@@ -535,7 +535,7 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
                         <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{item.subtitle}</p>
                       </div>
                       {isSelected && (
-                        <kbd className="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded font-mono">
+                        <kbd className="text-[10px] text-slate-400 bg-slate-100 dark:bg-centhrix-surface px-1.5 py-0.5 rounded font-mono">
                           Enter
                         </kbd>
                       )}
@@ -546,7 +546,7 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
                 {/* Ver todos */}
                 <button
                   onClick={() => handleVerTodos(mod)}
-                  className="w-full text-left px-4 py-2 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 hover:text-orange-500 dark:hover:text-orange-400 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors border-t border-slate-50 dark:border-slate-700/50"
+                  className="w-full text-left px-4 py-2 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 hover:text-orange-500 dark:hover:text-orange-400 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors border-t border-slate-50 dark:border-slate-700/50"
                 >
                   <span>Ver todos los resultados en {mod.label}</span>
                   <ChevronRight className="w-3.5 h-3.5" />

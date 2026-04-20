@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ISTHO CRM - Configuracion Page
  * Preferencias del usuario con persistencia en backend.
  *
@@ -44,7 +44,7 @@ const ToggleSwitch = ({ enabled, onChange, disabled = false }) => (
     disabled={disabled}
     className={`
       relative w-11 h-6 rounded-full transition-colors duration-200
-      ${enabled ? 'bg-orange-500' : 'bg-slate-300 dark:bg-slate-600'}
+      ${enabled ? 'bg-orange-500' : 'bg-slate-300 dark:bg-centhrix-surface'}
       ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
     `}
   >
@@ -66,7 +66,7 @@ const SelectField = ({ value, onChange, options }) => (
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all min-w-[180px]"
+    className="px-3 py-2 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all min-w-[180px]"
   >
     {options.map((opt) => (
       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -82,7 +82,7 @@ const SettingRow = ({ icon: Icon, title, description, children }) => (
   <div className="flex items-center justify-between py-4 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
     <div className="flex items-start gap-3 flex-1 min-w-0">
       {Icon && (
-        <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 mt-0.5">
+        <div className="p-2 rounded-lg bg-slate-100 dark:bg-centhrix-surface mt-0.5">
           <Icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
         </div>
       )}
@@ -102,7 +102,7 @@ const SettingRow = ({ icon: Icon, title, description, children }) => (
 // ════════════════════════════════════════════════════════════════════════════
 
 const SectionCard = ({ icon: Icon, title, children }) => (
-  <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+  <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
     <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-slate-700">
       <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
         <Icon className="w-5 h-5 text-orange-600 dark:text-orange-400" />
@@ -176,7 +176,7 @@ const SeccionBackup = () => {
   const proximoBackup = data?.proximo_backup;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+    <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-700">
         <div className="flex items-center gap-3">
@@ -189,7 +189,7 @@ const SeccionBackup = () => {
           <button
             onClick={cargarHistorial}
             disabled={cargando}
-            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
             title="Actualizar"
           >
             <RefreshCw className={`w-4 h-4 ${cargando ? 'animate-spin' : ''}`} />
@@ -226,7 +226,7 @@ const SeccionBackup = () => {
                 ? 'bg-emerald-50 dark:bg-emerald-900/20'
                 : ultimoBackup?.estado === 'fallido'
                   ? 'bg-red-50 dark:bg-red-900/20'
-                  : 'bg-slate-50 dark:bg-slate-700/40',
+                  : 'bg-slate-50 dark:bg-centhrix-surface/40',
             },
             {
               label: 'Tasa de éxito',
@@ -247,7 +247,7 @@ const SeccionBackup = () => {
               value: stats.total ?? '—',
               icon: Database,
               color: 'text-slate-600 dark:text-slate-300',
-              bg: 'bg-slate-50 dark:bg-slate-700/40',
+              bg: 'bg-slate-50 dark:bg-centhrix-surface/40',
             },
           ].map(({ label, value, icon: Icon, color, bg }) => (
             <div key={label} className={`rounded-xl p-3 ${bg}`}>
@@ -262,7 +262,7 @@ const SeccionBackup = () => {
 
         {/* Próximo backup */}
         {proximoBackup && (
-          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/40 rounded-xl px-4 py-2.5">
+          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-centhrix-surface/40 rounded-xl px-4 py-2.5">
             <Clock className="w-3.5 h-3.5 flex-shrink-0" />
             <span>Próximo backup automático: <strong className="text-slate-700 dark:text-slate-200">{formatFecha(proximoBackup)}</strong> · Diario a las 2:00 AM</span>
           </div>
@@ -277,7 +277,7 @@ const SeccionBackup = () => {
           <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-700">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-700/50">
+                <tr className="bg-slate-50 dark:bg-centhrix-surface/50">
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Fecha</th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Estado</th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tamaño</th>
@@ -287,7 +287,7 @@ const SeccionBackup = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {data.registros.map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                  <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors">
                     <td className="px-4 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">{formatFecha(r.fecha)}</td>
                     <td className="px-4 py-3">
                       {r.estado === 'exitoso' ? (
@@ -308,7 +308,7 @@ const SeccionBackup = () => {
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                         r.origen === 'manual'
                           ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                          : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
+                          : 'bg-slate-100 text-slate-600 dark:bg-centhrix-surface dark:text-slate-400'
                       }`}>
                         {r.origen === 'manual' ? 'Manual' : 'Automático'}
                       </span>
