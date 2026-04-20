@@ -254,7 +254,7 @@ const ResetPassword = () => {
                         <Link
                             to="/login"
                             className="inline-flex items-center justify-center w-full py-3 px-4 rounded-xl font-semibold text-white
-                                bg-gradient-to-r from-[#E74C3C] to-[#C0392B] hover:from-[#C0392B] hover:to-[#A93226]
+                                bg-gradient-to-r from-[#E74C3C] to-[#C0392B] hover:from-[#C0392B] hover:to-orange-800
                                 focus:outline-none focus:ring-2 focus:ring-[#E74C3C] focus:ring-offset-2
                                 transition-all duration-200 shadow-lg shadow-red-500/25"
                         >
@@ -453,7 +453,7 @@ const ResetPassword = () => {
                                 disabled={loading}
                                 className="w-full py-3 px-4 rounded-xl font-semibold text-white
                                     bg-gradient-to-r from-[#E74C3C] to-[#C0392B]
-                                    hover:from-[#C0392B] hover:to-[#A93226]
+                                    hover:from-[#C0392B] hover:to-orange-800
                                     focus:outline-none focus:ring-2 focus:ring-[#E74C3C] focus:ring-offset-2
                                     transition-all duration-200
                                     disabled:opacity-70 disabled:cursor-not-allowed

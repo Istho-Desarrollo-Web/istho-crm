@@ -423,7 +423,7 @@ const LoginPage = () => {
                                 className={`
                                     w-full py-3 px-4 rounded-2xl font-semibold text-white
                                     bg-gradient-to-r from-[#E74C3C] to-[#C0392B]
-                                    hover:from-[#C0392B] hover:to-[#A93226]
+                                    hover:from-[#C0392B] hover:to-orange-800
                                     focus:outline-none focus:ring-2 focus:ring-[#E74C3C] focus:ring-offset-2 dark:focus:ring-offset-slate-900
                                     transition-all duration-300 ease-in-out
                                     disabled:opacity-70 disabled:cursor-not-allowed

@@ -141,7 +141,7 @@ const ForgotPassword = () => {
                         <div style={{ animation: 'forgotSlideUp 0.4s ease-out 0.5s both' }}>
                             <Link
                                 to="/login"
-                                className="inline-flex items-center gap-2 text-[#E74C3C] dark:text-red-400 font-medium hover:text-[#C0392B] dark:hover:text-red-300 transition-colors"
+                                className="inline-flex items-center gap-2 text-[#E74C3C] dark:text-red-400 font-medium hover:text-orange-800 dark:hover:text-red-300 transition-colors"
                             >
                                 <ArrowLeft size={18} />
                                 Volver al inicio de sesion
@@ -264,7 +264,7 @@ const ForgotPassword = () => {
                                 disabled={loading}
                                 className="w-full py-3 px-4 rounded-xl font-semibold text-white
                                     bg-gradient-to-r from-[#E74C3C] to-[#C0392B]
-                                    hover:from-[#C0392B] hover:to-[#A93226]
+                                    hover:from-[#C0392B] hover:to-orange-800
                                     focus:outline-none focus:ring-2 focus:ring-[#E74C3C] focus:ring-offset-2
                                     transition-all duration-200
                                     disabled:opacity-70 disabled:cursor-not-allowed

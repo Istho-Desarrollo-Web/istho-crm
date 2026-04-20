@@ -105,6 +105,24 @@ body {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+@keyframes forgotFadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes forgotSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-forgotFadeIn {
+  animation: forgotFadeIn 0.4s ease-out both;
+}
+
+.animate-forgotSlideUp {
+  animation: forgotSlideUp 0.4s ease-out both;
+}
+
 /* ══════════════════════════════════════════════
    SCROLLBAR — Light mode
    ══════════════════════════════════════════════ */
