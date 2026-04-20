@@ -143,7 +143,7 @@ const AuditoriaAcciones = () => {
           <div>
             <div className="flex items-center gap-3">
               <Activity className="w-8 h-8 text-orange-500" />
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
                 Auditoría de Acciones
               </h1>
             </div>

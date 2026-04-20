@@ -191,7 +191,7 @@ const PlantillasEmailList = () => {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Plantillas de Email</h1>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Plantillas de Email</h1>
               <p className="text-slate-500 dark:text-slate-400 mt-1">Gestiona las plantillas de correo electrónico del sistema</p>
             </div>
           </div>

@@ -400,7 +400,7 @@ const VehiculosList = () => {
               <Truck className="w-7 h-7 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Vehículos</h1>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Vehículos</h1>
               <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestiona la flota de vehículos para despachos y viajes</p>
             </div>
           </div>

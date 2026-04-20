@@ -618,7 +618,7 @@ const MovimientosList = () => {
               <Receipt className="w-7 h-7 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Movimientos de Caja Menor</h1>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Movimientos de Caja Menor</h1>
               <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestiona los ingresos y egresos de caja menor</p>
             </div>
           </div>

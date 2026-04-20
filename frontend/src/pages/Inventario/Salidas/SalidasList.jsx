@@ -258,7 +258,7 @@ const SalidasList = () => {
               <ArrowUpCircle className="w-7 h-7 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Salidas de Inventario</h1>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Salidas de Inventario</h1>
               <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestión de despachos desde el WMS</p>
             </div>
           </div>

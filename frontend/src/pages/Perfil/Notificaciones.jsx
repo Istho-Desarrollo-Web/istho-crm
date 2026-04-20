@@ -371,7 +371,7 @@ const Notificaciones = () => {
         {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Notificaciones</h1>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Notificaciones</h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">
               {pagination.total > 0
                 ? `${pagination.total} notificación${pagination.total > 1 ? 'es' : ''} en total`
