@@ -16,6 +16,7 @@ import { Menu, MenuItem, IconButton, Checkbox } from '@mui/material';
 import { useThemeContext } from '../../context/ThemeContext';
 import { movimientosService } from '../../api/viajes.service';
 import { formatDate } from '../../utils/formatDate';
+import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -592,15 +593,21 @@ const MovimientosList = () => {
     }
   };
 
-  const handleExportExcel = () => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-    const token = localStorage.getItem('istho_token');
-    const params = new URLSearchParams();
-    if (token) params.set('token', token);
-    if (tipoFilter !== 'todos') params.set('tipo_movimiento', tipoFilter);
-    if (aprobadoFilter !== 'todos') params.set('aprobado', aprobadoFilter);
-    if (searchTerm) params.set('search', searchTerm);
-    window.open(`${baseUrl}/reportes/movimientos/excel?${params.toString()}`, '_blank');
+  const handleExportExcel = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const params = new URLSearchParams();
+      if (tipoFilter !== 'todos') params.set('tipo_movimiento', tipoFilter);
+      if (aprobadoFilter !== 'todos') params.set('aprobado', aprobadoFilter);
+      if (searchTerm) params.set('search', searchTerm);
+      const query = params.toString() ? `?${params.toString()}` : '';
+      await descargarArchivo(
+        `${baseUrl}/reportes/movimientos/excel${query}`,
+        `movimientos-caja-menor-${fechaDescarga()}.xlsx`,
+      );
+    } catch {
+      showError('Error al exportar el reporte de movimientos');
+    }
   };
 
   // ──────────────────────────────────────────────────────────────────────────

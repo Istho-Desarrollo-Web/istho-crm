@@ -16,6 +16,7 @@ import { Menu, MenuItem, IconButton } from '@mui/material';
 import { useThemeContext } from '../../context/ThemeContext';
 import { viajesService } from '../../api/viajes.service';
 import { formatDateShort } from '../../utils/formatDate';
+import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 import useNotification from '../../hooks/useNotification';
 import useSort from '@hooks/useSort';
 import SortIcon from '@components/common/SortIcon';
@@ -222,7 +223,7 @@ const ViajesList = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user: _user } = useAuth();
-  const { success, apiError, deleted } = useNotification();
+  const { success, error: notifyError, apiError, deleted } = useNotification();
   const socket = useSocket();
 
   const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
@@ -379,13 +380,19 @@ const ViajesList = () => {
   // EXPORT
   // ──────────────────────────────────────────────────────────────────────────
 
-  const handleExportExcel = () => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-    const token = localStorage.getItem('istho_token');
-    const params = new URLSearchParams();
-    if (token) params.set('token', token);
-    if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
-    window.open(`${baseUrl}/reportes/viajes/excel?${params.toString()}`, '_blank');
+  const handleExportExcel = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const params = new URLSearchParams();
+      if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
+      const query = params.toString() ? `?${params.toString()}` : '';
+      await descargarArchivo(
+        `${baseUrl}/reportes/viajes/excel${query}`,
+        `viajes-${fechaDescarga()}.xlsx`,
+      );
+    } catch {
+      notifyError('Error al exportar el reporte de viajes');
+    }
   };
 
   // ──────────────────────────────────────────────────────────────────────────

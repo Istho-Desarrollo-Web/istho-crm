@@ -22,6 +22,7 @@ import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
 import { formatDateShort } from '../../utils/formatDate';
+import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 import {
   Wallet,
   Search,
@@ -217,7 +218,7 @@ const CajaMenorList = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user: _user } = useAuth();
-  const { success, apiError, deleted } = useNotification();
+  const { success, error: notifyError, apiError, deleted } = useNotification();
   const socket = useSocket();
   const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
@@ -388,13 +389,19 @@ const CajaMenorList = () => {
   // EXPORT
   // ──────────────────────────────────────────────────────────────────────────
 
-  const handleExportExcel = () => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-    const token = localStorage.getItem('istho_token');
-    const params = new URLSearchParams();
-    if (token) params.set('token', token);
-    if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
-    window.open(`${baseUrl}/reportes/cajas-menores/excel?${params.toString()}`, '_blank');
+  const handleExportExcel = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const params = new URLSearchParams();
+      if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
+      const query = params.toString() ? `?${params.toString()}` : '';
+      await descargarArchivo(
+        `${baseUrl}/reportes/cajas-menores/excel${query}`,
+        `cajas-menores-${fechaDescarga()}.xlsx`,
+      );
+    } catch {
+      notifyError('Error al exportar el reporte de cajas menores');
+    }
   };
 
   // ──────────────────────────────────────────────────────────────────────────

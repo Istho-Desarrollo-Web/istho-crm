@@ -59,6 +59,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ProtectedAction } from '../../components/auth/PrivateRoute';
 import useSort from '@hooks/useSort';
 import SortIcon from '@components/common/SortIcon';
+import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 
 // ════════════════════════════════════════════════════════════════════════════
 // CONFIGURACIÓN DE FILTROS (Alineados con modelo Cliente del Backend)
@@ -208,27 +209,10 @@ const ClientesList = () => {
   const [importErroresExpanded, setImportErroresExpanded] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  const descargarArchivo = async (url, nombreArchivo) => {
-    const token = localStorage.getItem('istho_token');
-    const response = await fetch(url, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    });
-    if (!response.ok) throw new Error('Error al descargar archivo');
-    const blob = await response.blob();
-    const blobUrl = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = nombreArchivo;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(blobUrl);
-  };
-
   const handleExport = async () => {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      await descargarArchivo(`${baseUrl}/reportes/clientes/excel`, `clientes-${Date.now()}.xlsx`);
+      await descargarArchivo(`${baseUrl}/reportes/clientes/excel`, `clientes-${fechaDescarga()}.xlsx`);
     } catch {
       notifyError('Error al exportar la lista de clientes');
     }
