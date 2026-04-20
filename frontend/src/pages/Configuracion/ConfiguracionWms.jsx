@@ -205,7 +205,7 @@ const ConfiguracionWms = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#E74C3C]" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
           </div>
         </main>
       </div>
@@ -300,7 +300,7 @@ const ConfiguracionWms = () => {
                 </div>
                 <button
                   onClick={() => iniciarCreacion(categoria)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#E74C3C] text-white text-sm font-medium hover:bg-[#C0392B] transition-colors shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 text-white text-sm font-medium hover:bg-orange-700 transition-colors shadow-sm"
                 >
                   <Plus className="w-4 h-4" /> Agregar
                 </button>
@@ -425,7 +425,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
             value={formData.valor_wms || ''}
             onChange={(e) => handleChange('valor_wms', e.target.value)}
             placeholder="Ej: Recarga, Picking, Finalizada"
-            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]"
+            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
           />
         </div>
 
@@ -437,7 +437,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
             value={formData.valor_crm || ''}
             onChange={(e) => handleChange('valor_crm', e.target.value)}
             placeholder="Ej: Recarga de stock, Salida (PK)"
-            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]"
+            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
           />
         </div>
 
@@ -448,7 +448,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
             <select
               value={formData.tipo_documento || 'CO'}
               onChange={(e) => handleChange('tipo_documento', e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]"
+              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
             >
               <option value="CO">CO — Entrada (Recepción)</option>
               <option value="PK">PK — Salida (Picking)</option>
@@ -464,7 +464,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
               type="checkbox"
               checked={formData.requiere_detalle || false}
               onChange={(e) => handleChange('requiere_detalle', e.target.checked)}
-              className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 dark:bg-centhrix-surface text-[#E74C3C] focus:ring-[#E74C3C]"
+              className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 dark:bg-centhrix-surface text-orange-500 focus:ring-orange-500"
             />
             <label className="text-sm text-slate-600 dark:text-slate-400">Requiere detalle adicional del WMS</label>
           </div>
@@ -478,7 +478,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
             value={formData.descripcion || ''}
             onChange={(e) => handleChange('descripcion', e.target.value)}
             placeholder="Nota para el administrador"
-            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C]"
+            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
           />
         </div>
       </div>
@@ -488,7 +488,7 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
         <button
           onClick={onGuardar}
           disabled={!formData.valor_wms || !formData.valor_crm}
-          className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#E74C3C] text-white text-sm font-medium hover:bg-[#C0392B] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-orange-500 text-white text-sm font-medium hover:bg-orange-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Save className="w-4 h-4" />
           {esNuevo ? 'Crear' : 'Guardar'}

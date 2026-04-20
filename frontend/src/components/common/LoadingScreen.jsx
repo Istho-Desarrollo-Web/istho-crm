@@ -16,7 +16,7 @@ const LoadingScreen = ({
   const isReconectando = tipo === 'reconectando';
 
   return (
-    <div className={`${fullScreen ? 'min-h-screen' : 'min-h-[60vh]'} bg-gradient-to-br from-slate-50 to-slate-100 dark:from-[#0F1023] dark:to-[#151631] flex items-center justify-center`}>
+    <div className={`${fullScreen ? 'min-h-screen' : 'min-h-[60vh]'} bg-gradient-to-br from-slate-50 to-slate-100 dark:from-centhrix-bg dark:to-centhrix-surface flex items-center justify-center`}>
       <div className="text-center">
         {/* Logo CenthriX */}
         <div className="mb-6">
@@ -34,7 +34,7 @@ const LoadingScreen = ({
             className="absolute inset-0 rounded-full border-[3px] border-slate-200 dark:border-slate-700"
           />
           <div
-            className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#E74C3C] border-r-[#E74C3C]"
+            className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-orange-500 border-r-orange-500"
             style={{ animation: 'spinSmooth 0.8s linear infinite' }}
           />
         </div>
@@ -56,7 +56,7 @@ const LoadingScreen = ({
           <div className="mt-4 w-48 mx-auto">
             <div className="h-1 bg-slate-200 dark:bg-centhrix-surface rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#E74C3C] rounded-full"
+                className="h-full bg-orange-500 rounded-full"
                 style={{ animation: 'progressIndeterminate 1.5s ease-in-out infinite' }}
               />
             </div>
