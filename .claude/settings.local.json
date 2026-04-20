@@ -3,5 +3,20 @@
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "20000",
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
     "DISABLE_COST_WARNINGS": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(node .agents/skills/impeccable/scripts/cleanup-deprecated.mjs)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git worktree *)",
+      "Bash(npm install *)",
+      "Bash(node *)",
+      "Bash(npm run *)",
+      "Bash(npx eslint *)",
+      "Bash(powershell -Command ' *)",
+      "Bash(grep -c \"^\" frontend/src/index.css)",
+      "Bash(wc -c frontend/src/index.css)"
+    ]
   }
 }

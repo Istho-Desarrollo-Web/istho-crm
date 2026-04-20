@@ -4,17 +4,59 @@ Sistema integral de gestión logística, transporte y almacenamiento para **ISTH
 
 ## Stack Tecnológico
 
-| Capa | Tecnología |
-|------|-----------|
-| **Frontend** | React 19 + Vite + Tailwind CSS 4 + MUI 7 + Lucide Icons |
-| **Backend** | Node.js 20 + Express 4.18 + Sequelize 6 (ORM) |
-| **Base de Datos** | MySQL (Railway producción / XAMPP local) |
-| **Autenticación** | JWT con refresh tokens (HS256) — 24h acceso / 7d refresh |
-| **Almacenamiento** | Cloudinary (avatares, soportes, evidencias, averías, branding) |
-| **Email** | Resend (API HTTP, producción) / Nodemailer SMTP (desarrollo) |
-| **Exportaciones** | ExcelJS (Excel) + PDFKit (PDF) |
-| **Real-time** | Socket.io (notificaciones y actualizaciones en vivo) |
-| **Deploy** | Railway (backend + MySQL) + Vercel (frontend) |
+### Frontend
+
+| Categoría | Tecnología | Versión |
+|-----------|-----------|---------|
+| **Framework UI** | React | 19.x |
+| **Bundler** | Vite | 7.x |
+| **Estilos** | Tailwind CSS | 4.x |
+| **Componentes UI** | MUI (Material UI) | 7.x |
+| **Iconos** | Lucide React | 0.562.x |
+| **Routing** | React Router DOM | 7.x |
+| **HTTP Client** | Axios | 1.x |
+| **Formularios** | React Hook Form + Yup | 7.x / 1.x |
+| **Gráficos** | Recharts | 3.x |
+| **Notificaciones** | Notistack | 3.x |
+| **Real-time** | Socket.io Client | 4.x |
+| **Fechas** | date-fns | 4.x |
+| **Exportación Excel** | XLSX (SheetJS) | 0.18.x |
+| **Compresión imágenes** | browser-image-compression | 2.x |
+| **Observabilidad** | Vercel Analytics + Speed Insights | 2.x |
+
+### Backend
+
+| Categoría | Tecnología | Versión |
+|-----------|-----------|---------|
+| **Runtime** | Node.js | ≥ 20 |
+| **Framework HTTP** | Express | 4.18.x |
+| **ORM** | Sequelize | 6.x |
+| **Base de datos** | MySQL 2 | 3.x |
+| **Autenticación** | JSON Web Token (HS256) | 9.x |
+| **Hash contraseñas** | bcryptjs | 2.x |
+| **Validación** | express-validator | 7.x |
+| **Seguridad HTTP** | Helmet | 7.x |
+| **CORS** | cors | 2.x |
+| **Subida de archivos** | Multer | 1.x |
+| **Almacenamiento cloud** | Cloudinary SDK | 2.x |
+| **Email producción** | Resend | 6.x |
+| **Email desarrollo** | Nodemailer | 6.x |
+| **Plantillas email** | Handlebars | 4.x |
+| **Exportación Excel** | ExcelJS | 4.x |
+| **Exportación PDF** | PDFKit | 0.17.x |
+| **Real-time** | Socket.io | 4.x |
+| **Tareas programadas** | node-cron | 4.x |
+| **Logging HTTP** | Morgan | 1.x |
+| **IDs únicos** | UUID | 9.x |
+
+### Infraestructura y DevOps
+
+| Componente | Plataforma |
+|-----------|-----------|
+| **Backend + BD** | Railway (MySQL + Node.js) |
+| **Frontend** | Vercel |
+| **Archivos y medios** | Cloudinary |
+| **Email transaccional** | Resend |
 
 ## Módulos del Sistema
 

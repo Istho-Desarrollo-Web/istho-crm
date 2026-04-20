@@ -1256,6 +1256,49 @@ El sistema CRM CenthriX utiliza **Cloudinary** como servicio de almacenamiento e
 
 ---
 
+## 16. Portal Cliente
+
+El **Portal Cliente** es un acceso especial del sistema CenthriX destinado exclusivamente a los clientes de ISTHO S.A.S. Permite consultar información propia en tiempo real sin acceso a datos de otros clientes.
+
+### 16.1 Acceso y Credenciales
+
+Un administrador del sistema crea las credenciales del portal y las envía al representante del cliente por correo electronico. Al primer inicio de sesion, el sistema solicitara cambiar la contrasena.
+
+### 16.2 Identificacion en el Sistema
+
+Al iniciar sesion como cliente portal, el encabezado del sistema muestra:
+
+- **Badge "Portal Cliente"** junto al nombre del sistema con el logo y nombre de su empresa.
+- Este badge es **clickeable** y lleva directamente al detalle de su empresa.
+- El menu de navegacion muestra unicamente las opciones disponibles para el perfil cliente.
+
+### 16.3 Funciones Disponibles
+
+| Modulo | Que puede hacer |
+|--------|----------------|
+| Mi Empresa | Ver información general, contactos e historial de operaciones de su empresa |
+| Inventario | Consultar productos propios en bodega con cantidades y ubicaciones |
+| Operaciones | Ver entradas (CO), salidas (PK) y kardex (CR) de sus operaciones |
+| Reportes | Visualizar reportes de sus operaciones |
+| Configuracion | Gestionar preferencias personales (idioma, zona horaria, tema, notificaciones) |
+
+### 16.4 Restricciones
+
+- No puede ver informacion de otros clientes.
+- No puede crear, editar ni eliminar operaciones o inventario.
+- No puede acceder a modulos de administracion, viajes, cajas menores ni vehiculos.
+- Al ingresar a la seccion "Clientes", el sistema lo redirige automaticamente al detalle de su propia empresa.
+
+### 16.5 Ver Mi Empresa
+
+Desde la pantalla de detalle de su empresa puede consultar:
+
+1. **Informacion General** — Razon social, NIT, direccion, tipo, sector y estado del cliente.
+2. **Contactos** — Personas de contacto registradas, con opcion de filtrar por tipo de notificacion.
+3. **Historial** — Registro de operaciones cerradas con fecha y nombre del responsable del cierre.
+
+---
+
 ## Glosario
 
 | Termino | Definicion |

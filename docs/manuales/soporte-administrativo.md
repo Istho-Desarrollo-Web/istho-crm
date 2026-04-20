@@ -128,7 +128,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
   - Supervisión de operaciones de bodega
   - Auditoría de entradas, salidas y kardex
   - Generación y programación de reportes
-  - Gestión de plantillas de email
+  - Visualización de plantillas de email (solo lectura — no puede editar)
   - Aprobación de gastos de caja menor
   - Gestión de vehículos y viajes
 
@@ -161,10 +161,12 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 ### 5.6 Cliente (Portal)
 - **Nivel jerárquico:** 10
 - **Responsabilidades:**
-  - Consulta de inventario propio
-  - Consulta de operaciones (entradas, salidas, kardex)
-  - Visualización de reportes
-  - Consulta de auditorías
+  - Consulta de inventario propio (solo su empresa)
+  - Consulta de operaciones (entradas, salidas, kardex) — solo lectura
+  - Visualización de reportes propios
+  - Acceso a detalle de su empresa (Mi Empresa) con historial de operaciones
+  - Configuración de preferencias personales del sistema
+- **Nota técnica:** Los permisos del cliente portal se gestionan mediante la columna `permisos_cliente` en la tabla `usuarios` y el método `getPermisos()` en el modelo `Usuario`. Son independientes del sistema de roles y permisos estándar. Cambios en el seed de roles NO afectan a usuarios portal.
 
 ---
 
