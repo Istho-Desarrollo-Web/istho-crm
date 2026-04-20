@@ -24,7 +24,7 @@ const BarChart = ({
   // Loading skeleton
   if (loading) {
     return (
-      <div className="bg-white dark:bg-[#1A1B3A] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700/50">
+      <div className="bg-white dark:bg-centhrix-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700/50">
         <div className="animate-pulse">
           <div className="h-5 bg-gray-200 dark:bg-centhrix-surface rounded w-40 mb-2" />
           <div className="h-3 bg-gray-200 dark:bg-centhrix-surface rounded w-56 mb-6" />
@@ -37,7 +37,7 @@ const BarChart = ({
   // Sin datos
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white dark:bg-[#1A1B3A] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700/50">
+      <div className="bg-white dark:bg-centhrix-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700/50">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
@@ -119,7 +119,7 @@ const BarChart = ({
   });
 
   return (
-    <div className="bg-white dark:bg-[#1A1B3A] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700/50">
+    <div className="bg-white dark:bg-centhrix-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700/50">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>

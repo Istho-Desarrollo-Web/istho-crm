@@ -147,7 +147,7 @@ const MovimientoForm = ({
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white dark:bg-[#1A1B3A] rounded-2xl shadow-xl w-full max-w-md">
+        <div className="relative bg-white dark:bg-centhrix-card rounded-2xl shadow-xl w-full max-w-md">
 
           {/* HEADER */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">

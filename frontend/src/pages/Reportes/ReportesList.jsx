@@ -251,7 +251,7 @@ const ReportesList = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Reportes</h1>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Reportes</h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">{subtitulo}</p>
           </div>
         </div>

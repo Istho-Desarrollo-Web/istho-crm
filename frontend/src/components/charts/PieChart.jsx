@@ -182,7 +182,7 @@ const PieChart = ({
               cx={centerX}
               cy={centerY}
               r={radius * 0.5}
-              className="fill-white dark:fill-slate-800"
+              className="fill-white dark:fill-centhrix-card"
             />
 
             {/* Center text */}
