@@ -31,10 +31,27 @@ const ReporteCajasMenores = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleExport = (format) => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-    const token = localStorage.getItem('istho_token');
-    window.open(`${baseUrl}/reportes/cajas-menores/${format}?token=${token}`, '_blank');
+  const handleExport = async (format) => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const token = localStorage.getItem('istho_token');
+      const url = `${baseUrl}/reportes/cajas-menores/${format}`;
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Error al descargar archivo');
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `cajas-menores-${Date.now()}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch {
+      showError('Error al exportar el reporte');
+    }
   };
 
   const kpis = data?.kpis || {};

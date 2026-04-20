@@ -415,14 +415,27 @@ const inventarioService = {
 
   /**
    * Descargar plantilla Excel para importación de productos
-   * Usa window.open con token para descarga directa del servidor
+   * Usa fetch con cabecera Authorization para no exponer el token en la URL
    *
    * @param {string} apiBaseUrl - URL base de la API (import.meta.env.VITE_API_URL)
    * @param {string} token - JWT token del usuario
+   * @returns {Promise<void>}
    */
-  descargarPlantilla: (apiBaseUrl, token) => {
-    const url = `${apiBaseUrl}${INVENTARIO_ENDPOINTS.PLANTILLA_IMPORTACION}?token=${token}`;
-    window.open(url, '_blank');
+  descargarPlantilla: async (apiBaseUrl, token) => {
+    const url = `${apiBaseUrl}${INVENTARIO_ENDPOINTS.PLANTILLA_IMPORTACION}`;
+    const response = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Error al descargar plantilla');
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = 'plantilla-importacion.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(blobUrl);
   },
 
   // ════════════════════════════════════════════════════════════════════════

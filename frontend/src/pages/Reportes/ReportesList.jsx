@@ -24,6 +24,7 @@ import {
 
 import { Button } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
+import useNotification from '../../hooks/useNotification';
 import PageFooter from '@components/common/PageFooter';
 
 // ============================================
@@ -150,6 +151,7 @@ const getReportesPorRol = (rol) => {
 // ============================================
 const ReporteCard = ({ reporte, canExport }) => {
   const navigate = useNavigate();
+  const { error: notifyError } = useNotification();
   const Icon = reporte.icon;
 
   const handleView = () => {
@@ -160,17 +162,40 @@ const ReporteCard = ({ reporte, canExport }) => {
     }
   };
 
-  const handleExportExcel = () => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+  const descargarArchivo = async (url, nombreArchivo) => {
     const token = localStorage.getItem('istho_token');
-    window.open(`${baseUrl}${reporte.exportEndpoints.excel}?token=${token}`, '_blank');
+    const response = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Error al descargar archivo');
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = nombreArchivo;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(blobUrl);
   };
 
-  const handleExportPdf = () => {
+  const handleExportExcel = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      await descargarArchivo(`${baseUrl}${reporte.exportEndpoints.excel}`, `reporte-${Date.now()}.xlsx`);
+    } catch {
+      notifyError('Error al exportar el reporte Excel');
+    }
+  };
+
+  const handleExportPdf = async () => {
     if (!reporte.exportEndpoints?.pdf) return;
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-    const token = localStorage.getItem('istho_token');
-    window.open(`${baseUrl}${reporte.exportEndpoints.pdf}?token=${token}`, '_blank');
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      await descargarArchivo(`${baseUrl}${reporte.exportEndpoints.pdf}`, `reporte-${Date.now()}.pdf`);
+    } catch {
+      notifyError('Error al exportar el reporte PDF');
+    }
   };
 
   return (

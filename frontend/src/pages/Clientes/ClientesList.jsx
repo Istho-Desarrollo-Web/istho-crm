@@ -208,16 +208,39 @@ const ClientesList = () => {
   const [importErroresExpanded, setImportErroresExpanded] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  const handleExport = () => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+  const descargarArchivo = async (url, nombreArchivo) => {
     const token = localStorage.getItem('istho_token');
-    window.open(`${baseUrl}/reportes/clientes/excel?token=${token}`, '_blank');
+    const response = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Error al descargar archivo');
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = nombreArchivo;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(blobUrl);
   };
 
-  const handleDownloadPlantilla = () => {
-    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-    const token = localStorage.getItem('istho_token');
-    window.open(`${baseUrl}/clientes/plantilla-importacion?token=${token}`, '_blank');
+  const handleExport = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      await descargarArchivo(`${baseUrl}/reportes/clientes/excel`, `clientes-${Date.now()}.xlsx`);
+    } catch {
+      notifyError('Error al exportar la lista de clientes');
+    }
+  };
+
+  const handleDownloadPlantilla = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      await descargarArchivo(`${baseUrl}/clientes/plantilla-importacion`, 'plantilla-importacion.xlsx');
+    } catch {
+      notifyError('Error al descargar la plantilla de importación');
+    }
   };
 
   const handleOpenImport = () => {

@@ -541,10 +541,14 @@ const InventarioList = () => {
     }
   };
 
-  const handleDescargarPlantilla = () => {
-    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
-    const token = localStorage.getItem('istho_token');
-    inventarioService.descargarPlantilla(apiBaseUrl, token);
+  const handleDescargarPlantilla = async () => {
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+      const token = localStorage.getItem('istho_token');
+      await inventarioService.descargarPlantilla(apiBaseUrl, token);
+    } catch {
+      notifyError('Error al descargar la plantilla de importación');
+    }
   };
 
   // ──────────────────────────────────────────────────────────────────────────
