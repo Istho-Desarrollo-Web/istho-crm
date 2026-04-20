@@ -20,7 +20,8 @@
       "Bash(powershell *)",
       "Bash(git commit *)",
       "Bash(tee eslint-output.txt)",
-      "Bash(git branch *)"
+      "Bash(git branch *)",
+      "Bash(echo \"exit:$?\")"
     ]
   }
 }
