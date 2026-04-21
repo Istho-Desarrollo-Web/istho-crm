@@ -151,7 +151,7 @@ const generarTokenDispositivoConfiable = (usuarioId) => {
   return jwt.sign(
     { id: usuarioId, scope: 'trusted_device' },
     jwtConfig.secret,
-    { expiresIn: '30d', issuer: jwtConfig.issuer, audience: jwtConfig.audience }
+    { expiresIn: '30d', issuer: jwtConfig.issuer, audience: jwtConfig.audience, algorithm: jwtConfig.algorithm }
   );
 };
 
