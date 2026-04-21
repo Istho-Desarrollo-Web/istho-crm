@@ -144,6 +144,34 @@ const generarBackupCodes = () => {
 };
 
 /**
+ * Genera JWT de confianza para dispositivo (30 días).
+ * scope: 'trusted_device'
+ */
+const generarTokenDispositivoConfiable = (usuarioId) => {
+  return jwt.sign(
+    { id: usuarioId, scope: 'trusted_device' },
+    jwtConfig.secret,
+    { expiresIn: '30d', issuer: jwtConfig.issuer, audience: jwtConfig.audience }
+  );
+};
+
+/**
+ * Valida token de confianza: firma, scope y coincidencia de usuario.
+ * Retorna true si es válido, false en cualquier otro caso.
+ */
+const validarTokenDispositivoConfiable = (token, usuarioId) => {
+  try {
+    const payload = jwt.verify(token, jwtConfig.secret, {
+      issuer: jwtConfig.issuer,
+      audience: jwtConfig.audience,
+    });
+    return payload.scope === 'trusted_device' && payload.id === usuarioId;
+  } catch {
+    return false;
+  }
+};
+
+/**
  * Finalizar login exitoso: actualizar usuario, registrar auditoría, devolver tokens.
  * Usado por login normal y por validarTotp.
  */
@@ -212,7 +240,7 @@ const completarLogin = async (usuario, req, res) => {
  */
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, trusted_device_token } = req.body;
 
     // Buscar usuario por email o username
     const usuario = email && email.includes('@')
@@ -266,6 +294,12 @@ const login = async (req, res) => {
 
     // Login exitoso — verificar si tiene 2FA habilitado
     if (usuario.totp_habilitado && usuario.totp_secret) {
+      // Verificar si el dispositivo ya es de confianza
+      if (trusted_device_token && validarTokenDispositivoConfiable(trusted_device_token, usuario.id)) {
+        logger.info('Login con dispositivo confiable (2FA omitido):', { userId: usuario.id });
+        return await completarLogin(usuario, req, res);
+      }
+
       // Emitir token temporal de 5 minutos para el paso de TOTP
       const tempToken = jwt.sign(
         { id: usuario.id, scope: 'totp_pending' },
@@ -1032,9 +1066,9 @@ const validarTotp = async (req, res) => {
         return errorResponse(res, 'Código incorrecto', 401, null, 'TOTP_INVALID');
       }
 
-      // Consumir el código de respaldo (one-time)
-      backups.splice(idxBackup, 1);
-      usuario.totp_backup_codes = backups;
+      // Consumir el código de respaldo (one-time) — nuevo array para que Sequelize detecte el cambio
+      usuario.totp_backup_codes = backups.filter((_, i) => i !== idxBackup);
+      usuario.changed('totp_backup_codes', true);
       await usuario.save();
 
       logger.warn('Login con código de respaldo:', { userId: usuario.id });
