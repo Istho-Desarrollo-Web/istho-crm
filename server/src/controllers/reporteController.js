@@ -2051,6 +2051,7 @@ const getReporteAverias = async (req, res) => {
     if (cliente_id)  whereOperacion.cliente_id = cliente_id;
 
     const averias = await OperacionAveria.findAll({
+      attributes: ['id', 'operacion_id', 'sku', 'tipo_averia', 'cantidad', 'descripcion', 'foto_url'],
       include: [
         {
           model: Operacion,
@@ -2124,6 +2125,7 @@ const exportarAveriasExcel = async (req, res) => {
     if (cliente_id)  whereOperacion.cliente_id = cliente_id;
 
     const averias = await OperacionAveria.findAll({
+      attributes: ['id', 'operacion_id', 'sku', 'tipo_averia', 'cantidad', 'descripcion', 'foto_url'],
       include: [
         {
           model: Operacion, as: 'operacion', required: true, where: whereOperacion,
