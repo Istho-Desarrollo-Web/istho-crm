@@ -101,6 +101,15 @@ router.get('/movimientos/csv', reporteController.exportarMovimientosCsv);
 router.get('/viajes/csv', reporteController.exportarViajesCsv);
 
 // =============================================
+// REPORTES DE AVERÍAS
+// =============================================
+
+// Averías
+router.get('/averias', requierePermiso('reportes', 'ver'), reporteController.getReporteAverias);
+router.get('/averias/excel', requierePermiso('reportes', 'ver'), reporteController.exportarAveriasExcel);
+router.get('/averias/pdf',   requierePermiso('reportes', 'ver'), reporteController.exportarAveriasPDF);
+
+// =============================================
 // ENVIAR REPORTE POR EMAIL
 // =============================================
 

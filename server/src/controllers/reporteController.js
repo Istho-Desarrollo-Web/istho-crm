@@ -14,6 +14,7 @@ const { Op } = require('sequelize');
 const {
   Operacion,
   OperacionDetalle,
+  OperacionAveria,
   Inventario,
   Cliente,
   Contacto,
@@ -29,7 +30,7 @@ const {
 const excelService = require('../services/excelService');
 const pdfService = require('../services/pdfService');
 const notificacionService = require('../services/notificacionService');
-const { serverError, notFound } = require('../utils/responses');
+const { success, serverError, notFound } = require('../utils/responses');
 const logger = require('../utils/logger');
 const { getClientIP } = require('../utils/helpers');
 
@@ -2036,6 +2037,80 @@ const exportarInventarioUbicacionPDF = async (req, res) => {
   }
 };
 
+/**
+ * GET /reportes/averias
+ * Datos de averías con KPIs para la vista
+ */
+const getReporteAverias = async (req, res) => {
+  try {
+    const { fecha_desde, fecha_hasta, cliente_id } = req.query;
+
+    const whereOperacion = {};
+    if (fecha_desde) whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.gte]: fecha_desde };
+    if (fecha_hasta) whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.lte]: fecha_hasta };
+    if (cliente_id)  whereOperacion.cliente_id = cliente_id;
+
+    const averias = await OperacionAveria.findAll({
+      include: [
+        {
+          model: Operacion,
+          as: 'operacion',
+          required: true,
+          where: whereOperacion,
+          attributes: ['id', 'numero_operacion', 'tipo', 'fecha_operacion', 'origen'],
+          include: [
+            { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }
+          ]
+        },
+        {
+          model: OperacionDetalle,
+          as: 'detalle',
+          required: false,
+          attributes: ['producto']
+        },
+        {
+          model: Usuario,
+          as: 'registrador',
+          attributes: ['id', 'nombre_completo']
+        }
+      ],
+      order: [[{ model: Operacion, as: 'operacion' }, 'fecha_operacion', 'DESC']],
+      limit: MAX_EXPORT_ROWS
+    });
+
+    const totalUnidades = averias.reduce((s, a) => s + (parseFloat(a.cantidad) || 0), 0);
+    const operacionesAfectadas = new Set(averias.map(a => a.operacion_id)).size;
+
+    const conteoTipo = {};
+    averias.forEach(a => {
+      const t = a.tipo_averia || 'Sin tipo';
+      conteoTipo[t] = (conteoTipo[t] || 0) + 1;
+    });
+    const tipoFrecuente = Object.entries(conteoTipo).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+
+    const porTipo = Object.entries(conteoTipo).map(([tipo, count]) => ({
+      tipo,
+      count,
+      unidades: averias.filter(a => (a.tipo_averia || 'Sin tipo') === tipo)
+                       .reduce((s, a) => s + (parseFloat(a.cantidad) || 0), 0)
+    }));
+
+    return success(res, {
+      averias,
+      kpis: {
+        totalAverias: averias.length,
+        totalUnidades,
+        operacionesAfectadas,
+        tipoFrecuente
+      },
+      porTipo
+    });
+  } catch (error) {
+    logger.error('Error en getReporteAverias:', { message: error.message });
+    return serverError(res, 'Error al obtener reporte de averías', error);
+  }
+};
+
 module.exports = {
   getPeriodosDisponibles,
   exportarOperacionesExcel,
@@ -2073,4 +2148,6 @@ module.exports = {
   exportarViajesPDF,
   exportarCajasMenoresPDF,
   exportarGastosPDF,
+  // Averías
+  getReporteAverias,
 };
