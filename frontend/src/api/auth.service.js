@@ -43,7 +43,11 @@ const authService = {
     try {
       // client.js ahora devuelve response.data directamente
       // Así que response = { success, message, data: { user, token } }
-      const response = await apiClient.post(AUTH_ENDPOINTS.LOGIN, credentials);
+      const trusted_device_token = localStorage.getItem('istho_trusted_device');
+      const body = trusted_device_token
+        ? { ...credentials, trusted_device_token }
+        : credentials;
+      const response = await apiClient.post(AUTH_ENDPOINTS.LOGIN, body);
 
       if (response.success) {
         const { token, refreshToken, user } = response.data;
@@ -97,6 +101,7 @@ const authService = {
     // Limpiar tokens y datos locales siempre (éxito o error)
     clearAuthToken();
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem('istho_trusted_device');
     return {
       success: true,
       message: 'Sesión cerrada correctamente',
@@ -346,13 +351,20 @@ const authService = {
   // 2FA / TOTP
   // ──────────────────────────────────────────────────────────────────────────
 
-  validarTotp: async ({ temp_token, codigo }) => {
+  validarTotp: async ({ temp_token, codigo, recordar_dispositivo = false }) => {
     try {
-      const response = await apiClient.post(AUTH_ENDPOINTS.TOTP_VALIDAR, { temp_token, codigo });
+      const response = await apiClient.post(AUTH_ENDPOINTS.TOTP_VALIDAR, {
+        temp_token,
+        codigo,
+        recordar_dispositivo,
+      });
       if (response.success) {
-        const { token, refreshToken, user } = response.data;
+        const { token, refreshToken, user, trusted_device_token } = response.data;
         setAuthToken(token, refreshToken);
         localStorage.setItem(USER_KEY, JSON.stringify(user));
+        if (trusted_device_token) {
+          localStorage.setItem('istho_trusted_device', trusted_device_token);
+        }
         return { success: true, data: response.data };
       }
       return { success: false, message: response.message, code: response.code };

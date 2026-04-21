@@ -339,11 +339,11 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const validarTotp = useCallback(async (temp_token, codigo) => {
+  const validarTotp = useCallback(async (temp_token, codigo, recordar_dispositivo = false) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const result = await authService.validarTotp({ temp_token, codigo });
+      const result = await authService.validarTotp({ temp_token, codigo, recordar_dispositivo });
 
       if (result.success) {
         setState({
