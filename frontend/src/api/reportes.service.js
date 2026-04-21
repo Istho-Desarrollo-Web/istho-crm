@@ -142,6 +142,20 @@ const reportesService = {
     }
   },
 
+  /**
+   * Obtener reporte de averías
+   * @param {Object} params - Parámetros de filtro
+   * @returns {Promise<Object>}
+   */
+  getReporteAverias: async (params = {}) => {
+    try {
+      return await apiClient.get('/reportes/averias', { params });
+    } catch (error) {
+      console.error('❌ Error obteniendo reporte de averías:', error);
+      throw error;
+    }
+  },
+
   // ──────────────────────────────────────────────────────────────────────────
   // REPORTES FINANCIEROS (datos JSON para vistas)
   // ──────────────────────────────────────────────────────────────────────────
