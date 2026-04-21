@@ -2082,17 +2082,18 @@ const getReporteAverias = async (req, res) => {
     const operacionesAfectadas = new Set(averias.map(a => a.operacion_id)).size;
 
     const conteoTipo = {};
+    const unidadesPorTipo = {};
     averias.forEach(a => {
       const t = a.tipo_averia || 'Sin tipo';
       conteoTipo[t] = (conteoTipo[t] || 0) + 1;
+      unidadesPorTipo[t] = (unidadesPorTipo[t] || 0) + (parseFloat(a.cantidad) || 0);
     });
     const tipoFrecuente = Object.entries(conteoTipo).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
 
     const porTipo = Object.entries(conteoTipo).map(([tipo, count]) => ({
       tipo,
       count,
-      unidades: averias.filter(a => (a.tipo_averia || 'Sin tipo') === tipo)
-                       .reduce((s, a) => s + (parseFloat(a.cantidad) || 0), 0)
+      unidades: unidadesPorTipo[tipo] || 0
     }));
 
     return success(res, {
