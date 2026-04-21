@@ -175,7 +175,7 @@ const validarTokenDispositivoConfiable = (token, usuarioId) => {
  * Finalizar login exitoso: actualizar usuario, registrar auditoría, devolver tokens.
  * Usado por login normal y por validarTotp.
  */
-const completarLogin = async (usuario, req, res) => {
+const completarLogin = async (usuario, req, res, extra = {}) => {
   usuario.intentos_fallidos = 0;
   usuario.bloqueado_hasta = null;
   usuario.ultimo_acceso = new Date();
@@ -226,7 +226,8 @@ const completarLogin = async (usuario, req, res) => {
     token,
     refreshToken: refreshTokenJwt,
     expiresIn: jwtConfig.expiresIn,
-    refreshExpiresIn: jwtConfig.refreshExpiresIn
+    refreshExpiresIn: jwtConfig.refreshExpiresIn,
+    ...extra,
   });
 };
 
@@ -1019,7 +1020,7 @@ const deshabilitar2FA = async (req, res) => {
  */
 const validarTotp = async (req, res) => {
   try {
-    const { temp_token, codigo } = req.body;
+    const { temp_token, codigo, recordar_dispositivo } = req.body;
 
     if (!temp_token || !codigo) {
       return errorResponse(res, 'Token temporal y código son requeridos', 400);
@@ -1074,7 +1075,11 @@ const validarTotp = async (req, res) => {
       logger.warn('Login con código de respaldo:', { userId: usuario.id });
     }
 
-    return await completarLogin(usuario, req, res);
+    const extra = {};
+    if (recordar_dispositivo) {
+      extra.trusted_device_token = generarTokenDispositivoConfiable(usuario.id);
+    }
+    return await completarLogin(usuario, req, res, extra);
   } catch (error) {
     logger.error('Error en validarTotp:', { message: error.message });
     return serverError(res, 'Error al verificar código 2FA', error);
