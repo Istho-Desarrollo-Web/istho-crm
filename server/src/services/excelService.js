@@ -1199,6 +1199,101 @@ const exportarInventarioUbicacion = async (cajas, filtros = {}) => {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// EXPORTAR AVERÍAS
+// ═══════════════════════════════════════════════════════════════════════════
+
+const exportarAverias = async (averias, filtros = {}) => {
+  try {
+    const wb = crearLibro();
+    const ws = wb.addWorksheet('Averías', {
+      pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true },
+    });
+
+    const COLS = [
+      { header: '#',               key: 'idx',    width: 5,  align: 'center' },
+      { header: 'Fecha',          key: 'fecha',  width: 14, align: 'center' },
+      { header: 'N° Registro',    key: 'num',    width: 18, align: 'left'   },
+      { header: 'Tipo',           key: 'tipo',   width: 10, align: 'center' },
+      { header: 'Cliente',        key: 'cli',    width: 30, align: 'left'   },
+      { header: 'Origen',         key: 'origen', width: 16, align: 'left'   },
+      { header: 'Referencia',     key: 'sku',    width: 16, align: 'left'   },
+      { header: 'Producto',       key: 'prod',   width: 32, align: 'left'   },
+      { header: 'Tipo Avería',    key: 'tavg',   width: 18, align: 'center' },
+      { header: 'Cant. Averiada', key: 'cant',   width: 14, align: 'right'  },
+      { header: 'Descripción',    key: 'desc',   width: 36, align: 'left'   },
+      { header: 'Registrado por', key: 'reg',    width: 24, align: 'left'   },
+      { header: 'Tiene Foto',     key: 'foto',   width: 10, align: 'center' },
+    ];
+
+    ws.columns = COLS.map(c => ({ width: c.width }));
+
+    let sub = null;
+    if (filtros.fecha_desde || filtros.fecha_hasta) {
+      const desde = filtros.fecha_desde || '...';
+      const hasta = filtros.fecha_hasta || '...';
+      sub = `Período: ${desde} al ${hasta} | Generado el ${fechaHoy()}`;
+    }
+
+    let fila = agregarEncabezado(ws, 'REPORTE DE AVERÍAS', sub, COLS.length, wb);
+
+    const totalUnidades = averias.reduce((s, a) => s + (parseFloat(a.cantidad) || 0), 0);
+
+    fila = agregarResumen(ws, fila, [
+      { label: 'Total registros:',          value: averias.length },
+      { label: 'Total unidades averiadas:', value: totalUnidades, numFmt: '0.###' },
+    ], COLS.length);
+
+    const filas = averias.map((a, i) => [
+      i + 1,
+      a.operacion?.fecha_operacion ? new Date(a.operacion.fecha_operacion + 'T00:00:00') : null,
+      a.operacion?.numero_operacion || '',
+      (a.operacion?.tipo || '').toUpperCase(),
+      a.operacion?.cliente?.razon_social || '—',
+      a.operacion?.origen || '—',
+      a.sku || '',
+      a.detalle?.producto || '—',
+      a.tipo_averia || '—',
+      parseFloat(a.cantidad) || 0,
+      a.descripcion || '',
+      a.registrador?.nombre_completo || '—',
+      a.foto_url ? 'Sí' : 'No',
+    ]);
+
+    const dataFila = crearTablaExcel(ws, fila, 'Averias', COLS, filas);
+
+    filas.forEach((fRow, idx) => {
+      ws.getRow(dataFila + idx).height = 20;
+      fRow.forEach((val, ci) => {
+        const cell = ws.getCell(dataFila + idx, ci + 1);
+        estiloCelda(cell, ci, idx, { align: COLS[ci].align });
+        if (ci === 1 && val) cell.numFmt = 'DD/MM/YYYY';
+        if (ci === 9)        cell.numFmt = '0.###';
+        if (ci === 3) {
+          const tipo = (val || '').toLowerCase();
+          cell.font = { bold: true, color: { argb: tipo === 'ingreso' ? C.verde : C.naranja } };
+        }
+        if (ci === 9 && val > 0) cell.font = { bold: true, color: { argb: C.rojo } };
+        if (ci === 12 && val === 'Sí') cell.font = { bold: true, color: { argb: C.verde } };
+      });
+    });
+
+    agregarFilaTotales(ws, dataFila + filas.length + 1, [
+      { col: 1, value: 'TOTALES' },
+      { col: 10, value: totalUnidades, numFmt: '0.###' },
+    ], COLS.length);
+
+    ws.views = [{ state: 'frozen', ySplit: fila }];
+
+    const buffer = await wb.xlsx.writeBuffer();
+    logger.info('Excel averías generado:', { registros: averias.length });
+    return buffer;
+  } catch (error) {
+    logger.error('Error Excel averías:', { message: error.message });
+    throw error;
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // EXPORTS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1212,4 +1307,5 @@ module.exports = {
   exportarCajasMenores,
   exportarMovimientos,
   exportarVehiculos,
+  exportarAverias,
 };

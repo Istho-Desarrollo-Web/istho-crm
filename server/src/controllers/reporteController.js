@@ -2112,6 +2112,42 @@ const getReporteAverias = async (req, res) => {
   }
 };
 
+/**
+ * GET /reportes/averias/excel
+ */
+const exportarAveriasExcel = async (req, res) => {
+  try {
+    const { fecha_desde, fecha_hasta, cliente_id } = req.query;
+    const whereOperacion = {};
+    if (fecha_desde) whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.gte]: fecha_desde };
+    if (fecha_hasta) whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.lte]: fecha_hasta };
+    if (cliente_id)  whereOperacion.cliente_id = cliente_id;
+
+    const averias = await OperacionAveria.findAll({
+      include: [
+        {
+          model: Operacion, as: 'operacion', required: true, where: whereOperacion,
+          attributes: ['id', 'numero_operacion', 'tipo', 'fecha_operacion', 'origen'],
+          include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }]
+        },
+        { model: OperacionDetalle, as: 'detalle', required: false, attributes: ['producto'] },
+        { model: Usuario, as: 'registrador', attributes: ['id', 'nombre_completo'] }
+      ],
+      order: [[{ model: Operacion, as: 'operacion' }, 'fecha_operacion', 'DESC']],
+      limit: MAX_EXPORT_ROWS
+    });
+
+    const buffer = await excelService.exportarAverias(averias, req.query);
+    const filename = `averias_${new Date().toISOString().split('T')[0]}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+  } catch (error) {
+    logger.error('Error al exportar averías Excel:', { message: error.message });
+    return serverError(res, 'Error al generar el reporte', error);
+  }
+};
+
 module.exports = {
   getPeriodosDisponibles,
   exportarOperacionesExcel,
@@ -2151,4 +2187,5 @@ module.exports = {
   exportarGastosPDF,
   // Averías
   getReporteAverias,
+  exportarAveriasExcel,
 };
