@@ -221,6 +221,13 @@ const completarLogin = async (usuario, req, res, extra = {}) => {
 
   const refreshTokenJwt = generarRefreshToken(usuario);
 
+  const CAMPOS_PROTEGIDOS = ['user', 'token', 'refreshToken', 'expiresIn', 'refreshExpiresIn'];
+  const colision = CAMPOS_PROTEGIDOS.find(k => k in extra);
+  if (colision) {
+    logger.error('completarLogin: extra intenta sobreescribir campo protegido:', { campo: colision });
+    return errorResponse(res, 'Error interno de autenticación', 500);
+  }
+
   return successMessage(res, 'Inicio de sesión exitoso', {
     user: userData,
     token,
@@ -1076,7 +1083,7 @@ const validarTotp = async (req, res) => {
     }
 
     const extra = {};
-    if (recordar_dispositivo) {
+    if (recordar_dispositivo === true) {
       extra.trusted_device_token = generarTokenDispositivoConfiable(usuario.id);
     }
     return await completarLogin(usuario, req, res, extra);
