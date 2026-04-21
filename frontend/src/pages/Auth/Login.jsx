@@ -186,6 +186,7 @@ const LoginPage = () => {
                 setPaso2FA(null);
                 setCodigoTotp('');
                 setError2FA(null);
+                setRecordarDispositivo(false);
             } else {
                 setError2FA(result.message || 'Código incorrecto');
             }

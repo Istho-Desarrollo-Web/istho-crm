@@ -165,7 +165,7 @@ const validarTokenDispositivoConfiable = (token, usuarioId) => {
       issuer: jwtConfig.issuer,
       audience: jwtConfig.audience,
     });
-    return payload.scope === 'trusted_device' && payload.id === usuarioId;
+    return payload.scope === 'trusted_device' && Number(payload.id) === Number(usuarioId);
   } catch {
     return false;
   }

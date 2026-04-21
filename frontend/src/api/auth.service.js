@@ -58,8 +58,6 @@ const authService = {
         // Guardar usuario en localStorage
         localStorage.setItem(USER_KEY, JSON.stringify(user));
 
-        console.warn('✅ Login exitoso, tokens guardados');
-
         return {
           success: true,
           data: response.data,
