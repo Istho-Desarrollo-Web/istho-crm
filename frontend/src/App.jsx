@@ -84,6 +84,7 @@ const ReportesProgramados = lazy(() => import('./pages/Reportes/ReportesPrograma
 const ReporteViajes = lazy(() => import('./pages/Reportes/ReporteViajes'));
 const ReporteCajasMenores = lazy(() => import('./pages/Reportes/ReporteCajasMenores'));
 const ReporteGastos = lazy(() => import('./pages/Reportes/ReporteGastos'));
+const ReporteAverias = lazy(() => import('./pages/Reportes/ReporteAverias'));
 
 // Plantillas de Email
 const PlantillasEmailList = lazy(() => import('./pages/PlantillasEmail/PlantillasEmailList'));
@@ -323,6 +324,7 @@ function App() {
                 <Route path="/reportes/operativo" element={<PermissionRoute module="reportes" action="ver"><ReporteOperaciones /></PermissionRoute>} />
                 <Route path="/reportes/kpis" element={<PermissionRoute module="reportes" action="ver"><ReporteOperaciones /></PermissionRoute>} />
                 <Route path="/reportes/financiero" element={<PermissionRoute module="reportes" action="ver"><ReporteClientes /></PermissionRoute>} />
+                <Route path="/reportes/averias" element={<PermissionRoute module="reportes" action="ver"><ReporteAverias /></PermissionRoute>} />
                 <Route path="/reportes/crear" element={<PermissionRoute module="reportes" action="crear"><ReportesList /></PermissionRoute>} />
 
                 {/* ────────────────────────────────────────────────────────── */}
