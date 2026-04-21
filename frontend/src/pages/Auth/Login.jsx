@@ -94,6 +94,7 @@ const LoginPage = () => {
     const [codigoTotp, setCodigoTotp] = useState('');
     const [error2FA, setError2FA] = useState(null);
     const [submitting2FA, setSubmitting2FA] = useState(false);
+    const [recordarDispositivo, setRecordarDispositivo] = useState(false);
 
     // Obtener la ruta de origen (si viene de una redirección)
     const getDefaultRoute = (rol) => {
@@ -175,7 +176,7 @@ const LoginPage = () => {
         setError2FA(null);
 
         try {
-            const result = await validarTotp(paso2FA.temp_token, codigoTotp.replace(/\s/g, ''));
+            const result = await validarTotp(paso2FA.temp_token, codigoTotp.replace(/\s/g, ''), recordarDispositivo);
 
             if (result.success) {
                 localStorage.setItem('politica_aceptada', POLITICA_VERSION);
@@ -297,16 +298,29 @@ const LoginPage = () => {
                             </label>
                             <input
                                 type="text"
-                                inputMode="numeric"
+                                inputMode="text"
                                 autoComplete="one-time-code"
-                                placeholder="000000"
-                                maxLength={8}
+                                placeholder="000000 o A1B2C3D4E5"
+                                maxLength={10}
                                 autoFocus
                                 value={codigoTotp}
-                                onChange={(e) => { setCodigoTotp(e.target.value); setError2FA(null); }}
+                                onChange={(e) => { setCodigoTotp(e.target.value.toUpperCase()); setError2FA(null); }}
                                 className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-centhrix-card dark:text-white text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C] transition-all"
                             />
                         </div>
+
+                        {/* Confiar en este navegador */}
+                        <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={recordarDispositivo}
+                                onChange={(e) => setRecordarDispositivo(e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 accent-[#E74C3C] cursor-pointer"
+                            />
+                            <span className="text-sm text-gray-500 dark:text-slate-400">
+                                Confiar en este navegador
+                            </span>
+                        </label>
 
                         <button
                             type="submit"
@@ -322,7 +336,7 @@ const LoginPage = () => {
 
                         <button
                             type="button"
-                            onClick={() => { setPaso2FA(null); setCodigoTotp(''); setError2FA(null); }}
+                            onClick={() => { setPaso2FA(null); setCodigoTotp(''); setError2FA(null); setRecordarDispositivo(false); }}
                             className="w-full py-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 flex items-center justify-center gap-1 transition-colors"
                         >
                             <ChevronLeft className="w-4 h-4" />
