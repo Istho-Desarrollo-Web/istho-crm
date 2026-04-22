@@ -373,8 +373,30 @@ export const AuthProvider = ({ children }) => {
       }));
 
       return { success: false, message: result.message, code: result.code };
+    } finally {
+      setState(prev => ({ ...prev, isLoading: false }));
+    }
+  }, []);
+
+  /**
+   * Obtener QR y secreto para configuración de 2FA
+   */
+  const setup2FA = useCallback(async () => {
+    try {
+      return await authService.setup2FA();
     } catch (error) {
-      setState(prev => ({ ...prev, isLoading: false, error: error.message }));
+      return { success: false, message: error.message };
+    }
+  }, []);
+
+  /**
+   * Activar 2FA con el primer código
+   */
+  const activar2FA = useCallback(async (codigo) => {
+    try {
+      const result = await authService.activar2FA({ codigo });
+      return result;
+    } catch (error) {
       return { success: false, message: error.message };
     }
   }, []);
@@ -598,6 +620,8 @@ export const AuthProvider = ({ children }) => {
     // Acciones
     login,
     validarTotp,
+    setup2FA,
+    activar2FA,
     logout,
     updateUser,
     refreshUser,

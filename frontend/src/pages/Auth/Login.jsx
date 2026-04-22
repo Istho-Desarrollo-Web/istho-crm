@@ -36,6 +36,7 @@ import {
     ArrowRight,
     Smartphone,
     ChevronLeft,
+    CheckCircle2,
 } from 'lucide-react';
 
 // ============================================================================
@@ -94,6 +95,13 @@ const LoginPage = () => {
     const [codigoTotp, setCodigoTotp] = useState('');
     const [error2FA, setError2FA] = useState(null);
     const [submitting2FA, setSubmitting2FA] = useState(false);
+
+    // Estado para configuración inicial de 2FA
+    const [pasoSetup2FA, setPasoSetup2FA] = useState(false);
+    const [setupData, setSetupData] = useState(null); // { secret, qr_code }
+    const [backupCodes, setBackupCodes] = useState([]);
+    const [verificandoSetup, setVerificandoSetup] = useState(false);
+    const [errorSetup, setErrorSetup] = useState(null);
 
     // Obtener la ruta de origen (si viene de una redirección)
     const getDefaultRoute = (rol) => {
@@ -192,6 +200,32 @@ const LoginPage = () => {
         }
     };
 
+    const handleConfirmarSetup = async (e) => {
+        e.preventDefault();
+        const code = codigoTotp.replace(/\s/g, '');
+        if (code.length !== 6) return;
+
+        setVerificandoSetup(true);
+        setErrorSetup(null);
+        try {
+            const res = await authService.activar2FA({ codigo: code });
+            if (res.success) {
+                setBackupCodes(res.data.backup_codes || []);
+                // Redirigir será manual después de mostrar códigos
+            } else {
+                setErrorSetup(res.message || 'Código incorrecto');
+            }
+        } catch (err) {
+            setErrorSetup('Error al verificar el código');
+        } finally {
+            setVerificandoSetup(false);
+        }
+    };
+
+    const handleFinalizarSetup = () => {
+        window.location.reload(); 
+    };
+
     const onSubmit = async (data) => {
         setIsSubmitting(true);
         setServerWaking(false);
@@ -202,6 +236,19 @@ const LoginPage = () => {
             if (result.requiere_2fa) {
                 setIsSubmitting(false);
                 setPaso2FA({ temp_token: result.temp_token, usuario_nombre: result.usuario_nombre });
+                return;
+            }
+
+            if (result.requiere_setup_2fa) {
+                setIsSubmitting(false);
+                setPasoSetup2FA(true);
+                // Iniciar el setup automáticamente
+                const setupRes = await authService.setup2FA();
+                if (setupRes.success) {
+                    setSetupData(setupRes.data);
+                } else {
+                    setErrorSetup(setupRes.message || 'Error al iniciar configuración de 2FA');
+                }
                 return;
             }
 
@@ -705,6 +752,114 @@ const LoginPage = () => {
                     </p>
                 </div>
             </div>
+
+            {/* SECCIÓN CONFIGURACIÓN OBLIGATORIA 2FA */}
+            {pasoSetup2FA && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm" style={fadeIn}>
+                    <div className="bg-white dark:bg-centhrix-card w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700" style={slideUp}>
+                        <div className="p-8">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-2xl">
+                                    <Shield className="w-6 h-6 text-red-600 dark:text-red-400" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">Seguridad Obligatoria</h2>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Configura tu autenticador para continuar</p>
+                                </div>
+                            </div>
+
+                            {backupCodes.length > 0 ? (
+                                <div className="space-y-6" style={fadeIn}>
+                                    <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
+                                        <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 mb-2">
+                                            <CheckCircle2 className="w-5 h-5" />
+                                            <span className="font-semibold text-sm">¡2FA Activado correctamente!</span>
+                                        </div>
+                                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                                            Guarda estos códigos de respaldo. Son la única forma de acceder si pierdes tu celular.
+                                        </p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {backupCodes.map((code, idx) => (
+                                            <div key={idx} className="bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-center font-mono text-sm dark:text-slate-200">
+                                                {code}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button
+                                        onClick={handleFinalizarSetup}
+                                        className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-2"
+                                    >
+                                        Comenzar a usar el CRM <ArrowRight className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="space-y-6">
+                                    <div className="space-y-3">
+                                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                                            1. Escanea este código con <b>Google Authenticator</b> o <b>Authy</b>.
+                                        </p>
+                                        <div className="flex justify-center bg-white p-4 rounded-2xl border border-slate-100 shadow-inner">
+                                            {setupData?.qr_code ? (
+                                                <img src={setupData.qr_code} alt="QR Setup" className="w-48 h-48" />
+                                            ) : (
+                                                <div className="w-48 h-48 flex items-center justify-center bg-slate-50 rounded-xl animate-pulse">
+                                                    <Loader2 className="w-8 h-8 text-slate-300 animate-spin" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        {setupData?.secret && (
+                                            <div className="p-3 bg-slate-50 dark:bg-centhrix-bg rounded-xl border border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-between">
+                                                <code className="text-xs text-slate-500 font-mono">{setupData.secret}</code>
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(setupData.secret);
+                                                        // Podríamos mostrar un toast si está disponible
+                                                    }}
+                                                    className="text-xs text-emerald-600 hover:underline font-medium"
+                                                >
+                                                    Copiar
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <form onSubmit={handleConfirmarSetup} className="space-y-4">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">
+                                                Código de 6 dígitos
+                                            </label>
+                                            <input
+                                                type="text"
+                                                maxLength={6}
+                                                placeholder="000 000"
+                                                value={codigoTotp}
+                                                onChange={(e) => setCodigoTotp(e.target.value.replace(/\D/g, ''))}
+                                                className="w-full text-center text-3xl tracking-[0.5em] font-bold py-4 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all dark:text-white"
+                                                autoFocus
+                                            />
+                                            {errorSetup && (
+                                                <div className="mt-2 flex items-center gap-2 text-red-500 text-xs font-medium" style={fadeIn}>
+                                                    <AlertCircle className="w-4 h-4" /> {errorSetup}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={codigoTotp.length !== 6 || verificandoSetup}
+                                            className="w-full py-4 bg-slate-900 dark:bg-red-600 hover:bg-slate-800 dark:hover:bg-red-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                        >
+                                            {verificandoSetup ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Activar y Entrar'}
+                                        </button>
+                                    </form>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

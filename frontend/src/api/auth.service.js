@@ -46,15 +46,24 @@ const authService = {
       const response = await apiClient.post(AUTH_ENDPOINTS.LOGIN, credentials);
 
       if (response.success) {
+        // En caso de 2FA o Setup obligatorio, no guardamos tokens aún
+        if (response.data?.requiere_2fa || response.data?.requiere_setup_2fa) {
+          return {
+            success: true,
+            data: response.data,
+            message: response.message
+          };
+        }
+
         const { token, refreshToken, user } = response.data;
 
         // Guardar tokens usando función del client.js
-        setAuthToken(token, refreshToken);
-
-        // Guardar usuario en localStorage
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
-
-        console.warn('✅ Login exitoso, tokens guardados');
+        if (token) {
+          setAuthToken(token, refreshToken);
+          // Guardar usuario en localStorage
+          localStorage.setItem(USER_KEY, JSON.stringify(user));
+          console.warn('✅ Login exitoso, tokens guardados');
+        }
 
         return {
           success: true,

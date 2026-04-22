@@ -61,8 +61,15 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: {
     directives: {
-      defaultSrc:     ["'none'"],
-      frameAncestors: ["'none'"],
+      defaultSrc: ["'self'"],
+      scriptSrc:  ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://vercel.live"],
+      styleSrc:   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc:     ["'self'", "data:", "blob:", "https://*"],
+      fontSrc:    ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "https://*", "wss://*"],
+      frameSrc:   ["'self'"],
+      objectSrc:  ["'none'"],
+      upgradeInsecureRequests: [],
     },
   },
   strictTransportSecurity: {

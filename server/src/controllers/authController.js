@@ -147,7 +147,8 @@ const generarBackupCodes = () => {
  * Finalizar login exitoso: actualizar usuario, registrar auditoría, devolver tokens.
  * Usado por login normal y por validarTotp.
  */
-const completarLogin = async (usuario, req, res) => {
+const completarLogin = async (usuario, req, res, options = {}) => {
+  const { message = 'Inicio de sesión exitoso', extra = {} } = options;
   usuario.intentos_fallidos = 0;
   usuario.bloqueado_hasta = null;
   usuario.ultimo_acceso = new Date();
@@ -193,12 +194,13 @@ const completarLogin = async (usuario, req, res) => {
 
   const refreshTokenJwt = generarRefreshToken(usuario);
 
-  return successMessage(res, 'Inicio de sesión exitoso', {
+  return successMessage(res, message, {
     user: userData,
     token,
     refreshToken: refreshTokenJwt,
     expiresIn: jwtConfig.expiresIn,
-    refreshExpiresIn: jwtConfig.refreshExpiresIn
+    refreshExpiresIn: jwtConfig.refreshExpiresIn,
+    ...extra
   });
 };
 
@@ -947,7 +949,10 @@ const activar2FA = async (req, res) => {
       descripcion: '2FA activado por el usuario'
     });
 
-    return successMessage(res, '2FA activado correctamente', { backup_codes: backupCodes });
+    return await completarLogin(usuario, req, res, { 
+      message: '2FA activado correctamente. Bienvenido.',
+      extra: { backup_codes: backupCodes }
+    });
   } catch (error) {
     logger.error('Error en activar2FA:', { message: error.message });
     return serverError(res, 'Error al activar 2FA', error);
