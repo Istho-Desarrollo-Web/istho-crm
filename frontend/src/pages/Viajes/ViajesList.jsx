@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * ISTHO CRM - ViajesList
  * ============================================================================
@@ -41,6 +41,7 @@ import {
   FileSpreadsheet,
   LayoutGrid,
   LayoutList,
+  RefreshCw,
 } from 'lucide-react';
 import { Pagination, ConfirmDialog } from '../../components/common';
 import PageFooter from '@components/common/PageFooter';
@@ -415,6 +416,15 @@ const ViajesList = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Botón Refrescar */}
+            <button
+              onClick={() => { fetchViajes(pagination.page); success('Datos actualizados'); }}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+              title="Refrescar datos"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span className="hidden sm:inline">Actualizar</span>
+            </button>
             {viajes.length > 0 && (
               <>
                 <button
@@ -422,7 +432,7 @@ const ViajesList = () => {
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
-                  Excel
+                  <span className="hidden sm:inline">Excel</span>
                 </button>
               </>
             )}

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * ISTHO CRM - CajaMenorDetail
  * ============================================================================
@@ -29,7 +29,10 @@ import {
   CheckCircle,
   XCircle,
   DollarSign,
+  FileText,
 } from 'lucide-react';
+
+import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 
 import { Button, Modal, StatusChip } from '../../components/common';
 import { cajasMenoresService, movimientosService } from '../../api/viajes.service';
@@ -110,7 +113,7 @@ const CajaMenorDetail = () => {
   const [cerrarDialogOpen, setCerrarDialogOpen] = useState(false);
   const [editFormOpen, setEditFormOpen] = useState(false);
   const [observacionesCierre, setObservacionesCierre] = useState('');
-  const [accionSobrante, setAccionSobrante] = useState('guardar');
+  const [accionSobrante, setAccionSobrante] = useState('transferir');
   const [cerrarLoading, setCerrarLoading] = useState(false);
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -178,6 +181,18 @@ const CajaMenorDetail = () => {
   // HANDLERS
   // ──────────────────────────────────────────────────────────────────────────
 
+  const handleDownloadPDF = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      await descargarArchivo(
+        `${baseUrl}/reportes/cajas-menores/${id}/pdf`,
+        `Liquidacion_Caja_${caja?.numero || id}_${fechaDescarga()}.pdf`
+      );
+    } catch {
+      apiError('Error al descargar el PDF de liquidación');
+    }
+  };
+
   const handleCerrarCaja = async () => {
     setCerrarLoading(true);
     try {
@@ -187,15 +202,17 @@ const CajaMenorDetail = () => {
       });
       setCerrarDialogOpen(false);
       setObservacionesCierre('');
-      setAccionSobrante('guardar');
+      setAccionSobrante('transferir');
       await fetchCaja();
       success(
-        accionSobrante === 'entregar'
-          ? 'Caja cerrada. Saldo entregado al usuario asignado.'
+        accionSobrante === 'liquidar'
+          ? 'Caja cerrada. Saldo liquidado y entregado al usuario asignado.'
           : saldoActual > 0
-            ? 'Caja cerrada. Saldo guardado para la siguiente caja.'
+            ? 'Caja cerrada. Saldo transferido para la siguiente caja.'
             : 'Caja menor cerrada exitosamente'
       );
+      // Imprimir directamente el PDF
+      handleDownloadPDF();
     } catch (err) {
       apiError(err);
     } finally {
@@ -305,6 +322,15 @@ const CajaMenorDetail = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {!isAbierta && (
+              <Button
+                variant="outline"
+                icon={FileText}
+                onClick={handleDownloadPDF}
+              >
+                Imprimir Liquidación (PDF)
+              </Button>
+            )}
             <ProtectedAction module="caja_menor" action="editar">
               {isAbierta && (
                 <>
@@ -711,14 +737,14 @@ const CajaMenorDetail = () => {
                   <input
                     type="radio"
                     name="accion_sobrante"
-                    value="guardar"
-                    checked={accionSobrante === 'guardar'}
-                    onChange={() => setAccionSobrante('guardar')}
+                    value="transferir"
+                    checked={accionSobrante === 'transferir'}
+                    onChange={() => setAccionSobrante('transferir')}
                     className="mt-0.5 text-emerald-600 focus:ring-emerald-500"
                   />
                   <div>
                     <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-                      Guardar saldo para siguiente caja
+                      Transferir saldo para siguiente caja
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       El saldo de {formatCOP(saldoActual)} quedará disponible para trasladar al crear una nueva caja menor
@@ -736,14 +762,14 @@ const CajaMenorDetail = () => {
                   <input
                     type="radio"
                     name="accion_sobrante"
-                    value="entregar"
-                    checked={accionSobrante === 'entregar'}
-                    onChange={() => setAccionSobrante('entregar')}
+                    value="liquidar"
+                    checked={accionSobrante === 'liquidar'}
+                    onChange={() => setAccionSobrante('liquidar')}
                     className="mt-0.5 text-orange-600 focus:ring-orange-500"
                   />
                   <div>
                     <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-                      Entregar saldo al usuario asignado
+                      Liquidar saldo al usuario asignado
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       Se registrará un egreso de liquidación por {formatCOP(saldoActual)} y la caja cerrará en $0

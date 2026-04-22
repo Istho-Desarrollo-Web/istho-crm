@@ -1409,6 +1409,48 @@ const exportarCajaMenorExcel = async (req, res) => {
 };
 
 // =============================================
+// EXPORTAR CAJA MENOR A PDF (LIQUIDACIÓN)
+// =============================================
+
+const exportarCajaMenorPDF = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const caja = await CajaMenor.findByPk(id, {
+      include: [
+        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre_completo'] },
+        { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo', 'username'] },
+        {
+          model: MovimientoCajaMenor, as: 'movimientos',
+          include: [
+            { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
+            { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] }
+          ],
+          order: [['consecutivo', 'ASC']]
+        },
+        {
+          model: Viaje, as: 'viajes',
+          include: [{ model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa'] }]
+        }
+      ]
+    });
+
+    if (!caja) return res.status(404).json({ success: false, message: 'Caja menor no encontrada' });
+
+    const buffer = await pdfService.generarPDFDetalleCajaMenor(caja);
+    const filename = `caja_menor_liquidacion_${caja.numero}_${new Date().toISOString().split('T')[0]}.pdf`;
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+
+    logger.info('PDF caja menor liquidacion generado:', { numero: caja.numero });
+  } catch (error) {
+    logger.error('Error al exportar caja menor PDF:', { message: error.message });
+    return serverError(res, 'Error al generar liquidación de caja menor en PDF', error);
+  }
+};
+
+// =============================================
 // EXPORTAR LISTADO DE CAJAS MENORES A EXCEL
 // =============================================
 
@@ -1477,6 +1519,45 @@ const exportarVehiculosExcel = async (req, res) => {
   } catch (error) {
     logger.error('Error al exportar vehiculos Excel:', { message: error.message });
     return serverError(res, 'Error al generar reporte de vehiculos', error);
+  }
+};
+
+/**
+ * GET /reportes/vehiculos/pdf
+ * Exportar listado de vehículos a PDF
+ */
+const exportarVehiculosPDF = async (req, res) => {
+  try {
+    const where = {};
+    if (req.query.estado && req.query.estado !== 'todos') where.estado = req.query.estado;
+    if (req.query.tipo_vehiculo) where.tipo_vehiculo = req.query.tipo_vehiculo;
+    if (req.query.search) {
+      where[Op.or] = [
+        { placa: { [Op.like]: `%${req.query.search}%` } },
+        { marca: { [Op.like]: `%${req.query.search}%` } },
+      ];
+    }
+
+    const vehiculos = await Vehiculo.findAll({
+      where,
+      include: [
+        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
+      ],
+      order: [['placa', 'ASC']],
+      limit: MAX_EXPORT_ROWS
+    });
+
+    const buffer = await pdfService.generarPDFVehiculos(vehiculos, req.query);
+    const filename = `vehiculos_${new Date().toISOString().split('T')[0]}.pdf`;
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+
+    logger.info('PDF vehiculos generado:', { registros: vehiculos.length });
+  } catch (error) {
+    logger.error('Error al exportar vehiculos PDF:', { message: error.message });
+    return serverError(res, 'Error al generar reporte de vehículos en PDF', error);
   }
 };
 
@@ -2206,8 +2287,10 @@ module.exports = {
   exportarViajesExcel,
   exportarViajesCsv,
   exportarCajaMenorExcel,
+  exportarCajaMenorPDF,
   exportarCajasMenoresExcel,
   exportarVehiculosExcel,
+  exportarVehiculosPDF,
   exportarVehiculosCsv,
   exportarMovimientosExcel,
   exportarMovimientosCsv,

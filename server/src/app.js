@@ -27,33 +27,12 @@ const routes = require('./routes');
 // Crear aplicación Express
 const app = express();
 
-// ==============================================
-// MIDDLEWARES DE SEGURIDAD
-// ==============================================
+// Configurar confianza en el proxy (necesario para express-rate-limit detrás de Nginx/Render/Railway)
+app.set('trust proxy', 1);
 
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc:     ["'none'"],
-      frameAncestors: ["'none'"],
-      // Los endpoints de descarga (PDF/Excel) requieren que el navegador
-      // pueda crear blob URLs — se gestiona en el cliente, no aquí
-    },
-  },
-  // HSTS: 2 años, incluye subdominios
-  strictTransportSecurity: {
-    maxAge: 63072000,
-    includeSubDomains: true,
-    preload: true,
-  },
-}));
-
-// Rate limiting general (excluye /health para monitoreo)
-app.use((req, res, next) => {
-  if (req.path === '/health') return next();
-  return limiterGeneral(req, res, next);
-});
+// ==============================================
+// MIDDLEWARES DE SEGURIDAD & CORS
+// ==============================================
 
 // CORS dinámico: soporta múltiples orígenes separados por coma
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
@@ -75,7 +54,36 @@ const corsOptions = {
   credentials: true,
   maxAge: 86400
 };
+
 app.use(cors(corsOptions));
+
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc:  ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://vercel.live"],
+      styleSrc:   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc:     ["'self'", "data:", "blob:", "https://*"],
+      fontSrc:    ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "https://*", "wss://*"],
+      frameSrc:   ["'self'"],
+      objectSrc:  ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+  strictTransportSecurity: {
+    maxAge: 63072000,
+    includeSubDomains: true,
+    preload: true,
+  },
+}));
+
+// Rate limiting general (excluye /health para monitoreo)
+app.use((req, res, next) => {
+  if (req.path === '/health') return next();
+  return limiterGeneral(req, res, next);
+});
 
 // ==============================================
 // MIDDLEWARES DE PARSING

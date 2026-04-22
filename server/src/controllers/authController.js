@@ -175,7 +175,7 @@ const validarTokenDispositivoConfiable = (token, usuarioId) => {
  * Finalizar login exitoso: actualizar usuario, registrar auditoría, devolver tokens.
  * Usado por login normal y por validarTotp.
  */
-const completarLogin = async (usuario, req, res, extra = {}) => {
+const completarLogin = async (usuario, req, res) => {
   usuario.intentos_fallidos = 0;
   usuario.bloqueado_hasta = null;
   usuario.ultimo_acceso = new Date();
@@ -228,13 +228,12 @@ const completarLogin = async (usuario, req, res, extra = {}) => {
     return errorResponse(res, 'Error interno de autenticación', 500);
   }
 
-  return successMessage(res, 'Inicio de sesión exitoso', {
+  return successMessage(res, message, {
     user: userData,
     token,
     refreshToken: refreshTokenJwt,
     expiresIn: jwtConfig.expiresIn,
-    refreshExpiresIn: jwtConfig.refreshExpiresIn,
-    ...extra,
+    refreshExpiresIn: jwtConfig.refreshExpiresIn
   });
 };
 
@@ -320,6 +319,25 @@ const login = async (req, res) => {
       return successMessage(res, 'Se requiere verificación de dos factores', {
         requiere_2fa: true,
         temp_token: tempToken,
+        usuario_nombre: usuario.getNombreDisplay()
+      });
+    }
+
+    // NUEVO: Verificar si el 2FA es OBLIGATORIO para este rol y aún no está configurado
+    const rolesAdministrativos = ['admin', 'financiera'];
+    if (rolesAdministrativos.includes(usuario.rol) && !usuario.totp_habilitado) {
+      // Emitir un token temporal con scope restringido para configuración inicial
+      const setupToken = jwt.sign(
+        { id: usuario.id, scope: '2fa_setup_required' },
+        jwtConfig.secret,
+        { expiresIn: '15m', issuer: jwtConfig.issuer, audience: jwtConfig.audience }
+      );
+
+      logger.info('Login paso 1 (Configuración de 2FA obligatoria):', { userId: usuario.id, rol: usuario.rol });
+
+      return successMessage(res, 'Configuración de 2FA obligatoria para su rol', {
+        requiere_setup_2fa: true,
+        temp_token: setupToken,
         usuario_nombre: usuario.getNombreDisplay()
       });
     }
@@ -970,7 +988,10 @@ const activar2FA = async (req, res) => {
       descripcion: '2FA activado por el usuario'
     });
 
-    return successMessage(res, '2FA activado correctamente', { backup_codes: backupCodes });
+    return await completarLogin(usuario, req, res, { 
+      message: '2FA activado correctamente. Bienvenido.',
+      extra: { backup_codes: backupCodes }
+    });
   } catch (error) {
     logger.error('Error en activar2FA:', { message: error.message });
     return serverError(res, 'Error al activar 2FA', error);

@@ -613,6 +613,61 @@ const generarPDFViajes = async (viajes, filtros = {}) => {
 };
 
 /**
+ * Generar PDF de vehículos
+ */
+const generarPDFVehiculos = async (vehiculos, filtros = {}) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const chunks = [];
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      agregarEncabezado(doc, 'REPORTE DE VEHÍCULOS', 'Gestión de flota y documentos de transporte');
+
+      const activos = vehiculos.filter(v => v.estado === 'activo').length;
+      const mantenimiento = vehiculos.filter(v => v.estado === 'mantenimiento').length;
+      const inactivos = vehiculos.filter(v => v.estado === 'inactivo').length;
+
+      agregarKpis(doc, [
+        { label: 'Total Vehículos', valor: vehiculos.length, subtexto: 'flota registrada', color: COLORES.acento  },
+        { label: 'Activos',         valor: activos,           subtexto: 'operativos',     color: COLORES.verde   },
+        { label: 'En Taller',       valor: mantenimiento,    subtexto: 'mantenimiento', color: COLORES.amarillo },
+        { label: 'Fuera Servicio',  valor: inactivos,        subtexto: 'inactivos',     color: COLORES.textoTenue },
+      ]);
+
+      const headers = ['Placa', 'Tipo', 'Marca / Modelo', 'Cap. (Ton)', 'Conductor', 'SOAT Vence', 'Tecno Vence', 'Estado'];
+      const rows = vehiculos.map(v => [
+        v.placa || '',
+        (v.tipo_vehiculo || '').toUpperCase().substring(0, 12),
+        `${v.marca || ''} ${v.modelo || ''}`.substring(0, 20),
+        parseFloat(v.capacidad_ton || 0).toFixed(1),
+        (v.conductor?.nombre_completo || 'N/A').substring(0, 25),
+        v.vencimiento_soat || 'N/A',
+        v.vencimiento_tecnicomecanica || 'N/A',
+        (v.estado || '').toUpperCase(),
+      ]);
+
+      const finalPage = generarTabla(doc, headers, rows, {
+        anchoColumnas: [65, 80, 140, 65, 140, 80, 80, 80],
+        alineacion:    ['left', 'center', 'left', 'right', 'left', 'center', 'center', 'center'],
+        etiquetaSeccion: 'Lista de Vehículos',
+        titulosContinuacion: 'REPORTE DE VEHÍCULOS (Continuación)',
+      });
+
+      agregarPiePagina(doc, finalPage);
+      doc.end();
+
+      logger.info('PDF vehiculos generado:', { registros: vehiculos.length });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+
+/**
  * Generar PDF de cajas menores
  */
 const generarPDFCajasMenores = async (cajas, filtros = {}) => {
@@ -721,92 +776,6 @@ const generarPDFGastos = async (movimientos, filtros = {}) => {
   });
 };
 
-/**
- * Generar PDF de averías
- */
-const generarPDFAverias = async (averias, filtros = {}) => {
-  return new Promise((resolve, reject) => {
-    try {
-      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
-      const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
-
-      // Subtítulo con rango de fechas si aplica
-      let subtitulo = 'Registro de daños y averías en operaciones';
-      if (filtros.fecha_desde || filtros.fecha_hasta) {
-        const desde = filtros.fecha_desde || '';
-        const hasta = filtros.fecha_hasta || '';
-        subtitulo = `Período: ${desde}${desde && hasta ? ' al ' : ''}${hasta}`;
-      }
-
-      agregarEncabezado(doc, 'REPORTE DE AVERÍAS', subtitulo);
-
-      const totalUnidades = averias.reduce((s, a) => s + (parseFloat(a.cantidad) || 0), 0);
-      const operacionesAfectadas = new Set(averias.map(a => a.operacion_id)).size;
-      const tiposAveria = averias.reduce((acc, a) => {
-        if (a.tipo_averia) acc[a.tipo_averia] = (acc[a.tipo_averia] || 0) + 1;
-        return acc;
-      }, {});
-      const tipoFrecuente = Object.keys(tiposAveria).sort((a, b) => tiposAveria[b] - tiposAveria[a])[0] || '—';
-
-      agregarKpis(doc, [
-        { label: 'Total Averías',         valor: averias.length,                                subtexto: 'registros',        color: COLORES.acento },
-        { label: 'Unidades Averiadas',    valor: totalUnidades.toLocaleString('es-CO'),          subtexto: 'unidades',         color: COLORES.amarillo || COLORES.morado },
-        { label: 'Operaciones Afectadas', valor: operacionesAfectadas,                           subtexto: 'operaciones',      color: COLORES.azul   },
-        { label: 'Tipo Más Frecuente',    valor: tipoFrecuente,                                  subtexto: 'tipo de avería',   color: COLORES.morado },
-      ]);
-
-      const headers = ['#', 'Fecha', 'N° Registro', 'Tipo', 'Cliente', 'Origen', 'Referencia', 'Producto', 'Tipo Avería', 'Cant.', 'Descripción', 'Registrado por'];
-      const rows = averias.map((a, idx) => {
-        const fechaRaw = a.operacion?.fecha_operacion;
-        let fecha = '';
-        if (fechaRaw) {
-          const d = new Date(String(fechaRaw) + 'T00:00:00');
-          fecha = d.toLocaleDateString('es-CO');
-        }
-        return [
-          idx + 1,
-          fecha,
-          a.operacion?.numero_operacion || '—',
-          (a.operacion?.tipo || '—').toUpperCase(),
-          (a.operacion?.cliente?.razon_social || '—').substring(0, 18),
-          (a.operacion?.origen || '—').substring(0, 14),
-          a.sku || '—',
-          (a.detalle?.producto || '—').substring(0, 20),
-          (a.tipo_averia || '—').substring(0, 14),
-          parseFloat(a.cantidad) || 0,
-          (a.descripcion || '').substring(0, 20),
-          (a.registrador?.nombre_completo || '—').substring(0, 16),
-        ];
-      });
-
-      // Anchos: total usable = 792 - 60 = 732
-      // #(22) Fecha(52) N°Reg(68) Tipo(42) Cliente(90) Origen(62) Ref(55) Producto(88) TipoAv(62) Cant(38) Desc(90) Registrador(63) = 732
-      const finalPage = generarTabla(doc, headers, rows, {
-        anchoColumnas: [22, 52, 68, 42, 90, 62, 55, 88, 62, 38, 90, 63],
-        alineacion:    ['center', 'center', 'left', 'center', 'left', 'left', 'left', 'left', 'left', 'right', 'left', 'left'],
-        etiquetaSeccion: 'Detalle de Averías',
-        titulosContinuacion: 'REPORTE DE AVERÍAS',
-        paginaInicial: 1,
-      });
-
-      // Pie con totales
-      doc.fontSize(8)
-         .fillColor(COLORES.textoPrincipal)
-         .text(`Total registros: ${averias.length}   |   Total unidades averiadas: ${totalUnidades.toLocaleString('es-CO')}`, 30, doc.y + 4);
-
-      agregarPiePagina(doc, finalPage);
-      doc.end();
-
-      logger.info('PDF averías generado:', { registros: averias.length });
-    } catch (error) {
-      reject(error);
-    }
-  });
-};
-
 // ═══════════════════════════════════════════════════════════════════════════
 // INVENTARIO POR UBICACIÓN
 // ═══════════════════════════════════════════════════════════════════════════
@@ -877,7 +846,7 @@ module.exports = {
   generarPDFDetalleOperacion,
   generarPDFClientes,
   generarPDFViajes,
+  generarPDFVehiculos,
   generarPDFCajasMenores,
   generarPDFGastos,
-  generarPDFAverias,
 };

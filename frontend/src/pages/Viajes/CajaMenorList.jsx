@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * ISTHO CRM - CajaMenorList
  * ============================================================================
@@ -40,6 +40,7 @@ import {
   LayoutGrid,
   LayoutList,
   FileSpreadsheet,
+  RefreshCw,
 } from 'lucide-react';
 import { Pagination, ConfirmDialog, Modal, Button } from '../../components/common';
 import PageFooter from '@components/common/PageFooter';
@@ -233,7 +234,7 @@ const CajaMenorList = () => {
   const [formModal, setFormModal] = useState({ isOpen: false, caja: null });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, caja: null });
   const [closeModal, setCloseModal] = useState({ isOpen: false, caja: null });
-  const [accionSobrante, setAccionSobrante] = useState('guardar');
+  const [accionSobrante, setAccionSobrante] = useState('transferir');
   const [observacionesCierre, setObservacionesCierre] = useState('');
   const [formLoading, setFormLoading] = useState(false);
   const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
@@ -362,14 +363,14 @@ const CajaMenorList = () => {
       });
       setCloseModal({ isOpen: false, caja: null });
       setObservacionesCierre('');
-      setAccionSobrante('guardar');
+      setAccionSobrante('transferir');
       fetchCajas(pagination.page);
       fetchStats();
       success(
-        accionSobrante === 'entregar'
-          ? 'Caja cerrada. Saldo entregado al usuario asignado.'
+        accionSobrante === 'liquidar'
+          ? 'Caja cerrada. Saldo liquidado y entregado al usuario asignado.'
           : saldo > 0
-            ? 'Caja cerrada. Saldo guardado para la siguiente caja.'
+            ? 'Caja cerrada. Saldo transferido para la siguiente caja.'
             : 'Caja menor cerrada exitosamente'
       );
     } catch (err) {
@@ -404,6 +405,21 @@ const CajaMenorList = () => {
     }
   };
 
+  const handleExportPDF = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const params = new URLSearchParams();
+      if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
+      const query = params.toString() ? `?${params.toString()}` : '';
+      await descargarArchivo(
+        `${baseUrl}/reportes/cajas-menores/pdf${query}`,
+        `cajas-menores-${fechaDescarga()}.pdf`,
+      );
+    } catch {
+      notifyError('Error al exportar el reporte de cajas menores en PDF');
+    }
+  };
+
   // ──────────────────────────────────────────────────────────────────────────
   // RENDER
   // ──────────────────────────────────────────────────────────────────────────
@@ -413,7 +429,7 @@ const CajaMenorList = () => {
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
 
         {/* PAGE HEADER */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
               <Wallet className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
@@ -423,16 +439,39 @@ const CajaMenorList = () => {
               <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestión de cajas menores y saldos</p>
             </div>
           </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Botón Refrescar */}
+            <button
+              onClick={() => { fetchCajas(pagination.page); fetchStats(); success('Datos actualizados'); }}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+              title="Refrescar datos"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span className="hidden sm:inline">Actualizar</span>
+            </button>
+            
             {/* Botón exportar Excel */}
+            {/* Botones de exportación */}
             {cajas.length > 0 && (
-              <button
-                onClick={handleExportExcel}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                Excel
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={handleExportExcel}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                  <span className="hidden sm:inline">Excel</span>
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+                >
+                  <Lock className="w-4 h-4 text-red-600" />
+                  <span className="hidden sm:inline">PDF</span>
+                </button>
+              </div>
             )}
+          </div>
         </div>
 
         {/* KPI CARDS */}
@@ -764,13 +803,13 @@ const CajaMenorList = () => {
 
       <Modal
         isOpen={closeModal.isOpen}
-        onClose={() => { setCloseModal({ isOpen: false, caja: null }); setObservacionesCierre(''); setAccionSobrante('guardar'); }}
+        onClose={() => { setCloseModal({ isOpen: false, caja: null }); setObservacionesCierre(''); setAccionSobrante('transferir'); }}
         title="Cerrar Caja Menor"
         subtitle={`Caja ${closeModal.caja?.numero || ''}`}
         size="md"
         footer={
           <>
-            <Button variant="outline" onClick={() => { setCloseModal({ isOpen: false, caja: null }); setObservacionesCierre(''); setAccionSobrante('guardar'); }}>
+            <Button variant="outline" onClick={() => { setCloseModal({ isOpen: false, caja: null }); setObservacionesCierre(''); setAccionSobrante('transferir'); }}>
               Cancelar
             </Button>
             <Button variant="danger" icon={Lock} onClick={handleConfirmClose} loading={formLoading}>
@@ -823,24 +862,24 @@ const CajaMenorList = () => {
                   </label>
                   <div className="space-y-2">
                     <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                      accionSobrante === 'guardar'
+                      accionSobrante === 'transferir'
                         ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-700'
                         : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
                     }`}>
-                      <input type="radio" name="accion_sobrante_list" value="guardar" checked={accionSobrante === 'guardar'} onChange={() => setAccionSobrante('guardar')} className="mt-0.5 text-emerald-600 focus:ring-emerald-500" />
+                      <input type="radio" name="accion_sobrante_list" value="transferir" checked={accionSobrante === 'transferir'} onChange={() => setAccionSobrante('transferir')} className="mt-0.5 text-emerald-600 focus:ring-emerald-500" />
                       <div>
-                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Guardar saldo para siguiente caja</p>
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Transferir saldo para siguiente caja</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">El saldo de {formatMoney(saldo)} quedará disponible para trasladar</p>
                       </div>
                     </label>
                     <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                      accionSobrante === 'entregar'
+                      accionSobrante === 'liquidar'
                         ? 'border-red-400 bg-red-50 dark:bg-red-900/20 dark:border-red-700'
                         : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
                     }`}>
-                      <input type="radio" name="accion_sobrante_list" value="entregar" checked={accionSobrante === 'entregar'} onChange={() => setAccionSobrante('entregar')} className="mt-0.5 text-red-600 focus:ring-red-500" />
+                      <input type="radio" name="accion_sobrante_list" value="liquidar" checked={accionSobrante === 'liquidar'} onChange={() => setAccionSobrante('liquidar')} className="mt-0.5 text-red-600 focus:ring-red-500" />
                       <div>
-                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Entregar saldo al usuario asignado</p>
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Liquidar saldo al usuario asignado</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Se registrará un egreso de liquidación por {formatMoney(saldo)} y cerrará en $0</p>
                       </div>
                     </label>

@@ -27,7 +27,7 @@ import {
 } from 'react';
 import PropTypes from 'prop-types';
 import authService from '../api/auth.service';
-import { clearAuthToken, isAuthenticated as checkToken } from '../api/client';
+import { setAuthToken, clearAuthToken, isAuthenticated as checkToken } from '../api/client';
 import { setPreferencias } from '../utils/formatDate';
 
 // ============================================================================
@@ -309,6 +309,22 @@ export const AuthProvider = ({ children }) => {
           };
         }
 
+        // Verificar si el servidor requiere configuración inicial de 2FA (Obligatorio para Admins)
+        if (result.data?.requiere_setup_2fa) {
+          // Guardar el token temporal para que las llamadas a setup2FA/activar2FA funcionen
+          if (result.data.temp_token) {
+            setAuthToken(result.data.temp_token);
+          }
+
+          setState(prev => ({ ...prev, isLoading: false, error: null }));
+          return {
+            success: false,
+            requiere_setup_2fa: true,
+            temp_token: result.data.temp_token,
+            usuario_nombre: result.data.usuario_nombre
+          };
+        }
+
         setState({
           user: result.data.user,
           isAuthenticated: true,
@@ -362,8 +378,30 @@ export const AuthProvider = ({ children }) => {
       }));
 
       return { success: false, message: result.message, code: result.code };
+    } finally {
+      setState(prev => ({ ...prev, isLoading: false }));
+    }
+  }, []);
+
+  /**
+   * Obtener QR y secreto para configuración de 2FA
+   */
+  const setup2FA = useCallback(async () => {
+    try {
+      return await authService.setup2FA();
     } catch (error) {
-      setState(prev => ({ ...prev, isLoading: false, error: error.message }));
+      return { success: false, message: error.message };
+    }
+  }, []);
+
+  /**
+   * Activar 2FA con el primer código
+   */
+  const activar2FA = useCallback(async (codigo) => {
+    try {
+      const result = await authService.activar2FA({ codigo });
+      return result;
+    } catch (error) {
       return { success: false, message: error.message };
     }
   }, []);
@@ -587,6 +625,8 @@ export const AuthProvider = ({ children }) => {
     // Acciones
     login,
     validarTotp,
+    setup2FA,
+    activar2FA,
     logout,
     updateUser,
     refreshUser,

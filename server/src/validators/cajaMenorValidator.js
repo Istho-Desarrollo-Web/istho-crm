@@ -90,7 +90,7 @@ const cerrarCajaMenorValidator = [
 
   body('accion_sobrante')
     .notEmpty().withMessage('La acción para el sobrante es requerida')
-    .isIn(['transferir', 'liquidar']).withMessage('Acción inválida. Opciones: transferir, liquidar'),
+    .isIn(['transferir', 'liquidar', 'sin_saldo']).withMessage('Acción inválida. Opciones: transferir, liquidar, sin_saldo'),
 
   body('observaciones_cierre')
     .optional()
