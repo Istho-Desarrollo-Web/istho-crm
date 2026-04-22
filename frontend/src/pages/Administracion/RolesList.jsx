@@ -7,34 +7,146 @@
  * @version 1.0.0
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Save, Trash2, Users, RefreshCw, Lock, ChevronDown, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  Plus, Trash2, Users, RefreshCw, Lock,
+  LayoutDashboard, Package, ClipboardList, BarChart3, Mail,
+  UserCog, Shield, Activity, Settings, Truck, Bell, Car,
+  MapPin, Wallet, Receipt, User, CheckCircle,
+} from 'lucide-react';
 import adminService from '../../api/admin.service';
 import { useAuth } from '../../context/AuthContext';
+import useNotification from '../../hooks/useNotification';
 
-// Nombres legibles de módulos
 const MODULO_LABELS = {
-  dashboard: 'Dashboard',
-  clientes: 'Clientes',
-  inventario: 'Inventario',
-  operaciones: 'Operaciones',
-  reportes: 'Reportes',
-  auditoria: 'Completar Operación',
-  usuarios: 'Usuarios',
-  roles: 'Roles',
-  configuracion: 'Configuración',
-  notificaciones: 'Notificaciones',
+  dashboard:         'Dashboard',
+  clientes:          'Clientes',
+  inventario:        'Inventario',
+  operaciones:       'Operaciones',
+  reportes:          'Reportes',
+  auditoria:         'Completar Operación',
+  plantillas_email:  'Plantillas Email',
+  usuarios:          'Usuarios',
+  roles:             'Roles',
+  configuracion:     'Configuración',
+  configuracion_wms: 'Config. WMS',
+  notificaciones:    'Notificaciones',
+  vehiculos:         'Vehículos',
+  viajes:            'Viajes',
+  caja_menor:        'Caja Menor',
+  movimientos:       'Movimientos',
+  perfil:            'Perfil',
 };
 
 const ACCION_LABELS = {
-  ver: 'Ver',
-  crear: 'Crear',
-  editar: 'Editar',
-  eliminar: 'Eliminar',
-  exportar: 'Exportar',
-  ajustar: 'Ajustar',
-  cerrar: 'Cerrar',
-  anular: 'Anular',
+  ver:             'Ver',
+  crear:           'Crear',
+  editar:          'Editar',
+  eliminar:        'Eliminar',
+  exportar:        'Exportar',
+  importar:        'Importar',
+  ajustar:         'Ajustar',
+  cerrar:          'Cerrar',
+  anular:          'Anular',
+  aprobar:         'Aprobar',
+  descargar:       'Descargar',
+  alertas:         'Alertas',
+  reenviar_correo: 'Reenviar correo',
+};
+
+const MODULO_ICONOS = {
+  dashboard:         LayoutDashboard,
+  clientes:          Users,
+  inventario:        Package,
+  operaciones:       ClipboardList,
+  reportes:          BarChart3,
+  plantillas_email:  Mail,
+  usuarios:          UserCog,
+  roles:             Shield,
+  auditoria:         Activity,
+  configuracion:     Settings,
+  configuracion_wms: Truck,
+  notificaciones:    Bell,
+  vehiculos:         Car,
+  viajes:            MapPin,
+  caja_menor:        Wallet,
+  movimientos:       Receipt,
+  perfil:            User,
+};
+
+const ModuloCard = ({ grupo, permisos, permisoSet, onToggleChip, onToggleMaestro, disabled }) => {
+  const moduloPermisos = permisos.filter(p => p.modulo === grupo.modulo);
+  const activosCount = moduloPermisos.filter(p => permisoSet.has(p.id)).length;
+  const total = moduloPermisos.length;
+  const todosActivos = total > 0 && activosCount === total;
+  const Icono = MODULO_ICONOS[grupo.modulo] || Shield;
+
+  return (
+    <div style={{ background: '#151631', border: '1px solid #252748', borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '8px 12px', background: '#1A1B3A', borderBottom: '1px solid #252748',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 11, color: '#F1F5F9' }}>
+          <Icono style={{ width: 14, height: 14, color: '#94A3B8', flexShrink: 0 }} />
+          {MODULO_LABELS[grupo.modulo] || grupo.modulo}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 9, color: '#64748B' }}>
+            <span style={{ color: '#E74C3C', fontWeight: 700 }}>{activosCount}</span>/{total}
+          </span>
+          <button
+            onClick={() => !disabled && onToggleMaestro(moduloPermisos)}
+            disabled={disabled}
+            title={todosActivos ? 'Desactivar todos' : 'Activar todos'}
+            style={{
+              width: 28, height: 15, borderRadius: 8, position: 'relative',
+              flexShrink: 0, border: 'none', outline: 'none', padding: 0,
+              background: todosActivos ? '#E74C3C' : '#334155',
+              cursor: disabled ? 'not-allowed' : 'pointer',
+              opacity: disabled ? 0.6 : 1,
+            }}
+          >
+            <span style={{
+              position: 'absolute', top: 2, width: 11, height: 11,
+              borderRadius: '50%', background: '#fff',
+              ...(todosActivos ? { right: 2 } : { left: 2 }),
+            }} />
+          </button>
+        </div>
+      </div>
+      <div style={{ padding: '10px 12px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {grupo.acciones.map(accion => {
+          const permiso = moduloPermisos.find(p => p.accion === accion.accion);
+          if (!permiso) return null;
+          const activo = permisoSet.has(permiso.id);
+          return (
+            <button
+              key={permiso.id}
+              onClick={() => !disabled && onToggleChip(permiso.id)}
+              disabled={disabled}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                padding: '3px 8px', borderRadius: 12, fontSize: 10, fontWeight: 500,
+                border: '1px solid transparent', cursor: disabled ? 'not-allowed' : 'pointer',
+                opacity: disabled ? 0.6 : 1,
+                ...(activo
+                  ? { background: 'rgba(231,76,60,0.12)', color: '#E74C3C', borderColor: 'rgba(231,76,60,0.35)' }
+                  : { background: '#1A1B3A', color: '#64748B', borderColor: '#252748' }
+                ),
+              }}
+            >
+              <span style={{
+                width: 5, height: 5, borderRadius: '50%', flexShrink: 0,
+                background: activo ? '#E74C3C' : '#64748B',
+              }} />
+              {ACCION_LABELS[accion.accion] || accion.accion}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 };
 
 const RolesList = () => {
@@ -43,16 +155,20 @@ const RolesList = () => {
   const canEditRol = hasPermission('roles', 'editar');
   const canDeleteRol = hasPermission('roles', 'eliminar');
 
+  const { error: notifyError } = useNotification();
+
   const [roles, setRoles] = useState([]);
   const [permisos, setPermisos] = useState([]);
   const [permisosAgrupados, setPermisosAgrupados] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(null);
   const [showNewRol, setShowNewRol] = useState(false);
   const [newRol, setNewRol] = useState({ nombre: '', codigo: '', descripcion: '', nivel_jerarquia: 50, color: '#6B7280' });
-  const [expandedGroups, setExpandedGroups] = useState({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
-  const [editPermisos, setEditPermisos] = useState({}); // { rolId: Set(permisoIds) }
+  const [editPermisos, setEditPermisos] = useState({});   // { rolId: Set(permisoIds) }
+  const [rolActivoId, setRolActivoId] = useState(null);   // ID del tab activo
+  const [guardando, setGuardando] = useState(false);       // bloquea chips durante PUT
+  const [toastVisible, setToastVisible] = useState(false); // toast "Guardado automáticamente"
+  const toastTimerRef = useRef(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -77,10 +193,7 @@ const RolesList = () => {
       });
       setEditPermisos(initial);
 
-      // Expandir todos los grupos por defecto
-      const groups = {};
-      (permisosData.agrupados || []).forEach(function(g) { groups[g.modulo] = true; });
-      setExpandedGroups(groups);
+      setRolActivoId(prev => prev ?? (rolesData[0]?.id ?? null));
     } catch (error) {
       console.error('Error cargando datos:', error);
     }
@@ -89,63 +202,41 @@ const RolesList = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const togglePermiso = (rolId, permisoId) => {
-    setEditPermisos(prev => {
-      const updated = { ...prev };
-      const set = new Set(updated[rolId] || []);
-      if (set.has(permisoId)) {
-        set.delete(permisoId);
-      } else {
-        set.add(permisoId);
-      }
-      updated[rolId] = set;
-      return updated;
-    });
-  };
-
-  const toggleModuloCompleto = (rolId, modulo) => {
-    const moduloPermisos = permisos.filter(function(p) { return p.modulo === modulo; });
-    const currentSet = editPermisos[rolId] || new Set();
-    const allChecked = moduloPermisos.every(function(p) { return currentSet.has(p.id); });
-
-    setEditPermisos(prev => {
-      const updated = { ...prev };
-      const set = new Set(updated[rolId] || []);
-      moduloPermisos.forEach(function(p) {
-        if (allChecked) {
-          set.delete(p.id);
-        } else {
-          set.add(p.id);
-        }
-      });
-      updated[rolId] = set;
-      return updated;
-    });
-  };
-
-  const hasChanges = (rolId) => {
-    const rol = roles.find(function(r) { return r.id === rolId; });
-    if (!rol) return false;
-    const original = new Set((rol.permisos || []).map(function(p) { return p.id; }));
-    const current = editPermisos[rolId] || new Set();
-    if (original.size !== current.size) return true;
-    for (const id of current) {
-      if (!original.has(id)) return true;
-    }
-    return false;
-  };
-
-  const saveRolPermisos = async (rolId) => {
-    setSaving(rolId);
+  const guardarPermisos = useCallback(async (rolId, nuevoSet) => {
+    const setAnterior = new Set(editPermisos[rolId] || []);
+    setEditPermisos(prev => ({ ...prev, [rolId]: nuevoSet }));
+    setGuardando(true);
     try {
-      const permisoIds = Array.from(editPermisos[rolId] || []);
-      await adminService.actualizarRol(rolId, { permisos_ids: permisoIds });
-      await fetchData();
-    } catch (error) {
-      console.error('Error guardando permisos:', error);
+      await adminService.actualizarRol(rolId, { permisos_ids: Array.from(nuevoSet) });
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      setToastVisible(true);
+      toastTimerRef.current = setTimeout(() => setToastVisible(false), 2000);
+    } catch {
+      setEditPermisos(prev => ({ ...prev, [rolId]: setAnterior }));
+      notifyError('Error al guardar los permisos');
+    } finally {
+      setGuardando(false);
     }
-    setSaving(null);
-  };
+  }, [editPermisos, notifyError]);
+
+  const handleToggleChip = useCallback((rolId, permisoId) => {
+    const currentSet = editPermisos[rolId] || new Set();
+    const nuevoSet = new Set(currentSet);
+    if (nuevoSet.has(permisoId)) nuevoSet.delete(permisoId);
+    else nuevoSet.add(permisoId);
+    guardarPermisos(rolId, nuevoSet);
+  }, [editPermisos, guardarPermisos]);
+
+  const handleToggleMaestro = useCallback((rolId, moduloPermisos) => {
+    const currentSet = editPermisos[rolId] || new Set();
+    const todosActivos = moduloPermisos.every(p => currentSet.has(p.id));
+    const nuevoSet = new Set(currentSet);
+    moduloPermisos.forEach(p => {
+      if (todosActivos) nuevoSet.delete(p.id);
+      else nuevoSet.add(p.id);
+    });
+    guardarPermisos(rolId, nuevoSet);
+  }, [editPermisos, guardarPermisos]);
 
   const handleCreateRol = async (e) => {
     e.preventDefault();
@@ -169,10 +260,6 @@ const RolesList = () => {
     }
   };
 
-  const toggleGroup = (modulo) => {
-    setExpandedGroups(prev => ({ ...prev, [modulo]: !prev[modulo] }));
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -180,9 +267,6 @@ const RolesList = () => {
       </div>
     );
   }
-
-  // Todos los roles para la matriz de permisos
-  const rolesMatriz = roles;
 
   return (
     <div className="space-y-6">
@@ -240,129 +324,94 @@ const RolesList = () => {
         })}
       </div>
 
-      {/* Matriz de Permisos */}
-      <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700 overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-700">
-          <h4 className="font-semibold text-slate-800 dark:text-slate-100">Matriz de Permisos</h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Marca los permisos para cada rol. Los cambios se guardan por rol.
-          </p>
-        </div>
+      {/* Nueva matriz: tabs de rol + grid de módulos */}
+      {(() => {
+        const rolActual = roles.find(r => r.id === rolActivoId);
+        const esRolSistema = rolActual?.es_sistema === true;
+        const chipDisabled = !canEditRol || esRolSistema || guardando;
+        const permisoSet = editPermisos[rolActivoId] || new Set();
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-slate-50 dark:bg-centhrix-bg/50">
-                <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 min-w-[200px] sticky left-0 bg-slate-50 dark:bg-centhrix-bg/50 z-10">
-                  Módulo / Acción
-                </th>
-                {rolesMatriz.map(function(rol) {
-                  return (
-                    <th key={rol.id} className="text-center px-3 py-3 min-w-[100px]">
-                      <div className="flex flex-col items-center gap-1">
-                        <span
-                          className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full text-white"
-                          style={{ backgroundColor: rol.color }}
-                        >
-                          {rol.nombre}
-                        </span>
-                        {canEditRol && hasChanges(rol.id) && (
-                          <button
-                            onClick={() => saveRolPermisos(rol.id)}
-                            disabled={saving === rol.id}
-                            className="flex items-center gap-1 text-[10px] text-orange-600 hover:text-orange-700 font-medium"
-                          >
-                            <Save className="w-3 h-3" />
-                            {saving === rol.id ? 'Guardando...' : 'Guardar'}
-                          </button>
-                        )}
-                      </div>
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {permisosAgrupados.map(function(grupo) {
-                const isExpanded = expandedGroups[grupo.modulo];
-                const moduloPermisos = permisos.filter(function(p) { return p.modulo === grupo.modulo; });
+        return (
+          <div style={{ background: '#0F1023', borderRadius: 12, padding: 16, fontFamily: "'Segoe UI', sans-serif" }}>
 
+            {/* Tabs de rol */}
+            <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #252748', marginBottom: 16, overflowX: 'auto' }}>
+              {roles.map(rol => {
+                const totalActivos = (editPermisos[rol.id] || new Set()).size;
+                const esActivo = rolActivoId === rol.id;
                 return (
-                  <React.Fragment key={grupo.modulo}>
-                    {/* Module header row */}
-                    <tr className="bg-slate-50/50 dark:bg-centhrix-bg/30 border-t border-gray-100 dark:border-slate-700/50">
-                      <td
-                        className="px-4 py-2 font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none sticky left-0 bg-slate-50/50 dark:bg-centhrix-bg/30 z-10"
-                        onClick={() => toggleGroup(grupo.modulo)}
-                      >
-                        <span className="flex items-center gap-2">
-                          {isExpanded
-                            ? <ChevronDown className="w-4 h-4 text-slate-400" />
-                            : <ChevronRight className="w-4 h-4 text-slate-400" />
-                          }
-                          {MODULO_LABELS[grupo.modulo] || grupo.modulo}
-                          <span className="text-xs text-slate-400 font-normal">({grupo.grupo})</span>
-                        </span>
-                      </td>
-                      {rolesMatriz.map(function(rol) {
-                        const currentSet = editPermisos[rol.id] || new Set();
-                        const allChecked = moduloPermisos.every(function(p) { return currentSet.has(p.id); });
-                        const someChecked = moduloPermisos.some(function(p) { return currentSet.has(p.id); });
-
-                        return (
-                          <td key={rol.id} className="text-center px-3 py-2">
-                            <input
-                              type="checkbox"
-                              checked={allChecked}
-                              ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }}
-                              onChange={() => canEditRol && toggleModuloCompleto(rol.id, grupo.modulo)}
-                              disabled={!canEditRol}
-                              className={`w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-orange-500 focus:ring-orange-500 dark:bg-centhrix-surface ${canEditRol ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
-                            />
-                          </td>
-                        );
-                      })}
-                    </tr>
-
-                    {/* Individual permission rows */}
-                    {isExpanded && grupo.acciones.map(function(accion) {
-                      const permiso = permisos.find(function(p) { return p.modulo === grupo.modulo && p.accion === accion.accion; });
-                      if (!permiso) return null;
-
-                      return (
-                        <tr key={permiso.id} className="border-t border-gray-50 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-centhrix-surface/20">
-                          <td className="pl-12 pr-4 py-2 text-slate-600 dark:text-slate-400 sticky left-0 bg-white dark:bg-centhrix-card z-10">
-                            <span className="flex items-center gap-2">
-                              {ACCION_LABELS[accion.accion] || accion.accion}
-                              <span className="text-[10px] text-slate-400 hidden xl:inline">{accion.descripcion}</span>
-                            </span>
-                          </td>
-                          {rolesMatriz.map(function(rol) {
-                            const currentSet = editPermisos[rol.id] || new Set();
-                            const checked = currentSet.has(permiso.id);
-
-                            return (
-                              <td key={rol.id} className="text-center px-3 py-2">
-                                <input
-                                  type="checkbox"
-                                  checked={checked}
-                                  onChange={() => canEditRol && togglePermiso(rol.id, permiso.id)}
-                                  disabled={!canEditRol}
-                                  className={`w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-orange-500 focus:ring-orange-500 dark:bg-centhrix-surface ${canEditRol ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
-                                />
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    })}
-                  </React.Fragment>
+                  <button
+                    key={rol.id}
+                    onClick={() => setRolActivoId(rol.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '8px 14px', borderRadius: '8px 8px 0 0',
+                      cursor: 'pointer', fontSize: 11, fontWeight: 500,
+                      whiteSpace: 'nowrap', border: 'none', outline: 'none',
+                      color: esActivo ? '#F1F5F9' : '#94A3B8',
+                      background: esActivo ? '#1A1B3A' : 'transparent',
+                      borderBottom: esActivo ? '2px solid #E74C3C' : '2px solid transparent',
+                    }}
+                  >
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: rol.color, flexShrink: 0 }} />
+                    {rol.nombre}
+                    <span style={{
+                      fontSize: 9, padding: '1px 5px', borderRadius: 8,
+                      background: esActivo ? '#E74C3C' : '#1A1B3A',
+                      color: esActivo ? '#fff' : '#64748B',
+                    }}>
+                      {totalActivos}
+                    </span>
+                  </button>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </div>
+
+            {/* Cabecera del rol activo */}
+            {rolActual && (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+                  <span style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+                    background: `${rolActual.color}22`,
+                    color: rolActual.color,
+                    border: `1px solid ${rolActual.color}55`,
+                  }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: rolActual.color, display: 'inline-block' }} />
+                    {rolActual.nombre}
+                    {esRolSistema && <Lock style={{ width: 12, height: 12 }} />}
+                  </span>
+                  <span style={{ color: '#64748B', fontSize: 11 }}>
+                    {permisoSet.size} de {permisos.length} permisos activos
+                  </span>
+                  {toastVisible && (
+                    <span style={{ marginLeft: 'auto', fontSize: 10, color: '#2ECC71', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <CheckCircle style={{ width: 12, height: 12 }} />
+                      Guardado automáticamente
+                    </span>
+                  )}
+                </div>
+
+                {/* Grid de módulos 2 columnas */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {permisosAgrupados.map(grupo => (
+                    <ModuloCard
+                      key={grupo.modulo}
+                      grupo={grupo}
+                      permisos={permisos}
+                      permisoSet={permisoSet}
+                      onToggleChip={(permisoId) => handleToggleChip(rolActivoId, permisoId)}
+                      onToggleMaestro={(moduloPerms) => handleToggleMaestro(rolActivoId, moduloPerms)}
+                      disabled={chipDisabled}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Roles no sistema: delete option */}
       {roles.some(function(r) { return !r.es_sistema; }) && (
