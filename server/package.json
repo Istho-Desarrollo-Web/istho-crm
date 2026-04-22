@@ -41,7 +41,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.1.1",
     "mysql2": "^3.6.5",
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.5",
@@ -54,7 +54,33 @@
     "umzug": "^3.8.2",
     "uuid": "^9.0.1"
   },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 15000,
+    "setupFilesAfterEnv": [
+      "./src/tests/setup.js"
+    ],
+    "testMatch": [
+      "**/src/tests/**/*.test.js"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@scure|@noble|@otplib)/)"
+    ],
+    "collectCoverageFrom": [
+      "src/controllers/**/*.js",
+      "src/services/**/*.js",
+      "src/middleware/**/*.js",
+      "!src/scripts/**",
+      "!src/migrations/**"
+    ]
+  },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.2",
+    "@eslint/js": "^10.0.1",
+    "babel-jest": "^30.3.0",
+    "eslint": "^9.39.4",
+    "globals": "^17.5.0",
     "jest": "^29.7.0",
     "nodemon": "^3.0.2",
     "sequelize-cli": "^6.6.2",

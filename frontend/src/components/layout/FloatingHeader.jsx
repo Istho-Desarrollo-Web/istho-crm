@@ -85,7 +85,6 @@ const allMenuConfig = [
     items: [
       { icon: LayoutDashboard, label: 'Vista General', href: '/dashboard', shortcut: 'G D' },
       { icon: BarChart3, label: 'Reportes', href: '/reportes', shortcut: 'G R' },
-      { icon: AlertTriangle, label: 'Averías', href: '/reportes/averias' },
     ],
   },
   {
@@ -206,7 +205,6 @@ const getMenuForRole = (rol, hasPermission) => {
         if (item.href === '/operaciones/kardex') return hasPermission('operaciones', 'ver');
         // Reportes requiere permiso
         if (item.href === '/reportes') return hasPermission('reportes', 'ver');
-        if (item.href === '/reportes/averias') return hasPermission('reportes', 'ver');
         // Configuración WMS requiere permiso
         if (item.href === '/configuracion-wms') return hasPermission('configuracion_wms', 'ver');
         // Plantillas de email requiere permiso específico

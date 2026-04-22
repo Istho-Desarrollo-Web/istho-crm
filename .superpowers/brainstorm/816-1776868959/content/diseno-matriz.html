@@ -1,0 +1,213 @@
+<h2>Nuevo diseño: Matriz de Permisos</h2>
+<p class="subtitle">Elige la estructura visual que prefieres para gestionar los permisos por rol</p>
+
+<style>
+  .mini { font-family: 'Segoe UI', sans-serif; border-radius: 8px; overflow: hidden; background: #0F1023; }
+  .mini-header { display: flex; gap: 4px; padding: 6px 8px; background: #151631; align-items: center; }
+  .role-pill { font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: 600; color: #fff; }
+  .r-admin { background: #EF4444; }
+  .r-sup   { background: #F59E0B; }
+  .r-fin   { background: #10B981; }
+  .r-op    { background: #3B82F6; }
+  .r-con   { background: #F97316; }
+  .r-cli   { background: #8B5CF6; }
+
+  /* A - Tabla mejorada */
+  .tabla-a { font-size: 9px; width: 100%; }
+  .tabla-a .mod-row { background: #1A1B3A; padding: 3px 6px; font-weight: 700; color: #E74C3C; display: flex; align-items: center; gap: 4px; }
+  .tabla-a .mod-row .badge { background: #E74C3C22; color: #E74C3C; border-radius: 8px; padding: 0 4px; font-size: 8px; }
+  .tabla-a .perm-row { display: flex; align-items: center; padding: 2px 6px 2px 14px; border-bottom: 1px solid #1A1B3A; gap: 4px; }
+  .tabla-a .perm-label { color: #94A3B8; width: 50px; flex-shrink: 0; }
+  .switch { width: 18px; height: 10px; border-radius: 5px; flex-shrink: 0; }
+  .sw-on  { background: #E74C3C; }
+  .sw-off { background: #334155; }
+
+  /* B - Panel por rol */
+  .panel-b { display: flex; height: 130px; }
+  .panel-b .sidebar { width: 70px; background: #0F1023; padding: 4px; display: flex; flex-direction: column; gap: 3px; border-right: 1px solid #1A1B3A; }
+  .panel-b .role-item { display: flex; align-items: center; gap: 3px; padding: 3px 4px; border-radius: 4px; cursor: pointer; font-size: 8px; color: #94A3B8; }
+  .panel-b .role-item.active { background: #1A1B3A; color: #fff; }
+  .panel-b .role-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .panel-b .content { flex: 1; padding: 6px; overflow: hidden; }
+  .panel-b .mod-block { background: #1A1B3A; border-radius: 6px; padding: 4px 6px; margin-bottom: 4px; }
+  .panel-b .mod-title { font-size: 8px; font-weight: 700; color: #E74C3C; margin-bottom: 3px; display: flex; justify-content: space-between; }
+  .panel-b .perm-tags { display: flex; flex-wrap: wrap; gap: 2px; }
+  .panel-b .tag { font-size: 7px; padding: 1px 4px; border-radius: 4px; }
+  .tag-on  { background: #E74C3C33; color: #E74C3C; border: 1px solid #E74C3C66; }
+  .tag-off { background: #33415580; color: #64748B; border: 1px solid #33415580; }
+
+  /* C - Toggle grid */
+  .grid-c { padding: 6px; }
+  .grid-c .role-tabs { display: flex; gap: 2px; margin-bottom: 6px; }
+  .grid-c .rtab { font-size: 7px; padding: 2px 5px; border-radius: 4px; color: #94A3B8; background: #1A1B3A; }
+  .grid-c .rtab.act { color: #fff; background: #E74C3C; }
+  .grid-c .mod-card { background: #1A1B3A; border-radius: 6px; padding: 5px 7px; margin-bottom: 4px; }
+  .grid-c .mod-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .grid-c .mod-name { font-size: 8px; font-weight: 700; color: #F1F5F9; }
+  .grid-c .progress { font-size: 7px; color: #64748B; }
+  .grid-c .actions { display: flex; flex-wrap: wrap; gap: 3px; }
+  .grid-c .act-chip { font-size: 7px; padding: 1px 5px; border-radius: 10px; display: flex; align-items: center; gap: 2px; }
+  .act-chip.on  { background: #E74C3C22; color: #E74C3C; border: 1px solid #E74C3C55; }
+  .act-chip.off { background: #1E293B; color: #64748B; border: 1px solid #2D3B50; }
+  .act-chip .dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+</style>
+
+<div class="cards">
+
+  <!-- Opción A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mini">
+        <div class="mini-header">
+          <span style="font-size:9px;color:#94A3B8;margin-right:4px">Módulo / Acción</span>
+          <span class="role-pill r-admin">Admin</span>
+          <span class="role-pill r-sup">Sup.</span>
+          <span class="role-pill r-fin">Fin.</span>
+          <span class="role-pill r-op">Oper.</span>
+          <span class="role-pill r-con">Cond.</span>
+          <span class="role-pill r-cli">CLI</span>
+        </div>
+        <table class="tabla-a">
+          <tbody>
+            <tr><td colspan="7">
+              <div class="mod-row">▸ Clientes <span class="badge">5/6</span></div>
+            </td></tr>
+            <tr class="perm-row" style="display:flex">
+              <td class="perm-label">Ver</td>
+              <td><div class="switch sw-on"></div></td>
+              <td><div class="switch sw-on"></div></td>
+              <td><div class="switch sw-on"></div></td>
+              <td><div class="switch sw-on"></div></td>
+              <td><div class="switch sw-off"></div></td>
+              <td><div class="switch sw-on"></div></td>
+            </tr>
+            <tr class="perm-row" style="display:flex">
+              <td class="perm-label">Crear</td>
+              <td><div class="switch sw-on"></div></td>
+              <td><div class="switch sw-on"></div></td>
+              <td><div class="switch sw-off"></div></td>
+              <td><div class="switch sw-off"></div></td>
+              <td><div class="switch sw-off"></div></td>
+              <td><div class="switch sw-off"></div></td>
+            </tr>
+            <tr><td colspan="7">
+              <div class="mod-row">▸ Inventario <span class="badge">4/7</span></div>
+            </td></tr>
+            <tr class="perm-row" style="display:flex">
+              <td class="perm-label">Ver</td>
+              <td><div class="switch sw-on"></div></td>
+              <td><div class="switch sw-on"></div></td>
+              <td><div class="switch sw-off"></div></td>
+              <td><div class="switch sw-on"></div></td>
+              <td><div class="switch sw-off"></div></td>
+              <td><div class="switch sw-on"></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Tabla mejorada</h3>
+      <p>Mantiene el formato cruzado pero reemplaza los checkboxes con toggle switches. Encabezados de módulo con badge de progreso (ej. "4/7"). Comparación de todos los roles de un vistazo.</p>
+    </div>
+  </div>
+
+  <!-- Opción B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mini">
+        <div class="panel-b">
+          <div class="sidebar">
+            <div class="role-item active"><span class="role-dot" style="background:#EF4444"></span>Admin</div>
+            <div class="role-item"><span class="role-dot" style="background:#F59E0B"></span>Super.</div>
+            <div class="role-item"><span class="role-dot" style="background:#10B981"></span>Finan.</div>
+            <div class="role-item"><span class="role-dot" style="background:#3B82F6"></span>Oper.</div>
+            <div class="role-item"><span class="role-dot" style="background:#F97316"></span>Cond.</div>
+            <div class="role-item"><span class="role-dot" style="background:#8B5CF6"></span>CLI</div>
+          </div>
+          <div class="content">
+            <div class="mod-block">
+              <div class="mod-title"><span>Clientes</span><span style="color:#64748B;font-weight:400">6/6</span></div>
+              <div class="perm-tags">
+                <span class="tag tag-on">Ver</span>
+                <span class="tag tag-on">Crear</span>
+                <span class="tag tag-on">Editar</span>
+                <span class="tag tag-on">Eliminar</span>
+                <span class="tag tag-on">Exportar</span>
+                <span class="tag tag-on">Importar</span>
+              </div>
+            </div>
+            <div class="mod-block">
+              <div class="mod-title"><span>Inventario</span><span style="color:#64748B;font-weight:400">7/7</span></div>
+              <div class="perm-tags">
+                <span class="tag tag-on">Ver</span>
+                <span class="tag tag-on">Crear</span>
+                <span class="tag tag-on">Editar</span>
+                <span class="tag tag-on">Eliminar</span>
+                <span class="tag tag-on">Ajustar</span>
+                <span class="tag tag-on">Exportar</span>
+                <span class="tag tag-on">Alertas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Panel por rol</h3>
+      <p>Sidebar vertical con los 6 roles. Al hacer clic en un rol se muestran sus módulos como bloques con chips de acción activables. Edición enfocada en un rol a la vez, sin scroll horizontal.</p>
+    </div>
+  </div>
+
+  <!-- Opción C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mini">
+        <div class="grid-c">
+          <div class="role-tabs">
+            <span class="rtab act">Admin</span>
+            <span class="rtab">Super.</span>
+            <span class="rtab">Finan.</span>
+            <span class="rtab">Oper.</span>
+            <span class="rtab">Cond.</span>
+            <span class="rtab">CLI</span>
+          </div>
+          <div class="mod-card">
+            <div class="mod-head">
+              <span class="mod-name">Clientes</span>
+              <span class="progress">6/6 activos</span>
+            </div>
+            <div class="actions">
+              <span class="act-chip on"><span class="dot"></span>Ver</span>
+              <span class="act-chip on"><span class="dot"></span>Crear</span>
+              <span class="act-chip on"><span class="dot"></span>Editar</span>
+              <span class="act-chip on"><span class="dot"></span>Eliminar</span>
+              <span class="act-chip on"><span class="dot"></span>Exportar</span>
+              <span class="act-chip on"><span class="dot"></span>Importar</span>
+            </div>
+          </div>
+          <div class="mod-card">
+            <div class="mod-head">
+              <span class="mod-name">Inventario</span>
+              <span class="progress">4/7 activos</span>
+            </div>
+            <div class="actions">
+              <span class="act-chip on"><span class="dot"></span>Ver</span>
+              <span class="act-chip on"><span class="dot"></span>Crear</span>
+              <span class="act-chip off"><span class="dot"></span>Editar</span>
+              <span class="act-chip off"><span class="dot"></span>Eliminar</span>
+              <span class="act-chip on"><span class="dot"></span>Ajustar</span>
+              <span class="act-chip on"><span class="dot"></span>Exportar</span>
+              <span class="act-chip off"><span class="dot"></span>Alertas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Tabs de rol + cards de módulo</h3>
+      <p>Tabs horizontales para cambiar de rol. Cada módulo es una tarjeta con chips de acción que se activan/desactivan con clic. Diseño tipo "dashboard de configuración", fácil de escanear.</p>
+    </div>
+  </div>
+
+</div>

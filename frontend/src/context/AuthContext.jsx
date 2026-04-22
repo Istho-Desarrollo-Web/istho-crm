@@ -400,6 +400,10 @@ export const AuthProvider = ({ children }) => {
   const activar2FA = useCallback(async (codigo) => {
     try {
       const result = await authService.activar2FA({ codigo });
+      // completarLogin devuelve tokens reales — guardarlos para que el reload tenga sesión de 24h
+      if (result.success && result.data?.token) {
+        setAuthToken(result.data.token, result.data.refreshToken);
+      }
       return result;
     } catch (error) {
       return { success: false, message: error.message };
@@ -648,6 +652,8 @@ export const AuthProvider = ({ children }) => {
     state,
     login,
     validarTotp,
+    setup2FA,
+    activar2FA,
     logout,
     updateUser,
     refreshUser,

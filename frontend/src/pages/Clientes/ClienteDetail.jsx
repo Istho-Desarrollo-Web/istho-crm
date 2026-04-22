@@ -459,7 +459,7 @@ const ClienteDetail = () => {
   const [loadingHistorial, setLoadingHistorial] = useState(false);
 
   // Estado para productos del cliente
-  const [productosCliente, setProductosCliente] = useState([]);
+  const [_productosCliente, setProductosCliente] = useState([]);
   const [totalProductos, setTotalProductos] = useState(0);
   const [loadingProductos, setLoadingProductos] = useState(false);
 

@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -76,14 +76,16 @@ const features = [
     { icon: Shield, text: 'Seguridad Avanzada', color: '#E74C3C', bgColor: 'rgba(231, 76, 60, 0.2)' },
 ];
 
+// Ruta destino por rol — fuera del componente para estabilidad de referencia en useEffect
+const getDestino = () => '/dashboard';
+
 // ============================================================================
 // COMPONENTE
 // ============================================================================
 
 const LoginPage = () => {
     const navigate = useNavigate();
-    const location = useLocation();
-    const { 
+    const {
         login, 
         validarTotp, 
         setup2FA, 
@@ -113,22 +115,6 @@ const LoginPage = () => {
     const [backupCodes, setBackupCodes] = useState([]);
     const [verificandoSetup, setVerificandoSetup] = useState(false);
     const [errorSetup, setErrorSetup] = useState(null);
-
-    // Obtener la ruta de origen (si viene de una redirección)
-    const getDefaultRoute = (rol) => {
-        switch (rol) {
-            case 'admin': return '/dashboard';
-            case 'supervisor': return '/dashboard';
-            case 'financiera': return '/dashboard';
-            case 'conductor': return '/dashboard';
-            case 'operador': return '/dashboard';
-            case 'cliente': return '/dashboard';
-            default: return '/dashboard';
-        }
-    };
-
-    // Siempre redirigir a la página principal del rol para evitar conflictos entre sesiones
-    const getDestino = (rol) => getDefaultRoute(rol);
 
     // React Hook Form
     const yaAcepto = localStorage.getItem('politica_aceptada') === POLITICA_VERSION;
@@ -227,7 +213,7 @@ const LoginPage = () => {
             } else {
                 setErrorSetup(res.message || 'Código incorrecto');
             }
-        } catch (err) {
+        } catch (_err) {
             setErrorSetup('Error al verificar el código');
         } finally {
             setVerificandoSetup(false);

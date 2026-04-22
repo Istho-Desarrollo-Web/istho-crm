@@ -7,7 +7,7 @@
  * @version 1.0.0
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Plus, Trash2, Users, RefreshCw, Lock,
   LayoutDashboard, Package, ClipboardList, BarChart3, Mail,
@@ -327,8 +327,8 @@ const RolesList = () => {
       {/* Nueva matriz: tabs de rol + grid de módulos */}
       {(() => {
         const rolActual = roles.find(r => r.id === rolActivoId);
-        const esRolSistema = rolActual?.es_sistema === true;
-        const chipDisabled = !canEditRol || esRolSistema || guardando;
+        const esRolAdmin = rolActual?.nivel_jerarquia === 100;
+        const chipDisabled = !canEditRol || esRolAdmin || guardando;
         const permisoSet = editPermisos[rolActivoId] || new Set();
 
         return (
@@ -381,7 +381,7 @@ const RolesList = () => {
                   }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: rolActual.color, display: 'inline-block' }} />
                     {rolActual.nombre}
-                    {esRolSistema && <Lock style={{ width: 12, height: 12 }} />}
+                    {esRolAdmin && <Lock style={{ width: 12, height: 12 }} />}
                   </span>
                   <span className="text-slate-500" style={{ fontSize: 11 }}>
                     {permisoSet.size} de {permisos.length} permisos activos

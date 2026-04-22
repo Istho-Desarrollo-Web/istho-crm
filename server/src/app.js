@@ -79,11 +79,14 @@ app.use(helmet({
   },
 }));
 
-// Rate limiting general (excluye /health para monitoreo)
-app.use((req, res, next) => {
-  if (req.path === '/health') return next();
-  return limiterGeneral(req, res, next);
-});
+// Rate limiting general — va DESPUÉS de CORS para que los 429 incluyan Access-Control-Allow-Origin
+// En desarrollo se omite para no bloquear con los pollers activos (SesionesActivas, notificaciones)
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.path === '/health') return next();
+    return limiterGeneral(req, res, next);
+  });
+}
 
 // ==============================================
 // MIDDLEWARES DE PARSING

@@ -175,7 +175,7 @@ const validarTokenDispositivoConfiable = (token, usuarioId) => {
  * Finalizar login exitoso: actualizar usuario, registrar auditoría, devolver tokens.
  * Usado por login normal y por validarTotp.
  */
-const completarLogin = async (usuario, req, res) => {
+const completarLogin = async (usuario, req, res, { message = 'Login exitoso', extra = {} } = {}) => {
   usuario.intentos_fallidos = 0;
   usuario.bloqueado_hasta = null;
   usuario.ultimo_acceso = new Date();

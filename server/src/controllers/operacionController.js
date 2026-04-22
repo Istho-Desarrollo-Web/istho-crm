@@ -1189,7 +1189,7 @@ const cerrar = async (req, res) => {
       numero_operacion: operacion.numero_operacion,
       estado: 'cerrado',
       stock_actualizado: true,
-      correo_enviado: !!(enviar_correo !== false && correosEnvio) ? 'enviando' : false,
+      correo_enviado: (enviar_correo !== false && !!correosEnvio) ? 'enviando' : false,
       correos_destino: correosEnvio,
     });
     

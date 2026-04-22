@@ -87,6 +87,11 @@ const apiClient = axios.create({
  */
 const _pendingGets = new Map();
 
+// Promesa compartida para deduplicar refreshes simultáneos.
+// Si varios requests fallan con 401 a la vez, solo se hace UN refresh.
+let _refreshPromise = null;
+let _logoutInProgress = false;
+
 // ============================================================================
 // INTERCEPTOR DE REQUEST
 // ============================================================================
@@ -204,46 +209,53 @@ apiClient.interceptors.response.use(
     
     // Manejo por código de estado
     switch (status) {
-      case 401:
-        // Token inválido o expirado
-        // Intentar refresh token si no es la ruta de login
-        if (!originalRequest.url.includes('/auth/login') && !originalRequest._retry) {
+      case 401: {
+        const esLoginORefresh = originalRequest.url.includes('/auth/login') ||
+                                originalRequest.url.includes('/auth/refresh');
+
+        if (!esLoginORefresh && !originalRequest._retry) {
           originalRequest._retry = true;
-          
+
           try {
             const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
             if (refreshToken) {
-              const refreshResponse = await axios.post(
-                `${API_BASE_URL}/auth/refresh`,
-                { refreshToken }
-              );
+              // Un solo refresh en vuelo: los requests simultáneos comparten la misma promesa
+              if (!_refreshPromise) {
+                _refreshPromise = axios.post(
+                  `${API_BASE_URL}/auth/refresh`,
+                  { refreshToken }
+                ).finally(() => { _refreshPromise = null; });
+              }
+
+              const refreshResponse = await _refreshPromise;
 
               if (refreshResponse.data.success) {
                 const { token: newToken, refreshToken: newRefresh } = refreshResponse.data.data;
                 localStorage.setItem(TOKEN_KEY, newToken);
-                if (newRefresh) {
-                  localStorage.setItem(REFRESH_TOKEN_KEY, newRefresh);
-                }
+                if (newRefresh) localStorage.setItem(REFRESH_TOKEN_KEY, newRefresh);
                 originalRequest.headers.Authorization = `Bearer ${newToken}`;
                 return apiClient(originalRequest);
               }
             }
           } catch (_refreshError) {
-            // Refresh falló, hacer logout
             console.warn('⚠️ [API] Refresh token falló, cerrando sesión');
           }
         }
-        
-        // Limpiar tokens y redirigir a login
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
-        localStorage.removeItem('istho_user');
-        
-        // Redirigir a login (solo si no estamos ya en login)
-        if (!window.location.pathname.includes('/login')) {
-          window.location.href = '/login';
+
+        // Limpiar y redirigir solo una vez aunque múltiples requests fallen a la vez
+        if (!_logoutInProgress) {
+          _logoutInProgress = true;
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(REFRESH_TOKEN_KEY);
+          localStorage.removeItem('istho_user');
+
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+          }
+          setTimeout(() => { _logoutInProgress = false; }, 3000);
         }
         break;
+      }
         
       case 403: {
         const msg403 = data?.message || '';

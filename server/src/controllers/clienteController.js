@@ -831,7 +831,7 @@ const importarClientes = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
     if (!req.file) {
-      return error(res, 'Debe adjuntar un archivo Excel (.xlsx) o CSV (.csv)', 400);
+      return errorResponse(res, 'Debe adjuntar un archivo Excel (.xlsx) o CSV (.csv)', 400);
     }
 
     const ExcelJS = require('exceljs');
@@ -840,7 +840,7 @@ const importarClientes = async (req, res) => {
     const sheet = workbook.worksheets[0];
 
     if (!sheet || sheet.rowCount < 2) {
-      return error(res, 'El archivo está vacío o no tiene datos', 400);
+      return errorResponse(res, 'El archivo está vacío o no tiene datos', 400);
     }
 
     // Leer encabezados (fila 1)

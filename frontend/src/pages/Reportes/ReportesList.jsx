@@ -20,6 +20,7 @@ import {
   Wallet,
   Receipt,
   MapPin,
+  AlertTriangle,
 } from 'lucide-react';
 
 import { Button } from '../../components/common';
@@ -66,6 +67,15 @@ const REPORTES_OPERATIVOS = [
     icon: Users,
     color: 'bg-violet-500',
     exportEndpoints: { excel: '/reportes/clientes/excel', pdf: '/reportes/clientes/pdf' } ,
+  },
+  {
+    id: 'averias',
+    titulo: 'Reporte de Averías',
+    descripcion: 'Registro detallado de averías por operación',
+    icon: AlertTriangle,
+    color: 'bg-red-500',
+    navigateTo: '/reportes/averias',
+    exportEndpoints: { excel: '/reportes/averias/excel', pdf: '/reportes/averias/pdf' },
   },
 ];
 
@@ -196,7 +206,6 @@ const ReporteCard = ({ reporte, canExport }) => {
       <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">{reporte.descripcion}</p>
 
       <div className="space-y-2">
-        {/* Boton Ver Modulo / Ver Reporte */}
         <Button
           variant="primary"
           size="sm"
@@ -204,7 +213,7 @@ const ReporteCard = ({ reporte, canExport }) => {
           onClick={handleView}
           fullWidth
         >
-          {reporte.navigateTo ? 'Ver Modulo' : 'Ver Reporte'}
+          Ver Reporte
         </Button>
 
         {/* Botones de exportacion */}

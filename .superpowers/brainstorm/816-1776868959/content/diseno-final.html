@@ -1,0 +1,356 @@
+<h2>Diseño final aprobado — Matriz de Permisos</h2>
+<p class="subtitle">Sin emojis — iconos Lucide en encabezados de módulo</p>
+
+<style>
+:root {
+  --bg:      #0F1023;
+  --card:    #151631;
+  --surface: #1A1B3A;
+  --border:  #252748;
+  --accent:  #E74C3C;
+  --text:    #F1F5F9;
+  --muted:   #64748B;
+  --sub:     #94A3B8;
+}
+.mx-wrap {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 16px;
+  font-family: 'Segoe UI', sans-serif;
+  color: var(--text);
+  max-width: 820px;
+  margin: 0 auto;
+  font-size: 12px;
+}
+.role-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+.role-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--sub);
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+.role-tab .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.role-tab .count {
+  font-size: 9px;
+  background: var(--surface);
+  padding: 1px 5px;
+  border-radius: 8px;
+  color: var(--muted);
+}
+.role-tab.active {
+  color: var(--text);
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface);
+}
+.role-tab.active .count { background: var(--accent); color: #fff; }
+
+.role-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.role-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.save-toast {
+  margin-left: auto;
+  font-size: 10px;
+  color: #2ECC71;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.mod-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.mod-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.mod-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.mod-name {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mod-icon {
+  width: 14px; height: 14px;
+  color: var(--sub);
+  flex-shrink: 0;
+}
+.mod-head-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mod-counter { font-size: 9px; color: var(--muted); }
+.mod-counter span { color: var(--accent); font-weight: 700; }
+.master-toggle {
+  width: 28px; height: 15px;
+  border-radius: 8px;
+  background: var(--accent);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.master-toggle::after {
+  content: '';
+  position: absolute;
+  right: 2px; top: 2px;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: #fff;
+}
+.master-toggle.off { background: #334155; }
+.master-toggle.off::after { right: unset; left: 2px; }
+
+.mod-card-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.chip.on  { background: rgba(231,76,60,.12); color: var(--accent); border-color: rgba(231,76,60,.35); }
+.chip.off { background: var(--surface); color: var(--muted); border-color: var(--border); }
+.chip-dot { width: 5px; height: 5px; border-radius: 50%; }
+.chip.on  .chip-dot { background: var(--accent); }
+.chip.off .chip-dot { background: var(--muted); }
+
+/* SVG icons inline (Lucide-style) */
+svg.icon { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; color: var(--sub); }
+</style>
+
+<div class="mockup">
+  <div class="mockup-header">Vista previa — Tab "Supervisor" activo</div>
+  <div class="mockup-body">
+    <div class="mx-wrap">
+
+      <div class="role-tabs">
+        <div class="role-tab">
+          <span class="dot" style="background:#EF4444"></span>Administrador<span class="count">60</span>
+        </div>
+        <div class="role-tab active">
+          <span class="dot" style="background:#F59E0B"></span>Supervisor<span class="count">46</span>
+        </div>
+        <div class="role-tab">
+          <span class="dot" style="background:#10B981"></span>Financiera<span class="count">20</span>
+        </div>
+        <div class="role-tab">
+          <span class="dot" style="background:#3B82F6"></span>Operador<span class="count">18</span>
+        </div>
+        <div class="role-tab">
+          <span class="dot" style="background:#F97316"></span>Conductor<span class="count">13</span>
+        </div>
+        <div class="role-tab">
+          <span class="dot" style="background:#8B5CF6"></span>Portal Cliente<span class="count">11</span>
+        </div>
+      </div>
+
+      <div class="role-header">
+        <span class="role-badge" style="background:#F59E0B22;color:#F59E0B;border:1px solid #F59E0B55">
+          <span style="width:8px;height:8px;border-radius:50%;background:#F59E0B;display:inline-block"></span>
+          Supervisor
+        </span>
+        <span style="color:var(--muted);font-size:11px">46 de 60 permisos activos</span>
+        <div class="save-toast">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Guardado automáticamente
+        </div>
+      </div>
+
+      <div class="mod-grid">
+
+        <div class="mod-card">
+          <div class="mod-card-head">
+            <div class="mod-name">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Clientes
+            </div>
+            <div class="mod-head-right">
+              <span class="mod-counter"><span>4</span>/6</span>
+              <div class="master-toggle"></div>
+            </div>
+          </div>
+          <div class="mod-card-body">
+            <span class="chip on"><span class="chip-dot"></span>Ver</span>
+            <span class="chip on"><span class="chip-dot"></span>Crear</span>
+            <span class="chip on"><span class="chip-dot"></span>Editar</span>
+            <span class="chip off"><span class="chip-dot"></span>Eliminar</span>
+            <span class="chip on"><span class="chip-dot"></span>Exportar</span>
+            <span class="chip off"><span class="chip-dot"></span>Importar</span>
+          </div>
+        </div>
+
+        <div class="mod-card">
+          <div class="mod-card-head">
+            <div class="mod-name">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              Inventario
+            </div>
+            <div class="mod-head-right">
+              <span class="mod-counter"><span>6</span>/7</span>
+              <div class="master-toggle"></div>
+            </div>
+          </div>
+          <div class="mod-card-body">
+            <span class="chip on"><span class="chip-dot"></span>Ver</span>
+            <span class="chip on"><span class="chip-dot"></span>Crear</span>
+            <span class="chip on"><span class="chip-dot"></span>Editar</span>
+            <span class="chip off"><span class="chip-dot"></span>Eliminar</span>
+            <span class="chip on"><span class="chip-dot"></span>Ajustar</span>
+            <span class="chip on"><span class="chip-dot"></span>Exportar</span>
+            <span class="chip on"><span class="chip-dot"></span>Alertas</span>
+          </div>
+        </div>
+
+        <div class="mod-card">
+          <div class="mod-card-head">
+            <div class="mod-name">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Operaciones
+            </div>
+            <div class="mod-head-right">
+              <span class="mod-counter"><span>3</span>/3</span>
+              <div class="master-toggle"></div>
+            </div>
+          </div>
+          <div class="mod-card-body">
+            <span class="chip on"><span class="chip-dot"></span>Ver</span>
+            <span class="chip on"><span class="chip-dot"></span>Exportar</span>
+            <span class="chip on"><span class="chip-dot"></span>Reenviar correo</span>
+          </div>
+        </div>
+
+        <div class="mod-card">
+          <div class="mod-card-head">
+            <div class="mod-name">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              Viajes
+            </div>
+            <div class="mod-head-right">
+              <span class="mod-counter"><span>5</span>/5</span>
+              <div class="master-toggle"></div>
+            </div>
+          </div>
+          <div class="mod-card-body">
+            <span class="chip on"><span class="chip-dot"></span>Ver</span>
+            <span class="chip on"><span class="chip-dot"></span>Crear</span>
+            <span class="chip on"><span class="chip-dot"></span>Editar</span>
+            <span class="chip on"><span class="chip-dot"></span>Eliminar</span>
+            <span class="chip on"><span class="chip-dot"></span>Exportar</span>
+          </div>
+        </div>
+
+        <div class="mod-card">
+          <div class="mod-card-head">
+            <div class="mod-name">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              Caja Menor
+            </div>
+            <div class="mod-head-right">
+              <span class="mod-counter"><span>7</span>/7</span>
+              <div class="master-toggle"></div>
+            </div>
+          </div>
+          <div class="mod-card-body">
+            <span class="chip on"><span class="chip-dot"></span>Ver</span>
+            <span class="chip on"><span class="chip-dot"></span>Crear</span>
+            <span class="chip on"><span class="chip-dot"></span>Editar</span>
+            <span class="chip on"><span class="chip-dot"></span>Cerrar</span>
+            <span class="chip on"><span class="chip-dot"></span>Aprobar</span>
+            <span class="chip on"><span class="chip-dot"></span>Eliminar</span>
+            <span class="chip on"><span class="chip-dot"></span>Exportar</span>
+          </div>
+        </div>
+
+        <div class="mod-card">
+          <div class="mod-card-head">
+            <div class="mod-name">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+              Usuarios
+            </div>
+            <div class="mod-head-right">
+              <span class="mod-counter"><span>1</span>/4</span>
+              <div class="master-toggle off"></div>
+            </div>
+          </div>
+          <div class="mod-card-body">
+            <span class="chip on"><span class="chip-dot"></span>Ver</span>
+            <span class="chip off"><span class="chip-dot"></span>Crear</span>
+            <span class="chip off"><span class="chip-dot"></span>Editar</span>
+            <span class="chip off"><span class="chip-dot"></span>Eliminar</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:20px">
+  <h3>Resumen de comportamientos</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+    <div style="background:#151631;border:1px solid #252748;border-radius:8px;padding:12px">
+      <div class="label">Chip individual</div>
+      <p style="margin:6px 0 0;font-size:11px;color:#94A3B8">Clic en un chip guarda ese permiso al instante. Aparece brevemente "Guardado automaticamente" en la cabecera del tab.</p>
+    </div>
+    <div style="background:#151631;border:1px solid #252748;border-radius:8px;padding:12px">
+      <div class="label">Toggle maestro</div>
+      <p style="margin:6px 0 0;font-size:11px;color:#94A3B8">Si todos activos: desactiva todos. Si alguno inactivo: activa todos. Guarda inmediatamente y actualiza contador.</p>
+    </div>
+    <div style="background:#151631;border:1px solid #252748;border-radius:8px;padding:12px">
+      <div class="label">Contador del tab</div>
+      <p style="margin:6px 0 0;font-size:11px;color:#94A3B8">El numero en cada tab se actualiza en tiempo real. Muestra permisos activos del rol.</p>
+    </div>
+    <div style="background:#151631;border:1px solid #252748;border-radius:8px;padding:12px">
+      <div class="label">Admin — solo lectura</div>
+      <p style="margin:6px 0 0;font-size:11px;color:#94A3B8">El tab Admin muestra todos los chips activos pero deshabilitados con icono de candado. No editable.</p>
+    </div>
+  </div>
+</div>

@@ -24,8 +24,8 @@ module.exports = {
     const sqlPath = path.join(__dirname, 'schema_baseline.sql');
     if (!fs.existsSync(sqlPath)) return;
     
-    const sqlFile = fs.readFileSync(sqlPath, 'utf8');
-    
+    const sqlFile = fs.readFileSync(sqlPath, 'utf8').replace(/\r\n/g, '\n');
+
     const db = require('../models');
 
     // Separar los comandos por ';\n\n'

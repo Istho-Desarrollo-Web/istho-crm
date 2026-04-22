@@ -189,15 +189,10 @@ const RowActions = ({ cliente, onView, onEdit, onDelete, onChangeStatus }) => {
 const ClientesList = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user: _user, user } = useAuth();
-
-  // Portal cliente → redirigir directamente a su empresa
-  if (user?.rol === 'cliente' && user?.cliente_id) {
-    return <Navigate to={`/clientes/${user.cliente_id}`} replace />;
-  }
+  const { user } = useAuth();
 
   // ──────────────────────────────────────────────────────────────────────────
-  // HOOKS
+  // HOOKS — todos deben declararse antes de cualquier return condicional
   // ──────────────────────────────────────────────────────────────────────────
   const { success: notifySuccess, apiError, saved, deleted, error: notifyError } = useNotification();
   const fileInputRef = useRef(null);
@@ -351,6 +346,11 @@ const ClientesList = () => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, cliente: null });
   const [statusModal, setStatusModal] = useState({ isOpen: false, cliente: null });
   const [formLoading, setFormLoading] = useState(false);
+
+  // Portal cliente → redirigir directamente a su empresa (DESPUÉS de todos los hooks)
+  if (user?.rol === 'cliente' && user?.cliente_id) {
+    return <Navigate to={`/clientes/${user.cliente_id}`} replace />;
+  }
 
   // ──────────────────────────────────────────────────────────────────────────
   // HANDLERS DE BÚSQUEDA Y FILTROS
