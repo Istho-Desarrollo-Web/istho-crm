@@ -309,6 +309,17 @@ export const AuthProvider = ({ children }) => {
           };
         }
 
+        // Verificar si el servidor requiere configuración inicial de 2FA (Obligatorio para Admins)
+        if (result.data?.requiere_setup_2fa) {
+          setState(prev => ({ ...prev, isLoading: false, error: null }));
+          return {
+            success: false,
+            requiere_setup_2fa: true,
+            temp_token: result.data.temp_token,
+            usuario_nombre: result.data.usuario_nombre
+          };
+        }
+
         setState({
           user: result.data.user,
           isAuthenticated: true,

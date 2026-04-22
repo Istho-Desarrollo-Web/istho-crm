@@ -282,6 +282,25 @@ const login = async (req, res) => {
       });
     }
 
+    // NUEVO: Verificar si el 2FA es OBLIGATORIO para este rol y aún no está configurado
+    const rolesAdministrativos = ['admin', 'financiera'];
+    if (rolesAdministrativos.includes(usuario.rol) && !usuario.totp_habilitado) {
+      // Emitir un token temporal con scope restringido para configuración inicial
+      const setupToken = jwt.sign(
+        { id: usuario.id, scope: '2fa_setup_required' },
+        jwtConfig.secret,
+        { expiresIn: '15m', issuer: jwtConfig.issuer, audience: jwtConfig.audience }
+      );
+
+      logger.info('Login paso 1 (Configuración de 2FA obligatoria):', { userId: usuario.id, rol: usuario.rol });
+
+      return successMessage(res, 'Configuración de 2FA obligatoria para su rol', {
+        requiere_setup_2fa: true,
+        temp_token: setupToken,
+        usuario_nombre: usuario.getNombreDisplay()
+      });
+    }
+
     await completarLogin(usuario, req, res);
 
   } catch (error) {

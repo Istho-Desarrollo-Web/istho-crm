@@ -78,12 +78,14 @@ router.get('/viajes/pdf', reporteController.exportarViajesPDF);
 router.get('/cajas-menores/excel', reporteController.exportarCajasMenoresExcel);
 router.get('/cajas-menores/pdf', reporteController.exportarCajasMenoresPDF);
 router.get('/cajas-menores/:id/excel', reporteController.exportarCajaMenorExcel);
+router.get('/cajas-menores/:id/pdf', reporteController.exportarCajaMenorPDF);
 
 // =============================================
 // REPORTES DE VEHICULOS
 // =============================================
 
 router.get('/vehiculos/excel', reporteController.exportarVehiculosExcel);
+router.get('/vehiculos/pdf', reporteController.exportarVehiculosPDF);
 router.get('/vehiculos/csv', reporteController.exportarVehiculosCsv);
 
 // =============================================

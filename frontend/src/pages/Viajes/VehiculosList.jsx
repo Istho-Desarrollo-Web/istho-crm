@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * ISTHO CRM - VehiculosList
  * ============================================================================
@@ -32,6 +32,7 @@ import {
   Loader2,
   LayoutGrid,
   LayoutList,
+  RefreshCw,
 } from 'lucide-react';
 
 // Components
@@ -392,6 +393,22 @@ const VehiculosList = () => {
     }
   };
 
+  const handleExportPDF = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const params = new URLSearchParams();
+      if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
+      if (searchTerm) params.set('search', searchTerm);
+      const query = params.toString() ? `?${params.toString()}` : '';
+      await descargarArchivo(
+        `${baseUrl}/reportes/vehiculos/pdf${query}`,
+        `vehiculos-${fechaDescarga()}.pdf`,
+      );
+    } catch {
+      notifyError('Error al exportar el reporte de vehículos en PDF');
+    }
+  };
+
   // ──────────────────────────────────────────────────────────────────────────
   // RENDER
   // ──────────────────────────────────────────────────────────────────────────
@@ -411,17 +428,36 @@ const VehiculosList = () => {
               <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestiona la flota de vehículos para despachos y viajes</p>
             </div>
           </div>
-          {vehiculos.length > 0 && (
             <div className="flex items-center gap-2">
+              {/* Botón Refrescar */}
               <button
-                onClick={handleExportExcel}
+                onClick={() => { fetchVehiculos(pagination.page); _success('Datos actualizados'); }}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+                title="Refrescar datos"
               >
-                <FileSpreadsheet className="w-4 h-4" />
-                Excel
+                <RefreshCw className="w-4 h-4" />
+                <span className="hidden sm:inline">Actualizar</span>
               </button>
+              
+              {vehiculos.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={handleExportExcel}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                    <span className="hidden sm:inline">Excel</span>
+                  </button>
+                  <button
+                    onClick={handleExportPDF}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+                  >
+                    <ShieldAlert className="w-4 h-4 text-red-600" />
+                    <span className="hidden sm:inline">PDF</span>
+                  </button>
+                </div>
+              )}
             </div>
-          )}
         </div>
 
         {/* KPI CARDS */}

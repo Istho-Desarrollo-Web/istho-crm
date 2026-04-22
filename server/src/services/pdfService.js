@@ -613,6 +613,61 @@ const generarPDFViajes = async (viajes, filtros = {}) => {
 };
 
 /**
+ * Generar PDF de vehículos
+ */
+const generarPDFVehiculos = async (vehiculos, filtros = {}) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const chunks = [];
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      agregarEncabezado(doc, 'REPORTE DE VEHÍCULOS', 'Gestión de flota y documentos de transporte');
+
+      const activos = vehiculos.filter(v => v.estado === 'activo').length;
+      const mantenimiento = vehiculos.filter(v => v.estado === 'mantenimiento').length;
+      const inactivos = vehiculos.filter(v => v.estado === 'inactivo').length;
+
+      agregarKpis(doc, [
+        { label: 'Total Vehículos', valor: vehiculos.length, subtexto: 'flota registrada', color: COLORES.acento  },
+        { label: 'Activos',         valor: activos,           subtexto: 'operativos',     color: COLORES.verde   },
+        { label: 'En Taller',       valor: mantenimiento,    subtexto: 'mantenimiento', color: COLORES.amarillo },
+        { label: 'Fuera Servicio',  valor: inactivos,        subtexto: 'inactivos',     color: COLORES.textoTenue },
+      ]);
+
+      const headers = ['Placa', 'Tipo', 'Marca / Modelo', 'Cap. (Ton)', 'Conductor', 'SOAT Vence', 'Tecno Vence', 'Estado'];
+      const rows = vehiculos.map(v => [
+        v.placa || '',
+        (v.tipo_vehiculo || '').toUpperCase().substring(0, 12),
+        `${v.marca || ''} ${v.modelo || ''}`.substring(0, 20),
+        parseFloat(v.capacidad_ton || 0).toFixed(1),
+        (v.conductor?.nombre_completo || 'N/A').substring(0, 25),
+        v.vencimiento_soat || 'N/A',
+        v.vencimiento_tecnicomecanica || 'N/A',
+        (v.estado || '').toUpperCase(),
+      ]);
+
+      const finalPage = generarTabla(doc, headers, rows, {
+        anchoColumnas: [65, 80, 140, 65, 140, 80, 80, 80],
+        alineacion:    ['left', 'center', 'left', 'right', 'left', 'center', 'center', 'center'],
+        etiquetaSeccion: 'Lista de Vehículos',
+        titulosContinuacion: 'REPORTE DE VEHÍCULOS (Continuación)',
+      });
+
+      agregarPiePagina(doc, finalPage);
+      doc.end();
+
+      logger.info('PDF vehiculos generado:', { registros: vehiculos.length });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+
+/**
  * Generar PDF de cajas menores
  */
 const generarPDFCajasMenores = async (cajas, filtros = {}) => {
@@ -721,6 +776,102 @@ const generarPDFGastos = async (movimientos, filtros = {}) => {
   });
 };
 
+/**
+ * Generar PDF de detalle de caja menor (liquidación)
+ */
+const generarPDFDetalleCajaMenor = async (caja) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ size: 'LETTER', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const chunks = [];
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      agregarEncabezado(doc, `LIQUIDACIÓN CAJA MENOR`, `Caja N° ${caja.numero}`);
+
+      const seccionLabel = (texto) => {
+        const sy = doc.y;
+        doc.rect(50, sy + 1, 3, 9).fill(COLORES.acento);
+        doc.fontSize(8).fillColor(COLORES.acento).text(texto, 58, sy, { continued: false });
+        doc.rect(50, sy + 13, doc.page.width - 100, 1).fill('#E8E8E8');
+        doc.y = sy + 18;
+      };
+
+      // Resumen Financiero
+      seccionLabel('RESUMEN DE LIQUIDACIÓN');
+      const info = [
+        ['N° Caja Menor:', caja.numero],
+        ['Asignado A:', caja.asignado?.nombre_completo || 'N/A'],
+        ['Fecha Apertura:', caja.fecha_apertura ? new Date(caja.fecha_apertura + 'T00:00:00').toLocaleDateString('es-CO') : ''],
+        ['Fecha Cierre:', caja.fecha_cierre ? new Date(caja.fecha_cierre + 'T00:00:00').toLocaleDateString('es-CO') : 'N/A'],
+        ['Estado:', caja.estado?.toUpperCase()],
+        ['Saldo Inicial:', `$${Number(caja.saldo_inicial).toLocaleString('es-CO')}`],
+        ['Total Ingresos (Adiciones):', `$${Number(caja.total_ingresos).toLocaleString('es-CO')}`],
+        ['Total Egresos (Gastos):', `$${Number(caja.total_egresos).toLocaleString('es-CO')}`],
+        ['Saldo Final:', `$${Number(caja.saldo_actual).toLocaleString('es-CO')}`],
+      ];
+      
+      let x1 = 50;
+      let y1 = doc.y;
+      info.forEach(([label, value], i) => {
+        doc.fontSize(9)
+           .fillColor(COLORES.textoSecundario)
+           .text(label, x1, y1, { width: 150 })
+           .fillColor(COLORES.textoPrincipal)
+           .text(value, x1 + 150, y1);
+        y1 += 15;
+      });
+      doc.y = y1 + 10;
+
+      // Tabla de Movimientos
+      const headers = ['#', 'Fecha', 'Concepto', 'Descripción', 'Tipo', 'Aprobado', 'Monto'];
+      const rows = (caja.movimientos || []).map(m => [
+        m.consecutivo,
+        m.created_at ? new Date(m.created_at).toLocaleDateString('es-CO') : '',
+        (m.concepto || '').substring(0, 15),
+        (m.descripcion || '').substring(0, 25),
+        m.tipo_movimiento === 'ingreso' ? 'INGRESO' : 'EGRESO',
+        m.aprobado ? 'SÍ' : m.rechazado ? 'NO' : 'PEND.',
+        `$${parseFloat(m.valor || 0).toLocaleString('es-CO')}`,
+      ]);
+
+      const finalPage = generarTabla(doc, headers, rows, {
+        startX: 40,
+        anchoColumnas: [40, 60, 90, 140, 60, 60, 80],
+        alineacion:    ['center', 'center', 'left', 'left', 'center', 'center', 'right'],
+        etiquetaSeccion: 'DETALLE DE MOVIMIENTOS',
+        titulosContinuacion: `LIQUIDACIÓN CAJA MENOR - ${caja.numero}`,
+        paginaInicial: 1,
+      });
+
+      // Firmas
+      doc.moveDown(3);
+      if (doc.y > doc.page.height - 150) {
+        agregarPiePagina(doc, finalPage);
+        doc.addPage();
+        agregarEncabezado(doc, `LIQUIDACIÓN CAJA MENOR - ${caja.numero}`);
+      }
+
+      const fy = doc.y;
+      doc.strokeColor(COLORES.textoSecundario).lineWidth(0.5)
+         .moveTo(80, fy + 40).lineTo(250, fy + 40).stroke()
+         .moveTo(350, fy + 40).lineTo(520, fy + 40).stroke();
+      
+      doc.fontSize(9).fillColor(COLORES.textoPrincipal)
+         .text('Firma Reponsable', 80, fy + 50, { width: 170, align: 'center' })
+         .text('Firma Aprobador', 350, fy + 50, { width: 170, align: 'center' });
+
+      agregarPiePagina(doc, finalPage);
+      doc.end();
+
+      logger.info('PDF caja menor liquidacion generado:', { caja: caja.numero });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 // ═══════════════════════════════════════════════════════════════════════════
 // INVENTARIO POR UBICACIÓN
 // ═══════════════════════════════════════════════════════════════════════════
@@ -791,6 +942,8 @@ module.exports = {
   generarPDFDetalleOperacion,
   generarPDFClientes,
   generarPDFViajes,
+  generarPDFVehiculos,
   generarPDFCajasMenores,
   generarPDFGastos,
+  generarPDFDetalleCajaMenor,
 };

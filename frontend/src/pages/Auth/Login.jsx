@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * ISTHO CRM - Página de Login
  * ============================================================================
@@ -107,10 +107,9 @@ const LoginPage = () => {
             default: return '/dashboard';
         }
     };
-    // No usar "from" si fue un cierre forzado (otro usuario podría no tener permiso)
-    const from = location.state?.from || null;
-    const getDestino = (rol, pending = mensajePendiente) =>
-        pending ? getDefaultRoute(rol) : (from || getDefaultRoute(rol));
+
+    // Siempre redirigir a la página principal del rol para evitar conflictos entre sesiones
+    const getDestino = (rol) => getDefaultRoute(rol);
 
     // React Hook Form
     const yaAcepto = localStorage.getItem('politica_aceptada') === POLITICA_VERSION;
@@ -136,12 +135,10 @@ const LoginPage = () => {
     // Redirigir si ya está autenticado
     useEffect(() => {
         if (isAuthenticated && !authLoading) {
-            const destino = mensajePendiente
-                ? getDefaultRoute(user?.rol)
-                : (from || getDefaultRoute(user?.rol));
+            const destino = getDestino(user?.rol);
             navigate(destino, { replace: true });
         }
-    }, [isAuthenticated, authLoading, navigate, from, user, mensajePendiente]);
+    }, [isAuthenticated, authLoading, navigate, user]);
 
     // Focus en email al montar
     useEffect(() => {

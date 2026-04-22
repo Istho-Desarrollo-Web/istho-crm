@@ -28,32 +28,8 @@ const routes = require('./routes');
 const app = express();
 
 // ==============================================
-// MIDDLEWARES DE SEGURIDAD
+// MIDDLEWARES DE SEGURIDAD & CORS
 // ==============================================
-
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc:     ["'none'"],
-      frameAncestors: ["'none'"],
-      // Los endpoints de descarga (PDF/Excel) requieren que el navegador
-      // pueda crear blob URLs — se gestiona en el cliente, no aquí
-    },
-  },
-  // HSTS: 2 años, incluye subdominios
-  strictTransportSecurity: {
-    maxAge: 63072000,
-    includeSubDomains: true,
-    preload: true,
-  },
-}));
-
-// Rate limiting general (excluye /health para monitoreo)
-app.use((req, res, next) => {
-  if (req.path === '/health') return next();
-  return limiterGeneral(req, res, next);
-});
 
 // CORS dinámico: soporta múltiples orígenes separados por coma
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
@@ -75,7 +51,29 @@ const corsOptions = {
   credentials: true,
   maxAge: 86400
 };
+
 app.use(cors(corsOptions));
+
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:     ["'none'"],
+      frameAncestors: ["'none'"],
+    },
+  },
+  strictTransportSecurity: {
+    maxAge: 63072000,
+    includeSubDomains: true,
+    preload: true,
+  },
+}));
+
+// Rate limiting general (excluye /health para monitoreo)
+app.use((req, res, next) => {
+  if (req.path === '/health') return next();
+  return limiterGeneral(req, res, next);
+});
 
 // ==============================================
 // MIDDLEWARES DE PARSING

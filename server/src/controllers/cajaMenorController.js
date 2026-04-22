@@ -292,8 +292,8 @@ const cerrar = async (req, res) => {
     const saldoAntesCierre = parseFloat(caja.saldo_actual) || 0;
     const datosAnteriores = caja.toJSON();
 
-    // Si hay saldo sobrante y se elige entregar al conductor, crear egreso de liquidación
-    if (accion_sobrante === 'entregar' && saldoAntesCierre > 0) {
+    // Si hay saldo sobrante y se elige liquidar al conductor, crear egreso de liquidación
+    if (accion_sobrante === 'liquidar' && saldoAntesCierre > 0) {
       const consecutivo = await MovimientoCajaMenor.generarConsecutivo();
       await MovimientoCajaMenor.create({
         caja_menor_id: caja.id,
@@ -322,10 +322,10 @@ const cerrar = async (req, res) => {
     }, { transaction });
 
     const saldoFinal = parseFloat(caja.saldo_actual) || 0;
-    const accionDesc = accion_sobrante === 'entregar'
-      ? `Saldo de $${saldoAntesCierre.toLocaleString('es-CO')} entregado al conductor.`
-      : saldoAntesCierre > 0
-        ? `Saldo de $${saldoFinal.toLocaleString('es-CO')} guardado para siguiente caja.`
+    const accionDesc = accion_sobrante === 'liquidar'
+      ? `Saldo de $${saldoAntesCierre.toLocaleString('es-CO')} liquidado y entregado al conductor.`
+      : accion_sobrante === 'transferir' && saldoAntesCierre > 0
+        ? `Saldo de $${saldoFinal.toLocaleString('es-CO')} transferido a la siguiente caja.`
         : '';
 
     await Auditoria.registrar({

@@ -121,13 +121,45 @@ async function initializeDatabase() {
       }
     }
 
-    // Sincronizar modelos
-    // alter: true solo si DB_SYNC_ALTER=true (para cambios de esquema)
-    // En deploys normales usar alter: false (solo crea tablas que no existen)
-    const shouldAlter = process.env.DB_SYNC_ALTER === 'true';
-    logger.info(`Sincronizando modelos... (alter: ${shouldAlter})`);
-    await db.syncModels({ alter: shouldAlter });
-    logger.info('✅ Modelos sincronizados');
+    // ══════════════════════════════════════════════════════════════════════════
+    // MIGRACIONES CON UMZUG (Reemplaza a syncModels con alter)
+    // ══════════════════════════════════════════════════════════════════════════
+    logger.info(`Validando e instalando migraciones automáticas...`);
+    const { Umzug, SequelizeStorage } = require('umzug');
+    
+    const umzug = new Umzug({
+      migrations: { 
+        glob: 'src/migrations/*.js',
+        resolve: ({ name, path, context }) => {
+          const migration = require(path);
+          return {
+            name,
+            up: async () => migration.up(context, db.Sequelize),
+            down: async () => migration.down(context, db.Sequelize),
+          };
+        }
+      },
+      context: db.sequelize.getQueryInterface(),
+      storage: new SequelizeStorage({ sequelize: db.sequelize }),
+      logger: {
+        info: msg => logger.info(`[Migración] ${msg.message}`),
+        warn: msg => logger.warn(`[Migración] ${msg.message}`),
+        error: msg => logger.error(`[Migración] ${msg.message}`),
+        debug: () => {}
+      },
+    });
+
+    try {
+      const migrations = await umzug.up();
+      if (migrations.length > 0) {
+        logger.info(`✅ Se aplicaron ${migrations.length} migraciones exitosamente.`);
+      } else {
+        logger.info(`✅ Base de datos actualizada (no hay migraciones pendientes).`);
+      }
+    } catch (migError) {
+      logger.error(`❌ Error aplicando migraciones: ${migError.message}`);
+      throw migError;
+    }
 
     // Seed de roles y permisos (idempotente)
     logger.info('Verificando roles y permisos...');
