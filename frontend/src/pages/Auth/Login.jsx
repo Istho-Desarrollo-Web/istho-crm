@@ -83,7 +83,17 @@ const features = [
 const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { login, validarTotp, isAuthenticated, isLoading: authLoading, error: authError, clearError, user } = useAuth();
+    const { 
+        login, 
+        validarTotp, 
+        setup2FA, 
+        activar2FA, 
+        isAuthenticated, 
+        isLoading: authLoading, 
+        error: authError, 
+        clearError, 
+        user 
+    } = useAuth();
 
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -208,7 +218,7 @@ const LoginPage = () => {
         setVerificandoSetup(true);
         setErrorSetup(null);
         try {
-            const res = await authService.activar2FA({ codigo: code });
+            const res = await activar2FA(code);
             if (res.success) {
                 setBackupCodes(res.data.backup_codes || []);
                 // Redirigir será manual después de mostrar códigos
@@ -243,7 +253,7 @@ const LoginPage = () => {
                 setIsSubmitting(false);
                 setPasoSetup2FA(true);
                 // Iniciar el setup automáticamente
-                const setupRes = await authService.setup2FA();
+                const setupRes = await setup2FA();
                 if (setupRes.success) {
                     setSetupData(setupRes.data);
                 } else {

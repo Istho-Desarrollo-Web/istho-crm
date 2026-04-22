@@ -27,7 +27,7 @@ import {
 } from 'react';
 import PropTypes from 'prop-types';
 import authService from '../api/auth.service';
-import { clearAuthToken, isAuthenticated as checkToken } from '../api/client';
+import { setAuthToken, clearAuthToken, isAuthenticated as checkToken } from '../api/client';
 import { setPreferencias } from '../utils/formatDate';
 
 // ============================================================================
@@ -311,6 +311,11 @@ export const AuthProvider = ({ children }) => {
 
         // Verificar si el servidor requiere configuración inicial de 2FA (Obligatorio para Admins)
         if (result.data?.requiere_setup_2fa) {
+          // Guardar el token temporal para que las llamadas a setup2FA/activar2FA funcionen
+          if (result.data.temp_token) {
+            setAuthToken(result.data.temp_token);
+          }
+
           setState(prev => ({ ...prev, isLoading: false, error: null }));
           return {
             success: false,
