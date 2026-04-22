@@ -82,17 +82,17 @@ const ModuloCard = ({ grupo, permisos, permisoSet, onToggleChip, onToggleMaestro
   const Icono = MODULO_ICONOS[grupo.modulo] || Shield;
 
   return (
-    <div style={{ background: '#151631', border: '1px solid #252748', borderRadius: 10, overflow: 'hidden' }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '8px 12px', background: '#1A1B3A', borderBottom: '1px solid #252748',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 11, color: '#F1F5F9' }}>
-          <Icono style={{ width: 14, height: 14, color: '#94A3B8', flexShrink: 0 }} />
+    <div className="bg-white dark:bg-centhrix-surface border border-gray-200 dark:border-slate-700" style={{ borderRadius: 10, overflow: 'hidden' }}>
+      <div
+        className="bg-gray-50 dark:bg-centhrix-card border-b border-gray-200 dark:border-slate-700"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px' }}
+      >
+        <div className="font-bold text-slate-800 dark:text-slate-100" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
+          <Icono className="text-slate-400 dark:text-slate-500" style={{ width: 14, height: 14, flexShrink: 0 }} />
           {MODULO_LABELS[grupo.modulo] || grupo.modulo}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 9, color: '#64748B' }}>
+          <span className="text-slate-500" style={{ fontSize: 9 }}>
             <span style={{ color: '#E74C3C', fontWeight: 700 }}>{activosCount}</span>/{total}
           </span>
           <button
@@ -102,7 +102,7 @@ const ModuloCard = ({ grupo, permisos, permisoSet, onToggleChip, onToggleMaestro
             style={{
               width: 28, height: 15, borderRadius: 8, position: 'relative',
               flexShrink: 0, border: 'none', outline: 'none', padding: 0,
-              background: todosActivos ? '#E74C3C' : '#334155',
+              background: todosActivos ? '#E74C3C' : '#94A3B8',
               cursor: disabled ? 'not-allowed' : 'pointer',
               opacity: disabled ? 0.6 : 1,
             }}
@@ -125,20 +125,20 @@ const ModuloCard = ({ grupo, permisos, permisoSet, onToggleChip, onToggleMaestro
               key={permiso.id}
               onClick={() => !disabled && onToggleChip(permiso.id)}
               disabled={disabled}
+              className={`border ${activo
+                ? 'bg-red-50 dark:bg-red-950/20 text-red-500 border-red-200 dark:border-red-900/40'
+                : 'bg-gray-100 dark:bg-centhrix-card text-slate-500 dark:text-slate-400 border-gray-200 dark:border-slate-700'
+              }`}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4,
                 padding: '3px 8px', borderRadius: 12, fontSize: 10, fontWeight: 500,
-                border: '1px solid transparent', cursor: disabled ? 'not-allowed' : 'pointer',
+                cursor: disabled ? 'not-allowed' : 'pointer',
                 opacity: disabled ? 0.6 : 1,
-                ...(activo
-                  ? { background: 'rgba(231,76,60,0.12)', color: '#E74C3C', borderColor: 'rgba(231,76,60,0.35)' }
-                  : { background: '#1A1B3A', color: '#64748B', borderColor: '#252748' }
-                ),
               }}
             >
               <span style={{
                 width: 5, height: 5, borderRadius: '50%', flexShrink: 0,
-                background: activo ? '#E74C3C' : '#64748B',
+                background: activo ? '#E74C3C' : '#94A3B8',
               }} />
               {ACCION_LABELS[accion.accion] || accion.accion}
             </button>
@@ -332,10 +332,10 @@ const RolesList = () => {
         const permisoSet = editPermisos[rolActivoId] || new Set();
 
         return (
-          <div style={{ background: '#0F1023', borderRadius: 12, padding: 16, fontFamily: "'Segoe UI', sans-serif" }}>
+          <div className="bg-gray-50 dark:bg-centhrix-bg" style={{ borderRadius: 12, padding: 16, fontFamily: "'Segoe UI', sans-serif" }}>
 
             {/* Tabs de rol */}
-            <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #252748', marginBottom: 16, overflowX: 'auto' }}>
+            <div className="border-b border-gray-200 dark:border-slate-700" style={{ display: 'flex', gap: 4, marginBottom: 16, overflowX: 'auto' }}>
               {roles.map(rol => {
                 const totalActivos = (editPermisos[rol.id] || new Set()).size;
                 const esActivo = rolActivoId === rol.id;
@@ -343,23 +343,24 @@ const RolesList = () => {
                   <button
                     key={rol.id}
                     onClick={() => setRolActivoId(rol.id)}
+                    className={esActivo
+                      ? 'text-slate-800 dark:text-slate-100 bg-gray-200 dark:bg-centhrix-card'
+                      : 'text-slate-500 dark:text-slate-400 bg-transparent'
+                    }
                     style={{
                       display: 'flex', alignItems: 'center', gap: 6,
                       padding: '8px 14px', borderRadius: '8px 8px 0 0',
                       cursor: 'pointer', fontSize: 11, fontWeight: 500,
                       whiteSpace: 'nowrap', border: 'none', outline: 'none',
-                      color: esActivo ? '#F1F5F9' : '#94A3B8',
-                      background: esActivo ? '#1A1B3A' : 'transparent',
                       borderBottom: esActivo ? '2px solid #E74C3C' : '2px solid transparent',
                     }}
                   >
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: rol.color, flexShrink: 0 }} />
                     {rol.nombre}
-                    <span style={{
-                      fontSize: 9, padding: '1px 5px', borderRadius: 8,
-                      background: esActivo ? '#E74C3C' : '#1A1B3A',
-                      color: esActivo ? '#fff' : '#64748B',
-                    }}>
+                    <span
+                      className={esActivo ? 'bg-red-500 text-white' : 'bg-gray-200 dark:bg-centhrix-card text-slate-500 dark:text-slate-500'}
+                      style={{ fontSize: 9, padding: '1px 5px', borderRadius: 8 }}
+                    >
                       {totalActivos}
                     </span>
                   </button>
@@ -382,7 +383,7 @@ const RolesList = () => {
                     {rolActual.nombre}
                     {esRolSistema && <Lock style={{ width: 12, height: 12 }} />}
                   </span>
-                  <span style={{ color: '#64748B', fontSize: 11 }}>
+                  <span className="text-slate-500" style={{ fontSize: 11 }}>
                     {permisoSet.size} de {permisos.length} permisos activos
                   </span>
                   {toastVisible && (
