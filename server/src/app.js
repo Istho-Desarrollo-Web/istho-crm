@@ -27,6 +27,9 @@ const routes = require('./routes');
 // Crear aplicación Express
 const app = express();
 
+// Configurar confianza en el proxy (necesario para express-rate-limit detrás de Nginx/Render/Railway)
+app.set('trust proxy', 1);
+
 // ==============================================
 // MIDDLEWARES DE SEGURIDAD & CORS
 // ==============================================
