@@ -147,6 +147,7 @@ const allMenuConfig = [
       { icon: Settings, label: 'Usuarios y Roles', href: '/administracion', shortcut: 'G U' },
       { icon: Activity, label: 'Auditoría de Acciones', href: '/auditoria-acciones', shortcut: 'G X' },
       { icon: Truck, label: 'Configuración WMS', href: '/configuracion-wms' },
+      { icon: Activity, label: 'Dashboard WMS', href: '/wms-dashboard' },
     ],
   },
 ];
@@ -207,6 +208,7 @@ const getMenuForRole = (rol, hasPermission) => {
         if (item.href === '/reportes') return hasPermission('reportes', 'ver');
         // Configuración WMS requiere permiso
         if (item.href === '/configuracion-wms') return hasPermission('configuracion_wms', 'ver');
+        if (item.href === '/wms-dashboard') return hasPermission('configuracion_wms', 'ver');
         // Plantillas de email requiere permiso específico
         if (item.href === '/plantillas-email') return hasPermission('plantillas_email', 'ver');
         // Lista de clientes requiere permiso

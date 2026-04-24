@@ -75,4 +75,7 @@ router.post('/salidas', wmsSyncController.syncSalida);
 // Sincronizar kardex (ajuste de unidades en cajas existentes)
 router.post('/kardex', wmsSyncController.syncKardex);
 
+// Sincronizar lote múltiple (entradas + salidas + kardex + productos en un solo request)
+router.post('/batch', wmsSyncController.syncBatch);
+
 module.exports = router;

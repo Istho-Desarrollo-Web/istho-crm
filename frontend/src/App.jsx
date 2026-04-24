@@ -103,6 +103,9 @@ const Administracion = lazy(() => import('./pages/Administracion'));
 // Auditoría de Acciones
 const AuditoriaAcciones = lazy(() => import('./pages/AuditoriaAcciones'));
 
+// WMS Dashboard
+const WmsDashboard = lazy(() => import('./pages/WmsDashboard'));
+
 // Módulo de Viajes
 const VehiculosList = lazy(() => import('./pages/Viajes/VehiculosList'));
 const CajaMenorList = lazy(() => import('./pages/Viajes/CajaMenorList'));
@@ -359,6 +362,7 @@ function App() {
                 <Route path="/perfil" element={<PerfilUsuario />} />
                 <Route path="/configuracion" element={<PermissionRoute module="perfil" action="ver"><Configuracion /></PermissionRoute>} />
                 <Route path="/configuracion-wms" element={<AdminRoute><ConfiguracionWms /></AdminRoute>} />
+                <Route path="/wms-dashboard" element={<AdminRoute><WmsDashboard /></AdminRoute>} />
                 <Route path="/notificaciones" element={<PermissionRoute module="notificaciones" action="ver"><Notificaciones /></PermissionRoute>} />
                 <Route path="/notificaciones/preferencias" element={<PermissionRoute module="notificaciones" action="ver"><PreferenciasNotificaciones /></PermissionRoute>} />
                 <Route path="/alertas" element={<PermissionRoute module="notificaciones" action="ver"><Notificaciones /></PermissionRoute>} />

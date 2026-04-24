@@ -274,6 +274,17 @@ export const ADMIN_ENDPOINTS = {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
+// WMS DASHBOARD
+// ════════════════════════════════════════════════════════════════════════════
+
+export const WMS_DASHBOARD_ENDPOINTS = {
+  STATUS:        '/wms/dashboard/status',
+  ESTADISTICAS:  '/wms/dashboard/estadisticas',
+  HISTORIAL:     '/wms/dashboard/historial',
+  REEJECUTAR:    '/wms/dashboard/reejecutar',
+};
+
+// ════════════════════════════════════════════════════════════════════════════
 // AUDITORÍA DE ACCIONES
 // ════════════════════════════════════════════════════════════════════════════
 

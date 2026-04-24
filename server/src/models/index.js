@@ -36,6 +36,7 @@ const MovimientoCajaMenorModel = require('./MovimientoCajaMenor');
 const BackupRegistroModel = require('./BackupRegistro');
 const PasswordHistoricoModel = require('./PasswordHistorico');
 const TokenBlacklistModel = require('./TokenBlacklist');
+const WmsSyncLogModel = require('./WmsSyncLog');
 const Notificacion = require('./Notificacion')(sequelize);
 
 // Inicializar modelos
@@ -64,6 +65,7 @@ const MovimientoCajaMenor = MovimientoCajaMenorModel(sequelize);
 const BackupRegistro = BackupRegistroModel(sequelize);
 const PasswordHistorico = PasswordHistoricoModel(sequelize);
 const TokenBlacklist = TokenBlacklistModel(sequelize);
+const WmsSyncLog = WmsSyncLogModel(sequelize);
 
 // ============================================
 // DEFINIR ASOCIACIONES
@@ -408,6 +410,7 @@ const db = {
   BackupRegistro,
   PasswordHistorico,
   TokenBlacklist,
+  WmsSyncLog,
 };
 
 module.exports = db;
