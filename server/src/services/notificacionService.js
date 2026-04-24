@@ -16,6 +16,63 @@ const socketService = require('./socketService');
 
 const logger = console;
 
+// Parsea defensivamente el campo preferencias — resiste string, double-encoding y spreads corruptos
+const parsearPrefs = (raw) => {
+  if (!raw) return {};
+  let val = raw;
+  if (typeof val === 'string') {
+    try { val = JSON.parse(val); } catch { return {}; }
+  }
+  if (typeof val === 'string') {
+    try { val = JSON.parse(val); } catch { return {}; }
+  }
+  if (!val || typeof val !== 'object' || Array.isArray(val)) return {};
+  if ('0' in val) return {};
+  return val;
+};
+
+// Mapeo tipo de notificación → clave en Usuario.preferencias
+const TIPO_A_PREFERENCIA = {
+  despacho:   'alertas_despachos',
+  inventario: 'alertas_inventario',
+  cliente:    'alertas_clientes',
+  sistema:    'alertas_viajes', // caja menor, gastos, viajes completados
+  reporte:    'alertas_reportes',
+  alerta:     null, // siempre se entrega
+};
+
+/**
+ * Verifica si un conjunto de preferencias tiene habilitado el tipo de notificación.
+ * Las notificaciones urgentes siempre se entregan.
+ */
+const prefHabilitada = (preferencias, tipo, prioridad) => {
+  if (prioridad === 'urgente') return true;
+  const key = TIPO_A_PREFERENCIA[tipo];
+  if (!key) return true;
+  const prefs = parsearPrefs(preferencias);
+  return prefs[key] !== false;
+};
+
+/**
+ * Filtra una lista de IDs de usuario según sus preferencias para un tipo/prioridad.
+ * Hace una sola consulta batch para todos los usuarios.
+ */
+const filtrarPorPreferencia = async (userIds, tipo, prioridad = 'normal') => {
+  if (!userIds.length) return [];
+  if (prioridad === 'urgente') return userIds;
+  const key = TIPO_A_PREFERENCIA[tipo];
+  if (!key) return userIds;
+
+  const usuarios = await Usuario.findAll({
+    where: { id: { [Op.in]: userIds } },
+    attributes: ['id', 'preferencias'],
+  });
+
+  return usuarios
+    .filter(u => prefHabilitada(u.preferencias, tipo, prioridad))
+    .map(u => u.id);
+};
+
 /**
  * Obtener IDs de usuarios con roles específicos
  */
@@ -54,6 +111,15 @@ const getUsuariosPorCliente = async (clienteId, { incluirAdmins = true } = {}) =
  */
 const notificar = async ({ usuario_id, tipo, titulo, mensaje, prioridad = 'normal', accion_url, accion_label, metadata }) => {
   try {
+    // Verificar preferencia del usuario antes de crear (salvo urgente)
+    if (prioridad !== 'urgente') {
+      const key = TIPO_A_PREFERENCIA[tipo];
+      if (key) {
+        const u = await Usuario.findByPk(usuario_id, { attributes: ['preferencias'] });
+        if (u && u.preferencias?.[key] === false) return null;
+      }
+    }
+
     const notif = await Notificacion.crear({
       usuario_id,
       tipo,
@@ -95,7 +161,8 @@ const notificarPorCliente = async (clienteId, { tipo, titulo, mensaje, prioridad
       logger.warn('[NotificacionService] notificarPorCliente: clienteId no proporcionado, enviando a admins');
       return notificarAdmins({ tipo, titulo, mensaje, prioridad, accion_url, accion_label, metadata });
     }
-    const ids = await getUsuariosPorCliente(clienteId, { incluirAdmins });
+    let ids = await getUsuariosPorCliente(clienteId, { incluirAdmins });
+    ids = await filtrarPorPreferencia(ids, tipo, prioridad);
     logger.info('[NotificacionService] notificarPorCliente:', { clienteId, usuariosEncontrados: ids.length, ids });
     if (ids.length === 0) return [];
     const result = await Notificacion.notificarMultiple(ids, {
@@ -119,7 +186,8 @@ const notificarPorCliente = async (clienteId, { tipo, titulo, mensaje, prioridad
  */
 const notificarAdmins = async ({ tipo, titulo, mensaje, prioridad = 'normal', accion_url, accion_label, metadata }) => {
   try {
-    const ids = await getUsuariosPorRol(['admin', 'supervisor']);
+    let ids = await getUsuariosPorRol(['admin', 'supervisor']);
+    ids = await filtrarPorPreferencia(ids, tipo, prioridad);
     if (ids.length === 0) return [];
     const result = await Notificacion.notificarMultiple(ids, {
       tipo, titulo, mensaje, prioridad, accion_url, accion_label, metadata,
@@ -318,7 +386,8 @@ const notificarSalidaWms = async (resultado) => {
  */
 const notificarFinancieros = async ({ tipo, titulo, mensaje, prioridad = 'normal', accion_url, accion_label, metadata }) => {
   try {
-    const ids = await getUsuariosPorRol(['admin', 'supervisor', 'financiera']);
+    let ids = await getUsuariosPorRol(['admin', 'supervisor', 'financiera']);
+    ids = await filtrarPorPreferencia(ids, tipo, prioridad);
     if (ids.length === 0) return [];
     const result = await Notificacion.notificarMultiple(ids, {
       tipo, titulo, mensaje, prioridad, accion_url, accion_label, metadata,

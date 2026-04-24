@@ -300,6 +300,21 @@ module.exports = (sequelize) => {
         }
         return val;
       }
+    },
+
+    dispositivos_confiables: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null,
+      comment: 'Dispositivos de confianza para omitir 2FA. Array de { id, token_hash, nombre, creado_en, expira_en }',
+      get() {
+        const val = this.getDataValue('dispositivos_confiables');
+        if (!val) return [];
+        if (typeof val === 'string') {
+          try { return JSON.parse(val); } catch { return []; }
+        }
+        return val;
+      }
     }
   }, {
     tableName: 'usuarios',

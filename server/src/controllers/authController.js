@@ -145,11 +145,11 @@ const generarBackupCodes = () => {
 
 /**
  * Genera JWT de confianza para dispositivo (30 días).
- * scope: 'trusted_device'
+ * scope: 'trusted_device', jti: identificador único para revocación
  */
-const generarTokenDispositivoConfiable = (usuarioId) => {
+const generarTokenDispositivoConfiable = (usuarioId, jti) => {
   return jwt.sign(
-    { id: usuarioId, scope: 'trusted_device' },
+    { id: usuarioId, scope: 'trusted_device', jti },
     jwtConfig.secret,
     { expiresIn: '30d', issuer: jwtConfig.issuer, audience: jwtConfig.audience, algorithm: jwtConfig.algorithm }
   );
@@ -157,7 +157,7 @@ const generarTokenDispositivoConfiable = (usuarioId) => {
 
 /**
  * Valida token de confianza: firma, scope y coincidencia de usuario.
- * Retorna true si es válido, false en cualquier otro caso.
+ * Retorna el payload si es válido, null en cualquier otro caso.
  */
 const validarTokenDispositivoConfiable = (token, usuarioId) => {
   try {
@@ -165,10 +165,20 @@ const validarTokenDispositivoConfiable = (token, usuarioId) => {
       issuer: jwtConfig.issuer,
       audience: jwtConfig.audience,
     });
-    return payload.scope === 'trusted_device' && Number(payload.id) === Number(usuarioId);
+    if (payload.scope !== 'trusted_device' || Number(payload.id) !== Number(usuarioId)) return null;
+    return payload;
   } catch {
-    return false;
+    return null;
   }
+};
+
+const parsearNombreDispositivo = (ua = '') => {
+  if (/android/i.test(ua)) return 'Android';
+  if (/iphone|ipad|ipod/i.test(ua)) return 'iOS';
+  if (/windows nt/i.test(ua)) return 'Windows';
+  if (/macintosh|mac os x/i.test(ua)) return 'Mac';
+  if (/linux/i.test(ua)) return 'Linux';
+  return 'Dispositivo desconocido';
 };
 
 /**
@@ -233,7 +243,8 @@ const completarLogin = async (usuario, req, res, { message = 'Login exitoso', ex
     token,
     refreshToken: refreshTokenJwt,
     expiresIn: jwtConfig.expiresIn,
-    refreshExpiresIn: jwtConfig.refreshExpiresIn
+    refreshExpiresIn: jwtConfig.refreshExpiresIn,
+    ...extra,
   });
 };
 
@@ -301,10 +312,18 @@ const login = async (req, res) => {
 
     // Login exitoso — verificar si tiene 2FA habilitado
     if (usuario.totp_habilitado && usuario.totp_secret) {
-      // Verificar si el dispositivo ya es de confianza
-      if (trusted_device_token && validarTokenDispositivoConfiable(trusted_device_token, usuario.id)) {
-        logger.info('Login con dispositivo confiable (2FA omitido):', { userId: usuario.id });
-        return await completarLogin(usuario, req, res);
+      // Verificar si el dispositivo ya es de confianza (JWT válido + jti en BD)
+      if (trusted_device_token) {
+        const payloadDevice = validarTokenDispositivoConfiable(trusted_device_token, usuario.id);
+        if (payloadDevice) {
+          const ahora = new Date();
+          const dispositivos = (usuario.dispositivos_confiables || []);
+          const vigente = dispositivos.some(d => d.jti === payloadDevice.jti && new Date(d.expira_en) > ahora);
+          if (vigente) {
+            logger.info('Login con dispositivo confiable (2FA omitido):', { userId: usuario.id });
+            return await completarLogin(usuario, req, res);
+          }
+        }
       }
 
       // Emitir token temporal de 5 minutos para el paso de TOTP
@@ -968,7 +987,10 @@ const activar2FA = async (req, res) => {
       return errorResponse(res, 'Primero ejecuta el setup de 2FA', 400);
     }
 
-    const esValido = totpVerify({ token: codigo.replace(/\s/g, ''), secret: usuario.totp_secret, type: 'totp' })?.valid === true;
+    let esValido = false;
+    try {
+      esValido = totpVerify({ token: codigo.replace(/\s/g, ''), secret: usuario.totp_secret, type: 'totp' })?.valid === true;
+    } catch { /* ignorar errores de formato — otplib lanza TokenLengthError */ }
     if (!esValido) {
       return errorResponse(res, 'Código incorrecto. Verifica la hora de tu dispositivo', 400, null, 'TOTP_INVALID');
     }
@@ -1083,8 +1105,11 @@ const validarTotp = async (req, res) => {
 
     const codigoLimpio = codigo.replace(/\s/g, '');
 
-    // Verificar código TOTP
-    const esValido = totpVerify({ token: codigoLimpio, secret: usuario.totp_secret, type: 'totp' })?.valid === true;
+    // Verificar código TOTP (otplib lanza TokenLengthError para tokens != 6 dígitos — tratar como inválido)
+    let esValido = false;
+    try {
+      esValido = totpVerify({ token: codigoLimpio, secret: usuario.totp_secret, type: 'totp' })?.valid === true;
+    } catch { /* token con formato inválido, no es TOTP — intentar backup codes abajo */ }
 
     if (!esValido) {
       // Intentar con códigos de respaldo
@@ -1105,12 +1130,83 @@ const validarTotp = async (req, res) => {
 
     const extra = {};
     if (recordar_dispositivo === true) {
-      extra.trusted_device_token = generarTokenDispositivoConfiable(usuario.id);
+      const jti = crypto.randomBytes(16).toString('hex');
+      extra.trusted_device_token = generarTokenDispositivoConfiable(usuario.id, jti);
+
+      const expira_en = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      const ua = req.headers['user-agent'] || '';
+      const nombre = parsearNombreDispositivo(ua);
+
+      // Limpiar dispositivos expirados y agregar el nuevo
+      const ahora = new Date();
+      const dispositivos = (usuario.dispositivos_confiables || []).filter(d => new Date(d.expira_en) > ahora);
+      dispositivos.push({ jti, nombre, creado_en: new Date().toISOString(), expira_en: expira_en.toISOString() });
+      usuario.dispositivos_confiables = dispositivos;
+      usuario.changed('dispositivos_confiables', true);
+      await usuario.save();
     }
-    return await completarLogin(usuario, req, res, extra);
+    return await completarLogin(usuario, req, res, { extra });
   } catch (error) {
     logger.error('Error en validarTotp:', { message: error.message });
     return serverError(res, 'Error al verificar código 2FA', error);
+  }
+};
+
+// ============================================================================
+// DISPOSITIVOS DE CONFIANZA
+// ============================================================================
+
+/**
+ * GET /auth/dispositivos-confiables
+ * Listar los dispositivos de confianza vigentes del usuario autenticado
+ */
+const listarDispositivosConfiables = async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(req.user.id);
+    if (!usuario) return notFound(res, 'Usuario no encontrado');
+
+    const ahora = new Date();
+    const dispositivos = (usuario.dispositivos_confiables || [])
+      .filter(d => new Date(d.expira_en) > ahora)
+      .map(d => ({
+        jti: d.jti,
+        nombre: d.nombre,
+        creado_en: d.creado_en,
+        expira_en: d.expira_en,
+      }));
+
+    return success(res, dispositivos);
+  } catch (error) {
+    logger.error('Error al listar dispositivos confiables:', { message: error.message });
+    return serverError(res, 'Error al listar dispositivos', error);
+  }
+};
+
+/**
+ * DELETE /auth/dispositivos-confiables/:jti
+ * Revocar un dispositivo de confianza del usuario autenticado
+ */
+const revocarDispositivoConfiable = async (req, res) => {
+  try {
+    const { jti } = req.params;
+    const usuario = await Usuario.findByPk(req.user.id);
+    if (!usuario) return notFound(res, 'Usuario no encontrado');
+
+    const antes = (usuario.dispositivos_confiables || []).length;
+    const dispositivos = (usuario.dispositivos_confiables || []).filter(d => d.jti !== jti);
+
+    if (dispositivos.length === antes) {
+      return notFound(res, 'Dispositivo no encontrado');
+    }
+
+    usuario.dispositivos_confiables = dispositivos;
+    usuario.changed('dispositivos_confiables', true);
+    await usuario.save();
+
+    return success(res, null, 'Dispositivo revocado correctamente');
+  } catch (error) {
+    logger.error('Error al revocar dispositivo confiable:', { message: error.message });
+    return serverError(res, 'Error al revocar dispositivo', error);
   }
 };
 
@@ -1134,5 +1230,7 @@ module.exports = {
   setup2FA,
   activar2FA,
   deshabilitar2FA,
-  validarTotp
+  validarTotp,
+  listarDispositivosConfiables,
+  revocarDispositivoConfiable,
 };

@@ -11,8 +11,9 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Search, RefreshCw, ChevronLeft, ChevronRight, Filter,
   Activity, LogIn, Plus, Pencil, Trash2, Clock,
-  X, ChevronDown
+  X, ChevronDown, FileSpreadsheet, FileText, Loader2,
 } from 'lucide-react';
+import useNotification from '@hooks/useNotification';
 import auditoriaAccionesService from '../../api/auditoriaAcciones.service';
 import PageFooter from '@components/common/PageFooter';
 
@@ -51,6 +52,9 @@ const AuditoriaAcciones = () => {
   const [stats, setStats] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
+  const [exportando, setExportando] = useState(null);
+
+  const { success: notifSuccess, error: notifError } = useNotification();
 
   const fetchRegistros = useCallback(async () => {
     setLoading(true);
@@ -102,6 +106,30 @@ const AuditoriaAcciones = () => {
   };
 
   const hasActiveFilters = search || filtroAccion || filtroTabla || fechaDesde || fechaHasta;
+
+  const buildFiltrosExport = () => {
+    const params = {};
+    if (search) params.search = search;
+    if (filtroAccion) params.accion = filtroAccion;
+    if (filtroTabla) params.tabla = filtroTabla;
+    if (fechaDesde) params.fecha_desde = fechaDesde;
+    if (fechaHasta) params.fecha_hasta = fechaHasta;
+    return params;
+  };
+
+  const handleExportar = async (tipo) => {
+    setExportando(tipo);
+    try {
+      const params = buildFiltrosExport();
+      if (tipo === 'excel') await auditoriaAccionesService.exportarExcel(params);
+      else await auditoriaAccionesService.exportarPDF(params);
+      notifSuccess(`Reporte ${tipo.toUpperCase()} descargado correctamente`);
+    } catch {
+      notifError('Error al generar el reporte');
+    } finally {
+      setExportando(null);
+    }
+  };
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
@@ -209,13 +237,39 @@ const AuditoriaAcciones = () => {
               )}
             </button>
 
-            <button
-              onClick={() => { fetchRegistros(); fetchMeta(); }}
-              aria-label="Actualizar auditoría"
-              className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1 ml-auto">
+              <button
+                onClick={() => handleExportar('excel')}
+                disabled={!!exportando}
+                title="Exportar a Excel"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-50 transition-colors"
+              >
+                {exportando === 'excel'
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <FileSpreadsheet className="w-4 h-4" />}
+                <span className="hidden sm:inline">Excel</span>
+              </button>
+
+              <button
+                onClick={() => handleExportar('pdf')}
+                disabled={!!exportando}
+                title="Exportar a PDF"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
+              >
+                {exportando === 'pdf'
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <FileText className="w-4 h-4" />}
+                <span className="hidden sm:inline">PDF</span>
+              </button>
+
+              <button
+                onClick={() => { fetchRegistros(); fetchMeta(); }}
+                aria-label="Actualizar auditoría"
+                className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Filtros expandibles */}

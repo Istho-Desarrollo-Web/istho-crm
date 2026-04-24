@@ -95,6 +95,7 @@ const PerfilUsuario = lazy(() => import('./pages/Perfil/PerfilUsuario'));
 const Configuracion = lazy(() => import('./pages/Perfil/Configuracion'));
 const ConfiguracionWms = lazy(() => import('./pages/Configuracion/ConfiguracionWms'));
 const Notificaciones = lazy(() => import('./pages/Perfil/Notificaciones'));
+const PreferenciasNotificaciones = lazy(() => import('./pages/Notificaciones/PreferenciasNotificaciones'));
 
 // Administración
 const Administracion = lazy(() => import('./pages/Administracion'));
@@ -359,6 +360,7 @@ function App() {
                 <Route path="/configuracion" element={<PermissionRoute module="perfil" action="ver"><Configuracion /></PermissionRoute>} />
                 <Route path="/configuracion-wms" element={<AdminRoute><ConfiguracionWms /></AdminRoute>} />
                 <Route path="/notificaciones" element={<PermissionRoute module="notificaciones" action="ver"><Notificaciones /></PermissionRoute>} />
+                <Route path="/notificaciones/preferencias" element={<PermissionRoute module="notificaciones" action="ver"><PreferenciasNotificaciones /></PermissionRoute>} />
                 <Route path="/alertas" element={<PermissionRoute module="notificaciones" action="ver"><Notificaciones /></PermissionRoute>} />
               </Route>
 

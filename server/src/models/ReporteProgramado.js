@@ -81,6 +81,18 @@ module.exports = (sequelize) => {
     ultima_ejecucion: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+
+    estado_ultima_ejecucion: {
+      type: DataTypes.ENUM('ejecutando', 'exitoso', 'fallido'),
+      allowNull: true,
+      comment: 'Resultado de la última ejecución'
+    },
+
+    ultimo_error: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'Mensaje del último error al ejecutar'
     }
   }, {
     tableName: 'reportes_programados',

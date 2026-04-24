@@ -1369,15 +1369,24 @@ const FloatingHeader = () => {
                       </div>
 
                       {/* Footer */}
-                      <div className="border-t border-gray-100 dark:border-slate-700 p-2">
+                      <div className="border-t border-gray-100 dark:border-slate-700 p-2 flex gap-1">
                         <button
                           onClick={() => {
                             navigate('/notificaciones');
                             setIsNotifOpen(false);
                           }}
-                          className="w-full text-center text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 py-2 rounded-lg transition-colors font-medium"
+                          className="flex-1 text-center text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 py-2 rounded-lg transition-colors font-medium"
                         >
-                          Ver todas las notificaciones
+                          Ver todas
+                        </button>
+                        <button
+                          onClick={() => {
+                            navigate('/notificaciones/preferencias');
+                            setIsNotifOpen(false);
+                          }}
+                          className="flex-1 text-center text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-centhrix-surface py-2 rounded-lg transition-colors"
+                        >
+                          Preferencias
                         </button>
                       </div>
                     </div>

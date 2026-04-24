@@ -1296,6 +1296,99 @@ const exportarAverias = async (averias, filtros = {}) => {
 // ═══════════════════════════════════════════════════════════════════════════
 // EXPORTS
 // ═══════════════════════════════════════════════════════════════════════════
+// EXPORTAR AUDITORÍA DE ACCIONES
+// ═══════════════════════════════════════════════════════════════════════════
+
+const exportarAuditoriaAcciones = async (registros, filtros = {}) => {
+  try {
+    const wb = crearLibro();
+    const ws = wb.addWorksheet('Auditoría de Acciones', {
+      pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true },
+    });
+
+    const COLS = [
+      { header: 'Fecha y Hora', key: 'fecha', width: 20, align: 'center' },
+      { header: 'Usuario', key: 'usuario', width: 28, align: 'left' },
+      { header: 'Rol', key: 'rol', width: 14, align: 'center' },
+      { header: 'Acción', key: 'accion', width: 12, align: 'center' },
+      { header: 'Módulo / Tabla', key: 'tabla', width: 22, align: 'left' },
+      { header: 'Descripción', key: 'desc', width: 50, align: 'left' },
+      { header: 'IP', key: 'ip', width: 16, align: 'center' },
+    ];
+
+    ws.columns = COLS.map(c => ({ width: c.width }));
+
+    let sub = `Generado el ${fechaHoy()}`;
+    if (filtros.fecha_desde || filtros.fecha_hasta) {
+      const desde = filtros.fecha_desde || '...';
+      const hasta = filtros.fecha_hasta || '...';
+      sub = `Período: ${desde} al ${hasta} | Generado el ${fechaHoy()}`;
+    }
+
+    let fila = agregarEncabezado(ws, 'AUDITORÍA DE ACCIONES', sub, COLS.length, wb);
+
+    const conteos = registros.reduce((acc, r) => {
+      acc[r.accion] = (acc[r.accion] || 0) + 1;
+      return acc;
+    }, {});
+
+    fila = agregarResumen(ws, fila, [
+      { label: 'Total registros:', value: registros.length },
+      { label: 'Crear:', value: conteos.crear || 0 },
+      { label: 'Actualizar:', value: conteos.actualizar || 0 },
+      { label: 'Eliminar:', value: conteos.eliminar || 0 },
+      { label: 'Login:', value: conteos.login || 0 },
+      { label: 'Logout:', value: conteos.logout || 0 },
+    ], COLS.length);
+
+    const filas = registros.map(r => {
+      const fecha = r.created_at || r.createdAt;
+      return [
+        fecha ? new Date(fecha) : null,
+        r.usuario?.nombre_completo || r.usuario_nombre || 'Sistema',
+        r.usuario?.rol || '',
+        (r.accion || '').toUpperCase(),
+        r.tabla || '',
+        r.descripcion || '',
+        r.ip_address || '',
+      ];
+    });
+
+    const dataFila = crearTablaExcel(ws, fila, 'AuditoriaAcciones', COLS, filas);
+
+    const ACCION_COLORES = {
+      crear: C.verde,
+      actualizar: C.azulMedio,
+      eliminar: C.rojo,
+      login: 'FF7B1FA2',
+      logout: C.textoGris,
+    };
+
+    registros.forEach((reg, idx) => {
+      ws.getRow(dataFila + idx).height = 20;
+      filas[idx].forEach((val, ci) => {
+        const cell = ws.getCell(dataFila + idx, ci + 1);
+        estiloCelda(cell, ci, idx, { align: COLS[ci].align, wrap: ci === 5 });
+        if (ci === 0 && val) cell.numFmt = 'DD/MM/YYYY HH:MM';
+        if (ci === 3) {
+          const color = ACCION_COLORES[(reg.accion || '').toLowerCase()];
+          if (color) cell.font = { bold: true, color: { argb: color } };
+        }
+      });
+    });
+
+    ws.views = [{ state: 'frozen', ySplit: fila }];
+
+    const buffer = await wb.xlsx.writeBuffer();
+    logger.info('Excel auditoría generado:', { registros: registros.length });
+    return buffer;
+  } catch (error) {
+    logger.error('Error Excel auditoría:', { message: error.message });
+    throw error;
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 
 module.exports = {
   exportarOperaciones,
@@ -1308,4 +1401,5 @@ module.exports = {
   exportarMovimientos,
   exportarVehiculos,
   exportarAverias,
+  exportarAuditoriaAcciones,
 };

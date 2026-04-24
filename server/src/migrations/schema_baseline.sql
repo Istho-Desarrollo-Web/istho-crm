@@ -616,6 +616,7 @@ CREATE TABLE `usuarios` (
   `totp_secret` varchar(255) DEFAULT NULL COMMENT 'Secreto TOTP base32 para autenticación de dos factores',
   `totp_habilitado` tinyint(1) DEFAULT 0 COMMENT 'Indica si el usuario tiene 2FA activado',
   `totp_backup_codes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Códigos de respaldo para 2FA (array de strings, one-time use)' CHECK (json_valid(`totp_backup_codes`)),
+  `dispositivos_confiables` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Dispositivos de confianza para omitir 2FA. Array de { jti, nombre, creado_en, expira_en }' CHECK (json_valid(`dispositivos_confiables`)),
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),

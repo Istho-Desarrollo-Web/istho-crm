@@ -418,11 +418,11 @@ export const AuthProvider = ({ children }) => {
    * Cerrar sesión
    * Limpia el estado y los tokens almacenados
    */
-  const logout = useCallback(async () => {
+  const logout = useCallback(async (limpiarDispositivo = true) => {
     setState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
-      await authService.logout();
+      await authService.logout(limpiarDispositivo);
     } catch (error) {
       console.warn('⚠️ Error al notificar logout:', error);
     } finally {

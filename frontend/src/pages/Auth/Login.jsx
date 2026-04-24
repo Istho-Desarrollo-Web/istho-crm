@@ -113,6 +113,7 @@ const LoginPage = () => {
     const [pasoSetup2FA, setPasoSetup2FA] = useState(false);
     const [setupData, setSetupData] = useState(null); // { secret, qr_code }
     const [backupCodes, setBackupCodes] = useState([]);
+    const [setup2FACompletado, setSetup2FACompletado] = useState(false);
     const [verificandoSetup, setVerificandoSetup] = useState(false);
     const [errorSetup, setErrorSetup] = useState(null);
 
@@ -208,8 +209,8 @@ const LoginPage = () => {
         try {
             const res = await activar2FA(code);
             if (res.success) {
-                setBackupCodes(res.data.backup_codes || []);
-                // Redirigir será manual después de mostrar códigos
+                setBackupCodes(res.data?.backup_codes || []);
+                setSetup2FACompletado(true);
             } else {
                 setErrorSetup(res.message || 'Código incorrecto');
             }
@@ -779,7 +780,7 @@ const LoginPage = () => {
                                 </div>
                             </div>
 
-                            {backupCodes.length > 0 ? (
+                            {setup2FACompletado ? (
                                 <div className="space-y-6" style={fadeIn}>
                                     <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
                                         <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 mb-2">

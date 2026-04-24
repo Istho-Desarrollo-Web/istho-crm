@@ -29,6 +29,8 @@ export const AUTH_ENDPOINTS = {
   TOTP_SETUP: '/auth/2fa/setup',
   TOTP_ACTIVAR: '/auth/2fa/activar',
   TOTP_DESHABILITAR: '/auth/2fa/deshabilitar',
+  DISPOSITIVOS_CONFIABLES: '/auth/dispositivos-confiables',
+  DISPOSITIVO_REVOCAR: (jti) => `/auth/dispositivos-confiables/${jti}`,
 };
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -279,6 +281,8 @@ export const AUDITORIA_ACCIONES_ENDPOINTS = {
   BASE: '/auditoria-acciones',
   STATS: '/auditoria-acciones/stats',
   TABLAS: '/auditoria-acciones/tablas',
+  EXCEL: '/auditoria-acciones/excel',
+  PDF: '/auditoria-acciones/pdf',
 };
 
 // ════════════════════════════════════════════════════════════════════════════

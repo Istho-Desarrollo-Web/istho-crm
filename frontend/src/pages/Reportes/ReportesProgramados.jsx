@@ -330,6 +330,22 @@ const ReportesProgramados = () => {
                           {fmt.toUpperCase()}
                         </span>
                       ))}
+                      {/* Badge de estado de última ejecución */}
+                      {r.estado_ultima_ejecucion === 'exitoso' && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+                          <CheckCircle className="w-3 h-3" /> Exitoso
+                        </span>
+                      )}
+                      {r.estado_ultima_ejecucion === 'fallido' && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
+                          <XCircle className="w-3 h-3" /> Fallido
+                        </span>
+                      )}
+                      {r.estado_ultima_ejecucion === 'ejecutando' && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Ejecutando
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                       <span className="flex items-center gap-1">
@@ -344,6 +360,12 @@ const ReportesProgramados = () => {
                         <span>Último envío: {formatDateShort(r.ultima_ejecucion)}</span>
                       )}
                     </div>
+                    {/* Mensaje de error de última ejecución */}
+                    {r.estado_ultima_ejecucion === 'fallido' && r.ultimo_error && (
+                      <p className="mt-1 text-xs text-red-500 dark:text-red-400 truncate" title={r.ultimo_error}>
+                        ⚠ {r.ultimo_error}
+                      </p>
+                    )}
                   </div>
 
                   {/* Estado */}

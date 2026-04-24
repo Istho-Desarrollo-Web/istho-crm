@@ -39,7 +39,7 @@ const useIdleTimer = () => {
       }, avisoMs);
 
       timerLogoutRef.current = setTimeout(() => {
-        logout();
+        logout(false); // Preservar dispositivo de confianza al cerrar por inactividad
       }, ms);
     };
 

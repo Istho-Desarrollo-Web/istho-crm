@@ -38,11 +38,13 @@ export default {
           800: '#991B1B',
           900: '#7F1D1D',
         },
-        // Dark mode backgrounds
+        // Dark mode backgrounds + identidad visual
         centhrix: {
           bg: '#0F1023',
           card: '#1A1B3A',
           surface: '#151631',
+          accent: '#E74C3C',
+          hover: '#C0392B',
         },
       },
       fontFamily: {

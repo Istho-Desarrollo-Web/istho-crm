@@ -410,23 +410,4 @@ const db = {
   TokenBlacklist,
 };
 
-/**
- * Sincronizar modelos con la base de datos
- */
-db.syncModels = async (options = {}) => {
-  try {
-    const defaultOptions = {
-      alter: true,
-      force: false
-    };
-
-    await sequelize.sync({ ...defaultOptions, ...options });
-    logger.info('✅ Modelos sincronizados con la base de datos');
-    return true;
-  } catch (error) {
-    logger.error('❌ Error al sincronizar modelos:', { message: error.message });
-    throw error;
-  }
-};
-
 module.exports = db;

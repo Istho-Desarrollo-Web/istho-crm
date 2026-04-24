@@ -9,7 +9,7 @@
  * @date Enero 2026
  */
 
-const { Notificacion } = require('../models');
+const { Notificacion, Usuario } = require('../models');
 
 // ════════════════════════════════════════════════════════════════════════════
 // LISTAR NOTIFICACIONES
@@ -274,6 +274,96 @@ const eliminarTodas = async (req, res) => {
   }
 };
 
+// ════════════════════════════════════════════════════════════════════════════
+// PREFERENCIAS DE NOTIFICACIONES
+// ════════════════════════════════════════════════════════════════════════════
+
+const PREFERENCIAS_NOTIF_DEFAULT = {
+  alertas_despachos: true,
+  alertas_inventario: true,
+  alertas_clientes: true,
+  alertas_viajes: true,
+  alertas_reportes: true,
+  notificaciones_sonido: true,
+};
+
+// Parsea y valida el campo preferencias — resiste double-encoding y spreads corruptos
+const parsearPrefs = (raw) => {
+  if (!raw) return {};
+  let val = raw;
+  // Si es string (TEXT column o double-encode), parsear
+  if (typeof val === 'string') {
+    try { val = JSON.parse(val); } catch { return {}; }
+  }
+  // Si aún es string (triple-encode), parsear de nuevo
+  if (typeof val === 'string') {
+    try { val = JSON.parse(val); } catch { return {}; }
+  }
+  // Rechazar arrays, null, o el objeto-de-caracteres generado por { ...string }
+  if (!val || typeof val !== 'object' || Array.isArray(val)) return {};
+  // Si tiene claves numéricas ("0","1",...) es un spread corrupto de string
+  if ('0' in val) return {};
+  return val;
+};
+
+/**
+ * GET /api/v1/notificaciones/preferencias
+ * Obtener preferencias de notificaciones del usuario autenticado
+ */
+const getPreferencias = async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(req.user.id, { attributes: ['preferencias'] });
+    const prefs = parsearPrefs(usuario?.preferencias);
+
+    const resultado = {};
+    Object.keys(PREFERENCIAS_NOTIF_DEFAULT).forEach(key => {
+      resultado[key] = prefs[key] !== false;
+    });
+
+    res.json({ success: true, data: resultado });
+  } catch (error) {
+    console.error('[Notificaciones] Error al obtener preferencias:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener preferencias', error: error.message });
+  }
+};
+
+/**
+ * PUT /api/v1/notificaciones/preferencias
+ * Actualizar preferencias de notificaciones del usuario autenticado
+ */
+const updatePreferencias = async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(req.user.id, { attributes: ['id', 'preferencias'] });
+    if (!usuario) return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+
+    // Parsear defensivamente para sobrevivir double-encoding o corrupción previa
+    const prefsActuales = parsearPrefs(usuario.preferencias);
+    const nuevasPrefs = { ...prefsActuales };
+
+    Object.keys(PREFERENCIAS_NOTIF_DEFAULT).forEach(key => {
+      if (key in req.body) {
+        nuevasPrefs[key] = req.body[key] === true || req.body[key] === 'true';
+      }
+    });
+
+    // Guardar como JSON string explícito para evitar double-serialization de Sequelize
+    await Usuario.update(
+      { preferencias: nuevasPrefs },
+      { where: { id: req.user.id } }
+    );
+
+    const resultado = {};
+    Object.keys(PREFERENCIAS_NOTIF_DEFAULT).forEach(key => {
+      resultado[key] = nuevasPrefs[key] !== false;
+    });
+
+    res.json({ success: true, data: resultado, message: 'Preferencias actualizadas correctamente' });
+  } catch (error) {
+    console.error('[Notificaciones] Error al actualizar preferencias:', error);
+    res.status(500).json({ success: false, message: 'Error al actualizar preferencias', error: error.message });
+  }
+};
+
 module.exports = {
   listar,
   contarNoLeidas,
@@ -283,4 +373,6 @@ module.exports = {
   eliminarLeidas,
   eliminarTodas,
   crear,
+  getPreferencias,
+  updatePreferencias,
 };

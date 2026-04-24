@@ -185,3 +185,7 @@ body {
   font-family: var(--font-display, 'Rajdhani', 'Segoe UI', system-ui, sans-serif);
   letter-spacing: 0.01em;
 }
+
+/* Variable para toggle apagado — cambia con dark mode */
+:root { --toggle-off: #d1d5db; }
+.dark { --toggle-off: #374151; }

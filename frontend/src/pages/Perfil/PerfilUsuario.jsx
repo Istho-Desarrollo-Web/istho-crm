@@ -36,6 +36,8 @@ import {
   Eye,
   EyeOff,
   AlertTriangle,
+  Laptop,
+  Trash2,
 } from 'lucide-react';
 
 // Components
@@ -374,17 +376,28 @@ const PerfilUsuario = () => {
   const [formLoading, setFormLoading] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
 
-  // Cargar permisos
+  // Dispositivos de confianza (2FA)
+  const [dispositivos, setDispositivos] = useState([]);
+  const [revocando, setRevocando] = useState(null);
+
+  // Cargar permisos y dispositivos de confianza
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const permisosResponse = await usuarioService.getPermisos();
-        if (permisosResponse.success && permisosResponse.data) {
+        const promises = [usuarioService.getPermisos()];
+        if (user?.totp_habilitado) promises.push(authService.listarDispositivosConfiables());
+
+        const [permisosResponse, dispositivosResponse] = await Promise.all(promises);
+
+        if (permisosResponse?.success && permisosResponse.data) {
           setPermisos(permisosResponse.data);
         }
+        if (dispositivosResponse?.success) {
+          setDispositivos(dispositivosResponse.data || []);
+        }
       } catch (err) {
-        console.error('Error cargando permisos:', err);
+        console.error('Error cargando datos de perfil:', err);
       } finally {
         setLoading(false);
       }
@@ -438,6 +451,31 @@ const PerfilUsuario = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleRevocarDispositivo = async (jti) => {
+    setRevocando(jti);
+    try {
+      const res = await authService.revocarDispositivoConfiable(jti);
+      if (res.success) {
+        setDispositivos(prev => prev.filter(d => d.jti !== jti));
+        // Si el dispositivo revocado es el activo en este navegador, limpiar localStorage
+        const tokenActual = localStorage.getItem('istho_trusted_device');
+        if (tokenActual) {
+          try {
+            const payload = JSON.parse(atob(tokenActual.split('.')[1]));
+            if (payload.jti === jti) localStorage.removeItem('istho_trusted_device');
+          } catch { /* token malformado, ignorar */ }
+        }
+        success('Dispositivo de confianza revocado');
+      } else {
+        apiError(res.message || 'Error al revocar dispositivo');
+      }
+    } catch (err) {
+      apiError(err);
+    } finally {
+      setRevocando(null);
+    }
   };
 
   const handleAvatarChange = async (e) => {
@@ -939,6 +977,40 @@ const PerfilUsuario = () => {
                 </Button>
               </div>
             </InfoCard>
+
+            {/* Dispositivos de Confianza (solo si 2FA está activo) */}
+            {user.totp_habilitado && (
+              <InfoCard title="Dispositivos de Confianza" icon={Laptop}>
+                {dispositivos.length === 0 ? (
+                  <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-2">
+                    No hay dispositivos guardados
+                  </p>
+                ) : (
+                  <ul className="space-y-2">
+                    {dispositivos.map(d => (
+                      <li key={d.jti} className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 dark:bg-centhrix-surface/50">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{d.nombre}</p>
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                            {new Date(d.creado_en).toLocaleDateString('es-CO')} · vence {new Date(d.expira_en).toLocaleDateString('es-CO')}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleRevocarDispositivo(d.jti)}
+                          disabled={revocando === d.jti}
+                          title="Revocar acceso"
+                          className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50 flex-shrink-0"
+                        >
+                          {revocando === d.jti
+                            ? <Clock className="w-3.5 h-3.5 animate-spin" />
+                            : <Trash2 className="w-3.5 h-3.5" />}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </InfoCard>
+            )}
 
             {/* Acciones Rápidas */}
             <InfoCard title="Acciones Rápidas" icon={Settings}>

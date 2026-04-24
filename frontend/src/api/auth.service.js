@@ -99,7 +99,7 @@ const authService = {
    * Limpia tokens y notifica al backend
    * @returns {Promise<Object>}
    */
-  logout: async () => {
+  logout: async (limpiarDispositivo = true) => {
     try {
       // Notificar al backend (registra en auditoría)
       await apiClient.post(AUTH_ENDPOINTS.LOGOUT);
@@ -110,7 +110,11 @@ const authService = {
     // Limpiar tokens y datos locales siempre (éxito o error)
     clearAuthToken();
     localStorage.removeItem(USER_KEY);
-    localStorage.removeItem('istho_trusted_device');
+    // Solo limpiar el token de dispositivo de confianza en logout explícito,
+    // no en cierre por inactividad (para no pedir 2FA innecesariamente)
+    if (limpiarDispositivo) {
+      localStorage.removeItem('istho_trusted_device');
+    }
     return {
       success: true,
       message: 'Sesión cerrada correctamente',
@@ -404,6 +408,26 @@ const authService = {
     try {
       const response = await apiClient.post(AUTH_ENDPOINTS.TOTP_DESHABILITAR, { password });
       return response;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // DISPOSITIVOS DE CONFIANZA
+  // ──────────────────────────────────────────────────────────────────────────
+
+  listarDispositivosConfiables: async () => {
+    try {
+      return await apiClient.get(AUTH_ENDPOINTS.DISPOSITIVOS_CONFIABLES);
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  },
+
+  revocarDispositivoConfiable: async (jti) => {
+    try {
+      return await apiClient.delete(AUTH_ENDPOINTS.DISPOSITIVO_REVOCAR(jti));
     } catch (error) {
       return { success: false, message: error.message };
     }

@@ -181,6 +181,35 @@ const notificacionesService = {
       throw error;
     }
   },
+
+  /**
+   * Obtener preferencias de notificaciones del usuario autenticado
+   * @returns {Promise<Object>} preferencias
+   */
+  async getPreferencias() {
+    try {
+      const response = await client.get(`${BASE_URL}/preferencias`);
+      return response?.data || response;
+    } catch (error) {
+      console.error('[notificacionesService] Error en getPreferencias:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Actualizar preferencias de notificaciones del usuario autenticado
+   * @param {Object} preferencias
+   * @returns {Promise<Object>}
+   */
+  async updatePreferencias(preferencias) {
+    try {
+      const response = await client.put(`${BASE_URL}/preferencias`, preferencias);
+      return response?.data || response;
+    } catch (error) {
+      console.error('[notificacionesService] Error en updatePreferencias:', error);
+      throw error;
+    }
+  },
 };
 
 export default notificacionesService;

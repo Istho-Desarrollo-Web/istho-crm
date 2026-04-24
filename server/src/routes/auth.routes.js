@@ -127,4 +127,8 @@ router.post('/2fa/setup', verificarToken, authController.setup2FA);
 router.post('/2fa/activar', verificarToken, authController.activar2FA);
 router.post('/2fa/deshabilitar', verificarToken, authController.deshabilitar2FA);
 
+// Dispositivos de confianza
+router.get('/dispositivos-confiables', verificarToken, authController.listarDispositivosConfiables);
+router.delete('/dispositivos-confiables/:jti', verificarToken, authController.revocarDispositivoConfiable);
+
 module.exports = router;

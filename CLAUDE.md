@@ -35,7 +35,9 @@ Flujo: Routes → `verifyToken → cargarCachePermisos → requierePermiso` → 
 
 ## Base de Datos
 - `underscored: true` → columna `created_at` = propiedad JS `createdAt`
-- `sequelize.sync({ alter: true })` en todos los entornos. En Railway: `DB_SYNC_ALTER=true` temporalmente, luego quitar
+- **Migraciones con Umzug** — NO usar `sync({ alter: true })`. Umzug corre `src/migrations/*.js` automáticamente en cada startup.
+- Al agregar columnas a un modelo: crear migración con `npm run migration:create -- <nombre>`, luego reiniciar el servidor.
+- Scripts: `migration:create` · `migration:status` · `migration:up` · `migration:undo`
 - Fechas: `DATEONLY` en Sequelize, parsear con `new Date(date+'T00:00:00')` en frontend
 - Precios: enteros en BD, `Intl.NumberFormat('es-CO')` en frontend
 

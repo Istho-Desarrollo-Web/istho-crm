@@ -839,6 +839,69 @@ const generarPDFInventarioUbicacion = async (cajas, filtros = {}) => {
   });
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// AUDITORÍA DE ACCIONES
+// ═══════════════════════════════════════════════════════════════════════════
+
+const generarPDFAuditoriaAcciones = async (registros, filtros = {}) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const chunks = [];
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      let subtitulo = 'Registro de actividad del sistema';
+      if (filtros.fecha_desde || filtros.fecha_hasta) {
+        subtitulo = `Período: ${filtros.fecha_desde || '...'} al ${filtros.fecha_hasta || '...'}`;
+      }
+      agregarEncabezado(doc, 'AUDITORÍA DE ACCIONES', subtitulo);
+
+      const conteos = registros.reduce((acc, r) => {
+        acc[r.accion] = (acc[r.accion] || 0) + 1;
+        return acc;
+      }, {});
+
+      agregarKpis(doc, [
+        { label: 'Total Registros', valor: registros.length,       subtexto: 'acciones',   color: COLORES.acento },
+        { label: 'Crear',          valor: conteos.crear || 0,      subtexto: 'inserciones', color: COLORES.verde  },
+        { label: 'Actualizar',     valor: conteos.actualizar || 0, subtexto: 'ediciones',  color: COLORES.azul   },
+        { label: 'Eliminar',       valor: conteos.eliminar || 0,   subtexto: 'bajas',      color: COLORES.acento },
+      ]);
+
+      const headers = ['Fecha', 'Usuario', 'Rol', 'Acción', 'Módulo', 'Descripción', 'IP'];
+      const rows = registros.map(r => {
+        const fecha = r.created_at || r.createdAt;
+        return [
+          fecha ? new Date(fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : '',
+          (r.usuario?.nombre_completo || r.usuario_nombre || 'Sistema').substring(0, 22),
+          r.usuario?.rol || '',
+          (r.accion || '').toUpperCase(),
+          r.tabla || '',
+          (r.descripcion || '').substring(0, 50),
+          r.ip_address || '',
+        ];
+      });
+
+      const finalPage = generarTabla(doc, headers, rows, {
+        anchoColumnas: [90, 115, 60, 60, 80, 215, 80],
+        alineacion:    ['center', 'left', 'center', 'center', 'left', 'left', 'center'],
+        etiquetaSeccion: 'Detalle de Acciones',
+        titulosContinuacion: 'AUDITORÍA DE ACCIONES',
+        paginaInicial: 1,
+      });
+
+      agregarPiePagina(doc, finalPage);
+      doc.end();
+
+      logger.info('PDF auditoría generado:', { registros: registros.length });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 module.exports = {
   generarPDFOperaciones,
   generarPDFInventario,
@@ -849,4 +912,5 @@ module.exports = {
   generarPDFVehiculos,
   generarPDFCajasMenores,
   generarPDFGastos,
+  generarPDFAuditoriaAcciones,
 };

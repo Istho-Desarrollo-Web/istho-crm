@@ -73,6 +73,18 @@ router.delete('/:id', notificacionesController.eliminar);
  */
 router.post('/', notificacionesController.crear);
 
+/**
+ * GET /api/v1/notificaciones/preferencias
+ * Obtener preferencias de notificaciones del usuario
+ */
+router.get('/preferencias', notificacionesController.getPreferencias);
+
+/**
+ * PUT /api/v1/notificaciones/preferencias
+ * Actualizar preferencias de notificaciones del usuario
+ */
+router.put('/preferencias', notificacionesController.updatePreferencias);
+
 // ════════════════════════════════════════════════════════════════════════════
 // EXPORTAR
 // ════════════════════════════════════════════════════════════════════════════

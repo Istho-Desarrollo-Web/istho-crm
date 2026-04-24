@@ -1136,7 +1136,7 @@ const crearProgramado = async (req, res) => {
 
     // Notificar admins
     notificacionService.notificarAdmins({
-      tipo: 'sistema',
+      tipo: 'reporte',
       titulo: `Nuevo reporte programado: ${nombre}`,
       mensaje: `Se creó el reporte "${nombre}" (${tipo_reporte}) programado: ${frecuencia_label || cron_expresion}.`,
       prioridad: 'baja',

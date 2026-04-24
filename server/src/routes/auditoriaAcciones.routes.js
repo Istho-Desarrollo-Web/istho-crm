@@ -13,6 +13,7 @@ const router = express.Router();
 const auditoriaController = require('../controllers/auditoriaController');
 const { verificarToken } = require('../middleware/auth');
 const { requiereRol } = require('../middleware/roles');
+const { limiterExport } = require('../middleware/rateLimiter');
 
 router.use(verificarToken);
 router.use(requiereRol('admin'));
@@ -20,5 +21,7 @@ router.use(requiereRol('admin'));
 router.get('/', auditoriaController.listar);
 router.get('/stats', auditoriaController.stats);
 router.get('/tablas', auditoriaController.tablas);
+router.get('/excel', limiterExport, auditoriaController.exportarExcel);
+router.get('/pdf', limiterExport, auditoriaController.exportarPDF);
 
 module.exports = router;
