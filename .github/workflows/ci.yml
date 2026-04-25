@@ -11,6 +11,10 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Opt-in a Node.js 24 para el runtime interno de las GitHub Actions
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ──────────────────────────────────────────────────────────────────
   # JOB 1: Lint (server + frontend) — sin DB, rápido
