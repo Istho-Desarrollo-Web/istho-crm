@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancela runs anteriores del mismo PR para ahorrar minutos
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────
+  # JOB 1: Lint (server + frontend) — sin DB, rápido
+  # ──────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            frontend/package-lock.json
+
+      - name: Instalar dependencias (server)
+        run: cd server && npm ci
+
+      - name: Lint server
+        run: cd server && npm run lint
+
+      - name: Instalar dependencias (frontend)
+        run: cd frontend && npm ci
+
+      - name: Lint frontend
+        run: cd frontend && npm run lint
+
+  # ──────────────────────────────────────────────────────────────────
+  # JOB 2: Tests de integración (server + MySQL real)
+  # ──────────────────────────────────────────────────────────────────
+  test:
+    name: Tests (server)
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_ci
+          MYSQL_DATABASE: istho_test
+          MYSQL_USER: istho_ci
+          MYSQL_PASSWORD: istho_ci_pass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -uroot -proot_ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      NODE_ENV: test
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_NAME: istho_test
+      DB_USER: istho_ci
+      DB_PASS: istho_ci_pass
+      JWT_SECRET: ci-test-secret-key-minimo-32-caracteres!!
+      JWT_EXPIRES_IN: 24h
+      JWT_REFRESH_EXPIRES_IN: 7d
+      SEED_PASSWORD_ADMIN: Admin2026*
+      WMS_API_KEY: ci-wms-key-test
+      API_PREFIX: /api/v1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Instalar dependencias (server)
+        run: cd server && npm ci
+
+      - name: Ejecutar tests
+        run: cd server && npm test
+
+  # ──────────────────────────────────────────────────────────────────
+  # JOB 3: Build del frontend — detecta errores de compilación
+  # ──────────────────────────────────────────────────────────────────
+  build:
+    name: Build (frontend)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias (frontend)
+        run: cd frontend && npm ci
+
+      - name: Build de producción
+        run: cd frontend && npm run build
