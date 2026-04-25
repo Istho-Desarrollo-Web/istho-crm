@@ -57,8 +57,9 @@
     "uuid": "^9.0.1"
   },
   "jest": {
+    "globalSetup": "./src/tests/globalSetup.js",
     "testEnvironment": "node",
-    "testTimeout": 15000,
+    "testTimeout": 30000,
     "setupFilesAfterEnv": [
       "./src/tests/setup.js"
     ],

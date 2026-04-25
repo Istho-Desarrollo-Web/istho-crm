@@ -1,10 +1,12 @@
+'use strict';
+
 /**
- * Setup global de Jest — prepara la app para tests de integración.
- * Registra el health check y los error handlers que normalmente
- * se agregan en server.js después de que DB está lista.
+ * setupFilesAfterEnv — corre en cada worker de test, antes de cada suite.
+ * Registra rutas auxiliares y cierra la conexión al terminar.
  */
 
 const app = require('../../src/app');
+const { sequelize } = require('../../src/models');
 
 // Health check mínimo para tests
 app.get('/health', (req, res) => {
@@ -13,3 +15,8 @@ app.get('/health', (req, res) => {
 
 // Registrar error handlers (404, Sequelize, etc.)
 app.registerErrorHandlers();
+
+// Cerrar pool de conexiones al finalizar para que Jest pueda salir limpio
+afterAll(async () => {
+  await sequelize.close();
+});
