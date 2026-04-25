@@ -8,7 +8,6 @@
  */
 
 const { sequelize } = require('../config/database');
-const logger = require('../utils/logger');
 
 // Importar definiciones de modelos
 const UsuarioModel = require('./Usuario');

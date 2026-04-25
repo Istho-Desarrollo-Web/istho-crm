@@ -8,9 +8,8 @@
  */
 
 const { Op } = require('sequelize');
-const bcrypt = require('bcryptjs');
 const { Usuario, Rol, Permiso, RolPermiso, Cliente, Auditoria, TokenBlacklist, sequelize } = require('../models');
-const { success, successMessage, created, serverError, notFound, badRequest, forbidden } = require('../utils/responses');
+const { success, successMessage, created, serverError, notFound, badRequest } = require('../utils/responses');
 const { invalidarCachePermisos } = require('../middleware/auth');
 const logger = require('../utils/logger');
 const socketService = require('../services/socketService');
@@ -327,7 +326,6 @@ const reenviarCredenciales = async (req, res) => {
     if (!usuario) return notFound(res, 'Usuario no encontrado');
 
     // Generar contraseña temporal
-    const crypto = require('crypto');
     const caracteres = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
     let passwordTemporal = '';
     for (let i = 0; i < 12; i++) {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Bell, BellOff, ArrowLeft, Volume2, VolumeX,
+  Bell, ArrowLeft, Volume2, VolumeX,
   Truck, Package, Users, Car, FileText, AlertTriangle, Save, Loader2
 } from 'lucide-react';
 import notificacionesService from '@api/notificacionesService';

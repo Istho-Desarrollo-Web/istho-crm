@@ -13,7 +13,7 @@ const path = require('path');
 require('dotenv').config();
 
 const logger = require('./utils/logger');
-const { error: errorResponse, notFound } = require('./utils/responses');
+const { notFound } = require('./utils/responses');
 const {
   handleSequelizeError,
   handleValidationError,
@@ -145,7 +145,7 @@ app.use(process.env.API_PREFIX || '/api/v1', routes);
  */
 app.registerErrorHandlers = () => {
   // Ruta no encontrada (404)
-  app.use((req, res, next) => {
+  app.use((req, res, _next) => {
     logger.warn(`Ruta no encontrada: ${req.method} ${req.originalUrl}`);
     return notFound(res, `Ruta no encontrada: ${req.method} ${req.originalUrl}`);
   });

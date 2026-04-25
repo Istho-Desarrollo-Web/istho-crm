@@ -12,7 +12,6 @@
 const { Usuario, Cliente, Auditoria } = require('../models');
 const { success, created, badRequest, notFound, serverError } = require('../utils/responses');
 const logger = require('../utils/logger');
-const crypto = require('crypto');
 const { Op } = require('sequelize');
 const { getClientIP } = require('../utils/helpers');
 const notificacionService = require('../services/notificacionService');
@@ -42,7 +41,7 @@ const generarPasswordTemporal = (longitud = 12) => {
 /**
  * Generar username único basado en email
  */
-const generarUsername = async (email, clienteId) => {
+const generarUsername = async (email, _clienteId) => {
   // Tomar la parte antes del @
   const base = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
   let username = base;
@@ -109,7 +108,7 @@ const listar = async (req, res) => {
     const offset = (parseInt(page) - 1) * parseInt(limit);
     
     // Consultar
-    const { count, rows: usuarios } = await Usuario.findAndCountAll({
+    const { rows: usuarios } = await Usuario.findAndCountAll({
       where,
       attributes: [
         'id', 'username', 'email', 'nombre', 'apellido', 'nombre_completo',

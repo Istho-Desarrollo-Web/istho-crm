@@ -733,7 +733,7 @@ const syncKardex = async (data) => {
       }
 
       // Crear detalle de operación (documento_asociado = motivo del kardex)
-      const detalle = await OperacionDetalle.create({
+      await OperacionDetalle.create({
         operacion_id: operacion.id,
         sku,
         producto: descripcionProducto,

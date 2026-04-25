@@ -9,7 +9,7 @@
  * @date Enero 2026
  */
 
-const { DataTypes, Model, Op } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 
 module.exports = (sequelize) => {
   class Notificacion extends Model {

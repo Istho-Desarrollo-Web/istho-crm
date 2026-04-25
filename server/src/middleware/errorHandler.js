@@ -72,7 +72,7 @@ const handleValidationError = (err, req, res, next) => {
 /**
  * Middleware final para errores no manejados
  */
-const handleGenericError = (err, req, res, next) => {
+const handleGenericError = (err, req, res, _next) => {
   logger.error('Error no manejado:', {
     message: err.message,
     stack: err.stack,

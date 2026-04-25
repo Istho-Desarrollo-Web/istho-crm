@@ -20,7 +20,6 @@ const {
   Usuario,
   Auditoria,
   OperacionDocumento,
-  CajaInventario,
   sequelize
 } = require('../models');
 const {

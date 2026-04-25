@@ -18,7 +18,7 @@ const usuarioClienteController = require('../controllers/usuarioClienteControlle
 // ✅ CORREGIDO: Importar con nombres correctos
 const { verificarToken, checkRole } = require('../middleware/auth');
 
-const { body, param, query, validationResult } = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 
 // ════════════════════════════════════════════════════════════════════════════
 // MIDDLEWARE DE VALIDACIÓN

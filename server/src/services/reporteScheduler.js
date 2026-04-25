@@ -8,10 +8,9 @@
  */
 
 const cron = require('node-cron');
-const { Op } = require('sequelize');
 const logger = require('../utils/logger');
 
-let scheduledJobs = {};
+const scheduledJobs = {};
 
 /**
  * Inicializar trabajos programados desde la BD

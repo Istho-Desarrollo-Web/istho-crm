@@ -48,7 +48,7 @@ module.exports = (sequelize) => {
         ubicacion_destino = null,
         costo_unitario = null,
         ip_address = null,
-        user_agent = null
+        _user_agent = null
       } = data;
 
       // Validar campos requeridos

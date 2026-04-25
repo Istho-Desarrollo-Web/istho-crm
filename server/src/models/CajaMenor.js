@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-const { DataTypes, Op } = require('sequelize');
+const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
   const CajaMenor = sequelize.define('CajaMenor', {

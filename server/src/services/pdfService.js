@@ -307,7 +307,7 @@ const generarTabla = (doc, headers, rows, opciones = {}) => {
 /**
  * Generar PDF de operaciones
  */
-const generarPDFOperaciones = async (operaciones, filtros = {}) => {
+const generarPDFOperaciones = async (operaciones, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
@@ -361,7 +361,7 @@ const generarPDFOperaciones = async (operaciones, filtros = {}) => {
 /**
  * Generar PDF de inventario
  */
-const generarPDFInventario = async (inventario, filtros = {}) => {
+const generarPDFInventario = async (inventario, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
@@ -412,7 +412,7 @@ const generarPDFInventario = async (inventario, filtros = {}) => {
 /**
  * Generar PDF de clientes
  */
-const generarPDFClientes = async (clientes, filtros = {}) => {
+const generarPDFClientes = async (clientes, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
@@ -560,7 +560,7 @@ const generarPDFDetalleOperacion = async (operacion) => {
 /**
  * Generar PDF de viajes
  */
-const generarPDFViajes = async (viajes, filtros = {}) => {
+const generarPDFViajes = async (viajes, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
@@ -615,7 +615,7 @@ const generarPDFViajes = async (viajes, filtros = {}) => {
 /**
  * Generar PDF de vehículos
  */
-const generarPDFVehiculos = async (vehiculos, filtros = {}) => {
+const generarPDFVehiculos = async (vehiculos, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
@@ -670,7 +670,7 @@ const generarPDFVehiculos = async (vehiculos, filtros = {}) => {
 /**
  * Generar PDF de cajas menores
  */
-const generarPDFCajasMenores = async (cajas, filtros = {}) => {
+const generarPDFCajasMenores = async (cajas, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
@@ -724,7 +724,7 @@ const generarPDFCajasMenores = async (cajas, filtros = {}) => {
 /**
  * Generar PDF de gastos (movimientos de caja menor)
  */
-const generarPDFGastos = async (movimientos, filtros = {}) => {
+const generarPDFGastos = async (movimientos, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
@@ -780,7 +780,7 @@ const generarPDFGastos = async (movimientos, filtros = {}) => {
 // INVENTARIO POR UBICACIÓN
 // ═══════════════════════════════════════════════════════════════════════════
 
-const generarPDFInventarioUbicacion = async (cajas, filtros = {}) => {
+const generarPDFInventarioUbicacion = async (cajas, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });

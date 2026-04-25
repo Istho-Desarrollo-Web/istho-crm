@@ -9,7 +9,7 @@
  */
 
 const { Op } = require('sequelize');
-const { WmsSyncLog, Operacion, sequelize } = require('../models');
+const { WmsSyncLog, sequelize } = require('../models');
 const wmsSyncService = require('../services/wmsSyncService');
 const { success, paginated, serverError } = require('../utils/responses');
 const { parsePaginacion, buildPaginacion } = require('../utils/helpers');

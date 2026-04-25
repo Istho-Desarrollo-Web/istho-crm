@@ -257,7 +257,6 @@ const listarConductores = async (req, res) => {
  */
 const alertasVencimiento = async (req, res) => {
   try {
-    const hoy = new Date();
     const en30dias = new Date();
     en30dias.setDate(en30dias.getDate() + 30);
 

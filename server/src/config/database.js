@@ -11,8 +11,6 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-const isProduction = process.env.NODE_ENV === 'production';
-
 // Opciones comunes de Sequelize
 const commonOptions = {
   dialect: 'mysql',

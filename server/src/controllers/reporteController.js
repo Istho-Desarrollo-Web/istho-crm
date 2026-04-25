@@ -845,7 +845,7 @@ const getComparativo = async (req, res) => {
       const fin = new Date(hoy.getFullYear(), hoy.getMonth() - i + 1, 0, 23, 59, 59);
       const mesLabel = inicio.toLocaleDateString('es-CO', { month: 'short', year: 'numeric' });
 
-      const [entradas, salidas, kardex, productosNuevos, valorInventario] = await Promise.all([
+      const [entradas, salidas, kardex, productosNuevos, _valorInventario] = await Promise.all([
         Operacion.count({ where: { ...clienteFilter, tipo: 'ingreso', created_at: { [Op.between]: [inicio, fin] } } }),
         Operacion.count({ where: { ...clienteFilter, tipo: 'salida', created_at: { [Op.between]: [inicio, fin] } } }),
         Operacion.count({ where: { ...clienteFilter, tipo: 'kardex', created_at: { [Op.between]: [inicio, fin] } } }),

@@ -98,7 +98,7 @@ const listar = async (req, res) => {
 
     // Batch: contar productos en una sola query para todos los clientes de esta página
     const clienteIds = rows.map(c => c.id);
-    let conteoPorCliente = {};
+    const conteoPorCliente = {};
     if (clienteIds.length > 0) {
       const conteos = await sequelize.query(
         `SELECT cliente_id, COUNT(*) AS total FROM inventario WHERE cliente_id IN (:ids) GROUP BY cliente_id`,
