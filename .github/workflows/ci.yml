@@ -71,7 +71,7 @@ jobs:
       DB_PORT: 3306
       DB_NAME: istho_test
       DB_USER: istho_ci
-      DB_PASS: istho_ci_pass
+      DB_PASSWORD: istho_ci_pass
       JWT_SECRET: ci-test-secret-key-minimo-32-caracteres!!
       JWT_EXPIRES_IN: 24h
       JWT_REFRESH_EXPIRES_IN: 7d
