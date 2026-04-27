@@ -1441,17 +1441,20 @@ const importarProductos = async (req, res) => {
       return errorResponse(res, 'Debe adjuntar un archivo Excel (.xlsx)', 400);
     }
 
-    const ExcelJS = require('exceljs');
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(req.file.buffer);
-    const sheet = workbook.worksheets[0];
+    // SheetJS (xlsx) — más robusto que ExcelJS para archivos con filtros avanzados de Excel
+    const XLSX = require('xlsx');
+    const wb = XLSX.read(req.file.buffer, { type: 'buffer', cellDates: true });
+    const rawRows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
+      header: 1,
+      defval: null,
+    });
 
-    if (!sheet || sheet.rowCount < 2) {
+    if (rawRows.length < 2) {
       await transaction.rollback();
       return errorResponse(res, 'El archivo está vacío o no contiene datos', 400);
     }
 
-    const totalFilas = sheet.rowCount - 1; // sin encabezado
+    const totalFilas = rawRows.length - 1;
     if (totalFilas > 10000) {
       await transaction.rollback();
       return errorResponse(
@@ -1461,10 +1464,9 @@ const importarProductos = async (req, res) => {
       );
     }
 
-    // Normalizar encabezados (fila 1)
-    const headers = [];
-    sheet.getRow(1).eachCell((cell, colNumber) => {
-      headers[colNumber] = String(cell.value || '')
+    // Normalizar encabezados (fila 0)
+    const headers = (rawRows[0] || []).map((h) =>
+      String(h ?? '')
         .toLowerCase()
         .trim()
         .replace(/\s+/g, '_')
@@ -1473,35 +1475,19 @@ const importarProductos = async (req, res) => {
         .replace(/í/g, 'i')
         .replace(/ó/g, 'o')
         .replace(/ú/g, 'u')
-        .replace(/ñ/g, 'n');
-    });
+        .replace(/ñ/g, 'n')
+    );
 
-    // ExcelJS puede retornar objetos para rich text, fórmulas e hipervínculos
     const leerCelda = (valor) => {
       if (valor === null || valor === undefined) return null;
-      if (typeof valor === 'object') {
-        // Fórmula: { formula, result }
-        if ('result' in valor) return leerCelda(valor.result);
-        // Rich text: { richText: [{text:'...'}, ...] }
-        if (Array.isArray(valor.richText)) return valor.richText.map((r) => r.text || '').join('');
-        // Hipervínculo: { text, hyperlink }
-        if ('text' in valor) return valor.text;
-        // Fecha de ExcelJS (instancia Date)
-        if (valor instanceof Date) return valor;
-      }
       return valor;
     };
 
     // Pre-cargar todos los NITs únicos para evitar N+1 queries
     const nitsUnicos = new Set();
-    for (let rowNum = 2; rowNum <= sheet.rowCount; rowNum++) {
-      const row = sheet.getRow(rowNum);
-      let nit = null;
-      row.eachCell((cell, colNumber) => {
-        if (headers[colNumber] === 'nit_cliente') {
-          nit = String(leerCelda(cell.value) ?? '').trim();
-        }
-      });
+    const nitIdx = headers.indexOf('nit_cliente');
+    for (let i = 1; i < rawRows.length; i++) {
+      const nit = String(rawRows[i][nitIdx] ?? '').trim();
       if (nit) nitsUnicos.add(nit);
     }
 
@@ -1538,12 +1524,11 @@ const importarProductos = async (req, res) => {
       });
     };
 
-    for (let rowNum = 2; rowNum <= sheet.rowCount; rowNum++) {
-      const row = sheet.getRow(rowNum);
+    for (let i = 1; i < rawRows.length; i++) {
+      const rowNum = i + 1; // número de fila para mensajes de error (encabezado = fila 1)
       const datos = {};
-      row.eachCell((cell, colNumber) => {
-        const header = headers[colNumber];
-        if (header) datos[header] = leerCelda(cell.value);
+      headers.forEach((header, colIdx) => {
+        if (header) datos[header] = leerCelda(rawRows[i][colIdx]);
       });
 
       const nitCliente = String(datos.nit_cliente ?? '').trim();

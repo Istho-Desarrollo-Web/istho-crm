@@ -285,19 +285,13 @@ const ClientesList = () => {
     try {
       const readXlsxFile = (await import('read-excel-file/browser')).default;
       const rawRows = await readXlsxFile(file);
-      if (rawRows.length < 2) {
-        notifyError('El archivo no contiene datos');
-        return;
+      if (rawRows.length >= 2) {
+        const [headers, ...dataRows] = rawRows;
+        const rows = dataRows.map((row) =>
+          Object.fromEntries(headers.map((h, i) => [String(h ?? ''), row[i] ?? '']))
+        );
+        if (rows.length > 0) setImportPreview(rows.slice(0, 20));
       }
-      const [headers, ...dataRows] = rawRows;
-      const rows = dataRows.map((row) =>
-        Object.fromEntries(headers.map((h, i) => [String(h ?? ''), row[i] ?? '']))
-      );
-      if (rows.length === 0) {
-        notifyError('El archivo no contiene datos');
-        return;
-      }
-      setImportPreview(rows.slice(0, 20));
     } catch (_err) {
       // El servidor validará si falla el parse local
     }
