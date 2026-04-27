@@ -82,7 +82,9 @@ const Button = ({
       onClick={onClick}
       disabled={disabled || loading}
       title={title}
-      aria-label={ariaLabel ?? title}
+      aria-label={loading ? 'Cargando, por favor espere' : (ariaLabel ?? title)}
+      aria-busy={loading || undefined}
+      aria-live="polite"
       className={`
         ${baseClasses}
         ${variantClasses[variant]}
@@ -98,6 +100,7 @@ const Button = ({
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <circle
               className="opacity-25"

@@ -9,6 +9,7 @@ import PropTypes from 'prop-types';
 const Input = forwardRef(({
     label,
     error,
+    hint,
     icon: Icon,
     className = '',
     containerClassName = '',
@@ -20,16 +21,24 @@ const Input = forwardRef(({
     const generatedId = useId();
     const id = externalId ?? generatedId;
     const errorId = `${id}-error`;
+    const hintId = `${id}-hint`;
 
     return (
         <div className={`w-full ${containerClassName}`}>
             {label && (
                 <label
                     htmlFor={id}
-                    className="block text-sm font-medium text-slate-700 mb-1"
+                    className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1"
                 >
                     {label}
+                    {props.required && <span aria-hidden="true" className="text-red-500 ml-0.5">*</span>}
                 </label>
+            )}
+
+            {hint && (
+                <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5 mb-1" id={hintId}>
+                    {hint}
+                </p>
             )}
 
             <div className="relative">
@@ -46,7 +55,11 @@ const Input = forwardRef(({
                     type={type}
                     disabled={disabled}
                     aria-invalid={error ? 'true' : undefined}
-                    aria-describedby={error ? errorId : undefined}
+                    aria-describedby={
+                        [hint && hintId, error && errorId]
+                            .filter(Boolean)
+                            .join(' ') || undefined
+                    }
                     className={`
             w-full py-2.5 border rounded-xl text-sm transition-colors
             focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
@@ -81,6 +94,7 @@ Input.displayName = 'Input';
 Input.propTypes = {
     label: PropTypes.string,
     error: PropTypes.string,
+    hint: PropTypes.string,
     icon: PropTypes.elementType,
     className: PropTypes.string,
     containerClassName: PropTypes.string,

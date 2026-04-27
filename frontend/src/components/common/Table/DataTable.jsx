@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ISTHO CRM - DataTable Component
  * Tabla de datos con tabs reutilizable
  *
@@ -10,23 +10,24 @@
  * @date Enero 2026
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import StatusChip from '../StatusChip/StatusChip';
 
 // ======================================================
 // TABLA SIMPLE (SIN TABS)
 // ======================================================
-const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage }) => {
+const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage, ariaLabel }) => {
   // Skeleton loading
   if (loading) {
     return (
       <div className="overflow-x-auto">
-        <table className="w-full" aria-busy="true" aria-label="Cargando datos">
+        <table className="w-full" aria-busy="true" aria-label={ariaLabel || "Cargando datos"}>
           <thead>
             <tr className="border-b border-gray-100 dark:border-slate-700">
               {columns.map((col, idx) => (
                 <th
+                  scope="col"
                   key={idx}
                   className="py-3 px-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
                 >
@@ -65,11 +66,12 @@ const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage }) => {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full">
+      <table className="w-full" aria-label={ariaLabel}>
         <thead>
           <tr className="border-b border-gray-100 dark:border-slate-700">
             {columns.map((col, idx) => (
               <th
+                scope="col"
                 key={idx}
                 className={`
                   py-3 px-4 text-xs font-semibold uppercase tracking-wider
@@ -89,6 +91,13 @@ const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage }) => {
             <tr
               key={row.id || rowIdx}
               onClick={() => onRowClick?.(row)}
+              onKeyDown={onRowClick ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onRowClick(row);
+                }
+              } : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
               className={`
                 border-b border-gray-50 dark:border-slate-700
                 hover:bg-slate-50 dark:hover:bg-centhrix-surface
@@ -109,6 +118,16 @@ const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage }) => {
                   {renderCell(row, col)}
                 </td>
               ))}
+              {onRowClick && (
+                <td className="sr-only">
+                  <button
+                    tabIndex={-1}
+                    onClick={(e) => { e.stopPropagation(); onRowClick(row); }}
+                  >
+                    Ver detalles
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -164,8 +183,10 @@ const DataTable = ({
   onRowClick,
   loading = false,
   emptyMessage,
+  ariaLabel,
 }) => {
   const [activeTab, setActiveTab] = useState(defaultTab || tabs?.[0]?.id);
+  const tabRefs = useRef({});
 
   // Sin tabs → tabla simple
   if (!tabs || tabs.length === 0) {
@@ -182,6 +203,7 @@ const DataTable = ({
           onRowClick={onRowClick}
           loading={loading}
           emptyMessage={emptyMessage}
+          ariaLabel={ariaLabel}
         />
       </div>
     );
@@ -190,6 +212,7 @@ const DataTable = ({
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
     onTabChange?.(tabId);
+    tabRefs.current[tabId]?.focus();
   };
 
   const currentColumns = columns[activeTab] || columns;
@@ -203,42 +226,60 @@ const DataTable = ({
       overflow-hidden
     ">
       {/* Tabs */}
-      <div className="border-b border-gray-100 dark:border-slate-700">
-        <nav className="flex">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`
-                px-6 py-4 text-sm font-medium transition-colors relative
-                ${activeTab === tab.id
-                  ? 'text-slate-900 dark:text-slate-100'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                }
-              `}
-            >
-              {tab.label}
-              {tab.count !== undefined && (
-                <span className="ml-2 text-xs bg-slate-100 dark:bg-centhrix-surface px-2 py-0.5 rounded-full">
-                  {tab.count}
-                </span>
-              )}
-              {activeTab === tab.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500" />
-              )}
-            </button>
-          ))}
-        </nav>
+      <div role="tablist" aria-label="Secciones" className="flex border-b border-gray-100 dark:border-slate-700">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            ref={(el) => { tabRefs.current[tab.id] = el; }}
+            role="tab"
+            id={`tab-${tab.id}`}
+            aria-selected={activeTab === tab.id}
+            aria-controls={`panel-${tab.id}`}
+            tabIndex={activeTab === tab.id ? 0 : -1}
+            onClick={() => handleTabChange(tab.id)}
+            onKeyDown={(e) => {
+              const tabIds = tabs.map(t => t.id);
+              const currentIdx = tabIds.indexOf(activeTab);
+              if (e.key === 'ArrowRight') {
+                const next = tabIds[(currentIdx + 1) % tabIds.length];
+                handleTabChange(next);
+              } else if (e.key === 'ArrowLeft') {
+                const prev = tabIds[(currentIdx - 1 + tabIds.length) % tabIds.length];
+                handleTabChange(prev);
+              }
+            }}
+            className={`
+              px-6 py-4 text-sm font-medium transition-colors relative
+              ${activeTab === tab.id
+                ? 'text-slate-900 dark:text-slate-100'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }
+            `}
+          >
+            {tab.label}
+            {tab.count !== undefined && (
+              <span className="ml-2 text-xs bg-slate-100 dark:bg-centhrix-surface px-2 py-0.5 rounded-full">
+                {tab.count}
+              </span>
+            )}
+            {activeTab === tab.id && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500" />
+            )}
+          </button>
+        ))}
       </div>
 
-      {/* Tabla */}
-      <SimpleTable
-        columns={currentColumns}
-        data={currentData}
-        onRowClick={onRowClick}
-        loading={loading}
-        emptyMessage={emptyMessage}
-      />
+      {/* Panel de la tab activa */}
+      <div role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
+        <SimpleTable
+          columns={currentColumns}
+          data={currentData}
+          onRowClick={onRowClick}
+          loading={loading}
+          emptyMessage={emptyMessage}
+          ariaLabel={ariaLabel}
+        />
+      </div>
     </div>
   );
 };
@@ -264,6 +305,7 @@ DataTable.propTypes = {
   onRowClick: PropTypes.func,
   loading: PropTypes.bool,
   emptyMessage: PropTypes.string,
+  ariaLabel: PropTypes.string,
 };
 
 export default DataTable;
