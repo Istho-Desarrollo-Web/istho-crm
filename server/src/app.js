@@ -129,7 +129,7 @@ app.get('/', (req, res) => {
     success: true,
     message: 'Bienvenido a ISTHO CRM API',
     version: '1.0.0',
-    documentation: '/api/v1/docs',
+    endpoints: '/api/v1',
     health: '/health',
   });
 });
