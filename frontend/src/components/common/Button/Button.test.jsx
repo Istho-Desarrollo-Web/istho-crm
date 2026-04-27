@@ -31,23 +31,16 @@ describe('Button', () => {
     expect(handleClick).not.toHaveBeenCalled();
   });
 
-  it('muestra spinner y texto Cargando... cuando loading=true', () => {
+  it('en estado loading: muestra spinner, texto y atributos ARIA correctos', () => {
     const { container } = render(<Button loading>Click me</Button>);
+    const btn = screen.getByRole('button');
 
     expect(screen.getByText('Cargando...')).toBeInTheDocument();
+    // SVG lleva aria-hidden="true", no es accesible por rol — acceso directo al DOM es correcto aquí
     expect(container.querySelector('svg')).toBeInTheDocument();
-  });
-
-  it('tiene aria-busy cuando loading=true', () => {
-    render(<Button loading>Click me</Button>);
-
-    expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true');
-  });
-
-  it('tiene aria-label "Cargando, por favor espere" cuando loading=true', () => {
-    render(<Button loading>Click me</Button>);
-
-    expect(screen.getByRole('button')).toHaveAttribute('aria-label', 'Cargando, por favor espere');
+    expect(btn).toHaveAttribute('aria-busy', 'true');
+    expect(btn).toHaveAttribute('aria-label', 'Cargando, por favor espere');
+    expect(btn).toBeDisabled();
   });
 
   it('aplica variante primary por defecto (tiene clase bg-orange-500)', () => {
