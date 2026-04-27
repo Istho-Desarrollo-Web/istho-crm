@@ -5,7 +5,7 @@ build:
     build:
       - cd server && npm ci --omit=dev
 run:
-  command: cd server && node server.js
+  command: node server/server.js
   network:
     port: 8080
     env: PORT
