@@ -14,7 +14,7 @@
 └─────────────────┘       └──────────────────┘       └─────────────────┘
 ```
 
-### Opción B — AWS (migración en curso)
+### Opción B — AWS (activo)
 
 ```
 ┌─────────────────┐       ┌──────────────────┐       ┌─────────────────┐
@@ -22,11 +22,13 @@
 │   (Vercel)      │──────▶│   (AWS)           │──────▶│   (AWS)         │
 │                 │       │                   │  VPC  │                 │
 │  React + Vite   │  API  │  Express + Node   │ priv. │  us-east-1      │
-│  istho.vercel   │       │  us-east-1        │       │  istho-crm-db   │
+│  istho-crm-six  │       │  aw7pnktgbe.us-   │       │  istho-crm-db   │
+│  .vercel.app    │       │  east-1.apprunner │       │                 │
 └─────────────────┘       └──────────────────┘       └─────────────────┘
 ```
 
-Configuración de App Runner en `apprunner.yaml` (raíz del repo).
+Variables no-sensibles en `apprunner.yaml` (raíz del repo). Variables sensibles
+(`DB_PASSWORD`, `JWT_SECRET`, `SMTP_PASS`, `CLOUDINARY_*`) configuradas en la consola.
 
 ---
 
@@ -138,57 +140,84 @@ Guardar el **Endpoint** resultante (formato `istho-crm-db.xxxx.us-east-1.rds.ama
 
 1. Ir a [console.aws.amazon.com/apprunner](https://console.aws.amazon.com/apprunner) → **Create service**
 2. Source: **GitHub** → repo `istho-crm-p` → branch `main`
-3. Configuration: **Use a configuration file** (detecta `apprunner.yaml` automáticamente)
-4. Service name: `istho-crm-backend`
-5. vCPU: 0.25 | Memory: 0.5 GB
+3. Configuration: **Configure todos los ajustes aquí** ← usar este modo, NO "usar archivo de configuración"
+   - **Motivo**: el modo yaml no muestra la sección de variables de entorno durante la creación
+4. **Tiempo de ejecución**: `Nodejs 22` (es el único Node.js disponible en us-east-1)
+5. **Comando de compilación**: `cd server && npm ci --omit=dev`
+6. **Comando de inicio**: `node server/server.js` ← CRÍTICO: ver nota abajo
+7. **Puerto**: `8080`
+8. Service name: `istho-crm-backend`
+9. vCPU: 0.25 | Memory: 0.5 GB
+
+> **CRÍTICO — Comando de inicio en monorepo:** App Runner ejecuta el start command
+> directamente (sin shell), por lo que `cd server && node server.js` falla con
+> `cd: too many arguments`. Usar `node server/server.js` desde la raíz del repo.
+> El build command sí corre en shell, por eso `cd server && npm ci` funciona allí.
 
 **Networking (VPC privado para RDS):**
 - Outbound: **Custom VPC**
-- Crear nuevo VPC connector: `istho-crm-vpc-connector`, VPC default, todas las subnets
+- Crear nuevo VPC connector: `istho-crm-vpc-connector`, VPC default
+- Seleccionar subnets **excepto** `us-east-1e` / `use1-az3` (no soportada por App Runner)
 - Guardar el Security Group ID del conector (`sg-...`)
 
 **Conectar SG del conector a RDS:**
 - Abrir `istho-crm-rds-sg` → Inbound rules → Add rule:
   - Type: MySQL/Aurora | Port: 3306 | Source: `sg-...` del VPC connector
 
+```bash
+# Alternativa vía AWS CLI
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-<RDS-SG-ID> \
+  --protocol tcp --port 3306 \
+  --source-group sg-<VPC-CONNECTOR-SG-ID> \
+  --region us-east-1
+```
+
 ### Paso 3: Variables de entorno en App Runner
 
-Configurar en **Environment variables** del servicio:
+Configurar en **Variables de entorno de versión ejecutable** del servicio
+(visibles en el paso "Configurar servicio" cuando se usa el modo consola):
 
 ```
-DB_HOST          = <endpoint RDS>
-DB_NAME          = istho_crm
-DB_USER          = istho_admin
-DB_PASSWORD      = <contraseña RDS>
-JWT_SECRET       = <openssl rand -base64 64>
-CORS_ORIGIN      = https://tu-app.vercel.app
-APP_URL          = https://tu-app.vercel.app
-SMTP_HOST        = smtp.gmail.com
-SMTP_USER        = <email>
-SMTP_PASS        = <app password Gmail>
-EMAIL_FROM       = ISTHO CRM <notificaciones@istho.com.co>
-CLOUDINARY_CLOUD_NAME = <tuyo>
+DB_HOST               = <endpoint RDS sin protocolo ni puerto>
+DB_NAME               = istho_crm
+DB_USER               = istho_admin
+DB_PASSWORD           = <contraseña RDS>
+JWT_SECRET            = <openssl rand -base64 64>
+CORS_ORIGIN           = https://istho-crm-six.vercel.app
+APP_URL               = https://istho-crm-six.vercel.app
+SMTP_HOST             = smtp.gmail.com
+SMTP_PORT             = 587
+SMTP_SECURE           = false
+SMTP_USER             = <email>
+SMTP_PASS             = <app password Gmail>
+EMAIL_FROM            = ISTHO CRM <notificaciones@istho.com.co>
+CLOUDINARY_CLOUD_NAME = dut7n03xd
 CLOUDINARY_API_KEY    = <tuyo>
 CLOUDINARY_API_SECRET = <tuyo>
-UPLOAD_PATH      = ./uploads
+UPLOAD_PATH           = ./uploads
 ```
 
-Las variables no-sensibles (NODE_ENV, API_PREFIX, DB_PORT, etc.) ya están en `apprunner.yaml`.
+Las variables no-sensibles (NODE_ENV, API_PREFIX, DB_PORT, pool, rate limit, JWT_EXPIRES_IN, etc.)
+están en `apprunner.yaml` y no necesitan repetirse aquí.
 
 ### Paso 4: Verificar deploy
 
-URL final: `https://xxxxxxxx.us-east-1.awsapprunner.com`
+URL del servicio: `https://aw7pnktgbe.us-east-1.awsapprunner.com`
 
 ```bash
-curl https://xxxxxxxx.us-east-1.awsapprunner.com/health
+curl https://aw7pnktgbe.us-east-1.awsapprunner.com/health
 # { "success": true, "database": "connected" }
 ```
+
+El servidor arranca **antes** de que la DB esté lista (para no fallar el healthcheck de App Runner).
+`"database": "connecting"` es normal los primeros segundos. Esperar hasta `"connected"`.
 
 ### Paso 5: Actualizar frontend
 
 En Vercel → Variables de entorno:
 ```
-VITE_API_URL=https://xxxxxxxx.us-east-1.awsapprunner.com/api/v1
+VITE_API_URL=https://aw7pnktgbe.us-east-1.awsapprunner.com/api/v1
 ```
 
 ### Notas importantes App Runner
@@ -196,8 +225,10 @@ VITE_API_URL=https://xxxxxxxx.us-east-1.awsapprunner.com/api/v1
 - `PORT` lo inyecta App Runner automáticamente (8080) — NO configurar manualmente
 - `CORS_ORIGIN`: URL exacta de Vercel sin `/` final
 - Auto-deploy activado: cada push a `main` dispara un nuevo deploy
-- Los seeds de la DB se ejecutan automáticamente en cada startup (`initializeDatabase()`)
+- Las migraciones Umzug y los seeds se ejecutan automáticamente en cada startup
 - Socket.io (WebSocket) funciona en App Runner sin configuración adicional
+- El glob de Umzug usa `path.join(__dirname, 'src/migrations/*.js')` — si se cambia
+  el entry point, el `__dirname` de `server.js` sigue apuntando correctamente a `server/src/migrations/`
 
 ---
 
@@ -285,17 +316,30 @@ Actualizar `CORS_ORIGIN` y `VITE_API_URL` con los dominios nuevos.
 
 ## 5. Checklist Final
 
-- [ ] Backend desplegado en Railway
-- [ ] MySQL funcionando en Railway
-- [ ] Variables de entorno configuradas en Railway
-- [ ] Health check respondiendo OK (`/health`)
-- [ ] Frontend desplegado en Vercel
-- [ ] Variables de entorno configuradas en Vercel (VITE_API_URL apunta a Railway)
-- [ ] CORS_ORIGIN en Railway apunta a la URL de Vercel
-- [ ] Seeds ejecutados (roles, permisos, plantillas email)
+### Railway (Opción A)
+- [x] Backend desplegado en Railway
+- [x] MySQL funcionando en Railway
+- [x] Variables de entorno configuradas en Railway
+- [x] Health check respondiendo OK (`/health`)
+
+### AWS App Runner + RDS (Opción B)
+- [x] RDS MySQL 8.0 creado (`istho-crm-db`, sin acceso público)
+- [x] VPC connector creado (`istho-crm-vpc-connector`, sin subnet us-east-1e)
+- [x] Inbound rule 3306 en SG de RDS desde SG del VPC connector
+- [x] App Runner service creado en modo consola con comandos correctos
+- [x] Variables de entorno sensibles configuradas en App Runner
+- [x] Health check respondiendo `"database": "connected"`
+
+### Frontend (Vercel)
+- [x] Frontend desplegado en Vercel
+- [x] `VITE_API_URL` apunta al backend activo (App Runner)
+- [x] `CORS_ORIGIN` en el backend apunta a la URL de Vercel (sin `/` final)
+
+### Validación funcional
 - [ ] Login funciona con usuario admin
 - [ ] WebSocket conecta correctamente
 - [ ] Cambiar contraseñas por defecto de los usuarios
+- [ ] Seeds ejecutados (roles, permisos, plantillas email, configuración WMS)
 
 ---
 
@@ -314,7 +358,7 @@ Actualizar `CORS_ORIGIN` y `VITE_API_URL` con los dominios nuevos.
 
 ### App Runner: DB no conecta (`database: "error"`)
 - Verificar que el Security Group de RDS tenga inbound rule 3306 desde el SG del VPC connector
-- Verificar que `DB_HOST` sea el endpoint exacto de RDS (no contiene protocolo ni puerto)
+- Verificar que `DB_HOST` sea el endpoint exacto de RDS (sin protocolo ni puerto)
 - Verificar que `DB_PASSWORD` no tenga caracteres especiales sin escapar
 
 ### App Runner: deploy no arranca
@@ -322,6 +366,34 @@ Actualizar `CORS_ORIGIN` y `VITE_API_URL` con los dominios nuevos.
 - Error `JWT_SECRET debe tener al menos 32 caracteres`: falta la variable en App Runner
 - Error `CORS_ORIGIN es requerido`: falta la variable en App Runner
 
+### App Runner: `cd: too many arguments` en los logs de aplicación
+- **Causa**: el start command usa `cd server && node server.js` pero App Runner lo ejecuta
+  sin shell — `cd`, `&&` y `node` se pasan como argumentos literales a `cd`
+- **Fix**: cambiar el comando de inicio a `node server/server.js` (ruta desde la raíz del repo)
+- Ver logs en CloudWatch → `/aws/apprunner/<servicio>/application`
+
+### App Runner: build falla con `Failed to execute 'build' command`
+- Verificar en la pestaña **Configuración** que el Comando de compilación sea
+  `cd server && npm ci --omit=dev` (el de inicio y el de compilación pueden quedar invertidos
+  si se edita el servicio sin cuidado)
+- El build command sí corre en shell; el start command NO
+
+### App Runner: `no hay migraciones pendientes` en BD nueva (tablas no se crean)
+- **Causa**: el glob de Umzug es relativo al CWD. Si el entry point es `node server/server.js`
+  desde la raíz, el CWD es `/app` y `src/migrations/*.js` busca en `/app/src/` que no existe
+- **Fix ya aplicado**: el glob usa `path.join(__dirname, 'src/migrations/*.js')` en `server.js`
+- Si se replica este problema, verificar que el glob sea absoluto
+
+### App Runner: `Table 'X' already exists` en migración initial-schema
+- **Causa**: un arranque anterior falló a mitad y dejó algunas tablas creadas pero no todas
+- **Fix ya aplicado**: la migración detecta el estado parcial, elimina las tablas huérfanas
+  con `FOREIGN_KEY_CHECKS=0` y reconstruye el schema desde el baseline
+- Es seguro en RDS nueva (sin datos reales)
+
+### App Runner: advertencia `Error al recuperar la ACL web`
+- Es una advertencia de WAF (Web Application Firewall) — no afecta el funcionamiento
+- Para eliminarla: Configuración → Seguridad → quitar la Web ACL asociada
+
 ### Build falla en Vercel
-- Verificar que el Root Directory sea `frontend`
+- Verificar que el Root Directory sea `frontend` (no `./frontend`)
 - Revisar que Node.js >= 20 esté configurado en Vercel (Settings → General → Node.js Version)
