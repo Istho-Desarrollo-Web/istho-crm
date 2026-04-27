@@ -10,7 +10,7 @@
  * @date Enero 2026
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import StatusChip from '../StatusChip/StatusChip';
 
@@ -98,8 +98,6 @@ const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage, ariaLab
                 }
               } : undefined}
               tabIndex={onRowClick ? 0 : undefined}
-              role={onRowClick ? 'button' : undefined}
-              aria-label={onRowClick ? `Ver fila ${rowIdx + 1}` : undefined}
               className={`
                 border-b border-gray-50 dark:border-slate-700
                 hover:bg-slate-50 dark:hover:bg-centhrix-surface
@@ -120,6 +118,16 @@ const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage, ariaLab
                   {renderCell(row, col)}
                 </td>
               ))}
+              {onRowClick && (
+                <td className="sr-only">
+                  <button
+                    tabIndex={-1}
+                    onClick={(e) => { e.stopPropagation(); onRowClick(row); }}
+                  >
+                    Ver detalles
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -178,6 +186,7 @@ const DataTable = ({
   ariaLabel,
 }) => {
   const [activeTab, setActiveTab] = useState(defaultTab || tabs?.[0]?.id);
+  const tabRefs = useRef({});
 
   // Sin tabs → tabla simple
   if (!tabs || tabs.length === 0) {
@@ -203,6 +212,7 @@ const DataTable = ({
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
     onTabChange?.(tabId);
+    tabRefs.current[tabId]?.focus();
   };
 
   const currentColumns = columns[activeTab] || columns;
@@ -220,6 +230,7 @@ const DataTable = ({
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            ref={(el) => { tabRefs.current[tab.id] = el; }}
             role="tab"
             id={`tab-${tab.id}`}
             aria-selected={activeTab === tab.id}
