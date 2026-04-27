@@ -216,8 +216,8 @@ describe('DataTable - SimpleTable', () => {
       <DataTable columns={columnasConStatus} data={filas} />
     );
 
-    const statusChips = container.querySelectorAll('span');
-    expect(statusChips[statusChips.length - 1]).toHaveTextContent('activo');
+    const firstDataRow = container.querySelector('tbody tr:first-child');
+    expect(firstDataRow).toHaveTextContent('activo');
   });
 });
 
