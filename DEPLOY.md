@@ -2,6 +2,8 @@
 
 ## Arquitectura de Producción
 
+### Opción A — Railway (actual)
+
 ```
 ┌─────────────────┐       ┌──────────────────┐       ┌─────────────────┐
 │   Frontend      │       │    Backend        │       │   Base de Datos │
@@ -11,6 +13,20 @@
 │  istho.vercel   │       │  istho.railway    │       │  Servicio MySQL │
 └─────────────────┘       └──────────────────┘       └─────────────────┘
 ```
+
+### Opción B — AWS (migración en curso)
+
+```
+┌─────────────────┐       ┌──────────────────┐       ┌─────────────────┐
+│   Frontend      │       │   App Runner      │       │   RDS MySQL 8.0 │
+│   (Vercel)      │──────▶│   (AWS)           │──────▶│   (AWS)         │
+│                 │       │                   │  VPC  │                 │
+│  React + Vite   │  API  │  Express + Node   │ priv. │  us-east-1      │
+│  istho.vercel   │       │  us-east-1        │       │  istho-crm-db   │
+└─────────────────┘       └──────────────────┘       └─────────────────┘
+```
+
+Configuración de App Runner en `apprunner.yaml` (raíz del repo).
 
 ---
 
@@ -90,7 +106,102 @@ LOG_LEVEL=info
 
 ---
 
-## 2. Frontend en Vercel
+## 2. Backend en AWS App Runner + RDS MySQL
+
+> Despliegue paralelo a Railway. Una vez verificado, actualizar `VITE_API_URL` en Vercel.
+
+### Prerrequisitos
+
+- AWS CLI instalada y configurada (`aws configure` con región `us-east-1`)
+- Usuario IAM `istho-crm-deploy` con políticas: `AWSAppRunnerFullAccess`, `AmazonRDSFullAccess`, `AmazonVPCFullAccess`
+- Generar JWT_SECRET: `openssl rand -base64 64`
+
+### Paso 1: RDS MySQL 8.0
+
+En la consola AWS → RDS → **Create database**:
+
+| Campo | Valor |
+|-------|-------|
+| Engine | MySQL 8.0.x |
+| Template | Production |
+| Identifier | `istho-crm-db` |
+| Master username | `istho_admin` |
+| Instance | db.t3.micro |
+| Storage | 20 GB GP2 |
+| Public access | **NO** |
+| Initial DB name | `istho_crm` |
+| Security group | `istho-crm-rds-sg` (crear previamente, sin inbound rules) |
+
+Guardar el **Endpoint** resultante (formato `istho-crm-db.xxxx.us-east-1.rds.amazonaws.com`).
+
+### Paso 2: App Runner service
+
+1. Ir a [console.aws.amazon.com/apprunner](https://console.aws.amazon.com/apprunner) → **Create service**
+2. Source: **GitHub** → repo `istho-crm-p` → branch `main`
+3. Configuration: **Use a configuration file** (detecta `apprunner.yaml` automáticamente)
+4. Service name: `istho-crm-backend`
+5. vCPU: 0.25 | Memory: 0.5 GB
+
+**Networking (VPC privado para RDS):**
+- Outbound: **Custom VPC**
+- Crear nuevo VPC connector: `istho-crm-vpc-connector`, VPC default, todas las subnets
+- Guardar el Security Group ID del conector (`sg-...`)
+
+**Conectar SG del conector a RDS:**
+- Abrir `istho-crm-rds-sg` → Inbound rules → Add rule:
+  - Type: MySQL/Aurora | Port: 3306 | Source: `sg-...` del VPC connector
+
+### Paso 3: Variables de entorno en App Runner
+
+Configurar en **Environment variables** del servicio:
+
+```
+DB_HOST          = <endpoint RDS>
+DB_NAME          = istho_crm
+DB_USER          = istho_admin
+DB_PASSWORD      = <contraseña RDS>
+JWT_SECRET       = <openssl rand -base64 64>
+CORS_ORIGIN      = https://tu-app.vercel.app
+APP_URL          = https://tu-app.vercel.app
+SMTP_HOST        = smtp.gmail.com
+SMTP_USER        = <email>
+SMTP_PASS        = <app password Gmail>
+EMAIL_FROM       = ISTHO CRM <notificaciones@istho.com.co>
+CLOUDINARY_CLOUD_NAME = <tuyo>
+CLOUDINARY_API_KEY    = <tuyo>
+CLOUDINARY_API_SECRET = <tuyo>
+UPLOAD_PATH      = ./uploads
+```
+
+Las variables no-sensibles (NODE_ENV, API_PREFIX, DB_PORT, etc.) ya están en `apprunner.yaml`.
+
+### Paso 4: Verificar deploy
+
+URL final: `https://xxxxxxxx.us-east-1.awsapprunner.com`
+
+```bash
+curl https://xxxxxxxx.us-east-1.awsapprunner.com/health
+# { "success": true, "database": "connected" }
+```
+
+### Paso 5: Actualizar frontend
+
+En Vercel → Variables de entorno:
+```
+VITE_API_URL=https://xxxxxxxx.us-east-1.awsapprunner.com/api/v1
+```
+
+### Notas importantes App Runner
+
+- `PORT` lo inyecta App Runner automáticamente (8080) — NO configurar manualmente
+- `CORS_ORIGIN`: URL exacta de Vercel sin `/` final
+- Auto-deploy activado: cada push a `main` dispara un nuevo deploy
+- Los seeds de la DB se ejecutan automáticamente en cada startup (`initializeDatabase()`)
+- Socket.io (WebSocket) funciona en App Runner sin configuración adicional
+
+---
+
+## 3. Frontend en Vercel
 
 ### Paso 1: Importar proyecto
 
@@ -142,7 +253,7 @@ CORS_ORIGIN=https://istho-crm.vercel.app,https://crm.istho.com.co
 
 ---
 
-## 3. Post-Deploy
+## 4. Post-Deploy
 
 ### Inicializar datos
 
@@ -172,7 +283,7 @@ Actualizar `CORS_ORIGIN` y `VITE_API_URL` con los dominios nuevos.
 
 ---
 
-## 4. Checklist Final
+## 5. Checklist Final
 
 - [ ] Backend desplegado en Railway
 - [ ] MySQL funcionando en Railway
@@ -188,7 +299,7 @@ Actualizar `CORS_ORIGIN` y `VITE_API_URL` con los dominios nuevos.
 
 ---
 
-## Troubleshooting
+## 6. Troubleshooting
 
 ### El backend no conecta a MySQL
 - Verificar que `MYSQL_URL` esté configurada en Railway
@@ -199,7 +310,17 @@ Actualizar `CORS_ORIGIN` y `VITE_API_URL` con los dominios nuevos.
 - Si usas dominio personalizado, agregar ambas URLs separadas por coma
 
 ### WebSocket no conecta
-- La URL de Socket.io se deriva de `VITE_API_URL`. Verificar que el backend en Railway permita WebSocket (Railway lo soporta por defecto)
+- La URL de Socket.io se deriva de `VITE_API_URL`. Verificar que el backend en Railway/App Runner permita WebSocket (ambos lo soportan por defecto)
+
+### App Runner: DB no conecta (`database: "error"`)
+- Verificar que el Security Group de RDS tenga inbound rule 3306 desde el SG del VPC connector
+- Verificar que `DB_HOST` sea el endpoint exacto de RDS (no contiene protocolo ni puerto)
+- Verificar que `DB_PASSWORD` no tenga caracteres especiales sin escapar
+
+### App Runner: deploy no arranca
+- Revisar logs en App Runner → servicio → **Deployment logs**
+- Error `JWT_SECRET debe tener al menos 32 caracteres`: falta la variable en App Runner
+- Error `CORS_ORIGIN es requerido`: falta la variable en App Runner
 
 ### Build falla en Vercel
 - Verificar que el Root Directory sea `frontend`
