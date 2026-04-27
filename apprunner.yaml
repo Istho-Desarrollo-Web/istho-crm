@@ -5,7 +5,6 @@ build:
     build:
       - cd server && npm ci --omit=dev
 run:
-  runtime-version: "20"
   command: cd server && node server.js
   network:
     port: 8080
