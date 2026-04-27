@@ -3,11 +3,6 @@ const path = require('path');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Si la base de datos ya tiene tablas (como pasa en producción ahora),
-    // esta migración debe saltarse inteligentemente.
-    // Vamos a chequear si 'usuarios' ya existe para saber si es DB nueva o vieja.
-
-    // Obtener las tablas actuales de forma segura según el dialecto
     let currentTables;
     try {
       currentTables = await queryInterface.showAllTables();
@@ -15,14 +10,25 @@ module.exports = {
       currentTables = [];
     }
 
-    if (currentTables.includes('usuarios')) {
-      console.log(
-        '[MIGRACIÓN INITIAL] La base de datos ya contiene la tabla usuarios. Omitiendo volcado de baseline para evitar duplicados.'
-      );
+    // DB completamente inicializada → saltar
+    if (currentTables.includes('usuarios') && currentTables.includes('permisos')) {
+      console.log('[MIGRACIÓN INITIAL] BD ya inicializada. Omitiendo baseline.');
       return;
     }
 
-    // Es DB nueva, cargar el schema
+    // Estado parcial (arranque anterior falló a mitad) → limpiar antes de reconstruir
+    const TABLAS_SISTEMA = ['SequelizeMeta'];
+    const tablasAEliminar = currentTables.filter(t => !TABLAS_SISTEMA.includes(t));
+    if (tablasAEliminar.length > 0) {
+      console.log(`[MIGRACIÓN INITIAL] Estado parcial detectado — eliminando ${tablasAEliminar.length} tabla(s) para reconstruir desde baseline.`);
+      await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 0;');
+      for (const tabla of tablasAEliminar) {
+        await queryInterface.dropTable(tabla);
+      }
+      await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 1;');
+    }
+
+    // BD vacía → cargar schema baseline
     const sqlPath = path.join(__dirname, 'schema_baseline.sql');
     if (!fs.existsSync(sqlPath)) return;
 
