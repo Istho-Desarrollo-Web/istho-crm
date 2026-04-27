@@ -3,13 +3,13 @@
  * ISTHO CRM - ProductoDetail (Versión Corregida v2.4.0)
  * ============================================================================
  * Vista de detalle del producto conectada al backend real.
- * 
+ *
  * CORRECCIONES v2.4.0:
  * - Template literals corregidos (faltaba $ en className y valores)
  * - Formato de números corregido para evitar confusión de locale
  * - Todos los hooks ANTES de returns condicionales
  * - snake_case para campos del backend
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 2.4.0
  * @date Enero 2026
@@ -41,7 +41,6 @@ import {
 
 // Layout
 
-
 // Components
 import { Button, StatusChip, KpiCard, ConfirmDialog } from '../../components/common';
 
@@ -67,24 +66,23 @@ import inventarioService from '../../api/inventario.service';
 
 // Mapeo de nombres de meses inglés → español
 const MESES_ES = {
-  'January': 'Enero',
-  'February': 'Febrero',
-  'March': 'Marzo',
-  'April': 'Abril',
-  'May': 'Mayo',
-  'June': 'Junio',
-  'July': 'Julio',
-  'August': 'Agosto',
-  'September': 'Septiembre',
-  'October': 'Octubre',
-  'November': 'Noviembre',
-  'December': 'Diciembre',
+  January: 'Enero',
+  February: 'Febrero',
+  March: 'Marzo',
+  April: 'Abril',
+  May: 'Mayo',
+  June: 'Junio',
+  July: 'Julio',
+  August: 'Agosto',
+  September: 'Septiembre',
+  October: 'Octubre',
+  November: 'Noviembre',
+  December: 'Diciembre',
 };
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPER DE PERMISOS
 // ════════════════════════════════════════════════════════════════════════════
-
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPER DE FORMATO DE NÚMEROS
@@ -153,7 +151,9 @@ const StockGauge = ({ actual, minimo, maximo, onUpdateLimits, canEdit }) => {
 
   return (
     <div className="bg-white dark:bg-centhrix-card rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
-      <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Nivel de Stock</h3>
+      <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
+        Nivel de Stock
+      </h3>
 
       <div className="relative h-8 bg-slate-100 dark:bg-centhrix-surface rounded-full overflow-hidden mb-4">
         {minimoPos > 0 && (
@@ -188,7 +188,9 @@ const StockGauge = ({ actual, minimo, maximo, onUpdateLimits, canEdit }) => {
 
       <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-100 dark:border-slate-700">
         <div className="text-center">
-          <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{formatNumber(actualNum)}</p>
+          <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+            {formatNumber(actualNum)}
+          </p>
           <p className="text-xs text-slate-500 dark:text-slate-400">Stock Actual</p>
         </div>
         <div className="text-center">
@@ -205,12 +207,21 @@ const StockGauge = ({ actual, minimo, maximo, onUpdateLimits, canEdit }) => {
           ) : (
             <div
               className={`${canEdit ? 'cursor-pointer group' : ''}`}
-              onClick={() => { if (canEdit) { setTempMin(minimoNum); setEditingMin(true); } }}
+              onClick={() => {
+                if (canEdit) {
+                  setTempMin(minimoNum);
+                  setEditingMin(true);
+                }
+              }}
               title={canEdit ? 'Click para editar' : undefined}
             >
-              <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg ${canEdit ? 'border border-dashed border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors' : ''}`}>
+              <div
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg ${canEdit ? 'border border-dashed border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors' : ''}`}
+              >
                 <span className="text-2xl font-bold text-amber-600">{formatNumber(minimoNum)}</span>
-                {canEdit && <Pencil className="w-3.5 h-3.5 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                {canEdit && (
+                  <Pencil className="w-3.5 h-3.5 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
               </div>
             </div>
           )}
@@ -230,12 +241,21 @@ const StockGauge = ({ actual, minimo, maximo, onUpdateLimits, canEdit }) => {
           ) : (
             <div
               className={`${canEdit ? 'cursor-pointer group' : ''}`}
-              onClick={() => { if (canEdit) { setTempMax(maximoNum); setEditingMax(true); } }}
+              onClick={() => {
+                if (canEdit) {
+                  setTempMax(maximoNum);
+                  setEditingMax(true);
+                }
+              }}
               title={canEdit ? 'Click para editar' : undefined}
             >
-              <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg ${canEdit ? 'border border-dashed border-blue-300 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors' : ''}`}>
+              <div
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg ${canEdit ? 'border border-dashed border-blue-300 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors' : ''}`}
+              >
                 <span className="text-2xl font-bold text-blue-600">{formatNumber(maximoNum)}</span>
-                {canEdit && <Pencil className="w-3.5 h-3.5 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                {canEdit && (
+                  <Pencil className="w-3.5 h-3.5 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
               </div>
             </div>
           )}
@@ -292,7 +312,9 @@ const MovimientoItem = ({ movimiento }) => {
 
   return (
     <div className="flex items-start gap-4 py-4 border-b border-gray-100 dark:border-slate-700 last:border-0">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconConfig.bg}`}>
+      <div
+        className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconConfig.bg}`}
+      >
         <Icon className={`w-5 h-5 ${iconConfig.color}`} />
       </div>
 
@@ -300,14 +322,19 @@ const MovimientoItem = ({ movimiento }) => {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className={`text-sm font-semibold ${isEntrada ? 'text-emerald-600' : isAjuste ? 'text-amber-600' : 'text-red-600'}`}>
-                {cantidad > 0 ? '+' : ''}{formatNumber(cantidad)}
+              <span
+                className={`text-sm font-semibold ${isEntrada ? 'text-emerald-600' : isAjuste ? 'text-amber-600' : 'text-red-600'}`}
+              >
+                {cantidad > 0 ? '+' : ''}
+                {formatNumber(cantidad)}
               </span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300">
                 {iconConfig.label}
               </span>
             </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">{movimiento.motivo || movimiento.descripcion || '-'}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
+              {movimiento.motivo || movimiento.descripcion || '-'}
+            </p>
           </div>
           <div className="text-right">
             <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
@@ -375,7 +402,7 @@ const ProductoDetail = () => {
   const [loadingCajas, setLoadingCajas] = useState(false);
 
   // Permisos dinámicos (restringidos si el producto es gestionado por WMS)
-  const esWMS = !!(currentProducto?.codigo_wms);
+  const esWMS = !!currentProducto?.codigo_wms;
   const canEdit = hasPermission('inventario', 'editar') && !esWMS;
   const canDelete = hasPermission('inventario', 'eliminar') && !esWMS;
 
@@ -388,7 +415,8 @@ const ProductoDetail = () => {
   // ✅ Asegurar que los valores sean números
   const stockActual = parseFloat(producto.stock_actual || producto.cantidad) || 0;
   const stockMinimo = parseFloat(producto.stock_minimo) || 0;
-  const stockMaximo = parseFloat(producto.stock_maximo) || (stockMinimo > 0 ? stockMinimo * 10 : 1000);
+  const stockMaximo =
+    parseFloat(producto.stock_maximo) || (stockMinimo > 0 ? stockMinimo * 10 : 1000);
   const costoUnitario = parseFloat(producto.costo_unitario) || 0;
   const precioVenta = parseFloat(producto.precio_venta) || 0;
   const clienteNombre = producto.cliente_nombre || producto.cliente?.razon_social || '-';
@@ -401,18 +429,21 @@ const ProductoDetail = () => {
 
   // KPIs calculados desde movimientos
   const kpis = useMemo(() => {
-    const entradas = (movimientos || []).filter(m => m.tipo === 'entrada');
+    const entradas = (movimientos || []).filter((m) => m.tipo === 'entrada');
 
     const hace30Dias = new Date();
     hace30Dias.setDate(hace30Dias.getDate() - 30);
-    const salidasUltimos30Dias = (movimientos || []).filter(m => {
+    const salidasUltimos30Dias = (movimientos || []).filter((m) => {
       if (m.tipo !== 'salida') return false;
       const fecha = new Date(m.created_at || m.fecha_movimiento || m.fecha);
       return fecha >= hace30Dias;
     });
 
     const entradasMes = entradas.reduce((sum, m) => sum + Math.abs(parseFloat(m.cantidad) || 0), 0);
-    const salidasMes = salidasUltimos30Dias.reduce((sum, m) => sum + Math.abs(parseFloat(m.cantidad) || 0), 0);
+    const salidasMes = salidasUltimos30Dias.reduce(
+      (sum, m) => sum + Math.abs(parseFloat(m.cantidad) || 0),
+      0
+    );
 
     return {
       valorStock: stockActual * costoUnitario,
@@ -431,7 +462,7 @@ const ProductoDetail = () => {
       return [];
     }
 
-    return estadisticas.map(item => {
+    return estadisticas.map((item) => {
       // Si ya viene con label y value1/value2 (backend actualizado)
       if (item.label !== undefined && item.value1 !== undefined) {
         return {
@@ -450,8 +481,21 @@ const ProductoDetail = () => {
       } else if (item.periodo) {
         // Extraer mes del periodo "2026-01" → "Ene"
         const mesNum = parseInt(item.periodo.split('-')[1]);
-        const mesesCortos = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-          'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const mesesCortos = [
+          '',
+          'Ene',
+          'Feb',
+          'Mar',
+          'Abr',
+          'May',
+          'Jun',
+          'Jul',
+          'Ago',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dic',
+        ];
         mesLabel = mesesCortos[mesNum] || item.periodo;
       }
 
@@ -464,12 +508,15 @@ const ProductoDetail = () => {
   }, [estadisticas]);
 
   // Tabs
-  const tabs = useMemo(() => [
-    { id: 'info', label: 'Información' },
-    { id: 'cajas', label: `Cajas (${cajas.length})` },
-    { id: 'movimientos', label: `Movimientos (${(movimientos || []).length})` },
-    { id: 'estadisticas', label: 'Estadísticas' },
-  ], [movimientos, cajas]);
+  const tabs = useMemo(
+    () => [
+      { id: 'info', label: 'Información' },
+      { id: 'cajas', label: `Cajas (${cajas.length})` },
+      { id: 'movimientos', label: `Movimientos (${(movimientos || []).length})` },
+      { id: 'estadisticas', label: 'Estadísticas' },
+    ],
+    [movimientos, cajas]
+  );
 
   // ──────────────────────────────────────────────────────────────────────────
   // EFFECTS
@@ -578,7 +625,6 @@ const ProductoDetail = () => {
   if (loadingDetail) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-gray-200 dark:bg-centhrix-surface rounded w-48" />
@@ -597,14 +643,17 @@ const ProductoDetail = () => {
   if (errorDetail || !currentProducto) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Package className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Producto no encontrado</h2>
-            <p className="text-slate-500 dark:text-slate-400 mb-4">{errorDetail || 'El producto solicitado no existe'}</p>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+              Producto no encontrado
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-4">
+              {errorDetail || 'El producto solicitado no existe'}
+            </p>
             <Button variant="primary" onClick={() => navigate('/inventario')}>
               Volver a Inventario
             </Button>
@@ -620,8 +669,6 @@ const ProductoDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-
-
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
         {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
@@ -769,8 +816,11 @@ const ProductoDetail = () => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`py-4 px-4 text-sm font-medium transition-colors relative ${activeTab === tab.id ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                        }`}
+                      className={`py-4 px-4 text-sm font-medium transition-colors relative ${
+                        activeTab === tab.id
+                          ? 'text-orange-600 dark:text-orange-400'
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                      }`}
                     >
                       {tab.label}
                       {activeTab === tab.id && (
@@ -786,22 +836,32 @@ const ProductoDetail = () => {
                 {activeTab === 'info' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-slate-800 dark:text-slate-100">Información General</h4>
+                      <h4 className="font-semibold text-slate-800 dark:text-slate-100">
+                        Información General
+                      </h4>
                       <div className="space-y-3">
                         <div className="flex items-center gap-3 text-sm">
                           <Barcode className="w-5 h-5 text-slate-400" />
                           <span className="text-slate-500 dark:text-slate-400 w-28">Código:</span>
-                          <span className="text-slate-800 dark:text-slate-200 font-mono">{producto.codigo || producto.sku}</span>
+                          <span className="text-slate-800 dark:text-slate-200 font-mono">
+                            {producto.codigo || producto.sku}
+                          </span>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           <Layers className="w-5 h-5 text-slate-400" />
-                          <span className="text-slate-500 dark:text-slate-400 w-28">Categoría:</span>
-                          <span className="text-slate-800 dark:text-slate-200 capitalize">{producto.categoria || '-'}</span>
+                          <span className="text-slate-500 dark:text-slate-400 w-28">
+                            Categoría:
+                          </span>
+                          <span className="text-slate-800 dark:text-slate-200 capitalize">
+                            {producto.categoria || '-'}
+                          </span>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           <Package className="w-5 h-5 text-slate-400" />
                           <span className="text-slate-500 dark:text-slate-400 w-28">Unidad:</span>
-                          <span className="text-slate-800 dark:text-slate-200 capitalize">{unidadMedida}</span>
+                          <span className="text-slate-800 dark:text-slate-200 capitalize">
+                            {unidadMedida}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -812,7 +872,9 @@ const ProductoDetail = () => {
                         <div className="flex items-center gap-3 text-sm">
                           <Building2 className="w-5 h-5 text-slate-400" />
                           <span className="text-slate-500 dark:text-slate-400 w-28">Cliente:</span>
-                          <span className="text-slate-800 dark:text-slate-200">{clienteNombre}</span>
+                          <span className="text-slate-800 dark:text-slate-200">
+                            {clienteNombre}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -822,14 +884,18 @@ const ProductoDetail = () => {
                       <div className="space-y-3">
                         <div className="flex items-center gap-3 text-sm">
                           <DollarSign className="w-5 h-5 text-slate-400" />
-                          <span className="text-slate-500 dark:text-slate-400 w-28">Costo Unit.:</span>
+                          <span className="text-slate-500 dark:text-slate-400 w-28">
+                            Costo Unit.:
+                          </span>
                           <span className="text-slate-800 dark:text-slate-200 font-medium">
                             {formatCurrency(costoUnitario)}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           <DollarSign className="w-5 h-5 text-slate-400" />
-                          <span className="text-slate-500 dark:text-slate-400 w-28">Precio Venta:</span>
+                          <span className="text-slate-500 dark:text-slate-400 w-28">
+                            Precio Venta:
+                          </span>
                           <span className="text-slate-800 dark:text-slate-200 font-medium">
                             {formatCurrency(precioVenta)}
                           </span>
@@ -839,7 +905,9 @@ const ProductoDetail = () => {
 
                     {producto.descripcion && (
                       <div className="space-y-4 md:col-span-2">
-                        <h4 className="font-semibold text-slate-800 dark:text-slate-100">Descripción</h4>
+                        <h4 className="font-semibold text-slate-800 dark:text-slate-100">
+                          Descripción
+                        </h4>
                         <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-centhrix-surface p-4 rounded-xl">
                           {producto.descripcion}
                         </p>
@@ -854,37 +922,71 @@ const ProductoDetail = () => {
                     {loadingCajas ? (
                       <div className="space-y-3">
                         {[0, 1, 2, 3].map((i) => (
-                          <div key={i} className="h-16 bg-gray-100 dark:bg-centhrix-surface rounded-lg animate-pulse" />
+                          <div
+                            key={i}
+                            className="h-16 bg-gray-100 dark:bg-centhrix-surface rounded-lg animate-pulse"
+                          />
                         ))}
                       </div>
                     ) : cajas.length === 0 ? (
                       <div className="py-12 text-center">
                         <BoxIcon className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                        <p className="text-slate-500 dark:text-slate-400">No hay cajas registradas para este producto</p>
+                        <p className="text-slate-500 dark:text-slate-400">
+                          No hay cajas registradas para este producto
+                        </p>
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-gray-200 dark:border-slate-600">
-                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Caja</th>
-                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Lote</th>
-                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Ubicacion</th>
-                              <th className="text-right py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Cantidad</th>
-                              <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Tipo</th>
-                              <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Estado</th>
-                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Operacion</th>
-                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Documento</th>
-                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">Fecha</th>
+                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
+                                Caja
+                              </th>
+                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
+                                Lote
+                              </th>
+                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
+                                Ubicacion
+                              </th>
+                              <th className="text-right py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
+                                Cantidad
+                              </th>
+                              <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
+                                Tipo
+                              </th>
+                              <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
+                                Estado
+                              </th>
+                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
+                                Operacion
+                              </th>
+                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
+                                Documento
+                              </th>
+                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
+                                Fecha
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
                             {cajas.map((caja) => (
-                              <tr key={caja.id} className="border-b border-gray-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors">
-                                <td className="py-3 px-2 font-mono text-slate-700 dark:text-slate-300">{caja.numero_caja}</td>
-                                <td className="py-3 px-2 font-mono text-slate-600 dark:text-slate-400">{caja.lote}</td>
-                                <td className="py-3 px-2 font-mono text-slate-600 dark:text-slate-400">{caja.ubicacion || '-'}</td>
-                                <td className="py-3 px-2 text-right font-medium text-slate-800 dark:text-slate-200">{formatNumber(caja.cantidad)}</td>
+                              <tr
+                                key={caja.id}
+                                className="border-b border-gray-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors"
+                              >
+                                <td className="py-3 px-2 font-mono text-slate-700 dark:text-slate-300">
+                                  {caja.numero_caja}
+                                </td>
+                                <td className="py-3 px-2 font-mono text-slate-600 dark:text-slate-400">
+                                  {caja.lote}
+                                </td>
+                                <td className="py-3 px-2 font-mono text-slate-600 dark:text-slate-400">
+                                  {caja.ubicacion || '-'}
+                                </td>
+                                <td className="py-3 px-2 text-right font-medium text-slate-800 dark:text-slate-200">
+                                  {formatNumber(caja.cantidad)}
+                                </td>
                                 <td className="py-3 px-2 text-center">
                                   {caja.tipo === 'entrada' ? (
                                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">
@@ -899,23 +1001,33 @@ const ProductoDetail = () => {
                                   )}
                                 </td>
                                 <td className="py-3 px-2 text-center">
-                                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                    caja.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700' :
-                                    caja.estado === 'despachada' ? 'bg-slate-100 text-slate-600' :
-                                    caja.estado === 'en_transito' ? 'bg-blue-50 text-blue-700' :
-                                    caja.estado === 'dañada' ? 'bg-red-50 text-red-700' :
-                                    'bg-slate-100 text-slate-600'
-                                  }`}>
+                                  <span
+                                    className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                      caja.estado === 'disponible'
+                                        ? 'bg-emerald-50 text-emerald-700'
+                                        : caja.estado === 'despachada'
+                                          ? 'bg-slate-100 text-slate-600'
+                                          : caja.estado === 'en_transito'
+                                            ? 'bg-blue-50 text-blue-700'
+                                            : caja.estado === 'dañada'
+                                              ? 'bg-red-50 text-red-700'
+                                              : 'bg-slate-100 text-slate-600'
+                                    }`}
+                                  >
                                     {caja.estado || '-'}
                                   </span>
                                 </td>
                                 <td className="py-3 px-2 text-slate-600 dark:text-slate-400 text-xs">
                                   {caja.numero_operacion || '-'}
                                   {caja.numero_picking && (
-                                    <span className="block text-slate-400 dark:text-slate-500">{caja.numero_picking}</span>
+                                    <span className="block text-slate-400 dark:text-slate-500">
+                                      {caja.numero_picking}
+                                    </span>
                                   )}
                                 </td>
-                                <td className="py-3 px-2 font-mono text-xs text-slate-500 dark:text-slate-400">{caja.documento}</td>
+                                <td className="py-3 px-2 font-mono text-xs text-slate-500 dark:text-slate-400">
+                                  {caja.documento}
+                                </td>
                                 <td className="py-3 px-2 text-xs text-slate-500 dark:text-slate-400">
                                   {formatDateShort(caja.fecha)}
                                 </td>
@@ -934,13 +1046,18 @@ const ProductoDetail = () => {
                     {loadingMovimientos ? (
                       <div className="space-y-3">
                         {[0, 1, 2, 3].map((i) => (
-                          <div key={i} className="h-20 bg-gray-100 dark:bg-centhrix-surface rounded-lg animate-pulse" />
+                          <div
+                            key={i}
+                            className="h-20 bg-gray-100 dark:bg-centhrix-surface rounded-lg animate-pulse"
+                          />
                         ))}
                       </div>
                     ) : (movimientos || []).length === 0 ? (
                       <div className="py-12 text-center">
                         <Package className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                        <p className="text-slate-500 dark:text-slate-400">No hay movimientos registrados</p>
+                        <p className="text-slate-500 dark:text-slate-400">
+                          No hay movimientos registrados
+                        </p>
                       </div>
                     ) : (
                       (movimientos || []).map((movimiento) => (
@@ -969,7 +1086,9 @@ const ProductoDetail = () => {
                     ) : (
                       <div className="py-12 text-center">
                         <TrendingUp className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                        <p className="text-slate-500 dark:text-slate-400">No hay suficientes datos para mostrar estadísticas</p>
+                        <p className="text-slate-500 dark:text-slate-400">
+                          No hay suficientes datos para mostrar estadísticas
+                        </p>
                         <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
                           Los movimientos deben estar en el rango de los últimos 6 meses
                         </p>

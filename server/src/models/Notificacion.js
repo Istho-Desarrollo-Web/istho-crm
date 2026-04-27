@@ -3,7 +3,7 @@
  * ISTHO CRM - Modelo Notificacion
  * ============================================================================
  * Modelo para gestionar notificaciones del sistema.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  * @date Enero 2026
@@ -37,19 +37,14 @@ module.exports = (sequelize) => {
      * Obtener notificaciones de un usuario
      */
     static async getByUsuario(usuario_id, options = {}) {
-      const { 
-        page = 1, 
-        limit = 50, 
-        tipo = null, 
-        soloNoLeidas = false 
-      } = options;
+      const { page = 1, limit = 50, tipo = null, soloNoLeidas = false } = options;
 
       const where = { usuario_id };
-      
+
       if (tipo) {
         where.tipo = tipo;
       }
-      
+
       if (soloNoLeidas) {
         where.leida = false;
       }
@@ -60,7 +55,7 @@ module.exports = (sequelize) => {
         where,
         order: [
           ['prioridad', 'DESC'], // Urgentes primero
-          ['created_at', 'DESC']
+          ['created_at', 'DESC'],
         ],
         limit: parseInt(limit),
         offset: parseInt(offset),
@@ -82,7 +77,7 @@ module.exports = (sequelize) => {
      */
     static async contarNoLeidas(usuario_id) {
       return await this.count({
-        where: { usuario_id, leida: false }
+        where: { usuario_id, leida: false },
       });
     }
 
@@ -113,7 +108,7 @@ module.exports = (sequelize) => {
      */
     static async eliminar(id, usuario_id) {
       const deleted = await this.destroy({
-        where: { id, usuario_id }
+        where: { id, usuario_id },
       });
       return deleted > 0;
     }
@@ -123,7 +118,7 @@ module.exports = (sequelize) => {
      */
     static async eliminarLeidas(usuario_id) {
       const deleted = await this.destroy({
-        where: { usuario_id, leida: true }
+        where: { usuario_id, leida: true },
       });
       return deleted;
     }
@@ -133,7 +128,7 @@ module.exports = (sequelize) => {
      */
     static async eliminarTodas(usuario_id) {
       const deleted = await this.destroy({
-        where: { usuario_id }
+        where: { usuario_id },
       });
       return deleted;
     }
@@ -142,7 +137,7 @@ module.exports = (sequelize) => {
      * Notificar a múltiples usuarios
      */
     static async notificarMultiple(usuarios_ids, data) {
-      const notificaciones = usuarios_ids.map(usuario_id => ({
+      const notificaciones = usuarios_ids.map((usuario_id) => ({
         usuario_id,
         tipo: data.tipo || 'sistema',
         titulo: data.titulo,

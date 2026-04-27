@@ -6,10 +6,21 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, Package, Building2, ArrowDownCircle,
-  ArrowUpCircle, RefreshCw, FileText, Loader2,
-  Truck, Car, Wallet, ArrowLeftRight, Clock,
-  ChevronRight, X,
+  Search,
+  Package,
+  Building2,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  RefreshCw,
+  FileText,
+  Loader2,
+  Truck,
+  Car,
+  Wallet,
+  ArrowLeftRight,
+  Clock,
+  ChevronRight,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -27,8 +38,10 @@ const MODULE_CONFIG = [
     permission: { modulo: 'inventario', accion: 'ver' },
     listPath: '/inventario',
     searchFn: async (term, apiClient, endpoints) => {
-      const res = await apiClient.get(endpoints.INVENTARIO.BASE, { params: { search: term, limit: 5 } });
-      return (res?.data || []).map(p => ({
+      const res = await apiClient.get(endpoints.INVENTARIO.BASE, {
+        params: { search: term, limit: 5 },
+      });
+      return (res?.data || []).map((p) => ({
         id: p.id,
         title: p.producto || p.nombre,
         subtitle: `${p.sku} - ${p.cliente_nombre || ''}`,
@@ -45,9 +58,11 @@ const MODULE_CONFIG = [
     permission: { modulo: 'clientes', accion: 'ver' },
     listPath: '/clientes',
     searchFn: async (term, apiClient, endpoints) => {
-      const res = await apiClient.get(endpoints.CLIENTES.BASE, { params: { search: term, limit: 5 } });
+      const res = await apiClient.get(endpoints.CLIENTES.BASE, {
+        params: { search: term, limit: 5 },
+      });
       const data = res?.data?.clientes || res?.data || [];
-      return data.map(c => ({
+      return data.map((c) => ({
         id: c.id,
         title: c.razon_social,
         subtitle: `NIT: ${c.nit || '-'}`,
@@ -64,9 +79,11 @@ const MODULE_CONFIG = [
     permission: { modulo: 'operaciones', accion: 'ver' },
     listPath: '/operaciones/entradas',
     searchFn: async (term, apiClient, endpoints) => {
-      const res = await apiClient.get(endpoints.AUDITORIAS.ENTRADAS, { params: { search: term, limit: 5 } });
+      const res = await apiClient.get(endpoints.AUDITORIAS.ENTRADAS, {
+        params: { search: term, limit: 5 },
+      });
       const data = Array.isArray(res?.data) ? res.data : res?.data?.entradas || [];
-      return data.map(e => ({
+      return data.map((e) => ({
         id: e.id,
         title: e.documento_wms || e.documento,
         subtitle: `${e.cliente || ''} - ${e.estado}`,
@@ -83,9 +100,11 @@ const MODULE_CONFIG = [
     permission: { modulo: 'operaciones', accion: 'ver' },
     listPath: '/operaciones/salidas',
     searchFn: async (term, apiClient, endpoints) => {
-      const res = await apiClient.get(endpoints.AUDITORIAS.SALIDAS, { params: { search: term, limit: 5 } });
+      const res = await apiClient.get(endpoints.AUDITORIAS.SALIDAS, {
+        params: { search: term, limit: 5 },
+      });
       const data = Array.isArray(res?.data) ? res.data : res?.data?.salidas || [];
-      return data.map(s => ({
+      return data.map((s) => ({
         id: s.id,
         title: s.documento_wms || s.documento,
         subtitle: `${s.cliente || ''} - ${s.estado}`,
@@ -102,9 +121,11 @@ const MODULE_CONFIG = [
     permission: { modulo: 'operaciones', accion: 'ver' },
     listPath: '/operaciones/kardex',
     searchFn: async (term, apiClient, endpoints) => {
-      const res = await apiClient.get(endpoints.AUDITORIAS.KARDEX, { params: { search: term, limit: 5 } });
+      const res = await apiClient.get(endpoints.AUDITORIAS.KARDEX, {
+        params: { search: term, limit: 5 },
+      });
       const data = Array.isArray(res?.data) ? res.data : res?.data?.kardex || [];
-      return data.map(k => ({
+      return data.map((k) => ({
         id: k.id,
         title: k.documento_wms || k.motivo || k.documento,
         subtitle: `${k.cliente || ''} - ${k.estado}`,
@@ -121,9 +142,11 @@ const MODULE_CONFIG = [
     permission: { modulo: 'viajes', accion: 'ver' },
     listPath: '/viajes/viajes',
     searchFn: async (term, apiClient, endpoints) => {
-      const res = await apiClient.get(endpoints.VIAJES.BASE, { params: { search: term, limit: 5 } });
+      const res = await apiClient.get(endpoints.VIAJES.BASE, {
+        params: { search: term, limit: 5 },
+      });
       const data = Array.isArray(res?.data) ? res.data : res?.data?.viajes || [];
-      return data.map(v => ({
+      return data.map((v) => ({
         id: v.id,
         title: v.numero || `Viaje #${v.id}`,
         subtitle: v.destino || '-',
@@ -140,9 +163,11 @@ const MODULE_CONFIG = [
     permission: { modulo: 'vehiculos', accion: 'ver' },
     listPath: '/viajes/vehiculos',
     searchFn: async (term, apiClient, endpoints) => {
-      const res = await apiClient.get(endpoints.VEHICULOS.BASE, { params: { search: term, limit: 5 } });
+      const res = await apiClient.get(endpoints.VEHICULOS.BASE, {
+        params: { search: term, limit: 5 },
+      });
       const data = Array.isArray(res?.data) ? res.data : res?.data?.vehiculos || [];
-      return data.map(v => ({
+      return data.map((v) => ({
         id: v.id,
         title: v.placa,
         subtitle: v.tipo_vehiculo || '-',
@@ -159,9 +184,11 @@ const MODULE_CONFIG = [
     permission: { modulo: 'caja_menor', accion: 'ver' },
     listPath: '/viajes/cajas-menores',
     searchFn: async (term, apiClient, endpoints) => {
-      const res = await apiClient.get(endpoints.CAJAS_MENORES.BASE, { params: { search: term, limit: 5 } });
+      const res = await apiClient.get(endpoints.CAJAS_MENORES.BASE, {
+        params: { search: term, limit: 5 },
+      });
       const data = Array.isArray(res?.data) ? res.data : res?.data?.cajas || [];
-      return data.map(c => ({
+      return data.map((c) => ({
         id: c.id,
         title: `Caja #${String(c.numero || c.id).padStart(3, '0')}`,
         subtitle: c.estado || '-',
@@ -178,9 +205,11 @@ const MODULE_CONFIG = [
     permission: { modulo: 'movimientos', accion: 'ver' },
     listPath: '/viajes/movimientos',
     searchFn: async (term, apiClient, endpoints) => {
-      const res = await apiClient.get(endpoints.MOVIMIENTOS.BASE, { params: { search: term, limit: 5 } });
+      const res = await apiClient.get(endpoints.MOVIMIENTOS.BASE, {
+        params: { search: term, limit: 5 },
+      });
       const data = Array.isArray(res?.data) ? res.data : res?.data?.movimientos || [];
-      return data.map(m => ({
+      return data.map((m) => ({
         id: m.id,
         title: m.concepto || m.descripcion || `Movimiento #${m.id}`,
         subtitle: m.tipo_movimiento || '-',
@@ -207,7 +236,7 @@ const getRecent = () => {
 
 const saveRecent = (item) => {
   try {
-    const prev = getRecent().filter(r => r.path !== item.path);
+    const prev = getRecent().filter((r) => r.path !== item.path);
     const next = [item, ...prev].slice(0, MAX_RECENT);
     localStorage.setItem(RECENT_KEY, JSON.stringify(next));
   } catch {
@@ -233,9 +262,13 @@ const Highlight = ({ text, term }) => {
   return (
     <>
       {parts.map((part, i) =>
-        part.toLowerCase() === term.toLowerCase()
-          ? <strong key={i} className="font-bold text-orange-500 dark:text-orange-400">{part}</strong>
-          : part
+        part.toLowerCase() === term.toLowerCase() ? (
+          <strong key={i} className="font-bold text-orange-500 dark:text-orange-400">
+            {part}
+          </strong>
+        ) : (
+          part
+        )
       )}
     </>
   );
@@ -260,7 +293,7 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
 
   // Módulos accesibles según permisos del usuario
   const allowedModules = useMemo(
-    () => MODULE_CONFIG.filter(m => hasPermission(m.permission.modulo, m.permission.accion)),
+    () => MODULE_CONFIG.filter((m) => hasPermission(m.permission.modulo, m.permission.accion)),
     [hasPermission]
   );
 
@@ -269,7 +302,7 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
     const match = query.match(/^([a-z]+)\s+(.+)$/);
     if (match) {
       const [, prefix, term] = match;
-      const mod = allowedModules.find(m => m.prefix === prefix);
+      const mod = allowedModules.find((m) => m.prefix === prefix);
       if (mod) return { filteredModules: [mod], term };
     }
     return { filteredModules: allowedModules, term: query };
@@ -300,32 +333,35 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
   }, [open]);
 
   // Buscar con debounce
-  const doSearch = useCallback(async (term, modules) => {
-    if (!term || term.length < 2) {
-      setResults({});
-      return;
-    }
-    setLoading(true);
-    try {
-      const promises = modules.map(async (mod) => {
-        try {
-          const items = await mod.searchFn(term, apiClient, endpoints);
-          return { key: mod.key, items };
-        } catch {
-          return { key: mod.key, items: [] };
-        }
-      });
-      const settled = await Promise.all(promises);
-      const newResults = {};
-      settled.forEach(({ key, items }) => {
-        if (items.length > 0) newResults[key] = items;
-      });
-      setResults(newResults);
-      setSelectedIdx(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [apiClient, endpoints]);
+  const doSearch = useCallback(
+    async (term, modules) => {
+      if (!term || term.length < 2) {
+        setResults({});
+        return;
+      }
+      setLoading(true);
+      try {
+        const promises = modules.map(async (mod) => {
+          try {
+            const items = await mod.searchFn(term, apiClient, endpoints);
+            return { key: mod.key, items };
+          } catch {
+            return { key: mod.key, items: [] };
+          }
+        });
+        const settled = await Promise.all(promises);
+        const newResults = {};
+        settled.forEach(({ key, items }) => {
+          if (items.length > 0) newResults[key] = items;
+        });
+        setResults(newResults);
+        setSelectedIdx(0);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [apiClient, endpoints]
+  );
 
   const handleInputChange = (e) => {
     const val = e.target.value;
@@ -350,23 +386,29 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
 
   // Flatten results para navegación con teclado
   const flatResults = Object.entries(results).flatMap(([key, items]) =>
-    items.map(item => ({ ...item, moduleKey: key }))
+    items.map((item) => ({ ...item, moduleKey: key }))
   );
 
   const handleKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIdx(prev => Math.min(prev + 1, flatResults.length - 1));
+      setSelectedIdx((prev) => Math.min(prev + 1, flatResults.length - 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setSelectedIdx(prev => Math.max(prev - 1, 0));
+      setSelectedIdx((prev) => Math.max(prev - 1, 0));
     } else if (e.key === 'Enter' && flatResults[selectedIdx]) {
       handleSelect(flatResults[selectedIdx]);
     }
   };
 
   const handleSelect = (item) => {
-    saveRecent({ id: item.id, title: item.title, subtitle: item.subtitle, path: item.path, moduleKey: item.moduleKey });
+    saveRecent({
+      id: item.id,
+      title: item.title,
+      subtitle: item.subtitle,
+      path: item.path,
+      moduleKey: item.moduleKey,
+    });
     navigate(item.path);
     setOpen(false);
   };
@@ -376,9 +418,8 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
     setOpen(false);
   };
 
-  const activePrefix = parsedQuery.filteredModules.length === 1
-    ? parsedQuery.filteredModules[0]
-    : null;
+  const activePrefix =
+    parsedQuery.filteredModules.length === 1 ? parsedQuery.filteredModules[0] : null;
 
   if (!open) return null;
 
@@ -387,7 +428,10 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
   return (
     <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-[15vh]">
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={() => setOpen(false)}
+      />
 
       {/* Modal */}
       <div
@@ -398,7 +442,9 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
         <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-700">
           <Search className="w-5 h-5 text-slate-400 flex-shrink-0" />
           {activePrefix && (
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md font-medium bg-slate-100 dark:bg-centhrix-surface ${activePrefix.color}`}>
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md font-medium bg-slate-100 dark:bg-centhrix-surface ${activePrefix.color}`}
+            >
               <activePrefix.icon className="w-3 h-3" />
               {activePrefix.label}
             </span>
@@ -409,7 +455,11 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
             value={query}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder={activePrefix ? `Buscar en ${activePrefix.label}...` : 'Buscar productos, clientes, operaciones...'}
+            placeholder={
+              activePrefix
+                ? `Buscar en ${activePrefix.label}...`
+                : 'Buscar productos, clientes, operaciones...'
+            }
             className="flex-1 bg-transparent text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none"
           />
           {loading && <Loader2 className="w-4 h-4 text-orange-500 animate-spin flex-shrink-0" />}
@@ -420,7 +470,6 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
 
         {/* Results */}
         <div className="max-h-[55vh] overflow-y-auto">
-
           {/* Sin query: recientes + prefijos disponibles */}
           {parsedQuery.term.length < 2 && !loading && (
             <div className="p-3">
@@ -428,16 +477,21 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
               {recent.length > 0 && (
                 <div className="mb-3">
                   <div className="flex items-center justify-between px-1 mb-1">
-                    <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Recientes</span>
+                    <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      Recientes
+                    </span>
                     <button
-                      onClick={() => { clearRecent(); setRecent([]); }}
+                      onClick={() => {
+                        clearRecent();
+                        setRecent([]);
+                      }}
                       className="text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-0.5"
                     >
                       <X className="w-3 h-3" /> Limpiar
                     </button>
                   </div>
                   {recent.map((item) => {
-                    const mod = MODULE_CONFIG.find(m => m.key === item.moduleKey);
+                    const mod = MODULE_CONFIG.find((m) => m.key === item.moduleKey);
                     const Icon = mod?.icon || FileText;
                     return (
                       <button
@@ -447,10 +501,16 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
                       >
                         <Clock className="w-4 h-4 text-slate-300 dark:text-slate-600 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-slate-700 dark:text-slate-200 truncate">{item.title}</p>
-                          <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{item.subtitle}</p>
+                          <p className="text-sm text-slate-700 dark:text-slate-200 truncate">
+                            {item.title}
+                          </p>
+                          <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
+                            {item.subtitle}
+                          </p>
                         </div>
-                        <div className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${mod?.color || 'text-slate-400'}`}>
+                        <div
+                          className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${mod?.color || 'text-slate-400'}`}
+                        >
                           <Icon className="w-3 h-3" />
                           <span className="text-[10px]">{mod?.label}</span>
                         </div>
@@ -466,10 +526,13 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
                   Filtrar por módulo — escribe el prefijo + espacio
                 </p>
                 <div className="flex flex-wrap gap-1.5">
-                  {allowedModules.map(mod => {
+                  {allowedModules.map((mod) => {
                     const Icon = mod.icon;
                     return (
-                      <span key={mod.key} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-centhrix-surface/50 rounded-lg border border-slate-100 dark:border-slate-700">
+                      <span
+                        key={mod.key}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-centhrix-surface/50 rounded-lg border border-slate-100 dark:border-slate-700"
+                      >
                         <Icon className={`w-3 h-3 ${mod.color}`} />
                         {mod.label}
                         <kbd className="font-mono text-[9px] px-1 py-0.5 bg-slate-200 dark:bg-centhrix-surface rounded text-slate-500 dark:text-slate-400">
@@ -498,7 +561,7 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
 
           {/* Resultados por módulo */}
           {Object.entries(results).map(([moduleKey, items]) => {
-            const mod = MODULE_CONFIG.find(m => m.key === moduleKey);
+            const mod = MODULE_CONFIG.find((m) => m.key === moduleKey);
             if (!mod) return null;
             const Icon = mod.icon;
 
@@ -510,7 +573,9 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       {mod.label}
                     </span>
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500">({items.length})</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                      ({items.length})
+                    </span>
                   </div>
                 </div>
 
@@ -529,10 +594,14 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
                     >
                       <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium truncate ${isSelected ? 'text-orange-600 dark:text-orange-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                        <p
+                          className={`text-sm font-medium truncate ${isSelected ? 'text-orange-600 dark:text-orange-400' : 'text-slate-700 dark:text-slate-200'}`}
+                        >
                           <Highlight text={item.title} term={parsedQuery.term} />
                         </p>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{item.subtitle}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
+                          {item.subtitle}
+                        </p>
                       </div>
                       {isSelected && (
                         <kbd className="text-[10px] text-slate-400 bg-slate-100 dark:bg-centhrix-surface px-1.5 py-0.5 rounded font-mono">

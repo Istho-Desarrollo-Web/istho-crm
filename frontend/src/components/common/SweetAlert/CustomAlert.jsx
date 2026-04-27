@@ -1,20 +1,14 @@
 ﻿/**
  * ISTHO CRM - Custom Alert Component
  * Alertas y confirmaciones con estilo premium y animaciones.
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 1.0.0
  * @date Marzo 2026
  */
 
 import PropTypes from 'prop-types';
-import {
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  Info,
-  Loader2
-} from 'lucide-react';
+import { CheckCircle2, XCircle, AlertTriangle, Info, Loader2 } from 'lucide-react';
 
 const alertTypes = {
   success: {
@@ -40,7 +34,7 @@ const alertTypes = {
     bgIcon: 'bg-blue-100 dark:bg-blue-900/30',
     btnClass: 'bg-blue-500 hover:bg-blue-600 shadow-blue-200/50',
     title: 'text-blue-700 dark:text-blue-400',
-  }
+  },
 };
 
 const CustomAlert = ({
@@ -61,24 +55,26 @@ const CustomAlert = ({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-md bg-black/40 animate-fadeIn">
-      <div 
+      <div
         className="relative w-full max-w-sm bg-white dark:bg-centhrix-bg rounded-[2rem] shadow-2xl overflow-hidden border border-white/20 dark:border-slate-800 animate-zoomIn"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Decoración superior */}
         <div className={`h-2 w-full ${style.btnClass.split(' ')[0]}`} />
-        
+
         <div className="p-8 text-center">
           {/* Icono con efecto de pulso */}
-          <div className={`mx-auto w-20 h-20 rounded-full ${style.bgIcon} flex items-center justify-center mb-6 relative`}>
+          <div
+            className={`mx-auto w-20 h-20 rounded-full ${style.bgIcon} flex items-center justify-center mb-6 relative`}
+          >
             {style.icon}
-            <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${style.bgIcon}`} />
+            <div
+              className={`absolute inset-0 rounded-full animate-ping opacity-20 ${style.bgIcon}`}
+            />
           </div>
 
-          <h3 className={`text-2xl font-bold mb-3 ${style.title}`}>
-            {title}
-          </h3>
-          
+          <h3 className={`text-2xl font-bold mb-3 ${style.title}`}>{title}</h3>
+
           <p className="text-slate-500 dark:text-slate-400 text-base leading-relaxed mb-8">
             {message}
           </p>

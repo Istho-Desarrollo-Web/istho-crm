@@ -1,8 +1,8 @@
 /**
  * ISTHO CRM - Rutas de Inventario
- * 
+ *
  * Define los endpoints para el módulo de inventario.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.1.0
  */
@@ -24,7 +24,7 @@ const {
   idParamValidator,
   clienteIdParamValidator,
   listarInventarioValidator,
-  ajustarCantidadValidator
+  ajustarCantidadValidator,
 } = require('../validators/inventarioValidator');
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -44,9 +44,13 @@ router.use(filtrarPorCliente);
  * Descargar plantilla Excel para importación de productos
  */
 const multer = require('multer');
-const uploadMemory = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+const uploadMemory = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 },
+});
 
-router.get('/plantilla-importacion',
+router.get(
+  '/plantilla-importacion',
   requiereRol('admin', 'supervisor', 'operador'),
   inventarioController.plantillaImportacion
 );
@@ -55,7 +59,8 @@ router.get('/plantilla-importacion',
  * POST /api/v1/inventario/importar
  * Importar productos desde Excel
  */
-router.post('/importar',
+router.post(
+  '/importar',
   requiereRol('admin', 'supervisor', 'operador'),
   uploadMemory.single('archivo'),
   inventarioController.importarProductos
@@ -69,71 +74,49 @@ router.post('/importar',
  * GET /api/v1/inventario
  * Listar inventario con paginación y filtros
  */
-router.get('/',
-  listarInventarioValidator,
-  inventarioController.listar
-);
+router.get('/', listarInventarioValidator, inventarioController.listar);
 
 /**
  * GET /api/v1/inventario/stats
  * Obtener estadísticas/KPIs de inventario
  */
-router.get('/stats', 
-  inventarioController.estadisticas
-);
+router.get('/stats', inventarioController.estadisticas);
 
 /**
  * GET /api/v1/inventario/alertas
  * Obtener alertas de stock bajo, agotados y vencimientos
  */
-router.get('/alertas', 
-  inventarioController.alertas
-);
+router.get('/alertas', inventarioController.alertas);
 
 /**
  * GET /api/v1/inventario/cliente/:clienteId
  * Obtener inventario de un cliente específico
  */
-router.get('/cliente/:clienteId', 
-  clienteIdParamValidator,
-  inventarioController.obtenerPorCliente
-);
+router.get('/cliente/:clienteId', clienteIdParamValidator, inventarioController.obtenerPorCliente);
 
 /**
  * GET /api/v1/inventario/:id
  * Obtener un item de inventario por ID
  */
-router.get('/:id', 
-  idParamValidator,
-  inventarioController.obtenerPorId
-);
+router.get('/:id', idParamValidator, inventarioController.obtenerPorId);
 
 /**
  * GET /api/v1/inventario/:id/movimientos
  * Obtener historial de movimientos de un producto
  */
-router.get('/:id/movimientos', 
-  idParamValidator,
-  inventarioController.obtenerMovimientos
-);
+router.get('/:id/movimientos', idParamValidator, inventarioController.obtenerMovimientos);
 
 /**
  * GET /api/v1/inventario/:id/estadisticas
  * Obtener estadísticas de movimientos para gráficos
  */
-router.get('/:id/estadisticas', 
-  idParamValidator,
-  inventarioController.obtenerEstadisticasProducto
-);
+router.get('/:id/estadisticas', idParamValidator, inventarioController.obtenerEstadisticasProducto);
 
 /**
  * GET /api/v1/inventario/:id/cajas
  * Obtener cajas/detalles de operaciones asociadas al producto
  */
-router.get('/:id/cajas',
-  idParamValidator,
-  inventarioController.obtenerCajas
-);
+router.get('/:id/cajas', idParamValidator, inventarioController.obtenerCajas);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // OPERACIONES DE ESCRITURA (requieren rol operador+)
@@ -143,7 +126,8 @@ router.get('/:id/cajas',
  * POST /api/v1/inventario
  * Crear un nuevo item de inventario
  */
-router.post('/', 
+router.post(
+  '/',
   requiereRol('admin', 'supervisor', 'operador'),
   crearInventarioValidator,
   inventarioController.crear
@@ -153,7 +137,8 @@ router.post('/',
  * PUT /api/v1/inventario/:id
  * Actualizar un item de inventario
  */
-router.put('/:id', 
+router.put(
+  '/:id',
   requiereRol('admin', 'supervisor', 'operador'),
   actualizarInventarioValidator,
   inventarioController.actualizar
@@ -163,7 +148,8 @@ router.put('/:id',
  * POST /api/v1/inventario/:id/ajustar
  * Ajustar cantidad (entrada, salida, ajuste)
  */
-router.post('/:id/ajustar', 
+router.post(
+  '/:id/ajustar',
   requiereRol('admin', 'supervisor', 'operador'),
   ajustarCantidadValidator,
   inventarioController.ajustarCantidad
@@ -173,7 +159,8 @@ router.post('/:id/ajustar',
  * POST /api/v1/inventario/:id/movimientos
  * Alias para ajustar (compatibilidad con frontend)
  */
-router.post('/:id/movimientos', 
+router.post(
+  '/:id/movimientos',
   requiereRol('admin', 'supervisor', 'operador'),
   ajustarCantidadValidator,
   inventarioController.ajustarCantidad
@@ -187,7 +174,8 @@ router.post('/:id/movimientos',
  * PUT /api/v1/inventario/alertas/:alertaId/atender
  * Marcar una alerta como atendida
  */
-router.put('/alertas/:alertaId/atender', 
+router.put(
+  '/alertas/:alertaId/atender',
   requiereRol('admin', 'supervisor', 'operador'),
   inventarioController.atenderAlerta
 );
@@ -196,7 +184,8 @@ router.put('/alertas/:alertaId/atender',
  * DELETE /api/v1/inventario/alertas/:alertaId
  * Descartar una alerta
  */
-router.delete('/alertas/:alertaId',
+router.delete(
+  '/alertas/:alertaId',
   requiereRol('admin', 'supervisor'),
   inventarioController.descartarAlerta
 );
@@ -205,7 +194,8 @@ router.delete('/alertas/:alertaId',
  * POST /api/v1/inventario/alertas/descartar-todas
  * Descartar todas las alertas activas en masa
  */
-router.post('/alertas/descartar-todas',
+router.post(
+  '/alertas/descartar-todas',
   requiereRol('admin', 'supervisor'),
   inventarioController.descartarTodasAlertas
 );
@@ -218,7 +208,8 @@ router.post('/alertas/descartar-todas',
  * DELETE /api/v1/inventario/:id
  * Eliminar un item de inventario
  */
-router.delete('/:id', 
+router.delete(
+  '/:id',
   requiereRol('admin', 'supervisor'),
   idParamValidator,
   inventarioController.eliminar

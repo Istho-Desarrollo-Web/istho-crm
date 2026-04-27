@@ -45,16 +45,12 @@ const useIdleTimer = () => {
 
     resetTimer();
 
-    EVENTOS_ACTIVIDAD.forEach(ev =>
-      window.addEventListener(ev, resetTimer, { passive: true })
-    );
+    EVENTOS_ACTIVIDAD.forEach((ev) => window.addEventListener(ev, resetTimer, { passive: true }));
 
     return () => {
       clearTimeout(timerAvisoRef.current);
       clearTimeout(timerLogoutRef.current);
-      EVENTOS_ACTIVIDAD.forEach(ev =>
-        window.removeEventListener(ev, resetTimer)
-      );
+      EVENTOS_ACTIVIDAD.forEach((ev) => window.removeEventListener(ev, resetTimer));
     };
   }, [user?.preferencias?.tiempo_sesion, logout]);
 

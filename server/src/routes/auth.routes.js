@@ -1,8 +1,8 @@
 /**
  * ISTHO CRM - Rutas de Autenticación
- * 
+ *
  * Endpoints para autenticación y gestión de usuarios.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  */
@@ -24,7 +24,7 @@ const {
   registroValidator,
   cambiarPasswordValidator,
   forgotPasswordValidator,
-  resetPasswordValidator
+  resetPasswordValidator,
 } = require('../validators/authValidator');
 
 // Rate limiters específicos
@@ -46,7 +46,12 @@ router.post('/login', limiterLogin, loginValidator, authController.login);
  * @desc    Solicitar recuperación de contraseña
  * @access  Público
  */
-router.post('/forgot-password', limiterForgotPassword, forgotPasswordValidator, authController.forgotPassword);
+router.post(
+  '/forgot-password',
+  limiterForgotPassword,
+  forgotPasswordValidator,
+  authController.forgotPassword
+);
 
 /**
  * @route   POST /auth/reset-password
@@ -71,7 +76,12 @@ router.get('/me', verificarToken, authController.me);
  * @desc    Actualizar perfil del usuario actual
  * @access  Privado
  */
-router.put('/me', verificarToken, verificarPermisoCliente('perfil', 'editar'), authController.actualizarPerfil);
+router.put(
+  '/me',
+  verificarToken,
+  verificarPermisoCliente('perfil', 'editar'),
+  authController.actualizarPerfil
+);
 
 /**
  * @route   POST /auth/logout
@@ -85,7 +95,13 @@ router.post('/logout', verificarToken, authController.logout);
  * @desc    Cambiar contraseña del usuario actual
  * @access  Privado
  */
-router.put('/cambiar-password', verificarToken, verificarPermisoCliente('perfil', 'cambiar_password'), cambiarPasswordValidator, authController.cambiarPassword);
+router.put(
+  '/cambiar-password',
+  verificarToken,
+  verificarPermisoCliente('perfil', 'cambiar_password'),
+  cambiarPasswordValidator,
+  authController.cambiarPassword
+);
 
 /**
  * @route   POST /auth/me/avatar
@@ -93,7 +109,12 @@ router.put('/cambiar-password', verificarToken, verificarPermisoCliente('perfil'
  * @access  Privado
  */
 router.put('/me/preferencias', verificarToken, authController.actualizarPreferencias);
-router.post('/me/avatar', verificarToken, uploadAvatar.single('avatar'), authController.subirAvatar);
+router.post(
+  '/me/avatar',
+  verificarToken,
+  uploadAvatar.single('avatar'),
+  authController.subirAvatar
+);
 
 /**
  * @route   DELETE /auth/me/avatar
@@ -129,6 +150,10 @@ router.post('/2fa/deshabilitar', verificarToken, authController.deshabilitar2FA)
 
 // Dispositivos de confianza
 router.get('/dispositivos-confiables', verificarToken, authController.listarDispositivosConfiables);
-router.delete('/dispositivos-confiables/:jti', verificarToken, authController.revocarDispositivoConfiable);
+router.delete(
+  '/dispositivos-confiables/:jti',
+  verificarToken,
+  authController.revocarDispositivoConfiable
+);
 
 module.exports = router;

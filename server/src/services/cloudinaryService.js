@@ -22,7 +22,11 @@ cloudinary.config({
  * Verificar si Cloudinary está configurado
  */
 const isConfigured = () => {
-  return !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
+  return !!(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+  );
 };
 
 /**
@@ -40,9 +44,9 @@ const subirImagen = async (filePath, options = {}) => {
       public_id: options.publicId || undefined,
       resource_type: 'image',
       transformation: [
-        { width: 1920, crop: 'limit' },      // Max 1920px de ancho
-        { quality: 'auto:good' },              // Compresión inteligente
-        { fetch_format: 'auto' },              // Formato óptimo (WebP si soportado)
+        { width: 1920, crop: 'limit' }, // Max 1920px de ancho
+        { quality: 'auto:good' }, // Compresión inteligente
+        { fetch_format: 'auto' }, // Formato óptimo (WebP si soportado)
       ],
       overwrite: true,
     });

@@ -41,7 +41,8 @@ const ReporteDespachos = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { hasPermission } = useAuth();
-  const canDownload = hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
+  const canDownload =
+    hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
   const { enqueueSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(true);
   const [firstLoad, setFirstLoad] = useState(true);
@@ -59,7 +60,9 @@ const ReporteDespachos = () => {
   const handleFiltersChange = (newFilters) => {
     setFilters(newFilters);
     const params = new URLSearchParams();
-    Object.entries(newFilters).forEach(([k, v]) => { if (v) params.set(k, v); });
+    Object.entries(newFilters).forEach(([k, v]) => {
+      if (v) params.set(k, v);
+    });
     setSearchParams(params, { replace: true });
   };
 
@@ -101,9 +104,8 @@ const ReporteDespachos = () => {
   const handleExport = async (format) => {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      const endpoint = format === 'excel'
-        ? '/reportes/operaciones/excel'
-        : '/reportes/operaciones/pdf';
+      const endpoint =
+        format === 'excel' ? '/reportes/operaciones/excel' : '/reportes/operaciones/pdf';
       const ext = format === 'excel' ? 'xlsx' : 'pdf';
       await descargarArchivo(
         `${baseUrl}${endpoint}?${buildFilterParams()}`,
@@ -149,7 +151,7 @@ const ReporteDespachos = () => {
     { name: 'Ingresos', value: porTipo.ingreso || 0 },
     { name: 'Salidas', value: porTipo.salida || 0 },
     { name: 'Kardex', value: porTipo.kardex || 0 },
-  ].filter(d => d.value > 0);
+  ].filter((d) => d.value > 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
@@ -168,18 +170,40 @@ const ReporteDespachos = () => {
                 <Truck className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Reporte de Operaciones</h1>
-                <p className="text-slate-500 dark:text-slate-400">Entradas, salidas y kardex del WMS</p>
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                  Reporte de Operaciones
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400">
+                  Entradas, salidas y kardex del WMS
+                </p>
               </div>
             </div>
           </div>
 
-          <AccionesDropdown acciones={[
-            { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
-            { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true), hidden: !canDownload },
-            { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel'), hidden: !canDownload },
-            { label: 'PDF', icon: Download, onClick: () => handleExport('pdf'), variant: 'primary', hidden: !canDownload },
-          ]} />
+          <AccionesDropdown
+            acciones={[
+              { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+              {
+                label: 'Enviar',
+                icon: Mail,
+                onClick: () => setEmailModal(true),
+                hidden: !canDownload,
+              },
+              {
+                label: 'Excel',
+                icon: FileSpreadsheet,
+                onClick: () => handleExport('excel'),
+                hidden: !canDownload,
+              },
+              {
+                label: 'PDF',
+                icon: Download,
+                onClick: () => handleExport('pdf'),
+                variant: 'primary',
+                hidden: !canDownload,
+              },
+            ]}
+          />
         </div>
 
         {error && (
@@ -250,7 +274,7 @@ const ReporteDespachos = () => {
             <BarChart
               title="Tendencia de Operaciones (últimos 6 meses)"
               subtitle="Entradas vs Salidas por mes"
-              data={comparativo.meses.map(m => ({
+              data={comparativo.meses.map((m) => ({
                 label: m.mes,
                 value1: m.entradas,
                 value2: m.salidas,
@@ -272,13 +296,24 @@ const ReporteDespachos = () => {
               { label: 'Entradas', ...comparativo.comparacion.entradas },
               { label: 'Salidas', ...comparativo.comparacion.salidas },
             ].map(({ label, actual, anterior, variacion }) => (
-              <div key={label} className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{label} vs mes anterior</p>
+              <div
+                key={label}
+                className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4"
+              >
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                  {label} vs mes anterior
+                </p>
                 <div className="flex items-end justify-between">
                   <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{actual}</p>
-                  <div className={`flex items-center gap-1 text-sm font-medium ${
-                    variacion > 0 ? 'text-emerald-600' : variacion < 0 ? 'text-red-600' : 'text-slate-400'
-                  }`}>
+                  <div
+                    className={`flex items-center gap-1 text-sm font-medium ${
+                      variacion > 0
+                        ? 'text-emerald-600'
+                        : variacion < 0
+                          ? 'text-red-600'
+                          : 'text-slate-400'
+                    }`}
+                  >
                     {variacion > 0 ? '↑' : variacion < 0 ? '↓' : '='} {Math.abs(variacion)}%
                   </div>
                 </div>
@@ -290,21 +325,41 @@ const ReporteDespachos = () => {
 
         {/* Resumen */}
         <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-4">Resumen por Estado</h3>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-4">
+            Resumen por Estado
+          </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Object.entries(porEstado).map(([estado, cantidad]) => {
               const config = {
-                pendiente: { icon: Clock, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-                en_proceso: { icon: RefreshCw, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-                cerrado: { icon: CheckCircle, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-                anulado: { icon: XCircle, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20' },
+                pendiente: {
+                  icon: Clock,
+                  color: 'text-amber-600 dark:text-amber-400',
+                  bg: 'bg-amber-50 dark:bg-amber-900/20',
+                },
+                en_proceso: {
+                  icon: RefreshCw,
+                  color: 'text-blue-600 dark:text-blue-400',
+                  bg: 'bg-blue-50 dark:bg-blue-900/20',
+                },
+                cerrado: {
+                  icon: CheckCircle,
+                  color: 'text-emerald-600 dark:text-emerald-400',
+                  bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+                },
+                anulado: {
+                  icon: XCircle,
+                  color: 'text-red-600 dark:text-red-400',
+                  bg: 'bg-red-50 dark:bg-red-900/20',
+                },
               };
               const { icon: Icon, color, bg } = config[estado] || config.pendiente;
               return (
                 <div key={estado} className={`p-4 rounded-xl ${bg}`}>
                   <div className="flex items-center gap-2 mb-2">
                     <Icon className={`w-5 h-5 ${color}`} />
-                    <span className={`text-sm font-medium ${color} capitalize`}>{estado.replace('_', ' ')}</span>
+                    <span className={`text-sm font-medium ${color} capitalize`}>
+                      {estado.replace('_', ' ')}
+                    </span>
                   </div>
                   <p className={`text-2xl font-bold ${color}`}>{cantidad || 0}</p>
                 </div>
@@ -319,7 +374,10 @@ const ReporteDespachos = () => {
         onClose={() => setEmailModal(false)}
         tipoReporte="operaciones"
         onSend={async (data) => {
-          const res = await reportesService.enviarPorEmail({ ...data, cliente_id: filters.cliente_id });
+          const res = await reportesService.enviarPorEmail({
+            ...data,
+            cliente_id: filters.cliente_id,
+          });
           if (res.success) enqueueSnackbar(res.message, { variant: 'success' });
           else throw new Error(res.message);
         }}

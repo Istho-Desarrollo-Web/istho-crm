@@ -3,13 +3,13 @@
  * ISTHO CRM - Servicio de Clientes
  * ============================================================================
  * Gestiona todas las operaciones relacionadas con clientes.
- * 
+ *
  * NOTA: Frontend y Backend usan snake_case, no se necesitan transformaciones.
- * 
+ *
  * CORRECCIÓN v2.1.0:
  * - Compatible con client.js v1.1.0 (ya devuelve response.data)
  * - Eliminado doble acceso a .data
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 2.1.0
  * @date Enero 2026
@@ -23,14 +23,13 @@ import { CLIENTES_ENDPOINTS } from './endpoints';
 // ============================================================================
 
 const clientesService = {
-  
   // ──────────────────────────────────────────────────────────────────────────
   // LISTAR CLIENTES
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener lista de clientes con filtros y paginación
-   * 
+   *
    * @param {Object} params - Parámetros de búsqueda
    * @param {number} [params.page=1] - Número de página
    * @param {number} [params.limit=10] - Registros por página
@@ -53,14 +52,14 @@ const clientesService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // OBTENER CLIENTE POR ID
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener un cliente específico por su ID
-   * 
+   *
    * @param {number|string} id - ID del cliente
    * @returns {Promise<Object>} Datos del cliente
    */
@@ -76,21 +75,21 @@ const clientesService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // CREAR CLIENTE
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Crear un nuevo cliente
-   * 
+   *
    * @param {Object} clienteData - Datos del cliente (snake_case)
    * @returns {Promise<Object>} Cliente creado
    */
   create: async (clienteData) => {
     try {
       console.warn('📤 [Clientes] Creando:', clienteData);
-      
+
       const response = await apiClient.post(CLIENTES_ENDPOINTS.BASE, clienteData);
       return response; // ✅ Sin .data adicional
     } catch (error) {
@@ -103,14 +102,14 @@ const clientesService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // ACTUALIZAR CLIENTE
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Actualizar datos de un cliente existente
-   * 
+   *
    * @param {number|string} id - ID del cliente
    * @param {Object} clienteData - Datos a actualizar (snake_case)
    * @returns {Promise<Object>} Cliente actualizado
@@ -118,7 +117,7 @@ const clientesService = {
   update: async (id, clienteData) => {
     try {
       console.warn('📤 [Clientes] Actualizando:', { id, data: clienteData });
-      
+
       const response = await apiClient.put(CLIENTES_ENDPOINTS.BY_ID(id), clienteData);
       return response; // ✅ Sin .data adicional
     } catch (error) {
@@ -131,14 +130,14 @@ const clientesService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // ELIMINAR CLIENTE (Soft Delete)
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Eliminar un cliente (soft delete)
-   * 
+   *
    * @param {number|string} id - ID del cliente
    * @returns {Promise<Object>}
    */
@@ -154,14 +153,14 @@ const clientesService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // CAMBIAR ESTADO
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Cambiar el estado de un cliente
-   * 
+   *
    * @param {number|string} id - ID del cliente
    * @param {string} estado - Nuevo estado ('activo'|'inactivo'|'suspendido')
    * @returns {Promise<Object>}
@@ -169,14 +168,14 @@ const clientesService = {
   changeStatus: async (id, estado) => {
     return clientesService.update(id, { estado });
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // ESTADÍSTICAS
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener estadísticas de clientes
-   * 
+   *
    * @returns {Promise<Object>} Estadísticas
    */
   getStats: async () => {
@@ -191,14 +190,14 @@ const clientesService = {
       };
     }
   },
-  
+
   // ════════════════════════════════════════════════════════════════════════
   // CONTACTOS
   // ════════════════════════════════════════════════════════════════════════
-  
+
   /**
    * Obtener contactos de un cliente
-   * 
+   *
    * @param {number|string} clienteId - ID del cliente
    * @returns {Promise<Object>} Lista de contactos
    */
@@ -214,20 +213,17 @@ const clientesService = {
       };
     }
   },
-  
+
   /**
    * Crear un contacto para un cliente
-   * 
+   *
    * @param {number|string} clienteId - ID del cliente
    * @param {Object} contactoData - Datos del contacto
    * @returns {Promise<Object>} Contacto creado
    */
   createContacto: async (clienteId, contactoData) => {
     try {
-      const response = await apiClient.post(
-        CLIENTES_ENDPOINTS.CONTACTOS(clienteId), 
-        contactoData
-      );
+      const response = await apiClient.post(CLIENTES_ENDPOINTS.CONTACTOS(clienteId), contactoData);
       return response; // ✅ Sin .data adicional
     } catch (error) {
       throw {
@@ -238,10 +234,10 @@ const clientesService = {
       };
     }
   },
-  
+
   /**
    * Actualizar un contacto
-   * 
+   *
    * @param {number|string} clienteId - ID del cliente
    * @param {number|string} contactoId - ID del contacto
    * @param {Object} contactoData - Datos a actualizar
@@ -250,7 +246,7 @@ const clientesService = {
   updateContacto: async (clienteId, contactoId, contactoData) => {
     try {
       const response = await apiClient.put(
-        CLIENTES_ENDPOINTS.CONTACTO(clienteId, contactoId), 
+        CLIENTES_ENDPOINTS.CONTACTO(clienteId, contactoId),
         contactoData
       );
       return response; // ✅ Sin .data adicional
@@ -263,19 +259,17 @@ const clientesService = {
       };
     }
   },
-  
+
   /**
    * Eliminar un contacto
-   * 
+   *
    * @param {number|string} clienteId - ID del cliente
    * @param {number|string} contactoId - ID del contacto
    * @returns {Promise<Object>}
    */
   deleteContacto: async (clienteId, contactoId) => {
     try {
-      const response = await apiClient.delete(
-        CLIENTES_ENDPOINTS.CONTACTO(clienteId, contactoId)
-      );
+      const response = await apiClient.delete(CLIENTES_ENDPOINTS.CONTACTO(clienteId, contactoId));
       return response; // ✅ Sin .data adicional
     } catch (error) {
       throw {
@@ -285,27 +279,27 @@ const clientesService = {
       };
     }
   },
-  
+
   /**
    * Marcar contacto como principal
-   * 
+   *
    * @param {number|string} clienteId - ID del cliente
    * @param {number|string} contactoId - ID del contacto
    * @returns {Promise<Object>}
    */
   setContactoPrincipal: async (clienteId, contactoId) => {
-    return clientesService.updateContacto(clienteId, contactoId, { 
-      es_principal: true 
+    return clientesService.updateContacto(clienteId, contactoId, {
+      es_principal: true,
     });
   },
-  
+
   // ════════════════════════════════════════════════════════════════════════
   // BÚSQUEDA
   // ════════════════════════════════════════════════════════════════════════
-  
+
   /**
    * Buscar clientes por término
-   * 
+   *
    * @param {string} term - Término de búsqueda
    * @param {number} [limit=10] - Límite de resultados
    * @returns {Promise<Object>} Resultados de búsqueda
@@ -313,10 +307,10 @@ const clientesService = {
   search: async (term, limit = 10) => {
     return clientesService.getAll({ search: term, limit });
   },
-  
+
   /**
    * Obtener clientes activos (para selectores)
-   * 
+   *
    * @returns {Promise<Object>} Lista de clientes activos
    */
   getActivos: async () => {

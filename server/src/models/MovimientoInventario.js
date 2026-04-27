@@ -1,16 +1,16 @@
 /**
  * ISTHO CRM - Modelo MovimientoInventario
- * 
+ *
  * Registra el historial de movimientos de inventario (entradas, salidas, ajustes).
  * Proporciona trazabilidad completa para cumplimiento ISO 9001.
- * 
+ *
  * NOTA: Este modelo es compatible con el inventarioController existente.
  * El controller maneja la actualización del inventario, este modelo solo registra.
- * 
+ *
  * CORRECCIÓN v1.1.0:
  * - getEstadisticas usa SOLO fecha_movimiento (no existe created_at)
  * - Template literal corregido en console.log
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.1.0
  */
@@ -25,9 +25,9 @@ module.exports = (sequelize) => {
 
     /**
      * Registrar un movimiento de inventario
-     * NOTA: Este método SOLO registra el movimiento. 
+     * NOTA: Este método SOLO registra el movimiento.
      * La actualización del inventario la hace el controller.
-     * 
+     *
      * @param {Object} data - Datos del movimiento
      * @param {Object} options - Opciones de Sequelize (transaction, etc.)
      * @returns {Promise<MovimientoInventario>}
@@ -48,7 +48,7 @@ module.exports = (sequelize) => {
         ubicacion_destino = null,
         costo_unitario = null,
         ip_address = null,
-        _user_agent = null
+        _user_agent = null,
       } = data;
 
       // Validar campos requeridos
@@ -59,22 +59,25 @@ module.exports = (sequelize) => {
       if (stock_resultante === undefined) throw new Error('stock_resultante es requerido');
 
       // Crear el registro de movimiento
-      const movimiento = await this.create({
-        inventario_id,
-        usuario_id,
-        operacion_id,
-        tipo,
-        motivo: motivo || `Movimiento de ${tipo}`,
-        cantidad: parseFloat(cantidad),
-        stock_anterior: parseFloat(stock_anterior),
-        stock_resultante: parseFloat(stock_resultante),
-        documento_referencia,
-        observaciones,
-        ubicacion_origen,
-        ubicacion_destino,
-        costo_unitario: costo_unitario ? parseFloat(costo_unitario) : null,
-        ip_address,
-      }, options);
+      const movimiento = await this.create(
+        {
+          inventario_id,
+          usuario_id,
+          operacion_id,
+          tipo,
+          motivo: motivo || `Movimiento de ${tipo}`,
+          cantidad: parseFloat(cantidad),
+          stock_anterior: parseFloat(stock_anterior),
+          stock_resultante: parseFloat(stock_resultante),
+          documento_referencia,
+          observaciones,
+          ubicacion_origen,
+          ubicacion_destino,
+          costo_unitario: costo_unitario ? parseFloat(costo_unitario) : null,
+          ip_address,
+        },
+        options
+      );
 
       return movimiento;
     }
@@ -86,13 +89,7 @@ module.exports = (sequelize) => {
      * @returns {Promise<{data: Array, pagination: Object}>}
      */
     static async getHistorial(inventario_id, options = {}) {
-      const {
-        page = 1,
-        limit = 20,
-        tipo = null,
-        fecha_inicio = null,
-        fecha_fin = null
-      } = options;
+      const { page = 1, limit = 20, tipo = null, fecha_inicio = null, fecha_fin = null } = options;
 
       const offset = (page - 1) * limit;
 
@@ -116,14 +113,14 @@ module.exports = (sequelize) => {
             model: sequelize.models.Usuario,
             as: 'usuario',
             attributes: ['id', 'nombre_completo', 'username'],
-            required: false
+            required: false,
           },
           {
             model: sequelize.models.Operacion,
             as: 'operacion',
             attributes: ['id', 'consecutivo', 'tipo'],
-            required: false
-          }
+            required: false,
+          },
         ],
         order: [['fecha_movimiento', 'DESC']],
         limit: parseInt(limit),
@@ -145,11 +142,11 @@ module.exports = (sequelize) => {
      * ════════════════════════════════════════════════════════════════════════
      * Obtener estadísticas mensuales para gráficos
      * ════════════════════════════════════════════════════════════════════════
-     * 
-     * CORRECCIÓN v1.1.0: 
+     *
+     * CORRECCIÓN v1.1.0:
      * - Usa SOLO fecha_movimiento (la tabla NO tiene created_at)
      * - Devuelve formato compatible con BarChart del frontend
-     * 
+     *
      * @param {number} inventario_id - ID del producto
      * @param {number} meses - Cantidad de meses hacia atrás (default: 6)
      * @returns {Promise<Array>}
@@ -161,7 +158,9 @@ module.exports = (sequelize) => {
         fechaInicio.setDate(1);
         fechaInicio.setHours(0, 0, 0, 0);
 
-        console.log(`[getEstadisticas] inventario_id=${inventario_id}, desde=${fechaInicio.toISOString()}`);
+        console.log(
+          `[getEstadisticas] inventario_id=${inventario_id}, desde=${fechaInicio.toISOString()}`
+        );
 
         // ═══════════════════════════════════════════════════════════════════
         // CONSULTA CORREGIDA: Usa SOLO fecha_movimiento
@@ -170,14 +169,14 @@ module.exports = (sequelize) => {
           where: {
             inventario_id,
             fecha_movimiento: { [Op.gte]: fechaInicio },
-            tipo: { [Op.in]: ['entrada', 'salida'] }
+            tipo: { [Op.in]: ['entrada', 'salida'] },
           },
           attributes: [
             [sequelize.fn('DATE_FORMAT', sequelize.col('fecha_movimiento'), '%Y-%m'), 'periodo'],
             [sequelize.fn('MONTH', sequelize.col('fecha_movimiento')), 'mes_num'],
             'tipo',
             [sequelize.fn('SUM', sequelize.fn('ABS', sequelize.col('cantidad'))), 'total'],
-            [sequelize.fn('COUNT', sequelize.col('id')), 'operaciones']
+            [sequelize.fn('COUNT', sequelize.col('id')), 'operaciones'],
           ],
           group: ['periodo', 'mes_num', 'tipo'],
           order: [[sequelize.literal('periodo'), 'ASC']],
@@ -188,9 +187,18 @@ module.exports = (sequelize) => {
 
         // Mapeo de número de mes a nombre en español (abreviado)
         const MESES_ES = {
-          1: 'Ene', 2: 'Feb', 3: 'Mar', 4: 'Abr',
-          5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Ago',
-          9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dic'
+          1: 'Ene',
+          2: 'Feb',
+          3: 'Mar',
+          4: 'Abr',
+          5: 'May',
+          6: 'Jun',
+          7: 'Jul',
+          8: 'Ago',
+          9: 'Sep',
+          10: 'Oct',
+          11: 'Nov',
+          12: 'Dic',
         };
 
         // Transformar a formato de gráfico
@@ -204,10 +212,10 @@ module.exports = (sequelize) => {
               label: MESES_ES[mesNum] || m.periodo,
               entradas: 0,
               salidas: 0,
-              value1: 0,  // Para BarChart (entradas)
-              value2: 0,  // Para BarChart (salidas)
+              value1: 0, // Para BarChart (entradas)
+              value2: 0, // Para BarChart (salidas)
               operaciones_entrada: 0,
-              operaciones_salida: 0
+              operaciones_salida: 0,
             };
           }
 
@@ -228,7 +236,10 @@ module.exports = (sequelize) => {
         const resultado = Object.values(periodos);
 
         // Log para debug
-        console.log(`[getEstadisticas] Resultado (${resultado.length} periodos):`, JSON.stringify(resultado));
+        console.log(
+          `[getEstadisticas] Resultado (${resultado.length} periodos):`,
+          JSON.stringify(resultado)
+        );
 
         return resultado;
       } catch (error) {
@@ -255,10 +266,10 @@ module.exports = (sequelize) => {
         attributes: [
           'tipo',
           [sequelize.fn('SUM', sequelize.fn('ABS', sequelize.col('cantidad'))), 'total'],
-          [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad_operaciones']
+          [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad_operaciones'],
         ],
         group: ['tipo'],
-        raw: true
+        raw: true,
       });
 
       // Formatear resultado
@@ -266,10 +277,10 @@ module.exports = (sequelize) => {
         entradas: 0,
         salidas: 0,
         ajustes: 0,
-        total_operaciones: 0
+        total_operaciones: 0,
       };
 
-      resumen.forEach(r => {
+      resumen.forEach((r) => {
         if (r.tipo === 'entrada') resultado.entradas = parseFloat(r.total) || 0;
         else if (r.tipo === 'salida') resultado.salidas = parseFloat(r.total) || 0;
         else if (r.tipo === 'ajuste') resultado.ajustes = parseFloat(r.total) || 0;
@@ -294,21 +305,21 @@ module.exports = (sequelize) => {
           attributes: ['id', 'producto', 'sku', 'cliente_id'],
           required: true,
           ...(cliente_id && {
-            where: { cliente_id }
-          })
+            where: { cliente_id },
+          }),
         },
         {
           model: sequelize.models.Usuario,
           as: 'usuario',
           attributes: ['id', 'nombre_completo'],
-          required: false
-        }
+          required: false,
+        },
       ];
 
       return await this.findAll({
         include,
         order: [['fecha_movimiento', 'DESC']],
-        limit
+        limit,
       });
     }
   }
@@ -350,7 +361,14 @@ module.exports = (sequelize) => {
       // TIPO Y DETALLE
       // ────────────────────────────────────────────────────────────────────────
       tipo: {
-        type: DataTypes.ENUM('entrada', 'salida', 'ajuste', 'reserva', 'liberacion', 'transferencia'),
+        type: DataTypes.ENUM(
+          'entrada',
+          'salida',
+          'ajuste',
+          'reserva',
+          'liberacion',
+          'transferencia'
+        ),
         allowNull: false,
         comment: 'Tipo de movimiento',
       },

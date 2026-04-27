@@ -60,10 +60,12 @@ module.exports = {
 
     await queryInterface.addIndex('wms_sync_logs', ['tipo'], { name: 'idx_wms_logs_tipo' });
     await queryInterface.addIndex('wms_sync_logs', ['estado'], { name: 'idx_wms_logs_estado' });
-    await queryInterface.addIndex('wms_sync_logs', ['created_at'], { name: 'idx_wms_logs_created' });
+    await queryInterface.addIndex('wms_sync_logs', ['created_at'], {
+      name: 'idx_wms_logs_created',
+    });
   },
 
   down: async (queryInterface) => {
     await queryInterface.dropTable('wms_sync_logs').catch(() => {});
-  }
+  },
 };

@@ -148,14 +148,15 @@ const MovimientoForm = ({
 
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative bg-white dark:bg-centhrix-card rounded-2xl shadow-xl w-full max-w-md">
-
           {/* HEADER */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${config.bg}`}>
                 <Icon className={`w-5 h-5 ${config.color}`} />
               </div>
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{config.title}</h2>
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                {config.title}
+              </h2>
             </div>
             <button
               onClick={onClose}
@@ -171,11 +172,15 @@ const MovimientoForm = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium text-slate-800 dark:text-slate-100">{productoNombre}</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 font-mono">{productoCodigo}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-mono">
+                    {productoCodigo}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-slate-500 dark:text-slate-400">Stock Actual</p>
-                  <p className={`text-lg font-bold ${stockActual === 0 ? 'text-red-600' : 'text-slate-800 dark:text-slate-100'}`}>
+                  <p
+                    className={`text-lg font-bold ${stockActual === 0 ? 'text-red-600' : 'text-slate-800 dark:text-slate-100'}`}
+                  >
                     {stockActual.toLocaleString()} {unidadMedida}
                   </p>
                 </div>
@@ -185,7 +190,6 @@ const MovimientoForm = ({
 
           {/* FORM */}
           <form onSubmit={handleSubmit(submitForm)} className="p-6 space-y-4" noValidate>
-
             {/* Cantidad */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
@@ -196,7 +200,9 @@ const MovimientoForm = ({
                   {...register('cantidad')}
                   type="number"
                   className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-centhrix-card/50 dark:text-slate-100 ${
-                    errors.cantidad ? 'border-red-300 bg-red-50 dark:bg-red-900/10' : 'border-gray-200 dark:border-slate-700'
+                    errors.cantidad
+                      ? 'border-red-300 bg-red-50 dark:bg-red-900/10'
+                      : 'border-gray-200 dark:border-slate-700'
                   }`}
                   placeholder="0"
                   min="0.001"
@@ -241,12 +247,16 @@ const MovimientoForm = ({
               <select
                 {...register('motivo')}
                 className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-centhrix-card/50 dark:text-slate-100 ${
-                  errors.motivo ? 'border-red-300 bg-red-50 dark:bg-red-900/10' : 'border-gray-200 dark:border-slate-700'
+                  errors.motivo
+                    ? 'border-red-300 bg-red-50 dark:bg-red-900/10'
+                    : 'border-gray-200 dark:border-slate-700'
                 }`}
               >
                 <option value="">Seleccionar motivo...</option>
                 {motivos.map((motivo) => (
-                  <option key={motivo} value={motivo}>{motivo}</option>
+                  <option key={motivo} value={motivo}>
+                    {motivo}
+                  </option>
                 ))}
               </select>
               {errors.motivo && (
@@ -289,19 +299,25 @@ const MovimientoForm = ({
             {/* Preview resultado */}
             {showPreview && (
               <div className="bg-slate-50 dark:bg-centhrix-card/50 rounded-xl p-4">
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Resultado del movimiento:</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
+                  Resultado del movimiento:
+                </p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-600 dark:text-slate-300">{stockActual.toLocaleString()}</span>
+                    <span className="text-slate-600 dark:text-slate-300">
+                      {stockActual.toLocaleString()}
+                    </span>
                     <span className={tipo === 'entrada' ? 'text-emerald-600' : 'text-red-600'}>
                       {tipo === 'entrada' ? '+' : '-'} {parsedCantidad.toLocaleString()}
                     </span>
                   </div>
                   <span className="text-lg font-bold text-slate-800 dark:text-slate-100">
-                    = {(tipo === 'entrada'
+                    ={' '}
+                    {(tipo === 'entrada'
                       ? stockActual + parsedCantidad
                       : stockActual - parsedCantidad
-                    ).toLocaleString()} {unidadMedida}
+                    ).toLocaleString()}{' '}
+                    {unidadMedida}
                   </span>
                 </div>
               </div>
@@ -309,10 +325,22 @@ const MovimientoForm = ({
 
             {/* Acciones */}
             <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-slate-700">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1" disabled={loading}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="flex-1"
+                disabled={loading}
+              >
                 Cancelar
               </Button>
-              <Button type="submit" variant={config.buttonVariant} icon={Icon} className="flex-1" loading={loading}>
+              <Button
+                type="submit"
+                variant={config.buttonVariant}
+                icon={Icon}
+                className="flex-1"
+                loading={loading}
+              >
                 {config.buttonText}
               </Button>
             </div>

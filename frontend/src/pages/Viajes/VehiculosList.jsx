@@ -74,7 +74,6 @@ const formatTipoVehiculo = (tipo) => {
   return tipos[tipo] || tipo || '-';
 };
 
-
 /**
  * Calcula el estado de vencimiento de un documento.
  * @returns 'vencido' | 'por_vencer' | 'vigente' | null
@@ -125,7 +124,9 @@ const VencimientoBadge = ({ fecha }) => {
   const c = config[status];
 
   return (
-    <div className={`inline-flex flex-col items-center gap-0.5 px-2.5 py-1 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>
+    <div
+      className={`inline-flex flex-col items-center gap-0.5 px-2.5 py-1 rounded-full text-xs font-medium ${c.bg} ${c.text}`}
+    >
       <span className="flex items-center gap-1">
         {status !== 'vigente' && <AlertTriangle className="w-3 h-3" />}
         {formatDateShort(fecha)}
@@ -165,7 +166,9 @@ const StatusBadge = ({ estado }) => {
   const Icon = c.icon;
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${c.bg} ${c.text}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${c.bg} ${c.text}`}
+    >
       {Icon && <Icon className="w-3.5 h-3.5" />}
       {c.label}
     </span>
@@ -177,7 +180,9 @@ const StatusBadge = ({ estado }) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 const KpiMini = ({ icon: Icon, label, value, color }) => (
-  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}>
+  <div
+    className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}
+  >
     <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
       <Icon className="w-5 h-5" />
     </div>
@@ -212,7 +217,9 @@ const RowActions = ({ vehiculo, onView, onEdit, onDelete }) => {
           elevation: 0,
           sx: {
             overflow: 'visible',
-            filter: isDark ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))' : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+            filter: isDark
+              ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))'
+              : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
             mt: 0.5,
             borderRadius: '0.75rem',
             border: isDark ? '1px solid #334155' : '1px solid #f3f4f6',
@@ -228,13 +235,23 @@ const RowActions = ({ vehiculo, onView, onEdit, onDelete }) => {
           },
         }}
       >
-        <MenuItem onClick={() => { onView(vehiculo); setAnchorEl(null); }}>
+        <MenuItem
+          onClick={() => {
+            onView(vehiculo);
+            setAnchorEl(null);
+          }}
+        >
           <Eye className="w-4 h-4" />
           Ver detalle
         </MenuItem>
 
         <ProtectedAction module="vehiculos" action="editar">
-          <MenuItem onClick={() => { onEdit(vehiculo); setAnchorEl(null); }}>
+          <MenuItem
+            onClick={() => {
+              onEdit(vehiculo);
+              setAnchorEl(null);
+            }}
+          >
             <Pencil className="w-4 h-4" />
             Editar
           </MenuItem>
@@ -242,7 +259,10 @@ const RowActions = ({ vehiculo, onView, onEdit, onDelete }) => {
 
         <ProtectedAction module="vehiculos" action="eliminar">
           <MenuItem
-            onClick={() => { onDelete(vehiculo); setAnchorEl(null); }}
+            onClick={() => {
+              onDelete(vehiculo);
+              setAnchorEl(null);
+            }}
             sx={{
               color: isDark ? '#f87171 !important' : '#dc2626 !important',
               '&:hover': { backgroundColor: isDark ? '#450a0a !important' : '#fef2f2 !important' },
@@ -266,7 +286,13 @@ const PAGE_SIZE = 20;
 const VehiculosList = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const { success: _success, error: notifyError, apiError, saved: _saved, deleted } = useNotification();
+  const {
+    success: _success,
+    error: notifyError,
+    apiError,
+    saved: _saved,
+    deleted,
+  } = useNotification();
 
   // ──────────────────────────────────────────────────────────────────────────
   // ESTADOS
@@ -290,34 +316,39 @@ const VehiculosList = () => {
   // FETCH
   // ──────────────────────────────────────────────────────────────────────────
 
-  const fetchVehiculos = useCallback(async (page = 1) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = {
-        page,
-        limit: PAGE_SIZE,
-        sort: sortField,
-        order: sortDir,
-        ...(searchTerm && { search: searchTerm }),
-        ...(estadoFilter !== 'todos' && { estado: estadoFilter }),
-      };
-      const response = await vehiculosService.getAll(params);
-      setVehiculos(response.data || []);
-      if (response.pagination) {
-        setPagination({
-          page: response.pagination.page || page,
-          totalPages: response.pagination.totalPages || 1,
-          total: response.pagination.total || 0,
-        });
+  const fetchVehiculos = useCallback(
+    async (page = 1) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = {
+          page,
+          limit: PAGE_SIZE,
+          sort: sortField,
+          order: sortDir,
+          ...(searchTerm && { search: searchTerm }),
+          ...(estadoFilter !== 'todos' && { estado: estadoFilter }),
+        };
+        const response = await vehiculosService.getAll(params);
+        setVehiculos(response.data || []);
+        if (response.pagination) {
+          setPagination({
+            page: response.pagination.page || page,
+            totalPages: response.pagination.totalPages || 1,
+            total: response.pagination.total || 0,
+          });
+        }
+      } catch (_err) {
+        setVehiculos([]);
+        setError(
+          'No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.'
+        );
+      } finally {
+        setLoading(false);
       }
-    } catch (_err) {
-      setVehiculos([]);
-      setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
-    } finally {
-      setLoading(false);
-    }
-  }, [searchTerm, estadoFilter, sortField, sortDir]);
+    },
+    [searchTerm, estadoFilter, sortField, sortDir]
+  );
 
   useEffect(() => {
     fetchVehiculos(1);
@@ -386,7 +417,7 @@ const VehiculosList = () => {
       const query = params.toString() ? `?${params.toString()}` : '';
       await descargarArchivo(
         `${baseUrl}/reportes/vehiculos/excel${query}`,
-        `vehiculos-${fechaDescarga()}.xlsx`,
+        `vehiculos-${fechaDescarga()}.xlsx`
       );
     } catch {
       notifyError('Error al exportar el reporte de vehículos');
@@ -402,7 +433,7 @@ const VehiculosList = () => {
       const query = params.toString() ? `?${params.toString()}` : '';
       await descargarArchivo(
         `${baseUrl}/reportes/vehiculos/pdf${query}`,
-        `vehiculos-${fechaDescarga()}.pdf`,
+        `vehiculos-${fechaDescarga()}.pdf`
       );
     } catch {
       notifyError('Error al exportar el reporte de vehículos en PDF');
@@ -416,7 +447,6 @@ const VehiculosList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
-
         {/* PAGE HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -424,40 +454,47 @@ const VehiculosList = () => {
               <Truck className="w-7 h-7 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Vehículos</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestiona la flota de vehículos para despachos y viajes</p>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+                Vehículos
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-0.5">
+                Gestiona la flota de vehículos para despachos y viajes
+              </p>
             </div>
           </div>
-            <div className="flex items-center gap-2">
-              {/* Botón Refrescar */}
-              <button
-                onClick={() => { fetchVehiculos(pagination.page); _success('Datos actualizados'); }}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
-                title="Refrescar datos"
-              >
-                <RefreshCw className="w-4 h-4" />
-                <span className="hidden sm:inline">Actualizar</span>
-              </button>
-              
-              {vehiculos.length > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={handleExportExcel}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
-                  >
-                    <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                    <span className="hidden sm:inline">Excel</span>
-                  </button>
-                  <button
-                    onClick={handleExportPDF}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
-                  >
-                    <ShieldAlert className="w-4 h-4 text-red-600" />
-                    <span className="hidden sm:inline">PDF</span>
-                  </button>
-                </div>
-              )}
-            </div>
+          <div className="flex items-center gap-2">
+            {/* Botón Refrescar */}
+            <button
+              onClick={() => {
+                fetchVehiculos(pagination.page);
+                _success('Datos actualizados');
+              }}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+              title="Refrescar datos"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span className="hidden sm:inline">Actualizar</span>
+            </button>
+
+            {vehiculos.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={handleExportExcel}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                  <span className="hidden sm:inline">Excel</span>
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+                >
+                  <ShieldAlert className="w-4 h-4 text-red-600" />
+                  <span className="hidden sm:inline">PDF</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* KPI CARDS */}
@@ -486,7 +523,12 @@ const VehiculosList = () => {
         {error && (
           <div className="mb-4 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center justify-between">
             <p className="text-sm text-amber-700 dark:text-amber-300">{error}</p>
-            <button onClick={() => fetchVehiculos(1)} className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline">Reintentar</button>
+            <button
+              onClick={() => fetchVehiculos(1)}
+              className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              Reintentar
+            </button>
           </div>
         )}
 
@@ -543,7 +585,8 @@ const VehiculosList = () => {
         {/* RESULTS COUNT + VIEW TOGGLE */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            {pagination.total} vehículo{pagination.total !== 1 && 's'} encontrado{pagination.total !== 1 && 's'}
+            {pagination.total} vehículo{pagination.total !== 1 && 's'} encontrado
+            {pagination.total !== 1 && 's'}
           </p>
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card p-1 rounded-lg">
             <button
@@ -616,7 +659,8 @@ const VehiculosList = () => {
                       className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center justify-center gap-1">
-                        Capacidad <SortIcon field="capacidad_ton" sortField={sortField} sortDir={sortDir} />
+                        Capacidad{' '}
+                        <SortIcon field="capacidad_ton" sortField={sortField} sortDir={sortDir} />
                       </span>
                     </th>
                     <th
@@ -624,7 +668,12 @@ const VehiculosList = () => {
                       className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center justify-center gap-1">
-                        SOAT <SortIcon field="vencimiento_soat" sortField={sortField} sortDir={sortDir} />
+                        SOAT{' '}
+                        <SortIcon
+                          field="vencimiento_soat"
+                          sortField={sortField}
+                          sortDir={sortDir}
+                        />
                       </span>
                     </th>
                     <th
@@ -632,7 +681,12 @@ const VehiculosList = () => {
                       className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center justify-center gap-1">
-                        Tecnicomecánica <SortIcon field="vencimiento_tecnicomecanica" sortField={sortField} sortDir={sortDir} />
+                        Tecnicomecánica{' '}
+                        <SortIcon
+                          field="vencimiento_tecnicomecanica"
+                          sortField={sortField}
+                          sortDir={sortDir}
+                        />
                       </span>
                     </th>
                     <th
@@ -677,7 +731,9 @@ const VehiculosList = () => {
                         <div className="flex items-center gap-2">
                           <User className="w-4 h-4 text-slate-400 flex-shrink-0" />
                           <span className="text-sm text-slate-700 dark:text-slate-200 truncate max-w-[200px]">
-                            {vehiculo.conductor?.nombre_completo || vehiculo.conductor?.username || '-'}
+                            {vehiculo.conductor?.nombre_completo ||
+                              vehiculo.conductor?.username ||
+                              '-'}
                           </span>
                         </div>
                       </td>
@@ -732,22 +788,35 @@ const VehiculosList = () => {
                         <Truck className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100 font-mono">{vehiculo.placa}</p>
-                        <p className="text-xs text-slate-400">{formatTipoVehiculo(vehiculo.tipo_vehiculo)}</p>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100 font-mono">
+                          {vehiculo.placa}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {formatTipoVehiculo(vehiculo.tipo_vehiculo)}
+                        </p>
                       </div>
                     </div>
                     <div onClick={(e) => e.stopPropagation()}>
-                      <RowActions vehiculo={vehiculo} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />
+                      <RowActions
+                        vehiculo={vehiculo}
+                        onView={handleView}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
                     </div>
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 dark:text-slate-400">Conductor</span>
-                      <span className="text-slate-700 dark:text-slate-200 truncate max-w-[150px]">{vehiculo.conductor?.nombre_completo || '-'}</span>
+                      <span className="text-slate-700 dark:text-slate-200 truncate max-w-[150px]">
+                        {vehiculo.conductor?.nombre_completo || '-'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 dark:text-slate-400">Capacidad</span>
-                      <span className="text-slate-700 dark:text-slate-200">{vehiculo.capacidad_ton != null ? `${vehiculo.capacidad_ton} Ton` : '-'}</span>
+                      <span className="text-slate-700 dark:text-slate-200">
+                        {vehiculo.capacidad_ton != null ? `${vehiculo.capacidad_ton} Ton` : '-'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 dark:text-slate-400">SOAT</span>
@@ -788,7 +857,7 @@ const VehiculosList = () => {
         onSuccess={async () => {
           setFormModal({ isOpen: false, vehiculo: null });
           // Pequeño delay para asegurar que la BD procesó el cambio
-          await new Promise(r => setTimeout(r, 300));
+          await new Promise((r) => setTimeout(r, 300));
           fetchVehiculos(pagination.page);
         }}
         vehiculoId={formModal.vehiculo?.id}

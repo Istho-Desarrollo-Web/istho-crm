@@ -40,15 +40,23 @@ const syncProductos = async (req, res) => {
         accion: 'crear',
         usuario_id: null,
         usuario_nombre: 'WMS Centhrix',
-        datos_nuevos: { creados: resultado.creados, actualizados: resultado.actualizados, total: resultado.total },
+        datos_nuevos: {
+          creados: resultado.creados,
+          actualizados: resultado.actualizados,
+          total: resultado.total,
+        },
         ip_address: ip,
-        descripcion: `Sync WMS productos: ${resultado.creados} creados, ${resultado.actualizados} actualizados`
+        descripcion: `Sync WMS productos: ${resultado.creados} creados, ${resultado.actualizados} actualizados`,
       }),
       WmsSyncLog.create({
         tipo: 'productos',
         nit: req.body.nit,
         estado: 'exitoso',
-        detalles: { creados: resultado.creados, actualizados: resultado.actualizados, total: resultado.total },
+        detalles: {
+          creados: resultado.creados,
+          actualizados: resultado.actualizados,
+          total: resultado.total,
+        },
         payload: req.body,
         ip_origen: ip,
       }).catch(() => {}),
@@ -106,16 +114,24 @@ const syncEntrada = async (req, res) => {
         accion: 'crear',
         usuario_id: null,
         usuario_nombre: 'WMS Centhrix',
-        datos_nuevos: { numero_operacion: resultado.numero_operacion, documento_origen: req.body.documento_origen, tipo_documento: req.body.tipo_documento },
+        datos_nuevos: {
+          numero_operacion: resultado.numero_operacion,
+          documento_origen: req.body.documento_origen,
+          tipo_documento: req.body.tipo_documento,
+        },
         ip_address: ip,
-        descripcion: `Sync WMS entrada: ${resultado.numero_operacion} (doc: ${req.body.documento_origen || 'N/A'})`
+        descripcion: `Sync WMS entrada: ${resultado.numero_operacion} (doc: ${req.body.documento_origen || 'N/A'})`,
       }),
       WmsSyncLog.create({
         tipo: 'entrada',
         documento_origen: req.body.documento_origen,
         nit: req.body.nit,
         estado: 'exitoso',
-        detalles: { numero_operacion: resultado.numero_operacion, total_lineas: resultado.total_lineas, total_unidades: resultado.total_unidades },
+        detalles: {
+          numero_operacion: resultado.numero_operacion,
+          total_lineas: resultado.total_lineas,
+          total_unidades: resultado.total_unidades,
+        },
         payload: req.body,
         ip_origen: ip,
       }).catch(() => {}),
@@ -184,16 +200,25 @@ const syncSalida = async (req, res) => {
         accion: 'crear',
         usuario_id: null,
         usuario_nombre: 'WMS Centhrix',
-        datos_nuevos: { numero_operacion: resultado.numero_operacion, numero_picking: resultado.numero_picking, sucursal_entrega: req.body.sucursal_entrega },
+        datos_nuevos: {
+          numero_operacion: resultado.numero_operacion,
+          numero_picking: resultado.numero_picking,
+          sucursal_entrega: req.body.sucursal_entrega,
+        },
         ip_address: ip,
-        descripcion: `Sync WMS salida: ${resultado.numero_operacion} (picking: ${resultado.numero_picking || 'N/A'})`
+        descripcion: `Sync WMS salida: ${resultado.numero_operacion} (picking: ${resultado.numero_picking || 'N/A'})`,
       }),
       WmsSyncLog.create({
         tipo: 'salida',
         documento_origen: req.body.numero_picking || req.body.documento_wms,
         nit: req.body.nit,
         estado: 'exitoso',
-        detalles: { numero_operacion: resultado.numero_operacion, numero_picking: resultado.numero_picking, total_lineas: resultado.total_lineas, total_unidades: resultado.total_unidades },
+        detalles: {
+          numero_operacion: resultado.numero_operacion,
+          numero_picking: resultado.numero_picking,
+          total_lineas: resultado.total_lineas,
+          total_unidades: resultado.total_unidades,
+        },
         payload: req.body,
         ip_origen: ip,
       }).catch(() => {}),
@@ -259,16 +284,25 @@ const syncKardex = async (req, res) => {
         accion: 'crear',
         usuario_id: null,
         usuario_nombre: 'WMS Centhrix',
-        datos_nuevos: { numero_operacion: resultado.numero_operacion, motivo: resultado.motivo, documento_origen: req.body.documento_origen },
+        datos_nuevos: {
+          numero_operacion: resultado.numero_operacion,
+          motivo: resultado.motivo,
+          documento_origen: req.body.documento_origen,
+        },
         ip_address: ip,
-        descripcion: `Sync WMS kardex: ${resultado.numero_operacion} (motivo: ${resultado.motivo})`
+        descripcion: `Sync WMS kardex: ${resultado.numero_operacion} (motivo: ${resultado.motivo})`,
       }),
       WmsSyncLog.create({
         tipo: 'kardex',
         documento_origen: req.body.documento_origen,
         nit: req.body.nit,
         estado: 'exitoso',
-        detalles: { numero_operacion: resultado.numero_operacion, motivo: resultado.motivo, total_lineas: resultado.total_lineas, total_unidades: resultado.total_unidades },
+        detalles: {
+          numero_operacion: resultado.numero_operacion,
+          motivo: resultado.motivo,
+          total_lineas: resultado.total_lineas,
+          total_unidades: resultado.total_unidades,
+        },
         payload: req.body,
         ip_origen: ip,
       }).catch(() => {}),
@@ -317,13 +351,7 @@ const syncKardex = async (req, res) => {
  */
 const syncBatch = async (req, res) => {
   const ip = getClientIP(req);
-  const {
-    nit: nitGlobal,
-    entradas  = [],
-    salidas   = [],
-    kardex    = [],
-    productos = [],
-  } = req.body;
+  const { nit: nitGlobal, entradas = [], salidas = [], kardex = [], productos = [] } = req.body;
 
   // Agrupar productos por NIT para soportar múltiples clientes
   const productosPorNit = {};
@@ -340,7 +368,8 @@ const syncBatch = async (req, res) => {
   if (total === 0) {
     return res.status(400).json({
       success: false,
-      message: 'El batch está vacío. Envía al menos un ítem en entradas, salidas, kardex o productos.',
+      message:
+        'El batch está vacío. Envía al menos un ítem en entradas, salidas, kardex o productos.',
     });
   }
 
@@ -443,8 +472,8 @@ const syncBatch = async (req, res) => {
     total,
     por_tipo: {
       entradas: entradas.length,
-      salidas:  salidas.length,
-      kardex:   kardex.length,
+      salidas: salidas.length,
+      kardex: kardex.length,
       productos_skus: productos.length,
       productos_grupos_nit: gruposProductos.length,
     },

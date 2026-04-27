@@ -15,7 +15,11 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Receipt, Wallet, MapPin, DollarSign, FileText, Upload, ArrowUpDown } from 'lucide-react';
 import { Button, Modal } from '../../../components/common/index';
-import { movimientosService, cajasMenoresService, viajesService } from '../../../api/viajes.service';
+import {
+  movimientosService,
+  cajasMenoresService,
+  viajesService,
+} from '../../../api/viajes.service';
 import useNotification from '../../../hooks/useNotification';
 import { useAuth } from '../../../context/AuthContext';
 import { getServerFileUrl } from '../../../api/client';
@@ -96,7 +100,8 @@ const InputField = ({ label, icon: Icon, required, children, error }) => (
   </div>
 );
 
-const inputCls = (hasIcon = false, hasError = false) => `
+const inputCls = (hasIcon = false, hasError = false) =>
+  `
   w-full px-4 py-2.5
   bg-white dark:bg-centhrix-card border rounded-xl
   text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
@@ -110,7 +115,15 @@ const inputCls = (hasIcon = false, hasError = false) => `
 // COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════════════════════════════════════
 
-const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId, defaultViajeId, readOnly = false }) => {
+const MovimientoForm = ({
+  open,
+  onClose,
+  onSuccess,
+  movimientoId,
+  defaultCajaId,
+  defaultViajeId,
+  readOnly = false,
+}) => {
   const { success, error: notifyError } = useNotification();
   const { user } = useAuth();
 
@@ -156,11 +169,8 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
     cajaSeleccionada?.asignado?.Rol?.nombre === 'conductor' ||
     isConductor;
 
-  const conceptosDisponibles = watchTipo === 'ingreso'
-    ? CONCEPTOS_INGRESO
-    : watchTipo === 'egreso'
-      ? CONCEPTOS_EGRESO
-      : [];
+  const conceptosDisponibles =
+    watchTipo === 'ingreso' ? CONCEPTOS_INGRESO : watchTipo === 'egreso' ? CONCEPTOS_EGRESO : [];
 
   // ──────────────────────────────────────────────────────────────────────────
   // CARGA DE CAJAS
@@ -191,7 +201,10 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
   // ──────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!watchCajaId) { setViajes([]); return; }
+    if (!watchCajaId) {
+      setViajes([]);
+      return;
+    }
 
     const fetchViajes = async () => {
       try {
@@ -223,8 +236,9 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
 
     if (movimientoId) {
       setLoadingData(true);
-      movimientosService.getById(movimientoId)
-        .then(response => {
+      movimientosService
+        .getById(movimientoId)
+        .then((response) => {
           if (response.success && response.data) {
             const m = response.data;
             reset({
@@ -236,14 +250,21 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
               valor: m.valor != null ? Math.round(parseFloat(m.valor)) : '',
               descripcion: m.descripcion || '',
             });
-            if (m.soporte_url) setSoporteExistente({ url: m.soporte_url, nombre: m.soporte_nombre || 'Archivo adjunto' });
+            if (m.soporte_url)
+              setSoporteExistente({
+                url: m.soporte_url,
+                nombre: m.soporte_nombre || 'Archivo adjunto',
+              });
             else setSoporteExistente(null);
           } else {
             notifyError('No se pudo cargar la información del movimiento');
             onClose();
           }
         })
-        .catch(() => { notifyError('Error al cargar el movimiento'); onClose(); })
+        .catch(() => {
+          notifyError('Error al cargar el movimiento');
+          onClose();
+        })
         .finally(() => setLoadingData(false));
     } else {
       reset({
@@ -277,7 +298,8 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
       if (data.viaje_id) fd.append('viaje_id', data.viaje_id);
       fd.append('tipo_movimiento', data.tipo_movimiento);
       fd.append('concepto', data.concepto);
-      if (data.concepto === 'otros' && data.concepto_otro) fd.append('concepto_otro', data.concepto_otro);
+      if (data.concepto === 'otros' && data.concepto_otro)
+        fd.append('concepto_otro', data.concepto_otro);
       fd.append('valor', parseFloat(data.valor));
       if (data.descripcion) fd.append('descripcion', data.descripcion);
       if (soporte) fd.append('soporte', soporte);
@@ -287,7 +309,9 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
         : await movimientosService.create(fd);
 
       if (response.success) {
-        success(isEditing ? 'Movimiento actualizado correctamente' : 'Movimiento registrado correctamente');
+        success(
+          isEditing ? 'Movimiento actualizado correctamente' : 'Movimiento registrado correctamente'
+        );
         onSuccess?.();
         onClose();
       } else {
@@ -312,18 +336,31 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
     <Modal
       isOpen={open}
       onClose={onClose}
-      title={readOnly ? 'Detalle Movimiento' : (isEditing ? 'Editar Movimiento' : 'Nuevo Movimiento')}
-      subtitle={readOnly ? `Movimiento #${movimientoId}` : (isEditing ? 'Editando movimiento existente' : 'Complete la información del movimiento')}
+      title={readOnly ? 'Detalle Movimiento' : isEditing ? 'Editar Movimiento' : 'Nuevo Movimiento'}
+      subtitle={
+        readOnly
+          ? `Movimiento #${movimientoId}`
+          : isEditing
+            ? 'Editando movimiento existente'
+            : 'Complete la información del movimiento'
+      }
       size="lg"
       footer={
         readOnly ? (
-          <Button variant="outline" onClick={onClose}>Cerrar</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cerrar
+          </Button>
         ) : (
           <>
             <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button variant="primary" onClick={handleSubmit(onSubmit)} loading={isSubmitting} disabled={loadingData}>
+            <Button
+              variant="primary"
+              onClick={handleSubmit(onSubmit)}
+              loading={isSubmitting}
+              disabled={loadingData}
+            >
               {isEditing ? 'Guardar Cambios' : 'Registrar Movimiento'}
             </Button>
           </>
@@ -346,9 +383,10 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                   onClick={() => setActiveTab(tab.id)}
                   className={`
                     pb-3 px-1 text-sm font-medium transition-colors relative
-                    ${activeTab === tab.id
-                      ? 'text-orange-600'
-                      : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                    ${
+                      activeTab === tab.id
+                        ? 'text-orange-600'
+                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                     }
                   `}
                 >
@@ -362,13 +400,18 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
-
             {/* ── TAB DATOS ── */}
             {activeTab === 'datos' && (
-              <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${readOnly ? 'pointer-events-none opacity-75' : ''}`}>
-
+              <div
+                className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${readOnly ? 'pointer-events-none opacity-75' : ''}`}
+              >
                 {/* Caja Menor */}
-                <InputField label="Caja Menor" icon={Wallet} required error={errors.caja_menor_id?.message}>
+                <InputField
+                  label="Caja Menor"
+                  icon={Wallet}
+                  required
+                  error={errors.caja_menor_id?.message}
+                >
                   <select
                     {...register('caja_menor_id')}
                     className={inputCls(true, !!errors.caja_menor_id)}
@@ -384,7 +427,11 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
 
                 {/* Viaje (solo si el asignado es conductor) */}
                 {asignadoEsConductor && (
-                  <InputField label="Viaje (Opcional)" icon={MapPin} error={errors.viaje_id?.message}>
+                  <InputField
+                    label="Viaje (Opcional)"
+                    icon={MapPin}
+                    error={errors.viaje_id?.message}
+                  >
                     <select
                       {...register('viaje_id')}
                       disabled={!watchCajaId}
@@ -393,7 +440,8 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                       <option value="">Sin viaje asociado</option>
                       {viajes.map((viaje) => (
                         <option key={viaje.id} value={viaje.id}>
-                          {viaje.numero || `Viaje #${viaje.id}`}{viaje.destino ? ` - ${viaje.destino}` : ''}
+                          {viaje.numero || `Viaje #${viaje.id}`}
+                          {viaje.destino ? ` - ${viaje.destino}` : ''}
                         </option>
                       ))}
                     </select>
@@ -401,20 +449,32 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                 )}
 
                 {/* Tipo de Movimiento */}
-                <InputField label="Tipo de Movimiento" icon={ArrowUpDown} required error={errors.tipo_movimiento?.message}>
+                <InputField
+                  label="Tipo de Movimiento"
+                  icon={ArrowUpDown}
+                  required
+                  error={errors.tipo_movimiento?.message}
+                >
                   <select
                     {...register('tipo_movimiento')}
                     className={inputCls(true, !!errors.tipo_movimiento)}
                   >
                     <option value="">Seleccionar...</option>
                     {TIPOS_MOVIMIENTO.map((tipo) => (
-                      <option key={tipo.value} value={tipo.value}>{tipo.label}</option>
+                      <option key={tipo.value} value={tipo.value}>
+                        {tipo.label}
+                      </option>
                     ))}
                   </select>
                 </InputField>
 
                 {/* Concepto */}
-                <InputField label="Concepto" icon={Receipt} required error={errors.concepto?.message}>
+                <InputField
+                  label="Concepto"
+                  icon={Receipt}
+                  required
+                  error={errors.concepto?.message}
+                >
                   <select
                     {...register('concepto')}
                     disabled={!watchTipo}
@@ -422,20 +482,32 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                   >
                     <option value="">Seleccionar...</option>
                     {conceptosDisponibles.map((c) => (
-                      <option key={c.value} value={c.value}>{c.label}</option>
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
                     ))}
                   </select>
                 </InputField>
 
                 {/* Concepto Otro */}
                 {watchConcepto === 'otros' && (
-                  <InputField label="Especifique el Concepto" icon={FileText} required error={errors.concepto_otro?.message}>
+                  <InputField
+                    label="Especifique el Concepto"
+                    icon={FileText}
+                    required
+                    error={errors.concepto_otro?.message}
+                  >
                     <input
                       {...register('concepto_otro')}
                       type="text"
                       placeholder="Describa el concepto..."
                       maxLength={100}
-                      onChange={makeSanitizeHandler(setValue, 'concepto_otro', SANITIZE.TEXTO_UPPER, 100)}
+                      onChange={makeSanitizeHandler(
+                        setValue,
+                        'concepto_otro',
+                        SANITIZE.TEXTO_UPPER,
+                        100
+                      )}
                       className={inputCls(true, !!errors.concepto_otro)}
                     />
                   </InputField>
@@ -462,49 +534,80 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
 
             {/* ── TAB SOPORTE ── */}
             {activeTab === 'soporte' && (
-              <div className={`grid grid-cols-1 gap-4 ${readOnly ? '[&_textarea]:pointer-events-none [&_textarea]:opacity-75' : ''}`}>
+              <div
+                className={`grid grid-cols-1 gap-4 ${readOnly ? '[&_textarea]:pointer-events-none [&_textarea]:opacity-75' : ''}`}
+              >
                 <InputField label="Descripción" icon={FileText} error={errors.descripcion?.message}>
                   <textarea
                     {...register('descripcion')}
                     placeholder="Notas adicionales sobre el movimiento..."
                     rows={4}
                     maxLength={500}
-                    onChange={makeSanitizeHandler(setValue, 'descripcion', SANITIZE.TEXTO_LIBRE, 500)}
+                    onChange={makeSanitizeHandler(
+                      setValue,
+                      'descripcion',
+                      SANITIZE.TEXTO_LIBRE,
+                      500
+                    )}
                     className={inputCls(true, !!errors.descripcion)}
                   />
                 </InputField>
 
                 {/* Soporte existente */}
-                {soporteExistente && !soporte && (() => {
-                  const soporteUrl = getServerFileUrl(soporteExistente.url);
-                  const isImage = soporteExistente.url?.startsWith('data:image/')
-                    || /\.(jpg|jpeg|png|gif|webp)$/i.test(soporteExistente.nombre || soporteExistente.url);
-                  return (
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Soporte actual
-                      </label>
-                      {isImage && (
-                        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-bg">
-                          <img src={soporteUrl} alt="Soporte" className="w-full max-h-48 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+                {soporteExistente &&
+                  !soporte &&
+                  (() => {
+                    const soporteUrl = getServerFileUrl(soporteExistente.url);
+                    const isImage =
+                      soporteExistente.url?.startsWith('data:image/') ||
+                      /\.(jpg|jpeg|png|gif|webp)$/i.test(
+                        soporteExistente.nombre || soporteExistente.url
+                      );
+                    return (
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Soporte actual
+                        </label>
+                        {isImage && (
+                          <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-bg">
+                            <img
+                              src={soporteUrl}
+                              alt="Soporte"
+                              className="w-full max-h-48 object-contain"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+                        <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl">
+                          <FileText className="h-5 w-5 text-slate-400 flex-shrink-0" />
+                          <a
+                            href={soporteUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download={soporteExistente.nombre}
+                            className="text-sm text-blue-600 dark:text-blue-400 hover:underline truncate"
+                          >
+                            {soporteExistente.nombre}
+                          </a>
                         </div>
-                      )}
-                      <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl">
-                        <FileText className="h-5 w-5 text-slate-400 flex-shrink-0" />
-                        <a href={soporteUrl} target="_blank" rel="noopener noreferrer" download={soporteExistente.nombre} className="text-sm text-blue-600 dark:text-blue-400 hover:underline truncate">
-                          {soporteExistente.nombre}
-                        </a>
                       </div>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()}
 
                 {/* Vista previa nuevo archivo */}
                 {soporte && soporte.type?.startsWith('image/') && (
                   <div className="space-y-1">
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Vista previa</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Vista previa
+                    </label>
                     <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-bg">
-                      <img src={URL.createObjectURL(soporte)} alt="Vista previa" className="w-full max-h-48 object-contain" />
+                      <img
+                        src={URL.createObjectURL(soporte)}
+                        alt="Vista previa"
+                        className="w-full max-h-48 object-contain"
+                      />
                     </div>
                   </div>
                 )}
@@ -515,19 +618,36 @@ const MovimientoForm = ({ open, onClose, onSuccess, movimientoId, defaultCajaId,
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                       {soporteExistente && !soporte ? 'Reemplazar soporte' : 'Soporte'}
                     </label>
-                    <input type="file" onChange={(e) => setSoporte(e.target.files[0] || null)} accept=".pdf,.jpg,.jpeg,.png" ref={fileInputRef} className="hidden" />
+                    <input
+                      type="file"
+                      onChange={(e) => setSoporte(e.target.files[0] || null)}
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      ref={fileInputRef}
+                      className="hidden"
+                    />
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       className="flex items-center gap-3 cursor-pointer w-full px-4 py-3 text-left bg-white dark:bg-centhrix-card border border-dashed rounded-xl text-sm text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-centhrix-surface transition-all duration-200"
                     >
                       <Upload className="h-5 w-5 text-slate-400 flex-shrink-0" />
-                      <span className="truncate">{soporte ? soporte.name : 'Seleccionar archivo (PDF, JPG o PNG)'}</span>
+                      <span className="truncate">
+                        {soporte ? soporte.name : 'Seleccionar archivo (PDF, JPG o PNG)'}
+                      </span>
                     </button>
                     {soporte && (
                       <div className="mt-2 flex items-center gap-2">
-                        <span className="text-xs text-slate-500 dark:text-slate-400">{(soporte.size / 1024).toFixed(1)} KB</span>
-                        <button type="button" onClick={() => { setSoporte(null); if (fileInputRef.current) fileInputRef.current.value = ''; }} className="text-xs text-red-500 hover:text-red-600 transition-colors">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {(soporte.size / 1024).toFixed(1)} KB
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSoporte(null);
+                            if (fileInputRef.current) fileInputRef.current.value = '';
+                          }}
+                          className="text-xs text-red-500 hover:text-red-600 transition-colors"
+                        >
                           Eliminar
                         </button>
                       </div>

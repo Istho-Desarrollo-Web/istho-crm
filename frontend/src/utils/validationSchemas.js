@@ -14,20 +14,46 @@ import * as yup from 'yup';
 // CONSTANTES
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const TIPOS_VEHICULO = ['sencillo', 'tractomula', 'turbo', 'dobletroque', 'minimula', 'otro'];
+export const TIPOS_VEHICULO = [
+  'sencillo',
+  'tractomula',
+  'turbo',
+  'dobletroque',
+  'minimula',
+  'otro',
+];
 export const ESTADOS_VEHICULO = ['activo', 'inactivo', 'mantenimiento'];
 export const ESTADOS_VIAJE = ['activo', 'completado', 'anulado'];
 
 export const CONCEPTOS_EGRESO = [
-  'cuadre_de_caja', 'descargues', 'acpm', 'administracion', 'alimentacion',
-  'comisiones', 'desencarpe', 'encarpe', 'hospedaje', 'otros',
-  'seguros', 'repuestos', 'tecnicomecanica', 'peajes', 'ligas',
-  'parqueadero', 'urea', 'liquidacion'
+  'cuadre_de_caja',
+  'descargues',
+  'acpm',
+  'administracion',
+  'alimentacion',
+  'comisiones',
+  'desencarpe',
+  'encarpe',
+  'hospedaje',
+  'otros',
+  'seguros',
+  'repuestos',
+  'tecnicomecanica',
+  'peajes',
+  'ligas',
+  'parqueadero',
+  'urea',
+  'liquidacion',
 ];
 
 export const CONCEPTOS_INGRESO = [
-  'ingreso_adicional', 'recarga', 'cuadre_de_caja', 'peajes_ingreso',
-  'ligas_ingresos', 'parqueadero_ingresos', 'urea_ingresos'
+  'ingreso_adicional',
+  'recarga',
+  'cuadre_de_caja',
+  'peajes_ingreso',
+  'ligas_ingresos',
+  'parqueadero_ingresos',
+  'urea_ingresos',
 ];
 
 export const TODOS_CONCEPTOS = [...new Set([...CONCEPTOS_EGRESO, ...CONCEPTOS_INGRESO])];
@@ -56,9 +82,7 @@ export const loginSchema = yup.object({
 });
 
 export const cambiarPasswordSchema = yup.object({
-  password_actual: yup
-    .string()
-    .required('La contraseña actual es requerida'),
+  password_actual: yup.string().required('La contraseña actual es requerida'),
   password_nuevo: yup
     .string()
     .required('La nueva contraseña es requerida')
@@ -74,10 +98,7 @@ export const cambiarPasswordSchema = yup.object({
 });
 
 export const forgotPasswordSchema = yup.object({
-  email: yup
-    .string()
-    .required('El email es requerido')
-    .email('Debe ser un email válido'),
+  email: yup.string().required('El email es requerido').email('Debe ser un email válido'),
 });
 
 export const resetPasswordSchema = yup.object({
@@ -112,31 +133,26 @@ export const vehiculoSchema = yup.object({
     .nullable()
     .transform((v, o) => (o === '' ? null : v))
     .min(0, 'La capacidad debe ser un número positivo'),
-  marca: yup
-    .string()
-    .nullable()
-    .max(50, 'La marca no puede exceder 50 caracteres'),
-  modelo: yup
-    .string()
-    .nullable()
-    .max(10, 'El modelo no puede exceder 10 caracteres'),
-  color: yup
-    .string()
-    .nullable()
-    .max(30, 'El color no puede exceder 30 caracteres'),
+  marca: yup.string().nullable().max(50, 'La marca no puede exceder 50 caracteres'),
+  modelo: yup.string().nullable().max(10, 'El modelo no puede exceder 10 caracteres'),
+  color: yup.string().nullable().max(30, 'El color no puede exceder 30 caracteres'),
   vencimiento_soat: yup
     .string()
     .nullable()
     .transform((v) => v || null)
-    .test('fecha-valida', 'La fecha del SOAT debe ser válida (YYYY-MM-DD)', (v) =>
-      !v || REGEX_FECHA.test(v)
+    .test(
+      'fecha-valida',
+      'La fecha del SOAT debe ser válida (YYYY-MM-DD)',
+      (v) => !v || REGEX_FECHA.test(v)
     ),
   vencimiento_tecnicomecanica: yup
     .string()
     .nullable()
     .transform((v) => v || null)
-    .test('fecha-valida', 'La fecha de tecnomecánica debe ser válida (YYYY-MM-DD)', (v) =>
-      !v || REGEX_FECHA.test(v)
+    .test(
+      'fecha-valida',
+      'La fecha de tecnomecánica debe ser válida (YYYY-MM-DD)',
+      (v) => !v || REGEX_FECHA.test(v)
     ),
   poliza_responsabilidad: yup
     .string()
@@ -154,13 +170,8 @@ export const vehiculoSchema = yup.object({
     .number()
     .nullable()
     .transform((v, o) => (o === '' ? null : v)),
-  descripcion: yup
-    .string()
-    .nullable()
-    .max(2000, 'La descripción no puede exceder 2000 caracteres'),
-  estado: yup
-    .string()
-    .oneOf(ESTADOS_VEHICULO, 'Estado no válido'),
+  descripcion: yup.string().nullable().max(2000, 'La descripción no puede exceder 2000 caracteres'),
+  estado: yup.string().oneOf(ESTADOS_VEHICULO, 'Estado no válido'),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -182,21 +193,17 @@ export const viajeSchema = yup.object({
     .string()
     .nullable()
     .transform((v) => v || null)
-    .test('fecha-valida', 'La fecha debe ser válida (YYYY-MM-DD)', (v) =>
-      !v || REGEX_FECHA.test(v)
+    .test(
+      'fecha-valida',
+      'La fecha debe ser válida (YYYY-MM-DD)',
+      (v) => !v || REGEX_FECHA.test(v)
     ),
-  origen: yup
-    .string()
-    .nullable()
-    .max(100, 'El origen no puede exceder 100 caracteres'),
+  origen: yup.string().nullable().max(100, 'El origen no puede exceder 100 caracteres'),
   destino: yup
     .string()
     .required('El destino es requerido')
     .max(100, 'El destino no puede exceder 100 caracteres'),
-  descripcion: yup
-    .string()
-    .nullable()
-    .max(2000, 'La descripción no puede exceder 2000 caracteres'),
+  descripcion: yup.string().nullable().max(2000, 'La descripción no puede exceder 2000 caracteres'),
   caja_menor_id: yup
     .number()
     .nullable()
@@ -205,10 +212,7 @@ export const viajeSchema = yup.object({
     .string()
     .nullable()
     .max(200, 'El nombre del cliente no puede exceder 200 caracteres'),
-  documento_cliente: yup
-    .string()
-    .nullable()
-    .max(50, 'El documento no puede exceder 50 caracteres'),
+  documento_cliente: yup.string().nullable().max(50, 'El documento no puede exceder 50 caracteres'),
   peso: yup
     .number()
     .nullable()
@@ -296,10 +300,7 @@ export const movimientoSchema = yup.object({
     .number()
     .nullable()
     .transform((v, o) => (o === '' ? null : v)),
-  descripcion: yup
-    .string()
-    .nullable()
-    .max(2000, 'La descripción no puede exceder 2000 caracteres'),
+  descripcion: yup.string().nullable().max(2000, 'La descripción no puede exceder 2000 caracteres'),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -322,29 +323,22 @@ export const clienteSchema = yup.object({
     .nullable()
     .transform((v) => v || null)
     .email('Debe ser un email válido'),
-  telefono: yup
-    .string()
-    .nullable()
-    .max(50, 'El teléfono no puede exceder 50 caracteres'),
-  direccion: yup
-    .string()
-    .nullable()
-    .max(255, 'La dirección no puede exceder 255 caracteres'),
-  ciudad: yup
-    .string()
-    .nullable()
-    .max(100, 'La ciudad no puede exceder 100 caracteres'),
-  departamento: yup
-    .string()
-    .nullable()
-    .max(100, 'El departamento no puede exceder 100 caracteres'),
+  telefono: yup.string().nullable().max(50, 'El teléfono no puede exceder 50 caracteres'),
+  direccion: yup.string().nullable().max(255, 'La dirección no puede exceder 255 caracteres'),
+  ciudad: yup.string().nullable().max(100, 'La ciudad no puede exceder 100 caracteres'),
+  departamento: yup.string().nullable().max(100, 'El departamento no puede exceder 100 caracteres'),
   sitio_web: yup
     .string()
     .nullable()
     .transform((v) => v || null)
     .test('url-valida', 'Debe ser una URL válida (incluir https://)', (v) => {
       if (!v) return true;
-      try { new URL(v); return true; } catch { return false; }
+      try {
+        new URL(v);
+        return true;
+      } catch {
+        return false;
+      }
     }),
   tipo_cliente: yup
     .string()
@@ -354,23 +348,33 @@ export const clienteSchema = yup.object({
     .string()
     .nullable()
     .oneOf(
-      [null, '', 'alimentos', 'construccion', 'manufactura', 'retail', 'farmaceutico', 'quimico', 'textil', 'tecnologia', 'servicios', 'otro'],
+      [
+        null,
+        '',
+        'alimentos',
+        'construccion',
+        'manufactura',
+        'retail',
+        'farmaceutico',
+        'quimico',
+        'textil',
+        'tecnologia',
+        'servicios',
+        'otro',
+      ],
       'Sector no válido'
     ),
   fecha_inicio_relacion: yup
     .string()
     .nullable()
     .transform((v) => v || null)
-    .test('fecha-valida', 'La fecha debe ser válida (YYYY-MM-DD)', (v) =>
-      !v || REGEX_FECHA.test(v)
+    .test(
+      'fecha-valida',
+      'La fecha debe ser válida (YYYY-MM-DD)',
+      (v) => !v || REGEX_FECHA.test(v)
     ),
-  estado: yup
-    .string()
-    .oneOf(['activo', 'inactivo', 'suspendido'], 'Estado no válido'),
-  notas: yup
-    .string()
-    .nullable()
-    .max(2000, 'Las notas no pueden exceder 2000 caracteres'),
+  estado: yup.string().oneOf(['activo', 'inactivo', 'suspendido'], 'Estado no válido'),
+  notas: yup.string().nullable().max(2000, 'Las notas no pueden exceder 2000 caracteres'),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -382,21 +386,10 @@ export const usuarioClienteSchema = yup.object({
     .string()
     .required('El nombre es requerido')
     .min(3, 'Debe tener al menos 3 caracteres'),
-  email: yup
-    .string()
-    .required('El email es requerido')
-    .email('Email inválido'),
-  telefono: yup
-    .string()
-    .nullable()
-    .max(50, 'El teléfono no puede exceder 50 caracteres'),
-  cargo: yup
-    .string()
-    .nullable()
-    .max(100, 'El cargo no puede exceder 100 caracteres'),
-  password: yup
-    .string()
-    .nullable(),
+  email: yup.string().required('El email es requerido').email('Email inválido'),
+  telefono: yup.string().nullable().max(50, 'El teléfono no puede exceder 50 caracteres'),
+  cargo: yup.string().nullable().max(100, 'El cargo no puede exceder 100 caracteres'),
+  password: yup.string().nullable(),
   enviar_email: yup.boolean(),
 });
 
@@ -410,17 +403,9 @@ export const movimientoInventarioSchema = yup.object({
     .transform((_, o) => (o === '' ? undefined : Number(o)))
     .required('La cantidad es requerida')
     .min(0.001, 'La cantidad debe ser mayor a 0'),
-  motivo: yup
-    .string()
-    .required('Selecciona un motivo'),
-  documento_referencia: yup
-    .string()
-    .nullable()
-    .max(100, 'No puede exceder 100 caracteres'),
-  observaciones: yup
-    .string()
-    .nullable()
-    .max(2000, 'No puede exceder 2000 caracteres'),
+  motivo: yup.string().required('Selecciona un motivo'),
+  documento_referencia: yup.string().nullable().max(100, 'No puede exceder 100 caracteres'),
+  observaciones: yup.string().nullable().max(2000, 'No puede exceder 2000 caracteres'),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -428,34 +413,13 @@ export const movimientoInventarioSchema = yup.object({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const productoSchema = yup.object({
-  producto: yup
-    .string()
-    .required('El nombre del producto es requerido'),
-  sku: yup
-    .string()
-    .required('El código SKU es requerido'),
-  cliente_id: yup
-    .mixed()
-    .nullable(),
-  categoria: yup
-    .string()
-    .nullable(),
-  unidad_medida: yup
-    .string()
-    .nullable(),
-  stock_minimo: yup
-    .string()
-    .nullable(),
-  ubicacion: yup
-    .string()
-    .nullable()
-    .max(100, 'No puede exceder 100 caracteres'),
-  descripcion: yup
-    .string()
-    .nullable()
-    .max(2000, 'No puede exceder 2000 caracteres'),
-  notas: yup
-    .string()
-    .nullable()
-    .max(2000, 'No puede exceder 2000 caracteres'),
+  producto: yup.string().required('El nombre del producto es requerido'),
+  sku: yup.string().required('El código SKU es requerido'),
+  cliente_id: yup.mixed().nullable(),
+  categoria: yup.string().nullable(),
+  unidad_medida: yup.string().nullable(),
+  stock_minimo: yup.string().nullable(),
+  ubicacion: yup.string().nullable().max(100, 'No puede exceder 100 caracteres'),
+  descripcion: yup.string().nullable().max(2000, 'No puede exceder 2000 caracteres'),
+  notas: yup.string().nullable().max(2000, 'No puede exceder 2000 caracteres'),
 });

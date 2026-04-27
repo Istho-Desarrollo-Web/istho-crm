@@ -8,15 +8,41 @@
  */
 
 const { Op } = require('sequelize');
-const { Usuario, Rol, Permiso, RolPermiso, Cliente, Auditoria, TokenBlacklist, sequelize } = require('../models');
-const { success, successMessage, created, serverError, notFound, badRequest } = require('../utils/responses');
+const {
+  Usuario,
+  Rol,
+  Permiso,
+  RolPermiso,
+  Cliente,
+  Auditoria,
+  TokenBlacklist,
+  sequelize,
+} = require('../models');
+const {
+  success,
+  successMessage,
+  created,
+  serverError,
+  notFound,
+  badRequest,
+} = require('../utils/responses');
 const { invalidarCachePermisos } = require('../middleware/auth');
 const logger = require('../utils/logger');
 const socketService = require('../services/socketService');
-const { enviarBienvenidaUsuarioCliente, enviarBienvenida, enviarReseteoPassword } = require('../services/emailService');
+const {
+  enviarBienvenidaUsuarioCliente,
+  enviarBienvenida,
+  enviarReseteoPassword,
+} = require('../services/emailService');
 const { getClientIP, parseOrdenamiento } = require('../utils/helpers');
 
-const CAMPOS_ORDENAMIENTO_USUARIOS = ['nombre_completo', 'username', 'email', 'created_at', 'ultimo_acceso'];
+const CAMPOS_ORDENAMIENTO_USUARIOS = [
+  'nombre_completo',
+  'username',
+  'email',
+  'created_at',
+  'ultimo_acceso',
+];
 
 // ═══════════════════════════════════════════════════════════════════════════
 // USUARIOS INTERNOS
@@ -37,7 +63,7 @@ const listarUsuarios = async (req, res) => {
       where[Op.or] = [
         { nombre_completo: { [Op.like]: `%${search}%` } },
         { username: { [Op.like]: `%${search}%` } },
-        { email: { [Op.like]: `%${search}%` } }
+        { email: { [Op.like]: `%${search}%` } },
       ];
     }
 
@@ -48,12 +74,21 @@ const listarUsuarios = async (req, res) => {
       where,
       attributes: { exclude: ['password_hash', 'reset_token', 'reset_token_expires'] },
       include: [
-        { model: Rol, as: 'rolInfo', attributes: ['id', 'nombre', 'codigo', 'color', 'nivel_jerarquia'] },
-        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social', 'codigo_cliente'], required: false }
+        {
+          model: Rol,
+          as: 'rolInfo',
+          attributes: ['id', 'nombre', 'codigo', 'color', 'nivel_jerarquia'],
+        },
+        {
+          model: Cliente,
+          as: 'cliente',
+          attributes: ['id', 'razon_social', 'codigo_cliente'],
+          required: false,
+        },
       ],
       order,
       limit: parseInt(limit),
-      offset: parseInt(offset)
+      offset: parseInt(offset),
     });
 
     return success(res, {
@@ -62,8 +97,8 @@ const listarUsuarios = async (req, res) => {
         total: count,
         page: parseInt(page),
         limit: parseInt(limit),
-        totalPages: Math.ceil(count / limit)
-      }
+        totalPages: Math.ceil(count / limit),
+      },
     });
   } catch (error) {
     logger.error('Error al listar usuarios:', { message: error.message });
@@ -79,9 +114,18 @@ const obtenerUsuario = async (req, res) => {
     const usuario = await Usuario.findByPk(req.params.id, {
       attributes: { exclude: ['password_hash', 'reset_token', 'reset_token_expires'] },
       include: [
-        { model: Rol, as: 'rolInfo', attributes: ['id', 'nombre', 'codigo', 'color', 'nivel_jerarquia'] },
-        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social', 'codigo_cliente'], required: false }
-      ]
+        {
+          model: Rol,
+          as: 'rolInfo',
+          attributes: ['id', 'nombre', 'codigo', 'color', 'nivel_jerarquia'],
+        },
+        {
+          model: Cliente,
+          as: 'cliente',
+          attributes: ['id', 'razon_social', 'codigo_cliente'],
+          required: false,
+        },
+      ],
     });
 
     if (!usuario) return notFound(res, 'Usuario no encontrado');
@@ -97,7 +141,18 @@ const obtenerUsuario = async (req, res) => {
  */
 const crearUsuario = async (req, res) => {
   try {
-    const { username, email, password, nombre, apellido, telefono, cargo, departamento, rol_id, cliente_id } = req.body;
+    const {
+      username,
+      email,
+      password,
+      nombre,
+      apellido,
+      telefono,
+      cargo,
+      departamento,
+      rol_id,
+      cliente_id,
+    } = req.body;
 
     if (!username || !email || !password || !rol_id) {
       return badRequest(res, 'username, email, password y rol_id son requeridos');
@@ -109,12 +164,14 @@ const crearUsuario = async (req, res) => {
 
     // Verificar unicidad
     const existente = await Usuario.findOne({
-      where: { [Op.or]: [{ username }, { email: email.toLowerCase() }] }
+      where: { [Op.or]: [{ username }, { email: email.toLowerCase() }] },
     });
     if (existente) {
-      return badRequest(res, existente.username === username
-        ? 'El username ya está en uso'
-        : 'El email ya está registrado'
+      return badRequest(
+        res,
+        existente.username === username
+          ? 'El username ya está en uso'
+          : 'El email ya está registrado'
       );
     }
 
@@ -132,15 +189,15 @@ const crearUsuario = async (req, res) => {
       cliente_id: rol.es_cliente ? cliente_id : null,
       activo: true,
       invitado_por: req.user.id,
-      fecha_invitacion: new Date()
+      fecha_invitacion: new Date(),
     });
 
     const resultado = await Usuario.findByPk(usuario.id, {
       attributes: { exclude: ['password_hash', 'reset_token', 'reset_token_expires'] },
       include: [
         { model: Rol, as: 'rolInfo', attributes: ['id', 'nombre', 'codigo', 'color'] },
-        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'], required: false }
-      ]
+        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'], required: false },
+      ],
     });
 
     // Enviar email de bienvenida con credenciales
@@ -154,16 +211,19 @@ const crearUsuario = async (req, res) => {
           password,
           cliente: clienteNombre,
           invitadoPor: req.user.nombre_completo || req.user.username,
-          esReenvio: false
+          esReenvio: false,
         });
         logger.info('Email de bienvenida (portal) enviado:', { usuarioId: usuario.id, email });
       } else {
-        await enviarBienvenida({
-          nombre_completo: `${nombre || ''} ${apellido || ''}`.trim() || username,
-          username,
-          email: email.toLowerCase(),
-          rol: rol.codigo
-        }, password);
+        await enviarBienvenida(
+          {
+            nombre_completo: `${nombre || ''} ${apellido || ''}`.trim() || username,
+            username,
+            email: email.toLowerCase(),
+            rol: rol.codigo,
+          },
+          password
+        );
         logger.info('Email de bienvenida enviado:', { usuarioId: usuario.id, email });
       }
     } catch (emailError) {
@@ -171,12 +231,21 @@ const crearUsuario = async (req, res) => {
       // No fallar la creación por error de email
     }
 
-    logger.info('Usuario creado:', { id: usuario.id, username, rol: rol.codigo, creadoPor: req.user.id });
+    logger.info('Usuario creado:', {
+      id: usuario.id,
+      username,
+      rol: rol.codigo,
+      creadoPor: req.user.id,
+    });
     Auditoria.registrar({
-      tabla: 'usuarios', registro_id: usuario.id, accion: 'crear',
-      usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
+      tabla: 'usuarios',
+      registro_id: usuario.id,
+      accion: 'crear',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
       datos_nuevos: { username, email, rol: rol.codigo, rol_id: rol.id },
-      ip_address: getClientIP(req), descripcion: `Usuario "${username}" creado con rol ${rol.nombre}`
+      ip_address: getClientIP(req),
+      descripcion: `Usuario "${username}" creado con rol ${rol.nombre}`,
     });
     return created(res, 'Usuario creado exitosamente', resultado);
   } catch (error) {
@@ -193,7 +262,8 @@ const actualizarUsuario = async (req, res) => {
     const usuario = await Usuario.findByPk(req.params.id);
     if (!usuario) return notFound(res, 'Usuario no encontrado');
 
-    const { nombre, apellido, email, telefono, cargo, departamento, rol_id, activo, cliente_id } = req.body;
+    const { nombre, apellido, email, telefono, cargo, departamento, rol_id, activo, cliente_id } =
+      req.body;
 
     // Si cambia rol, verificar que existe
     if (rol_id && rol_id !== usuario.rol_id) {
@@ -201,7 +271,7 @@ const actualizarUsuario = async (req, res) => {
       if (!rol) return badRequest(res, 'El rol especificado no existe');
       usuario.rol = rol.codigo;
       usuario.rol_id = rol.id;
-      usuario.cliente_id = rol.es_cliente ? (cliente_id || usuario.cliente_id) : null;
+      usuario.cliente_id = rol.es_cliente ? cliente_id || usuario.cliente_id : null;
     } else if (cliente_id !== undefined) {
       // Mismo rol pero se actualiza el cliente asociado (solo aplica si el rol actual es de tipo cliente)
       const rolActual = await Rol.findByPk(usuario.rol_id);
@@ -212,7 +282,9 @@ const actualizarUsuario = async (req, res) => {
 
     // Si cambia email, verificar unicidad
     if (email && email.toLowerCase() !== usuario.email) {
-      const existeEmail = await Usuario.findOne({ where: { email: email.toLowerCase(), id: { [Op.ne]: usuario.id } } });
+      const existeEmail = await Usuario.findOne({
+        where: { email: email.toLowerCase(), id: { [Op.ne]: usuario.id } },
+      });
       if (existeEmail) return badRequest(res, 'El email ya está registrado');
       usuario.email = email.toLowerCase();
     }
@@ -230,21 +302,26 @@ const actualizarUsuario = async (req, res) => {
       attributes: { exclude: ['password_hash', 'reset_token', 'reset_token_expires'] },
       include: [
         { model: Rol, as: 'rolInfo', attributes: ['id', 'nombre', 'codigo', 'color'] },
-        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'], required: false }
-      ]
+        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'], required: false },
+      ],
     });
 
     const camposModificados = Object.keys(req.body).join(', ');
-    const descripcion = req.body.rol_id && req.body.rol_id !== resultado.rol_id
-      ? `Rol de usuario "${usuario.username}" cambiado`
-      : `Usuario "${usuario.username}" actualizado (${camposModificados})`;
+    const descripcion =
+      req.body.rol_id && req.body.rol_id !== resultado.rol_id
+        ? `Rol de usuario "${usuario.username}" cambiado`
+        : `Usuario "${usuario.username}" actualizado (${camposModificados})`;
 
     logger.info('Usuario actualizado:', { id: usuario.id, modificadoPor: req.user.id });
     Auditoria.registrar({
-      tabla: 'usuarios', registro_id: usuario.id, accion: 'actualizar',
-      usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
-      datos_nuevos: req.body, ip_address: getClientIP(req),
-      descripcion
+      tabla: 'usuarios',
+      registro_id: usuario.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_nuevos: req.body,
+      ip_address: getClientIP(req),
+      descripcion,
     });
     return successMessage(res, 'Usuario actualizado exitosamente', resultado);
   } catch (error) {
@@ -261,8 +338,8 @@ const resetearPassword = async (req, res) => {
     const usuario = await Usuario.findByPk(req.params.id, {
       include: [
         { model: Rol, as: 'rolInfo', attributes: ['id', 'nombre', 'codigo', 'es_cliente'] },
-        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'], required: false }
-      ]
+        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'], required: false },
+      ],
     });
     if (!usuario) return notFound(res, 'Usuario no encontrado');
 
@@ -285,7 +362,7 @@ const resetearPassword = async (req, res) => {
           username: usuario.username,
           password,
           cliente: usuario.cliente?.razon_social || null,
-          reseteadoPor: req.user.nombre_completo || req.user.username
+          reseteadoPor: req.user.nombre_completo || req.user.username,
         });
         correoEnviado = true;
         logger.info('Correo de reseteo enviado:', { usuarioId: usuario.id, email: usuario.email });
@@ -296,9 +373,13 @@ const resetearPassword = async (req, res) => {
 
     logger.info('Password reseteado:', { id: usuario.id, por: req.user.id, correoEnviado });
     Auditoria.registrar({
-      tabla: 'usuarios', registro_id: usuario.id, accion: 'actualizar',
-      usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
-      ip_address: getClientIP(req), descripcion: `Contraseña de "${usuario.username}" reseteada${correoEnviado ? ' (correo enviado)' : ''}`
+      tabla: 'usuarios',
+      registro_id: usuario.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      ip_address: getClientIP(req),
+      descripcion: `Contraseña de "${usuario.username}" reseteada${correoEnviado ? ' (correo enviado)' : ''}`,
     });
 
     const mensaje = correoEnviado
@@ -320,8 +401,8 @@ const reenviarCredenciales = async (req, res) => {
     const usuario = await Usuario.findByPk(req.params.id, {
       include: [
         { model: Rol, as: 'rolInfo', attributes: ['id', 'nombre', 'codigo', 'es_cliente'] },
-        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'], required: false }
-      ]
+        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'], required: false },
+      ],
     });
     if (!usuario) return notFound(res, 'Usuario no encontrado');
 
@@ -348,22 +429,29 @@ const reenviarCredenciales = async (req, res) => {
         password: passwordTemporal,
         cliente: usuario.cliente?.razon_social || '',
         invitadoPor: req.user.nombre_completo || req.user.username,
-        esReenvio: true
+        esReenvio: true,
       });
     } else {
-      await enviarBienvenida({
-        nombre_completo: usuario.nombre_completo || usuario.getNombreDisplay(),
-        username: usuario.username,
-        email: usuario.email,
-        rol: usuario.rol
-      }, passwordTemporal);
+      await enviarBienvenida(
+        {
+          nombre_completo: usuario.nombre_completo || usuario.getNombreDisplay(),
+          username: usuario.username,
+          email: usuario.email,
+          rol: usuario.rol,
+        },
+        passwordTemporal
+      );
     }
 
     logger.info('Credenciales reenviadas:', { usuarioId: usuario.id, por: req.user.id });
     Auditoria.registrar({
-      tabla: 'usuarios', registro_id: usuario.id, accion: 'actualizar',
-      usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
-      ip_address: getClientIP(req), descripcion: `Credenciales reenviadas a "${usuario.email}"`
+      tabla: 'usuarios',
+      registro_id: usuario.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      ip_address: getClientIP(req),
+      descripcion: `Credenciales reenviadas a "${usuario.email}"`,
     });
     return successMessage(res, 'Credenciales enviadas al correo del usuario exitosamente');
   } catch (error) {
@@ -395,9 +483,13 @@ const desactivarUsuario = async (req, res) => {
 
     logger.info('Usuario desactivado:', { id: usuario.id, por: req.user.id });
     Auditoria.registrar({
-      tabla: 'usuarios', registro_id: usuario.id, accion: 'eliminar',
-      usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
-      ip_address: getClientIP(req), descripcion: `Usuario "${usuario.username}" desactivado`
+      tabla: 'usuarios',
+      registro_id: usuario.id,
+      accion: 'eliminar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      ip_address: getClientIP(req),
+      descripcion: `Usuario "${usuario.username}" desactivado`,
     });
     return successMessage(res, 'Usuario desactivado exitosamente');
   } catch (error) {
@@ -413,12 +505,31 @@ const desactivarUsuario = async (req, res) => {
 const obtenerPermisosUsuario = async (req, res) => {
   try {
     const usuario = await Usuario.findByPk(req.params.id, {
-      attributes: ['id', 'username', 'nombre_completo', 'rol', 'rol_id', 'cliente_id', 'permisos_cliente', 'permisos_personalizados'],
+      attributes: [
+        'id',
+        'username',
+        'nombre_completo',
+        'rol',
+        'rol_id',
+        'cliente_id',
+        'permisos_cliente',
+        'permisos_personalizados',
+      ],
       include: [
-        { model: Rol, as: 'rolInfo', attributes: ['id', 'nombre', 'codigo', 'color', 'es_cliente'], include: [
-          { model: Permiso, as: 'permisos', attributes: ['id', 'modulo', 'accion', 'descripcion', 'grupo'], through: { attributes: [] } }
-        ]}
-      ]
+        {
+          model: Rol,
+          as: 'rolInfo',
+          attributes: ['id', 'nombre', 'codigo', 'color', 'es_cliente'],
+          include: [
+            {
+              model: Permiso,
+              as: 'permisos',
+              attributes: ['id', 'modulo', 'accion', 'descripcion', 'grupo'],
+              through: { attributes: [] },
+            },
+          ],
+        },
+      ],
     });
 
     if (!usuario) return notFound(res, 'Usuario no encontrado');
@@ -432,20 +543,33 @@ const obtenerPermisosUsuario = async (req, res) => {
         usuario: { id: usuario.id, username: usuario.username, nombre: usuario.nombre_completo },
         permisos_cliente: usuario.permisos_cliente || null,
         catalogo: Usuario.getPermisosClienteCatalogo(),
-        defaults: Usuario.getPermisosClienteDefault()
+        defaults: Usuario.getPermisosClienteDefault(),
       });
     }
 
     // Usuario interno: retornar permisos del rol + personalizados
-    const rolPermisos = (usuario.rolInfo?.permisos || []).map(p => ({ id: p.id, modulo: p.modulo, accion: p.accion, descripcion: p.descripcion, grupo: p.grupo }));
+    const rolPermisos = (usuario.rolInfo?.permisos || []).map((p) => ({
+      id: p.id,
+      modulo: p.modulo,
+      accion: p.accion,
+      descripcion: p.descripcion,
+      grupo: p.grupo,
+    }));
 
     return success(res, {
       tipo: 'interno',
       usuario: { id: usuario.id, username: usuario.username, nombre: usuario.nombre_completo },
-      rol: usuario.rolInfo ? { id: usuario.rolInfo.id, nombre: usuario.rolInfo.nombre, codigo: usuario.rolInfo.codigo, color: usuario.rolInfo.color } : null,
+      rol: usuario.rolInfo
+        ? {
+            id: usuario.rolInfo.id,
+            nombre: usuario.rolInfo.nombre,
+            codigo: usuario.rolInfo.codigo,
+            color: usuario.rolInfo.color,
+          }
+        : null,
       permisos_rol: rolPermisos,
       permisos_personalizados: usuario.permisos_personalizados,
-      tiene_personalizados: usuario.permisos_personalizados !== null
+      tiene_personalizados: usuario.permisos_personalizados !== null,
     });
   } catch (error) {
     logger.error('Error al obtener permisos de usuario:', { message: error.message });
@@ -460,7 +584,7 @@ const obtenerPermisosUsuario = async (req, res) => {
 const actualizarPermisosUsuario = async (req, res) => {
   try {
     const usuario = await Usuario.findByPk(req.params.id, {
-      include: [{ model: Rol, as: 'rolInfo', attributes: ['id', 'es_cliente'] }]
+      include: [{ model: Rol, as: 'rolInfo', attributes: ['id', 'es_cliente'] }],
     });
     if (!usuario) return notFound(res, 'Usuario no encontrado');
 
@@ -481,12 +605,18 @@ const actualizarPermisosUsuario = async (req, res) => {
       invalidarCachePermisos();
       logger.info('Permisos de cliente actualizados:', { usuarioId: usuario.id, por: req.user.id });
       Auditoria.registrar({
-        tabla: 'usuarios', registro_id: usuario.id, accion: 'actualizar',
-        usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
-        datos_nuevos: { permisos_cliente }, ip_address: getClientIP(req),
-        descripcion: `Permisos de cliente del usuario #${usuario.id} actualizados`
+        tabla: 'usuarios',
+        registro_id: usuario.id,
+        accion: 'actualizar',
+        usuario_id: req.user.id,
+        usuario_nombre: req.user.nombre_completo || req.user.username,
+        datos_nuevos: { permisos_cliente },
+        ip_address: getClientIP(req),
+        descripcion: `Permisos de cliente del usuario #${usuario.id} actualizados`,
       });
-      return successMessage(res, 'Permisos del usuario actualizados exitosamente', { permisos_cliente });
+      return successMessage(res, 'Permisos del usuario actualizados exitosamente', {
+        permisos_cliente,
+      });
     }
 
     // Usuario interno: actualizar permisos_personalizados
@@ -496,12 +626,18 @@ const actualizarPermisosUsuario = async (req, res) => {
       // Restaurar a permisos del rol (eliminar override)
       await usuario.update({ permisos_personalizados: null });
       invalidarCachePermisos();
-      logger.info('Permisos personalizados eliminados (restaurar rol):', { usuarioId: usuario.id, por: req.user.id });
+      logger.info('Permisos personalizados eliminados (restaurar rol):', {
+        usuarioId: usuario.id,
+        por: req.user.id,
+      });
       Auditoria.registrar({
-        tabla: 'usuarios', registro_id: usuario.id, accion: 'actualizar',
-        usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
+        tabla: 'usuarios',
+        registro_id: usuario.id,
+        accion: 'actualizar',
+        usuario_id: req.user.id,
+        usuario_nombre: req.user.nombre_completo || req.user.username,
         ip_address: getClientIP(req),
-        descripcion: `Permisos del usuario #${usuario.id} restaurados a los del rol`
+        descripcion: `Permisos del usuario #${usuario.id} restaurados a los del rol`,
       });
       return successMessage(res, 'Permisos restaurados a los del rol');
     }
@@ -519,14 +655,23 @@ const actualizarPermisosUsuario = async (req, res) => {
 
     await usuario.update({ permisos_personalizados });
     invalidarCachePermisos();
-    logger.info('Permisos personalizados actualizados:', { usuarioId: usuario.id, por: req.user.id });
-    Auditoria.registrar({
-      tabla: 'usuarios', registro_id: usuario.id, accion: 'actualizar',
-      usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
-      datos_nuevos: { permisos_personalizados }, ip_address: getClientIP(req),
-      descripcion: `Permisos personalizados de usuario #${usuario.id} actualizados`
+    logger.info('Permisos personalizados actualizados:', {
+      usuarioId: usuario.id,
+      por: req.user.id,
     });
-    return successMessage(res, 'Permisos del usuario actualizados exitosamente', { permisos_personalizados });
+    Auditoria.registrar({
+      tabla: 'usuarios',
+      registro_id: usuario.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_nuevos: { permisos_personalizados },
+      ip_address: getClientIP(req),
+      descripcion: `Permisos personalizados de usuario #${usuario.id} actualizados`,
+    });
+    return successMessage(res, 'Permisos del usuario actualizados exitosamente', {
+      permisos_personalizados,
+    });
   } catch (error) {
     logger.error('Error al actualizar permisos de usuario:', { message: error.message });
     return serverError(res, 'Error al actualizar permisos de usuario', error);
@@ -548,23 +693,25 @@ const listarRoles = async (req, res) => {
           model: Permiso,
           as: 'permisos',
           attributes: ['id', 'modulo', 'accion', 'descripcion', 'grupo'],
-          through: { attributes: [] }
-        }
+          through: { attributes: [] },
+        },
       ],
-      order: [['nivel_jerarquia', 'DESC']]
+      order: [['nivel_jerarquia', 'DESC']],
     });
 
     // Contar usuarios por rol
     const conteos = await Usuario.findAll({
       attributes: ['rol_id', [sequelize.fn('COUNT', sequelize.col('id')), 'total']],
       group: ['rol_id'],
-      raw: true
+      raw: true,
     });
 
     const conteoMap = {};
-    conteos.forEach(function(c) { conteoMap[c.rol_id] = parseInt(c.total); });
+    conteos.forEach(function (c) {
+      conteoMap[c.rol_id] = parseInt(c.total);
+    });
 
-    const resultado = roles.map(function(rol) {
+    const resultado = roles.map(function (rol) {
       const r = rol.toJSON();
       r.total_usuarios = conteoMap[r.id] || 0;
       return r;
@@ -583,12 +730,14 @@ const listarRoles = async (req, res) => {
 const obtenerRol = async (req, res) => {
   try {
     const rol = await Rol.findByPk(req.params.id, {
-      include: [{
-        model: Permiso,
-        as: 'permisos',
-        attributes: ['id', 'modulo', 'accion', 'descripcion', 'grupo'],
-        through: { attributes: [] }
-      }]
+      include: [
+        {
+          model: Permiso,
+          as: 'permisos',
+          attributes: ['id', 'modulo', 'accion', 'descripcion', 'grupo'],
+          through: { attributes: [] },
+        },
+      ],
     });
 
     if (!rol) return notFound(res, 'Rol no encontrado');
@@ -618,12 +767,14 @@ const crearRol = async (req, res) => {
 
     // Verificar unicidad
     const existente = await Rol.findOne({
-      where: { [Op.or]: [{ nombre }, { codigo }] }
+      where: { [Op.or]: [{ nombre }, { codigo }] },
     });
     if (existente) {
-      return badRequest(res, existente.nombre === nombre
-        ? 'Ya existe un rol con este nombre'
-        : 'Ya existe un rol con este código'
+      return badRequest(
+        res,
+        existente.nombre === nombre
+          ? 'Ya existe un rol con este nombre'
+          : 'Ya existe un rol con este código'
       );
     }
 
@@ -635,12 +786,12 @@ const crearRol = async (req, res) => {
       color: color || '#6B7280',
       es_sistema: false,
       es_cliente: false,
-      activo: true
+      activo: true,
     });
 
     // Asignar permisos
     if (permisos_ids && permisos_ids.length > 0) {
-      const records = permisos_ids.map(function(pid) {
+      const records = permisos_ids.map(function (pid) {
         return { rol_id: rol.id, permiso_id: pid };
       });
       await RolPermiso.bulkCreate(records);
@@ -648,12 +799,14 @@ const crearRol = async (req, res) => {
 
     // Retornar con permisos incluidos
     const resultado = await Rol.findByPk(rol.id, {
-      include: [{
-        model: Permiso,
-        as: 'permisos',
-        attributes: ['id', 'modulo', 'accion', 'descripcion', 'grupo'],
-        through: { attributes: [] }
-      }]
+      include: [
+        {
+          model: Permiso,
+          as: 'permisos',
+          attributes: ['id', 'modulo', 'accion', 'descripcion', 'grupo'],
+          through: { attributes: [] },
+        },
+      ],
     });
 
     invalidarCachePermisos();
@@ -664,9 +817,15 @@ const crearRol = async (req, res) => {
       accion: 'crear',
       usuario_id: req.user.id,
       usuario_nombre: req.user.nombre_completo || req.user.username,
-      datos_nuevos: { nombre, codigo, nivel_jerarquia: rol.nivel_jerarquia, color: rol.color, permisos_count: permisos_ids?.length || 0 },
+      datos_nuevos: {
+        nombre,
+        codigo,
+        nivel_jerarquia: rol.nivel_jerarquia,
+        color: rol.color,
+        permisos_count: permisos_ids?.length || 0,
+      },
       ip_address: getClientIP(req),
-      descripcion: `Rol creado: "${nombre}" (${codigo})`
+      descripcion: `Rol creado: "${nombre}" (${codigo})`,
     });
     return created(res, 'Rol creado exitosamente', resultado);
   } catch (error) {
@@ -703,7 +862,7 @@ const actualizarRol = async (req, res) => {
     if (permisos_ids !== undefined) {
       await RolPermiso.destroy({ where: { rol_id: rol.id } });
       if (permisos_ids.length > 0) {
-        const records = permisos_ids.map(function(pid) {
+        const records = permisos_ids.map(function (pid) {
           return { rol_id: rol.id, permiso_id: pid };
         });
         await RolPermiso.bulkCreate(records);
@@ -714,21 +873,27 @@ const actualizarRol = async (req, res) => {
     }
 
     const resultado = await Rol.findByPk(rol.id, {
-      include: [{
-        model: Permiso,
-        as: 'permisos',
-        attributes: ['id', 'modulo', 'accion', 'descripcion', 'grupo'],
-        through: { attributes: [] }
-      }]
+      include: [
+        {
+          model: Permiso,
+          as: 'permisos',
+          attributes: ['id', 'modulo', 'accion', 'descripcion', 'grupo'],
+          through: { attributes: [] },
+        },
+      ],
     });
 
     invalidarCachePermisos();
     logger.info('Rol actualizado:', { id: rol.id, modificadoPor: req.user.id });
     Auditoria.registrar({
-      tabla: 'roles', registro_id: rol.id, accion: 'actualizar',
-      usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
-      datos_nuevos: req.body, ip_address: getClientIP(req),
-      descripcion: `Rol "${rol.nombre}" actualizado${req.body.permisos_ids !== undefined ? ' (permisos modificados)' : ''}`
+      tabla: 'roles',
+      registro_id: rol.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_nuevos: req.body,
+      ip_address: getClientIP(req),
+      descripcion: `Rol "${rol.nombre}" actualizado${req.body.permisos_ids !== undefined ? ' (permisos modificados)' : ''}`,
     });
     return successMessage(res, 'Rol actualizado exitosamente', resultado);
   } catch (error) {
@@ -752,7 +917,10 @@ const eliminarRol = async (req, res) => {
     // Verificar que no tenga usuarios asignados
     const totalUsuarios = await Usuario.count({ where: { rol_id: rol.id } });
     if (totalUsuarios > 0) {
-      return badRequest(res, `No se puede eliminar: ${totalUsuarios} usuario(s) tienen este rol asignado`);
+      return badRequest(
+        res,
+        `No se puede eliminar: ${totalUsuarios} usuario(s) tienen este rol asignado`
+      );
     }
 
     // Eliminar permisos asociados y el rol
@@ -767,9 +935,13 @@ const eliminarRol = async (req, res) => {
       accion: 'eliminar',
       usuario_id: req.user.id,
       usuario_nombre: req.user.nombre_completo || req.user.username,
-      datos_anteriores: { nombre: rol.nombre, codigo: rol.codigo, nivel_jerarquia: rol.nivel_jerarquia },
+      datos_anteriores: {
+        nombre: rol.nombre,
+        codigo: rol.codigo,
+        nivel_jerarquia: rol.nivel_jerarquia,
+      },
       ip_address: getClientIP(req),
-      descripcion: `Rol eliminado: "${rol.nombre}" (${rol.codigo})`
+      descripcion: `Rol eliminado: "${rol.nombre}" (${rol.codigo})`,
     });
     return successMessage(res, 'Rol eliminado exitosamente');
   } catch (error) {
@@ -788,25 +960,29 @@ const eliminarRol = async (req, res) => {
 const listarPermisos = async (req, res) => {
   try {
     const permisos = await Permiso.findAll({
-      order: [['grupo', 'ASC'], ['modulo', 'ASC'], ['accion', 'ASC']]
+      order: [
+        ['grupo', 'ASC'],
+        ['modulo', 'ASC'],
+        ['accion', 'ASC'],
+      ],
     });
 
     // Agrupar por módulo para la UI
     const agrupados = {};
-    permisos.forEach(function(p) {
+    permisos.forEach(function (p) {
       if (!agrupados[p.modulo]) {
         agrupados[p.modulo] = { modulo: p.modulo, grupo: p.grupo, acciones: [] };
       }
       agrupados[p.modulo].acciones.push({
         id: p.id,
         accion: p.accion,
-        descripcion: p.descripcion
+        descripcion: p.descripcion,
       });
     });
 
     return success(res, {
       permisos: permisos,
-      agrupados: Object.values(agrupados)
+      agrupados: Object.values(agrupados),
     });
   } catch (error) {
     logger.error('Error al listar permisos:', { message: error.message });
@@ -839,34 +1015,57 @@ const dashboardSeguridad = async (req, res) => {
       usuariosBloqueados,
       actividadReciente,
       loginsRecientes,
-      statsAuditoria7d
+      statsAuditoria7d,
     ] = await Promise.all([
       // KPIs
       Usuario.count({ where: { activo: true } }),
       Usuario.count({ where: { activo: false } }),
       Usuario.count({ where: { bloqueado_hasta: { [Op.gt]: ahora } } }),
-      Usuario.count({ where: { intentos_fallidos: { [Op.gt]: 0 }, bloqueado_hasta: { [Op.or]: [null, { [Op.lte]: ahora }] } } }),
+      Usuario.count({
+        where: {
+          intentos_fallidos: { [Op.gt]: 0 },
+          bloqueado_hasta: { [Op.or]: [null, { [Op.lte]: ahora }] },
+        },
+      }),
       Usuario.count({ where: { requiere_cambio_password: true, activo: true } }),
       TokenBlacklist.count({ where: { created_at: { [Op.gte]: inicioDia } } }),
 
       // Usuarios actualmente bloqueados
       Usuario.findAll({
         where: { bloqueado_hasta: { [Op.gt]: ahora } },
-        attributes: ['id', 'username', 'email', 'nombre_completo', 'intentos_fallidos', 'bloqueado_hasta', 'ultimo_acceso', 'rol'],
+        attributes: [
+          'id',
+          'username',
+          'email',
+          'nombre_completo',
+          'intentos_fallidos',
+          'bloqueado_hasta',
+          'ultimo_acceso',
+          'rol',
+        ],
         include: [{ model: Rol, as: 'rolInfo', attributes: ['nombre', 'codigo', 'color'] }],
         order: [['bloqueado_hasta', 'DESC']],
-        limit: 20
+        limit: 20,
       }),
 
       // Actividad reciente (cambios sensibles)
       Auditoria.findAll({
         where: {
           created_at: { [Op.gte]: hace24h },
-          accion: { [Op.in]: ['login', 'logout', 'crear', 'actualizar', 'eliminar'] }
+          accion: { [Op.in]: ['login', 'logout', 'crear', 'actualizar', 'eliminar'] },
         },
         order: [['created_at', 'DESC']],
         limit: 30,
-        attributes: ['id', 'tabla', 'registro_id', 'accion', 'usuario_nombre', 'descripcion', 'ip_address', 'created_at']
+        attributes: [
+          'id',
+          'tabla',
+          'registro_id',
+          'accion',
+          'usuario_nombre',
+          'descripcion',
+          'ip_address',
+          'created_at',
+        ],
       }),
 
       // Logins recientes (éxitos)
@@ -874,19 +1073,23 @@ const dashboardSeguridad = async (req, res) => {
         where: { accion: 'login', created_at: { [Op.gte]: hace7d } },
         order: [['created_at', 'DESC']],
         limit: 20,
-        attributes: ['id', 'usuario_nombre', 'usuario_id', 'ip_address', 'descripcion', 'created_at']
+        attributes: [
+          'id',
+          'usuario_nombre',
+          'usuario_id',
+          'ip_address',
+          'descripcion',
+          'created_at',
+        ],
       }),
 
       // Estadísticas de auditoría últimos 7 días
       Auditoria.findAll({
         where: { created_at: { [Op.gte]: hace7d } },
-        attributes: [
-          'accion',
-          [sequelize.fn('COUNT', sequelize.col('id')), 'total']
-        ],
+        attributes: ['accion', [sequelize.fn('COUNT', sequelize.col('id')), 'total']],
         group: ['accion'],
-        raw: true
-      })
+        raw: true,
+      }),
     ]);
 
     const sesionesActivas = socketService.getConnectedCount();
@@ -899,12 +1102,12 @@ const dashboardSeguridad = async (req, res) => {
         bloqueados: bloqueadosCount,
         con_intentos_fallidos: conIntentosFallidosCount,
         requiere_cambio_password: requiereCambioPasswordCount,
-        tokens_revocados_hoy: tokensRevocadosHoy
+        tokens_revocados_hoy: tokensRevocadosHoy,
       },
       usuarios_bloqueados: usuariosBloqueados,
       actividad_reciente: actividadReciente,
       logins_recientes: loginsRecientes,
-      stats_auditoria_7d: statsAuditoria7d
+      stats_auditoria_7d: statsAuditoria7d,
     });
   } catch (error) {
     logger.error('Error en dashboard de seguridad:', { message: error.message });
@@ -919,13 +1122,23 @@ const dashboardSeguridad = async (req, res) => {
 const desbloquearUsuario = async (req, res) => {
   try {
     const usuario = await Usuario.findByPk(req.params.id, {
-      attributes: ['id', 'username', 'email', 'nombre_completo', 'intentos_fallidos', 'bloqueado_hasta', 'activo']
+      attributes: [
+        'id',
+        'username',
+        'email',
+        'nombre_completo',
+        'intentos_fallidos',
+        'bloqueado_hasta',
+        'activo',
+      ],
     });
 
     if (!usuario) return notFound(res, 'Usuario no encontrado');
     if (!usuario.activo) return badRequest(res, 'No se puede desbloquear un usuario inactivo');
 
-    const estabaBloquedado = usuario.intentos_fallidos > 0 || (usuario.bloqueado_hasta && usuario.bloqueado_hasta > new Date());
+    const estabaBloquedado =
+      usuario.intentos_fallidos > 0 ||
+      (usuario.bloqueado_hasta && usuario.bloqueado_hasta > new Date());
 
     usuario.intentos_fallidos = 0;
     usuario.bloqueado_hasta = null;
@@ -940,10 +1153,14 @@ const desbloquearUsuario = async (req, res) => {
       datos_anteriores: { intentos_fallidos: usuario._previousDataValues?.intentos_fallidos },
       datos_nuevos: { intentos_fallidos: 0, bloqueado_hasta: null },
       ip_address: req.ip,
-      descripcion: `Usuario "${usuario.username}" desbloqueado manualmente por admin`
+      descripcion: `Usuario "${usuario.username}" desbloqueado manualmente por admin`,
     });
 
-    return success(res, { id: usuario.id, desbloqueado: estabaBloquedado }, 'Usuario desbloqueado correctamente');
+    return success(
+      res,
+      { id: usuario.id, desbloqueado: estabaBloquedado },
+      'Usuario desbloqueado correctamente'
+    );
   } catch (error) {
     logger.error('Error al desbloquear usuario:', { message: error.message });
     return serverError(res, 'Error al desbloquear usuario', error);
@@ -996,13 +1213,24 @@ async function listarSesionesActivas(req, res) {
 
     const usuarios = await Usuario.findAll({
       where: { id: { [Op.in]: connectedIds } },
-      attributes: ['id', 'username', 'nombre', 'apellido', 'nombre_completo', 'email', 'rol', 'avatar_url', 'ultimo_acceso'],
+      attributes: [
+        'id',
+        'username',
+        'nombre',
+        'apellido',
+        'nombre_completo',
+        'email',
+        'rol',
+        'avatar_url',
+        'ultimo_acceso',
+      ],
     });
 
-    const data = usuarios.map(u => ({
+    const data = usuarios.map((u) => ({
       id: u.id,
       username: u.username,
-      nombre_completo: u.nombre_completo || `${u.nombre || ''} ${u.apellido || ''}`.trim() || u.username,
+      nombre_completo:
+        u.nombre_completo || `${u.nombre || ''} ${u.apellido || ''}`.trim() || u.username,
       email: u.email,
       rol: u.rol,
       avatar_url: u.avatar_url,
@@ -1028,7 +1256,9 @@ async function cerrarSesion(req, res) {
       return badRequest(res, 'No puedes cerrar tu propia sesión desde aquí');
     }
 
-    const usuario = await Usuario.findByPk(id, { attributes: ['id', 'username', 'nombre_completo'] });
+    const usuario = await Usuario.findByPk(id, {
+      attributes: ['id', 'username', 'nombre_completo'],
+    });
     if (!usuario) {
       return notFound(res, 'Usuario no encontrado');
     }
@@ -1046,8 +1276,13 @@ async function cerrarSesion(req, res) {
       descripcion: `Sesión de ${usuario.nombre_completo || usuario.username} cerrada forzosamente por admin`,
     });
 
-    logger.info('Sesión cerrada por admin:', { targetUser: usuario.username, admin: req.user.username });
-    return successMessage(res, `Sesión de ${usuario.nombre_completo || usuario.username} cerrada`, { disconnected });
+    logger.info('Sesión cerrada por admin:', {
+      targetUser: usuario.username,
+      admin: req.user.username,
+    });
+    return successMessage(res, `Sesión de ${usuario.nombre_completo || usuario.username} cerrada`, {
+      disconnected,
+    });
   } catch (error) {
     logger.error('Error al cerrar sesión:', { message: error.message });
     return serverError(res, 'Error al cerrar sesión', error);
@@ -1074,7 +1309,11 @@ async function cerrarTodasSesiones(req, res) {
     });
 
     logger.info('Todas las sesiones cerradas:', { admin: req.user.username, count });
-    return successMessage(res, `${count} sesión${count !== 1 ? 'es' : ''} cerrada${count !== 1 ? 's' : ''} exitosamente`, { count });
+    return successMessage(
+      res,
+      `${count} sesión${count !== 1 ? 'es' : ''} cerrada${count !== 1 ? 's' : ''} exitosamente`,
+      { count }
+    );
   } catch (error) {
     logger.error('Error al cerrar todas las sesiones:', { message: error.message });
     return serverError(res, 'Error al cerrar todas las sesiones', error);

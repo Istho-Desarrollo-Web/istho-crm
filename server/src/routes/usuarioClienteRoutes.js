@@ -3,9 +3,9 @@
  * ISTHO CRM - Rutas de Usuarios Cliente
  * ============================================================================
  * Endpoints para gestionar usuarios con acceso al portal de cliente.
- * 
+ *
  * Base: /api/clientes/:clienteId/usuarios
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.1.0
  * @date Enero 2026
@@ -33,10 +33,10 @@ const validate = (req, res, next) => {
     return res.status(400).json({
       success: false,
       message: 'Error de validación',
-      errors: errors.array().map(err => ({
+      errors: errors.array().map((err) => ({
         campo: err.path || err.param,
-        mensaje: err.msg
-      }))
+        mensaje: err.msg,
+      })),
     });
   }
   next();
@@ -47,16 +47,10 @@ const validate = (req, res, next) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 const validarClienteId = [
-  param('clienteId')
-    .isInt({ min: 1 })
-    .withMessage('ID de cliente inválido')
+  param('clienteId').isInt({ min: 1 }).withMessage('ID de cliente inválido'),
 ];
 
-const validarUsuarioId = [
-  param('id')
-    .isInt({ min: 1 })
-    .withMessage('ID de usuario inválido')
-];
+const validarUsuarioId = [param('id').isInt({ min: 1 }).withMessage('ID de usuario inválido')];
 
 const validarCrearUsuario = [
   body('nombre_completo')
@@ -65,7 +59,7 @@ const validarCrearUsuario = [
     .withMessage('El nombre es requerido')
     .isLength({ min: 3, max: 200 })
     .withMessage('El nombre debe tener entre 3 y 200 caracteres'),
-  
+
   body('email')
     .trim()
     .notEmpty()
@@ -73,33 +67,30 @@ const validarCrearUsuario = [
     .isEmail()
     .withMessage('Email inválido')
     .normalizeEmail(),
-  
+
   body('telefono')
     .optional({ nullable: true })
     .trim()
     .isLength({ max: 20 })
     .withMessage('El teléfono no puede exceder 20 caracteres'),
-  
+
   body('cargo')
     .optional({ nullable: true })
     .trim()
     .isLength({ max: 100 })
     .withMessage('El cargo no puede exceder 100 caracteres'),
-  
+
   body('password')
     .optional()
     .isLength({ min: 8 })
     .withMessage('La contraseña debe tener al menos 8 caracteres'),
-  
+
   body('permisos_cliente')
     .optional()
     .isObject()
     .withMessage('Los permisos deben ser un objeto válido'),
-  
-  body('enviar_email')
-    .optional()
-    .isBoolean()
-    .withMessage('enviar_email debe ser booleano')
+
+  body('enviar_email').optional().isBoolean().withMessage('enviar_email debe ser booleano'),
 ];
 
 const validarActualizarUsuario = [
@@ -108,33 +99,19 @@ const validarActualizarUsuario = [
     .trim()
     .isLength({ min: 3, max: 200 })
     .withMessage('El nombre debe tener entre 3 y 200 caracteres'),
-  
-  body('email')
-    .optional()
-    .trim()
-    .isEmail()
-    .withMessage('Email inválido')
-    .normalizeEmail(),
-  
-  body('telefono')
-    .optional({ nullable: true })
-    .trim()
-    .isLength({ max: 20 }),
-  
-  body('cargo')
-    .optional({ nullable: true })
-    .trim()
-    .isLength({ max: 100 }),
-  
+
+  body('email').optional().trim().isEmail().withMessage('Email inválido').normalizeEmail(),
+
+  body('telefono').optional({ nullable: true }).trim().isLength({ max: 20 }),
+
+  body('cargo').optional({ nullable: true }).trim().isLength({ max: 100 }),
+
   body('permisos_cliente')
     .optional()
     .isObject()
     .withMessage('Los permisos deben ser un objeto válido'),
-  
-  body('activo')
-    .optional()
-    .isBoolean()
-    .withMessage('activo debe ser booleano')
+
+  body('activo').optional().isBoolean().withMessage('activo debe ser booleano'),
 ];
 
 const validarResetearPassword = [
@@ -142,11 +119,8 @@ const validarResetearPassword = [
     .optional()
     .isLength({ min: 8 })
     .withMessage('La contraseña debe tener al menos 8 caracteres'),
-  
-  body('enviar_email')
-    .optional()
-    .isBoolean()
-    .withMessage('enviar_email debe ser booleano')
+
+  body('enviar_email').optional().isBoolean().withMessage('enviar_email debe ser booleano'),
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -161,24 +135,13 @@ router.use(checkRole(['admin', 'supervisor']));
  * GET /api/clientes/:clienteId/usuarios
  * Listar usuarios de un cliente
  */
-router.get(
-  '/',
-  validarClienteId,
-  validate,
-  usuarioClienteController.listar
-);
+router.get('/', validarClienteId, validate, usuarioClienteController.listar);
 
 /**
  * POST /api/clientes/:clienteId/usuarios
  * Crear nuevo usuario para cliente
  */
-router.post(
-  '/',
-  validarClienteId,
-  validarCrearUsuario,
-  validate,
-  usuarioClienteController.crear
-);
+router.post('/', validarClienteId, validarCrearUsuario, validate, usuarioClienteController.crear);
 
 /**
  * GET /api/clientes/:clienteId/usuarios/:id

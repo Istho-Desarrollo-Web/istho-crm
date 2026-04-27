@@ -7,10 +7,10 @@
  * - Movimientos (entradas/salidas/ajustes)
  * - Alertas de stock
  * - Estadísticas y KPIs
- * 
+ *
  * CORRECCIÓN v2.1.0:
  * - Eliminado .data extra (client.js ya devuelve response.data)
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 2.1.0
  * @date Enero 2026
@@ -24,14 +24,13 @@ import { INVENTARIO_ENDPOINTS } from './endpoints';
 // ════════════════════════════════════════════════════════════════════════════
 
 const inventarioService = {
-  
   // ──────────────────────────────────────────────────────────────────────────
   // LISTAR INVENTARIO
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener lista de inventario con filtros y paginación
-   * 
+   *
    * @param {Object} params - Parámetros de búsqueda
    * @param {number} [params.page=1] - Número de página
    * @param {number} [params.limit=10] - Registros por página
@@ -55,14 +54,14 @@ const inventarioService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // OBTENER POR ID
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener un producto de inventario por ID
-   * 
+   *
    * @param {number|string} id - ID del producto
    * @returns {Promise<Object>}
    */
@@ -78,24 +77,21 @@ const inventarioService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // OBTENER POR CLIENTE
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener inventario de un cliente específico
-   * 
+   *
    * @param {number|string} clienteId - ID del cliente
    * @param {Object} [params] - Parámetros adicionales
    * @returns {Promise<Object>}
    */
   getByCliente: async (clienteId, params = {}) => {
     try {
-      const response = await apiClient.get(
-        INVENTARIO_ENDPOINTS.BY_CLIENTE(clienteId), 
-        { params }
-      );
+      const response = await apiClient.get(INVENTARIO_ENDPOINTS.BY_CLIENTE(clienteId), { params });
       return response;
     } catch (error) {
       throw {
@@ -105,14 +101,14 @@ const inventarioService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // CREAR PRODUCTO
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Crear un nuevo producto de inventario
-   * 
+   *
    * @param {Object} data - Datos del producto
    * @returns {Promise<Object>}
    */
@@ -129,14 +125,14 @@ const inventarioService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // ACTUALIZAR PRODUCTO
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Actualizar un producto existente
-   * 
+   *
    * @param {number|string} id - ID del producto
    * @param {Object} data - Datos a actualizar
    * @returns {Promise<Object>}
@@ -154,14 +150,14 @@ const inventarioService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // ELIMINAR PRODUCTO
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Eliminar un producto de inventario
-   * 
+   *
    * @param {number|string} id - ID del producto
    * @returns {Promise<Object>}
    */
@@ -177,14 +173,14 @@ const inventarioService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // AJUSTAR CANTIDAD (MOVIMIENTOS)
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Ajustar cantidad de un producto (entrada, salida, ajuste)
-   * 
+   *
    * @param {number|string} id - ID del producto
    * @param {Object} data - Datos del ajuste
    * @param {number} data.cantidad - Cantidad
@@ -206,31 +202,28 @@ const inventarioService = {
       };
     }
   },
-  
+
   /**
    * Alias de ajustar para compatibilidad
    */
   registrarMovimiento: async (id, data) => {
     return inventarioService.ajustar(id, data);
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // MOVIMIENTOS (HISTORIAL)
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener historial de movimientos de un producto
-   * 
+   *
    * @param {number|string} id - ID del producto
    * @param {Object} [params] - Parámetros (page, limit)
    * @returns {Promise<Object>}
    */
   getMovimientos: async (id, params = {}) => {
     try {
-      const response = await apiClient.get(
-        INVENTARIO_ENDPOINTS.MOVIMIENTOS(id), 
-        { params }
-      );
+      const response = await apiClient.get(INVENTARIO_ENDPOINTS.MOVIMIENTOS(id), { params });
       return response;
     } catch (error) {
       throw {
@@ -240,14 +233,14 @@ const inventarioService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // ESTADÍSTICAS
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener estadísticas/KPIs generales de inventario
-   * 
+   *
    * @param {Object} [params] - Parámetros (cliente_id)
    * @returns {Promise<Object>}
    */
@@ -263,20 +256,19 @@ const inventarioService = {
       };
     }
   },
-  
+
   /**
    * Obtener estadísticas de movimientos de un producto (para gráficos)
-   * 
+   *
    * @param {number|string} id - ID del producto
    * @param {Object} [params] - Parámetros (meses)
    * @returns {Promise<Object>}
    */
   getEstadisticasProducto: async (id, params = {}) => {
     try {
-      const response = await apiClient.get(
-        INVENTARIO_ENDPOINTS.ESTADISTICAS_PRODUCTO(id),
-        { params }
-      );
+      const response = await apiClient.get(INVENTARIO_ENDPOINTS.ESTADISTICAS_PRODUCTO(id), {
+        params,
+      });
       return response;
     } catch (error) {
       throw {
@@ -286,14 +278,14 @@ const inventarioService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // ALERTAS
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener alertas de inventario (stock bajo, agotados, vencimientos)
-   * 
+   *
    * @param {Object} [params] - Parámetros de filtro
    * @param {number} [params.cliente_id] - Filtrar por cliente
    * @param {string} [params.tipo] - 'agotado' | 'bajo_stock' | 'vencimiento'
@@ -311,20 +303,17 @@ const inventarioService = {
       };
     }
   },
-  
+
   /**
    * Marcar una alerta como atendida
-   * 
+   *
    * @param {string} alertaId - ID de la alerta (formato: "tipo-productoId")
    * @param {Object} [data] - Datos adicionales (observaciones)
    * @returns {Promise<Object>}
    */
   atenderAlerta: async (alertaId, data = {}) => {
     try {
-      const response = await apiClient.put(
-        INVENTARIO_ENDPOINTS.ATENDER_ALERTA(alertaId),
-        data
-      );
+      const response = await apiClient.put(INVENTARIO_ENDPOINTS.ATENDER_ALERTA(alertaId), data);
       return response;
     } catch (error) {
       throw {
@@ -334,18 +323,16 @@ const inventarioService = {
       };
     }
   },
-  
+
   /**
    * Descartar una alerta
-   * 
+   *
    * @param {string} alertaId - ID de la alerta
    * @returns {Promise<Object>}
    */
   descartarAlerta: async (alertaId) => {
     try {
-      const response = await apiClient.delete(
-        INVENTARIO_ENDPOINTS.DESCARTAR_ALERTA(alertaId)
-      );
+      const response = await apiClient.delete(INVENTARIO_ENDPOINTS.DESCARTAR_ALERTA(alertaId));
       return response;
     } catch (error) {
       throw {
@@ -358,10 +345,7 @@ const inventarioService = {
 
   descartarTodasAlertas: async (params = {}) => {
     try {
-      const response = await apiClient.post(
-        INVENTARIO_ENDPOINTS.DESCARTAR_TODAS_ALERTAS,
-        params
-      );
+      const response = await apiClient.post(INVENTARIO_ENDPOINTS.DESCARTAR_TODAS_ALERTAS, params);
       return response;
     } catch (error) {
       throw {
@@ -371,7 +355,7 @@ const inventarioService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // CAJAS (DETALLE POR OPERACIÓN)
   // ──────────────────────────────────────────────────────────────────────────
@@ -424,7 +408,7 @@ const inventarioService = {
   descargarPlantilla: async (apiBaseUrl, token) => {
     const url = `${apiBaseUrl}${INVENTARIO_ENDPOINTS.PLANTILLA_IMPORTACION}`;
     const response = await fetch(url, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (!response.ok) throw new Error('Error al descargar plantilla');
     const blob = await response.blob();
@@ -441,10 +425,10 @@ const inventarioService = {
   // ════════════════════════════════════════════════════════════════════════
   // UTILIDADES
   // ════════════════════════════════════════════════════════════════════════
-  
+
   /**
    * Buscar productos por término
-   * 
+   *
    * @param {string} term - Término de búsqueda
    * @param {number} [clienteId] - Filtrar por cliente
    * @param {number} [limit=10] - Límite de resultados
@@ -455,10 +439,10 @@ const inventarioService = {
     if (clienteId) params.cliente_id = clienteId;
     return inventarioService.getAll(params);
   },
-  
+
   /**
    * Obtener productos con stock bajo
-   * 
+   *
    * @param {number} [clienteId] - Filtrar por cliente
    * @returns {Promise<Object>}
    */
@@ -467,10 +451,10 @@ const inventarioService = {
     if (clienteId) params.cliente_id = clienteId;
     return inventarioService.getAll(params);
   },
-  
+
   /**
    * Obtener productos próximos a vencer
-   * 
+   *
    * @param {number} [dias=30] - Días hasta vencimiento
    * @param {number} [clienteId] - Filtrar por cliente
    * @returns {Promise<Object>}
@@ -480,10 +464,10 @@ const inventarioService = {
     if (clienteId) params.cliente_id = clienteId;
     return inventarioService.getAll(params);
   },
-  
+
   /**
    * Obtener categorías disponibles
-   * 
+   *
    * @returns {Array<{value: string, label: string}>}
    */
   getCategorias: () => {
@@ -499,10 +483,10 @@ const inventarioService = {
       { value: 'tecnologia', label: 'Tecnología' },
     ];
   },
-  
+
   /**
    * Obtener zonas/bodegas disponibles
-   * 
+   *
    * @returns {Array<{value: string, label: string}>}
    */
   getZonas: () => {
@@ -513,10 +497,10 @@ const inventarioService = {
       { value: 'BOD-04', label: 'Área 04 - Construcción' },
     ];
   },
-  
+
   /**
    * Obtener unidades de medida disponibles
-   * 
+   *
    * @returns {Array<{value: string, label: string}>}
    */
   getUnidadesMedida: () => {
@@ -531,10 +515,10 @@ const inventarioService = {
       { value: 'M3', label: 'Metros cúbicos' },
     ];
   },
-  
+
   /**
    * Obtener estados disponibles
-   * 
+   *
    * @returns {Array<{value: string, label: string}>}
    */
   getEstados: () => {

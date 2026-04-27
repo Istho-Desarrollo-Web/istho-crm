@@ -4,12 +4,12 @@
  * ============================================================================
  * Hook para obtener y gestionar datos del dashboard principal.
  * Usa el endpoint consolidado /reportes/dashboard del backend.
- * 
+ *
  * CORRECCIONES:
  * - Manejo robusto de respuestas undefined
  * - Fallbacks para todos los campos
  * - Validación de response.data antes de acceder
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 2.1.0
  * @date Enero 2026
@@ -63,108 +63,107 @@ const DEFAULT_CLIENTES = {
 
 /**
  * Hook para datos del dashboard
- * 
+ *
  * @param {Object} options - Opciones de configuración
  * @param {boolean} [options.autoFetch=true] - Cargar automáticamente al montar
  * @param {number} [options.refreshInterval] - Intervalo de refresco en ms (0 = deshabilitado)
  * @returns {Object} Datos y funciones del dashboard
  */
 const useDashboard = (options = {}) => {
-  const {
-    autoFetch = true,
-    refreshInterval = 0,
-    mes = null,
-    anio = null,
-  } = options;
-  
+  const { autoFetch = true, refreshInterval = 0, mes = null, anio = null } = options;
+
   // ──────────────────────────────────────────────────────────────────────────
   // ESTADOS
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   const [state, setState] = useState(INITIAL_DASHBOARD_STATE);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // FETCH DATOS DEL DASHBOARD
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Cargar todos los datos del dashboard desde el endpoint consolidado
    * @param {boolean} [showLoading=true] - Mostrar indicador de carga
    */
-  const fetchDashboardData = useCallback(async (showLoading = true) => {
-    if (showLoading) {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-    } else {
-      setIsRefreshing(true);
-    }
-
-    try {
-      const params = {};
-      if (mes) params.mes = mes;
-      if (anio) params.anio = anio;
-      const response = await reportesService.getDashboard(params);
-      
-      // Validar que la respuesta existe y tiene datos
-      if (response && response.success && response.data) {
-        const data = response.data;
-        
-        setState({
-          operaciones: data.operaciones || DEFAULT_OPERACIONES,
-          inventario: data.inventario || DEFAULT_INVENTARIO,
-          clientes: data.clientes || DEFAULT_CLIENTES,
-          ultimasOperaciones: Array.isArray(data.ultimasOperaciones) ? data.ultimasOperaciones : [],
-          ultimasEntradas: Array.isArray(data.ultimasEntradas) ? data.ultimasEntradas : [],
-          ultimasSalidas: Array.isArray(data.ultimasSalidas) ? data.ultimasSalidas : [],
-          loading: false,
-          error: null,
-          lastUpdated: new Date(),
-        });
+  const fetchDashboardData = useCallback(
+    async (showLoading = true) => {
+      if (showLoading) {
+        setState((prev) => ({ ...prev, loading: true, error: null }));
       } else {
-        // Respuesta sin datos - usar defaults
-        console.warn('⚠️ Dashboard: respuesta sin datos, usando defaults');
-        setState({
+        setIsRefreshing(true);
+      }
+
+      try {
+        const params = {};
+        if (mes) params.mes = mes;
+        if (anio) params.anio = anio;
+        const response = await reportesService.getDashboard(params);
+
+        // Validar que la respuesta existe y tiene datos
+        if (response && response.success && response.data) {
+          const data = response.data;
+
+          setState({
+            operaciones: data.operaciones || DEFAULT_OPERACIONES,
+            inventario: data.inventario || DEFAULT_INVENTARIO,
+            clientes: data.clientes || DEFAULT_CLIENTES,
+            ultimasOperaciones: Array.isArray(data.ultimasOperaciones)
+              ? data.ultimasOperaciones
+              : [],
+            ultimasEntradas: Array.isArray(data.ultimasEntradas) ? data.ultimasEntradas : [],
+            ultimasSalidas: Array.isArray(data.ultimasSalidas) ? data.ultimasSalidas : [],
+            loading: false,
+            error: null,
+            lastUpdated: new Date(),
+          });
+        } else {
+          // Respuesta sin datos - usar defaults
+          console.warn('⚠️ Dashboard: respuesta sin datos, usando defaults');
+          setState({
+            operaciones: DEFAULT_OPERACIONES,
+            inventario: DEFAULT_INVENTARIO,
+            clientes: DEFAULT_CLIENTES,
+            ultimasOperaciones: [],
+            loading: false,
+            error: null,
+            lastUpdated: new Date(),
+          });
+        }
+      } catch (error) {
+        console.error('❌ Error en dashboard:', error);
+        setState((prev) => ({
+          ...prev,
           operaciones: DEFAULT_OPERACIONES,
           inventario: DEFAULT_INVENTARIO,
           clientes: DEFAULT_CLIENTES,
           ultimasOperaciones: [],
           loading: false,
-          error: null,
-          lastUpdated: new Date(),
-        });
+          error: error.message || 'Error al cargar datos del dashboard',
+        }));
+      } finally {
+        setIsRefreshing(false);
       }
-      
-    } catch (error) {
-      console.error('❌ Error en dashboard:', error);
-      setState(prev => ({
-        ...prev,
-        operaciones: DEFAULT_OPERACIONES,
-        inventario: DEFAULT_INVENTARIO,
-        clientes: DEFAULT_CLIENTES,
-        ultimasOperaciones: [],
-        loading: false,
-        error: error.message || 'Error al cargar datos del dashboard',
-      }));
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [mes, anio]);
+    },
+    [mes, anio]
+  );
 
   // ──────────────────────────────────────────────────────────────────────────
   // REFRESH
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Refrescar todos los datos (sin mostrar loading completo)
    */
   const refresh = useCallback(() => {
     return fetchDashboardData(false);
   }, [fetchDashboardData]);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // KPIs CALCULADOS
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * KPIs principales del dashboard
    * Mapeados desde la estructura del backend con fallbacks
@@ -174,7 +173,7 @@ const useDashboard = (options = {}) => {
     const operaciones = state.operaciones || DEFAULT_OPERACIONES;
     const inventario = state.inventario || DEFAULT_INVENTARIO;
     const clientes = state.clientes || DEFAULT_CLIENTES;
-    
+
     return {
       // ═══════════════════════════════════════════════════════════════════════
       // CLIENTES
@@ -182,19 +181,19 @@ const useDashboard = (options = {}) => {
       totalClientes: clientes.total || 0,
       clientesActivos: clientes.activos || 0,
       clientesNuevosMes: clientes.nuevosMes || 0,
-      
+
       // ═══════════════════════════════════════════════════════════════════════
       // INVENTARIO
       // ═══════════════════════════════════════════════════════════════════════
       totalProductos: inventario.totalItems || 0,
       totalUnidades: inventario.totalUnidades || 0,
       valorInventario: inventario.valorTotal || 0,
-      
+
       // Alertas de inventario
       productosStockBajo: inventario.alertas?.stockBajo || 0,
       productosPorVencer: inventario.alertas?.porVencer || 0,
       productosAgotados: 0,
-      
+
       // ═══════════════════════════════════════════════════════════════════════
       // OPERACIONES (Despachos)
       // ═══════════════════════════════════════════════════════════════════════
@@ -202,7 +201,7 @@ const useDashboard = (options = {}) => {
       despachosMes: operaciones.mes || 0,
       despachosSemana: operaciones.semana || 0,
       despachosPendientes: operaciones.pendientes || 0,
-      
+
       // Por estado
       despachosEnProceso: operaciones.porEstado?.en_proceso || 0,
       despachosCerrados: operaciones.porEstado?.cerrado || 0,
@@ -213,22 +212,23 @@ const useDashboard = (options = {}) => {
       salidasPendientes: operaciones.salidasPendientes || 0,
       auditoriasEnProceso: operaciones.enProceso || 0,
       auditoriasCerradasMes: operaciones.cerradasMes || 0,
-      
+
       // Por tipo
       totalIngresos: operaciones.porTipo?.ingreso || 0,
       totalSalidas: operaciones.porTipo?.salida || 0,
-      
+
       // Tasa de cumplimiento (calculada)
-      tasaCumplimiento: operaciones.total > 0 
-        ? Math.round((operaciones.porEstado?.cerrado || 0) / operaciones.total * 100) 
-        : 0,
+      tasaCumplimiento:
+        operaciones.total > 0
+          ? Math.round(((operaciones.porEstado?.cerrado || 0) / operaciones.total) * 100)
+          : 0,
     };
   }, [state.operaciones, state.inventario, state.clientes]);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // ALERTAS (Array plano para compatibilidad)
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Alertas como array plano para widgets
    */
@@ -236,7 +236,7 @@ const useDashboard = (options = {}) => {
     const inventario = state.inventario || DEFAULT_INVENTARIO;
     const operaciones = state.operaciones || DEFAULT_OPERACIONES;
     const alertasArray = [];
-    
+
     // Stock bajo
     const stockBajo = inventario.alertas?.stockBajo || 0;
     if (stockBajo > 0) {
@@ -249,7 +249,7 @@ const useDashboard = (options = {}) => {
         icon: 'AlertTriangle',
       });
     }
-    
+
     // Por vencer
     const porVencer = inventario.alertas?.porVencer || 0;
     if (porVencer > 0) {
@@ -262,7 +262,7 @@ const useDashboard = (options = {}) => {
         icon: 'Clock',
       });
     }
-    
+
     // Operaciones pendientes
     const pendientes = operaciones.pendientes || 0;
     if (pendientes > 0) {
@@ -275,30 +275,30 @@ const useDashboard = (options = {}) => {
         icon: 'Package',
       });
     }
-    
+
     return alertasArray;
   }, [state.inventario, state.operaciones]);
-  
+
   /**
    * Alertas agrupadas por tipo (para compatibilidad)
    */
   const alertasPorTipo = useMemo(() => {
     return {
-      stock_bajo: alertas.filter(a => a.tipo === 'stock_bajo'),
-      vencimiento: alertas.filter(a => a.tipo === 'vencimiento'),
-      pendiente: alertas.filter(a => a.tipo === 'pendiente'),
+      stock_bajo: alertas.filter((a) => a.tipo === 'stock_bajo'),
+      vencimiento: alertas.filter((a) => a.tipo === 'vencimiento'),
+      pendiente: alertas.filter((a) => a.tipo === 'pendiente'),
     };
   }, [alertas]);
-  
+
   /**
    * Total de alertas
    */
   const totalAlertas = useMemo(() => alertas.length, [alertas]);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // INDICADORES DE SALUD
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Indicadores de salud del sistema
    */
@@ -306,23 +306,25 @@ const useDashboard = (options = {}) => {
     const clientes = state.clientes || DEFAULT_CLIENTES;
     const inventario = state.inventario || DEFAULT_INVENTARIO;
     const operaciones = state.operaciones || DEFAULT_OPERACIONES;
-    
+
     // Clientes activos
-    const clientesHealth = clientes.total > 0
-      ? Math.round((clientes.activos / clientes.total) * 100)
-      : 0;
-    
+    const clientesHealth =
+      clientes.total > 0 ? Math.round((clientes.activos / clientes.total) * 100) : 0;
+
     // Inventario (menos alertas = mejor salud)
-    const totalAlertasInv = (inventario.alertas?.stockBajo || 0) + (inventario.alertas?.porVencer || 0);
-    const inventarioHealth = inventario.totalItems > 0
-      ? Math.max(0, 100 - (totalAlertasInv / inventario.totalItems * 100))
-      : 100;
-    
+    const totalAlertasInv =
+      (inventario.alertas?.stockBajo || 0) + (inventario.alertas?.porVencer || 0);
+    const inventarioHealth =
+      inventario.totalItems > 0
+        ? Math.max(0, 100 - (totalAlertasInv / inventario.totalItems) * 100)
+        : 100;
+
     // Operaciones cerradas
-    const despachosHealth = operaciones.total > 0
-      ? Math.round((operaciones.porEstado?.cerrado || 0) / operaciones.total * 100)
-      : 0;
-    
+    const despachosHealth =
+      operaciones.total > 0
+        ? Math.round(((operaciones.porEstado?.cerrado || 0) / operaciones.total) * 100)
+        : 0;
+
     return {
       clientes: {
         value: clientesHealth,
@@ -341,81 +343,82 @@ const useDashboard = (options = {}) => {
       },
     };
   }, [state.clientes, state.inventario, state.operaciones]);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // DATOS PARA GRÁFICOS
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Datos formateados para gráficos
    */
   const chartData = useMemo(() => {
     const operaciones = state.operaciones || DEFAULT_OPERACIONES;
-    
+
     return {
       // Operaciones por estado
       despachosPorEstado: operaciones.porEstado
         ? Object.entries(operaciones.porEstado).map(([estado, cantidad]) => ({
-            name: estado.replace('_', ' ').charAt(0).toUpperCase() + estado.replace('_', ' ').slice(1),
+            name:
+              estado.replace('_', ' ').charAt(0).toUpperCase() + estado.replace('_', ' ').slice(1),
             value: cantidad || 0,
           }))
         : [],
-      
+
       // Ingresos vs Salidas (incluye Kardex)
       ingresosVsSalidas: operaciones.porTipo
         ? [
             { name: 'Ingresos', value: operaciones.porTipo.ingreso || 0 },
             { name: 'Salidas', value: operaciones.porTipo.salida || 0 },
             { name: 'Kardex', value: operaciones.porTipo.kardex || 0 },
-          ].filter(d => d.value > 0)
+          ].filter((d) => d.value > 0)
         : [],
-      
+
       // Tendencia mensual (placeholder - se puede expandir)
       tendenciaMensual: [],
     };
   }, [state.operaciones]);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // AUTO FETCH
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   useEffect(() => {
     if (autoFetch) {
       fetchDashboardData();
     }
   }, [autoFetch, fetchDashboardData, mes, anio]);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // AUTO REFRESH
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   useEffect(() => {
     if (refreshInterval > 0) {
       const intervalId = setInterval(() => {
         refresh();
       }, refreshInterval);
-      
+
       return () => clearInterval(intervalId);
     }
   }, [refreshInterval, refresh]);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // RETURN
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   return {
     // Estados principales
     loading: state.loading,
     error: state.error,
     lastUpdated: state.lastUpdated,
     isRefreshing,
-    
+
     // Datos crudos del backend (con fallbacks)
     operacionesStats: state.operaciones || DEFAULT_OPERACIONES,
     inventarioStats: state.inventario || DEFAULT_INVENTARIO,
     clientesStats: state.clientes || DEFAULT_CLIENTES,
     ultimasOperaciones: state.ultimasOperaciones || [],
-    
+
     // Alias para compatibilidad
     despachosStats: state.operaciones || DEFAULT_OPERACIONES,
     despachosRecientes: state.ultimasOperaciones || [],
@@ -423,7 +426,7 @@ const useDashboard = (options = {}) => {
     // Tablas de auditoría
     ultimasEntradas: state.ultimasEntradas || [],
     ultimasSalidas: state.ultimasSalidas || [],
-    
+
     // Datos calculados
     kpis,
     alertas,
@@ -431,7 +434,7 @@ const useDashboard = (options = {}) => {
     totalAlertas,
     healthIndicators,
     chartData,
-    
+
     // Acciones
     fetchDashboardData,
     refresh,
@@ -447,14 +450,14 @@ const useDashboard = (options = {}) => {
  */
 export const useDashboardAlertas = () => {
   const { alertas, alertasPorTipo, totalAlertas, loading, error, refresh } = useDashboard();
-  
-  return { 
-    alertas, 
+
+  return {
+    alertas,
     alertasPorTipo,
     totalAlertas,
-    loading, 
-    error, 
-    refresh 
+    loading,
+    error,
+    refresh,
   };
 };
 
@@ -467,7 +470,7 @@ export const useDashboardAlertas = () => {
  */
 export const useDashboardKpis = () => {
   const { kpis, loading, error, refresh } = useDashboard();
-  
+
   return { kpis, loading, error, refresh };
 };
 

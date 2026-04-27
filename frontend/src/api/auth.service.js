@@ -3,11 +3,11 @@
  * ISTHO CRM - Servicio de Autenticación (CORREGIDO v1.2)
  * ============================================================================
  * Gestiona todas las operaciones relacionadas con autenticación.
- * 
- * ⚠️ IMPORTANTE: 
+ *
+ * ⚠️ IMPORTANTE:
  * - Usa setAuthToken/clearAuthToken del client.js
  * - client.js ahora devuelve response.data directamente
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 1.2.0
  * @date Enero 2026
@@ -27,7 +27,6 @@ const USER_KEY = 'istho_user';
 // ============================================================================
 
 const authService = {
-
   // ──────────────────────────────────────────────────────────────────────────
   // LOGIN
   // ──────────────────────────────────────────────────────────────────────────
@@ -44,9 +43,7 @@ const authService = {
       // client.js ahora devuelve response.data directamente
       // Así que response = { success, message, data: { user, token } }
       const trusted_device_token = localStorage.getItem('istho_trusted_device');
-      const body = trusted_device_token
-        ? { ...credentials, trusted_device_token }
-        : credentials;
+      const body = trusted_device_token ? { ...credentials, trusted_device_token } : credentials;
       const response = await apiClient.post(AUTH_ENDPOINTS.LOGIN, body);
 
       if (response.success) {
@@ -55,7 +52,7 @@ const authService = {
           return {
             success: true,
             data: response.data,
-            message: response.message
+            message: response.message,
           };
         }
 
@@ -183,7 +180,7 @@ const authService = {
   /**
    * Registrar nuevo usuario en el sistema
    * Solo puede ser ejecutado por administradores
-   * 
+   *
    * @param {Object} userData - Datos del nuevo usuario
    * @returns {Promise<Object>}
    */
@@ -224,7 +221,6 @@ const authService = {
       };
     }
   },
-
 
   /**
    * Solicitar recuperación de contraseña (enviar email)
@@ -274,7 +270,7 @@ const authService = {
     try {
       const currentRefresh = localStorage.getItem('istho_refresh_token');
       const response = await apiClient.post(AUTH_ENDPOINTS.REFRESH, {
-        refreshToken: currentRefresh
+        refreshToken: currentRefresh,
       });
 
       if (response.success) {

@@ -29,13 +29,11 @@ export const AppThemeProvider = ({ children }) => {
     }
   }, [isDark]);
 
-  const toggleDark = useCallback(() => setIsDark(prev => !prev), []);
+  const toggleDark = useCallback(() => setIsDark((prev) => !prev), []);
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleDark }}>
-      <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
-        {children}
-      </ThemeProvider>
+      <ThemeProvider theme={isDark ? darkTheme : lightTheme}>{children}</ThemeProvider>
     </ThemeContext.Provider>
   );
 };

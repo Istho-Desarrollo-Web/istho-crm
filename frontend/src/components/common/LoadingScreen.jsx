@@ -11,12 +11,14 @@ const LoadingScreen = ({
   mensaje = 'Cargando...',
   submensaje = null,
   tipo = 'default', // 'default' | 'reconectando' | 'pagina'
-  fullScreen = true
+  fullScreen = true,
 }) => {
   const isReconectando = tipo === 'reconectando';
 
   return (
-    <div className={`${fullScreen ? 'min-h-screen' : 'min-h-[60vh]'} bg-gradient-to-br from-slate-50 to-slate-100 dark:from-centhrix-bg dark:to-centhrix-surface flex items-center justify-center`}>
+    <div
+      className={`${fullScreen ? 'min-h-screen' : 'min-h-[60vh]'} bg-gradient-to-br from-slate-50 to-slate-100 dark:from-centhrix-bg dark:to-centhrix-surface flex items-center justify-center`}
+    >
       <div className="text-center">
         {/* Logo CenthriX */}
         <div className="mb-6">
@@ -30,9 +32,7 @@ const LoadingScreen = ({
 
         {/* Spinner */}
         <div className="relative w-12 h-12 mx-auto mb-5">
-          <div
-            className="absolute inset-0 rounded-full border-[3px] border-slate-200 dark:border-slate-700"
-          />
+          <div className="absolute inset-0 rounded-full border-[3px] border-slate-200 dark:border-slate-700" />
           <div
             className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-orange-500 border-r-orange-500"
             style={{ animation: 'spinSmooth 0.8s linear infinite' }}
@@ -40,9 +40,7 @@ const LoadingScreen = ({
         </div>
 
         {/* Mensaje */}
-        <p className="text-slate-600 dark:text-slate-300 font-medium text-sm">
-          {mensaje}
-        </p>
+        <p className="text-slate-600 dark:text-slate-300 font-medium text-sm">{mensaje}</p>
 
         {/* Submensaje */}
         {submensaje && (

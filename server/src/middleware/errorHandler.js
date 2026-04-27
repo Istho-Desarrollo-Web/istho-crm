@@ -1,8 +1,8 @@
 /**
  * ISTHO CRM - Manejador Global de Errores
- * 
+ *
  * Centraliza el manejo de errores de la aplicación.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  */
@@ -16,25 +16,25 @@ const { error: errorResponse, serverError } = require('../utils/responses');
 const handleSequelizeError = (err, req, res, next) => {
   // Error de validación de Sequelize
   if (err.name === 'SequelizeValidationError') {
-    const errors = err.errors.map(e => ({
+    const errors = err.errors.map((e) => ({
       field: e.path,
-      message: e.message
+      message: e.message,
     }));
     return errorResponse(res, 'Error de validación', 400, errors, 'VALIDATION_ERROR');
   }
-  
+
   // Error de constraint único (duplicado)
   if (err.name === 'SequelizeUniqueConstraintError') {
     const field = err.errors[0]?.path || 'campo';
     return errorResponse(
-      res, 
+      res,
       `El valor de ${field} ya existe en el sistema`,
       409,
       null,
       'DUPLICATE_ERROR'
     );
   }
-  
+
   // Error de foreign key
   if (err.name === 'SequelizeForeignKeyConstraintError') {
     return errorResponse(
@@ -45,13 +45,13 @@ const handleSequelizeError = (err, req, res, next) => {
       'FOREIGN_KEY_ERROR'
     );
   }
-  
+
   // Error de conexión a BD
   if (err.name === 'SequelizeConnectionError') {
     logger.error('Error de conexión a BD:', { message: err.message });
     return serverError(res, 'Error de conexión a la base de datos');
   }
-  
+
   next(err);
 };
 
@@ -60,9 +60,9 @@ const handleSequelizeError = (err, req, res, next) => {
  */
 const handleValidationError = (err, req, res, next) => {
   if (err.array && typeof err.array === 'function') {
-    const errors = err.array().map(e => ({
+    const errors = err.array().map((e) => ({
       field: e.path || e.param,
-      message: e.msg
+      message: e.msg,
     }));
     return errorResponse(res, 'Error de validación', 400, errors, 'VALIDATION_ERROR');
   }
@@ -79,19 +79,18 @@ const handleGenericError = (err, req, res, _next) => {
     url: req.originalUrl,
     method: req.method,
     body: req.body,
-    user: req.user?.id
+    user: req.user?.id,
   });
-  
+
   // En producción, no exponer detalles del error
-  const message = process.env.NODE_ENV === 'production'
-    ? 'Error interno del servidor'
-    : err.message;
-  
+  const message =
+    process.env.NODE_ENV === 'production' ? 'Error interno del servidor' : err.message;
+
   return serverError(res, message, err);
 };
 
 module.exports = {
   handleSequelizeError,
   handleValidationError,
-  handleGenericError
+  handleGenericError,
 };

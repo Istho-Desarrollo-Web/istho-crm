@@ -1,8 +1,8 @@
 /**
  * ISTHO CRM - Configuración de Multer
- * 
+ *
  * Configuración para subida de archivos.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  */
@@ -25,7 +25,7 @@ const UPLOAD_DIRS = {
   cumplidos: path.join(__dirname, '../../uploads/cumplidos'),
   logos: path.join(__dirname, '../../uploads/logos'),
   soportes: path.join(__dirname, '../../uploads/soportes'),
-  temp: path.join(__dirname, '../../uploads/temp')
+  temp: path.join(__dirname, '../../uploads/temp'),
 };
 
 // Crear directorios
@@ -42,7 +42,7 @@ const storageAverias = multer.diskStorage({
     const ext = path.extname(file.originalname).toLowerCase();
     const filename = `averia_${Date.now()}_${uuidv4()}${ext}`;
     cb(null, filename);
-  }
+  },
 });
 
 /**
@@ -56,7 +56,7 @@ const storageCumplidos = multer.diskStorage({
     const ext = path.extname(file.originalname).toLowerCase();
     const filename = `cumplido_${Date.now()}_${uuidv4()}${ext}`;
     cb(null, filename);
-  }
+  },
 });
 
 /**
@@ -64,7 +64,7 @@ const storageCumplidos = multer.diskStorage({
  */
 const imageFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-  
+
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -94,12 +94,28 @@ const documentFilter = (req, file, cb) => {
 
   // También aceptar por extensión (algunos navegadores no detectan bien el MIME)
   const ext = file.originalname?.toLowerCase()?.split('.').pop();
-  const allowedExts = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'rar', 'doc', 'docx', 'xls', 'xlsx'];
+  const allowedExts = [
+    'pdf',
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'webp',
+    'zip',
+    'rar',
+    'doc',
+    'docx',
+    'xls',
+    'xlsx',
+  ];
 
   if (allowedTypes.includes(file.mimetype) || allowedExts.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Tipo de archivo no permitido. Formatos aceptados: imágenes, PDF, ZIP, RAR'), false);
+    cb(
+      new Error('Tipo de archivo no permitido. Formatos aceptados: imágenes, PDF, ZIP, RAR'),
+      false
+    );
   }
 };
 
@@ -110,8 +126,8 @@ const uploadAveria = multer({
   storage: storageAverias,
   fileFilter: imageFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB
-  }
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
 });
 
 /**
@@ -121,8 +137,8 @@ const uploadCumplido = multer({
   storage: storageCumplidos,
   fileFilter: documentFilter,
   limits: {
-    fileSize: 50 * 1024 * 1024 // 50MB
-  }
+    fileSize: 50 * 1024 * 1024, // 50MB
+  },
 });
 
 /**
@@ -136,7 +152,7 @@ const storageLogos = multer.diskStorage({
     const ext = path.extname(file.originalname).toLowerCase();
     const filename = `logo_${req.params.id}_${Date.now()}${ext}`;
     cb(null, filename);
-  }
+  },
 });
 
 /**
@@ -146,8 +162,8 @@ const uploadLogo = multer({
   storage: storageLogos,
   fileFilter: imageFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
-  }
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
 });
 
 /**
@@ -164,7 +180,7 @@ const storageAvatars = multer.diskStorage({
     const ext = path.extname(file.originalname).toLowerCase();
     const filename = `avatar_${req.user.id}_${Date.now()}${ext}`;
     cb(null, filename);
-  }
+  },
 });
 
 /**
@@ -174,8 +190,8 @@ const uploadAvatar = multer({
   storage: storageAvatars,
   fileFilter: imageFilter,
   limits: {
-    fileSize: 2 * 1024 * 1024 // 2MB
-  }
+    fileSize: 2 * 1024 * 1024, // 2MB
+  },
 });
 
 /**
@@ -189,7 +205,7 @@ const storageSoportes = multer.diskStorage({
     const ext = path.extname(file.originalname).toLowerCase();
     const filename = `soporte_${Date.now()}_${uuidv4()}${ext}`;
     cb(null, filename);
-  }
+  },
 });
 
 /**
@@ -199,8 +215,8 @@ const uploadSoporte = multer({
   storage: storageSoportes,
   fileFilter: documentFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB
-  }
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
 });
 
 module.exports = {
@@ -209,5 +225,5 @@ module.exports = {
   uploadLogo,
   uploadAvatar,
   uploadSoporte,
-  UPLOAD_DIRS
+  UPLOAD_DIRS,
 };

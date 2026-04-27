@@ -1,7 +1,7 @@
 /**
  * ISTHO CRM - Main Layout Component
  * Layout principal con header flotante (sin sidebar en desktop)
- * 
+ *
  * @author Coordinación TI ISTHO
  * @date Enero 2026
  */
@@ -12,7 +12,7 @@ import FloatingHeader from './FloatingHeader';
 
 const MainLayout = () => {
   const navigate = useNavigate();
-  
+
   // Estados para modals/drawers
   const [_searchOpen, setSearchOpen] = useState(false);
   const [_notificationsOpen, setNotificationsOpen] = useState(false);

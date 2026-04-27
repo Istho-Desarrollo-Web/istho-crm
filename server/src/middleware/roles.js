@@ -20,7 +20,7 @@ const JERARQUIA_ROLES = {
   [ROLES.OPERADOR]: 50,
   [ROLES.FINANCIERA]: 70,
   [ROLES.SUPERVISOR]: 75,
-  [ROLES.ADMIN]: 100
+  [ROLES.ADMIN]: 100,
 };
 
 /**
@@ -128,5 +128,5 @@ module.exports = {
   financieraOAdmin,
   noClientes,
   JERARQUIA_ROLES,
-  getNivelUsuario
+  getNivelUsuario,
 };

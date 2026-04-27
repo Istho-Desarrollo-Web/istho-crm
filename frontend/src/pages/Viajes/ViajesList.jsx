@@ -90,7 +90,6 @@ const ESTADO_CONFIG = {
 // HELPER: Formatear fecha DD/MM/YYYY
 // ════════════════════════════════════════════════════════════════════════════
 
-
 // ════════════════════════════════════════════════════════════════════════════
 // STATUS BADGE COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
@@ -100,7 +99,9 @@ const StatusBadge = ({ estado }) => {
   const Icon = config.icon;
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text} ${config.darkBg} ${config.darkText}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text} ${config.darkBg} ${config.darkText}`}
+    >
       <Icon className="w-3.5 h-3.5" />
       {config.label}
     </span>
@@ -132,7 +133,9 @@ const RowActions = ({ viaje, onView, onEdit, onDelete, onCompletar, onAnular }) 
           elevation: 0,
           sx: {
             overflow: 'visible',
-            filter: isDark ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))' : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+            filter: isDark
+              ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))'
+              : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
             mt: 0.5,
             borderRadius: '0.75rem',
             border: isDark ? '1px solid #334155' : '1px solid #f3f4f6',
@@ -148,13 +151,23 @@ const RowActions = ({ viaje, onView, onEdit, onDelete, onCompletar, onAnular }) 
           },
         }}
       >
-        <MenuItem onClick={() => { onView(viaje); setAnchorEl(null); }}>
+        <MenuItem
+          onClick={() => {
+            onView(viaje);
+            setAnchorEl(null);
+          }}
+        >
           <Eye className="w-4 h-4" />
           Ver detalle
         </MenuItem>
 
         <ProtectedAction module="viajes" action="editar">
-          <MenuItem onClick={() => { onEdit(viaje); setAnchorEl(null); }}>
+          <MenuItem
+            onClick={() => {
+              onEdit(viaje);
+              setAnchorEl(null);
+            }}
+          >
             <Pencil className="w-4 h-4" />
             Editar
           </MenuItem>
@@ -163,8 +176,16 @@ const RowActions = ({ viaje, onView, onEdit, onDelete, onCompletar, onAnular }) 
         {esActivo && (
           <ProtectedAction module="viajes" action="editar">
             <MenuItem
-              onClick={() => { onCompletar(viaje); setAnchorEl(null); }}
-              sx={{ color: '#059669 !important', '&:hover': { backgroundColor: isDark ? '#052e16 !important' : '#f0fdf4 !important' } }}
+              onClick={() => {
+                onCompletar(viaje);
+                setAnchorEl(null);
+              }}
+              sx={{
+                color: '#059669 !important',
+                '&:hover': {
+                  backgroundColor: isDark ? '#052e16 !important' : '#f0fdf4 !important',
+                },
+              }}
             >
               <CheckCircle2 className="w-4 h-4" />
               Completar
@@ -175,8 +196,16 @@ const RowActions = ({ viaje, onView, onEdit, onDelete, onCompletar, onAnular }) 
         {esActivo && (
           <ProtectedAction module="viajes" action="editar">
             <MenuItem
-              onClick={() => { onAnular(viaje); setAnchorEl(null); }}
-              sx={{ color: '#d97706 !important', '&:hover': { backgroundColor: isDark ? '#451a03 !important' : '#fffbeb !important' } }}
+              onClick={() => {
+                onAnular(viaje);
+                setAnchorEl(null);
+              }}
+              sx={{
+                color: '#d97706 !important',
+                '&:hover': {
+                  backgroundColor: isDark ? '#451a03 !important' : '#fffbeb !important',
+                },
+              }}
             >
               <XCircle className="w-4 h-4" />
               Anular
@@ -186,8 +215,14 @@ const RowActions = ({ viaje, onView, onEdit, onDelete, onCompletar, onAnular }) 
 
         <ProtectedAction module="viajes" action="eliminar">
           <MenuItem
-            onClick={() => { onDelete(viaje); setAnchorEl(null); }}
-            sx={{ color: '#dc2626 !important', '&:hover': { backgroundColor: isDark ? '#451a1a !important' : '#fef2f2 !important' } }}
+            onClick={() => {
+              onDelete(viaje);
+              setAnchorEl(null);
+            }}
+            sx={{
+              color: '#dc2626 !important',
+              '&:hover': { backgroundColor: isDark ? '#451a1a !important' : '#fef2f2 !important' },
+            }}
           >
             <Trash2 className="w-4 h-4" />
             Eliminar
@@ -203,7 +238,9 @@ const RowActions = ({ viaje, onView, onEdit, onDelete, onCompletar, onAnular }) 
 // ════════════════════════════════════════════════════════════════════════════
 
 const KpiMini = ({ icon: Icon, label, value, color }) => (
-  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}>
+  <div
+    className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}
+  >
     <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
       <Icon className="w-5 h-5" />
     </div>
@@ -245,30 +282,35 @@ const ViajesList = () => {
   const [formLoading, setFormLoading] = useState(false);
 
   // Cargar datos desde API
-  const fetchViajes = useCallback(async (page = 1, silencioso = false) => {
-    if (!silencioso) setLoading(true);
-    setError(null);
-    try {
-      const params = { page, limit: PAGE_SIZE, sort: sortField, order: sortDir };
-      if (estadoFilter !== 'todos') params.estado = estadoFilter;
-      if (searchTerm) params.search = searchTerm;
-      if (fechaDesde) params.fecha_desde = fechaDesde;
-      if (fechaHasta) params.fecha_hasta = fechaHasta;
+  const fetchViajes = useCallback(
+    async (page = 1, silencioso = false) => {
+      if (!silencioso) setLoading(true);
+      setError(null);
+      try {
+        const params = { page, limit: PAGE_SIZE, sort: sortField, order: sortDir };
+        if (estadoFilter !== 'todos') params.estado = estadoFilter;
+        if (searchTerm) params.search = searchTerm;
+        if (fechaDesde) params.fecha_desde = fechaDesde;
+        if (fechaHasta) params.fecha_hasta = fechaHasta;
 
-      const response = await viajesService.getAll(params);
-      setViajes(Array.isArray(response.data) ? response.data : []);
-      if (response.pagination) {
-        setPagination(response.pagination);
+        const response = await viajesService.getAll(params);
+        setViajes(Array.isArray(response.data) ? response.data : []);
+        if (response.pagination) {
+          setPagination(response.pagination);
+        }
+      } catch {
+        if (!silencioso) {
+          setViajes([]);
+          setError(
+            'No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.'
+          );
+        }
+      } finally {
+        if (!silencioso) setLoading(false);
       }
-    } catch {
-      if (!silencioso) {
-        setViajes([]);
-        setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
-      }
-    } finally {
-      if (!silencioso) setLoading(false);
-    }
-  }, [estadoFilter, searchTerm, fechaDesde, fechaHasta, sortField, sortDir]);
+    },
+    [estadoFilter, searchTerm, fechaDesde, fechaHasta, sortField, sortDir]
+  );
 
   useEffect(() => {
     fetchViajes(1);
@@ -283,11 +325,11 @@ const ViajesList = () => {
     };
 
     const handleActualizado = (data) => {
-      setViajes(prev => prev.map(v => v.id === data.id ? { ...v, ...data } : v));
+      setViajes((prev) => prev.map((v) => (v.id === data.id ? { ...v, ...data } : v)));
     };
 
     const handleEliminado = (data) => {
-      setViajes(prev => prev.filter(v => v.id !== data.id));
+      setViajes((prev) => prev.filter((v) => v.id !== data.id));
     };
 
     socket.on('viaje:creado', handleCreado);
@@ -333,9 +375,9 @@ const ViajesList = () => {
       await viajesService.completar(completarModal.viaje.id);
       success(`Viaje ${completarModal.viaje.numero} completado`);
       setCompletarModal({ isOpen: false, viaje: null });
-      setViajes(prev => prev.map(v =>
-        v.id === completarModal.viaje.id ? { ...v, estado: 'completado' } : v
-      ));
+      setViajes((prev) =>
+        prev.map((v) => (v.id === completarModal.viaje.id ? { ...v, estado: 'completado' } : v))
+      );
     } catch (err) {
       apiError(err);
     } finally {
@@ -353,9 +395,9 @@ const ViajesList = () => {
       await viajesService.anular(anularModal.viaje.id);
       success(`Viaje ${anularModal.viaje.numero} anulado`);
       setAnularModal({ isOpen: false, viaje: null });
-      setViajes(prev => prev.map(v =>
-        v.id === anularModal.viaje.id ? { ...v, estado: 'anulado' } : v
-      ));
+      setViajes((prev) =>
+        prev.map((v) => (v.id === anularModal.viaje.id ? { ...v, estado: 'anulado' } : v))
+      );
     } catch (err) {
       apiError(err);
     } finally {
@@ -389,7 +431,7 @@ const ViajesList = () => {
       const query = params.toString() ? `?${params.toString()}` : '';
       await descargarArchivo(
         `${baseUrl}/reportes/viajes/excel${query}`,
-        `viajes-${fechaDescarga()}.xlsx`,
+        `viajes-${fechaDescarga()}.xlsx`
       );
     } catch {
       notifyError('Error al exportar el reporte de viajes');
@@ -403,7 +445,6 @@ const ViajesList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
-
         {/* PAGE HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -411,14 +452,21 @@ const ViajesList = () => {
               <MapPin className="w-7 h-7 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Viajes</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Registro y seguimiento de viajes</p>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+                Viajes
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-0.5">
+                Registro y seguimiento de viajes
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {/* Botón Refrescar */}
             <button
-              onClick={() => { fetchViajes(pagination.page); success('Datos actualizados'); }}
+              onClick={() => {
+                fetchViajes(pagination.page);
+                success('Datos actualizados');
+              }}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
               title="Refrescar datos"
             >
@@ -465,7 +513,12 @@ const ViajesList = () => {
         {error && (
           <div className="mb-4 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center justify-between">
             <p className="text-sm text-amber-700 dark:text-amber-300">{error}</p>
-            <button onClick={() => fetchViajes(1)} className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline">Reintentar</button>
+            <button
+              onClick={() => fetchViajes(1)}
+              className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              Reintentar
+            </button>
           </div>
         )}
 
@@ -583,7 +636,9 @@ const ViajesList = () => {
                 No se encontraron viajes
               </h3>
               <p className="text-slate-500 dark:text-slate-400">
-                {searchTerm ? 'Intenta ajustar el término de búsqueda' : 'No hay viajes registrados'}
+                {searchTerm
+                  ? 'Intenta ajustar el término de búsqueda'
+                  : 'No hay viajes registrados'}
               </p>
             </div>
           ) : viewMode === 'table' ? (
@@ -612,7 +667,8 @@ const ViajesList = () => {
                       className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center gap-1">
-                        Cliente <SortIcon field="cliente_nombre" sortField={sortField} sortDir={sortDir} />
+                        Cliente{' '}
+                        <SortIcon field="cliente_nombre" sortField={sortField} sortDir={sortDir} />
                       </span>
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">
@@ -749,12 +805,19 @@ const ViajesList = () => {
                         <MapPin className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{viaje.numero}</p>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                          {viaje.numero}
+                        </p>
                         <p className="text-xs text-slate-400">{formatDateShort(viaje.fecha)}</p>
                       </div>
                     </div>
                     <div onClick={(e) => e.stopPropagation()}>
-                      <RowActions viaje={viaje} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />
+                      <RowActions
+                        viaje={viaje}
+                        onView={handleView}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
                     </div>
                   </div>
 

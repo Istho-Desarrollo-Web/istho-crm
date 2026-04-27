@@ -24,9 +24,11 @@ const userSockets = new Map();
 const inicializar = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:5173'],
+      origin: process.env.CORS_ORIGIN
+        ? process.env.CORS_ORIGIN.split(',')
+        : ['http://localhost:5173'],
       methods: ['GET', 'POST'],
-      credentials: true
+      credentials: true,
     },
     pingTimeout: 60000,
     pingInterval: 25000,
@@ -62,7 +64,9 @@ const inicializar = (httpServer) => {
     }
     userSockets.get(userId).add(socket.id);
 
-    logger.info(`[WS] Usuario ${userId} conectado (socket: ${socket.id}, total: ${userSockets.get(userId).size})`);
+    logger.info(
+      `[WS] Usuario ${userId} conectado (socket: ${socket.id}, total: ${userSockets.get(userId).size})`
+    );
 
     // Desconexión
     socket.on('disconnect', () => {
@@ -88,7 +92,7 @@ const emitToUser = (userId, event, data) => {
   if (!io) return;
   const sockets = userSockets.get(userId);
   if (sockets && sockets.size > 0) {
-    sockets.forEach(socketId => {
+    sockets.forEach((socketId) => {
       io.to(socketId).emit(event, data);
     });
   }
@@ -99,7 +103,7 @@ const emitToUser = (userId, event, data) => {
  */
 const emitToUsers = (userIds, event, data) => {
   if (!io) return;
-  userIds.forEach(userId => emitToUser(userId, event, data));
+  userIds.forEach((userId) => emitToUser(userId, event, data));
 };
 
 /**
@@ -135,7 +139,7 @@ const disconnectUser = (userId, options = {}) => {
     tipo: options.tipo || 'admin_logout',
   };
 
-  sockets.forEach(socketId => {
+  sockets.forEach((socketId) => {
     const socket = io.sockets.sockets.get(socketId);
     if (socket) {
       socket.emit('session:cerrada', payload);
@@ -164,7 +168,7 @@ const disconnectAllUsers = (exceptUserId) => {
   const toDelete = [];
   userSockets.forEach((sockets, userId) => {
     if (Number(userId) === Number(exceptUserId)) return;
-    sockets.forEach(socketId => {
+    sockets.forEach((socketId) => {
       const socket = io.sockets.sockets.get(socketId);
       if (socket) {
         socket.emit('session:cerrada', payload);
@@ -174,7 +178,7 @@ const disconnectAllUsers = (exceptUserId) => {
     toDelete.push(userId);
     count++;
   });
-  toDelete.forEach(uid => userSockets.delete(uid));
+  toDelete.forEach((uid) => userSockets.delete(uid));
   return count;
 };
 

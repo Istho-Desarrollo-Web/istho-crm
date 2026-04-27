@@ -17,7 +17,7 @@ const IdleWarningModal = ({ isOpen, onExtender }) => {
     }
     setSegundos(AVISO_SEGUNDOS);
     intervalRef.current = setInterval(() => {
-      setSegundos(s => (s <= 1 ? 0 : s - 1));
+      setSegundos((s) => (s <= 1 ? 0 : s - 1));
     }, 1000);
     return () => clearInterval(intervalRef.current);
   }, [isOpen]);
@@ -26,9 +26,7 @@ const IdleWarningModal = ({ isOpen, onExtender }) => {
 
   const mins = Math.floor(segundos / 60);
   const secs = segundos % 60;
-  const tiempo = mins > 0
-    ? `${mins}:${String(secs).padStart(2, '0')} min`
-    : `${secs} seg`;
+  const tiempo = mins > 0 ? `${mins}:${String(secs).padStart(2, '0')} min` : `${secs} seg`;
 
   return (
     <div
@@ -51,9 +49,8 @@ const IdleWarningModal = ({ isOpen, onExtender }) => {
             ¿Sigues ahí?
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Tu sesión expirará en{' '}
-            <span className="font-semibold text-amber-500">{tiempo}</span>{' '}
-            por inactividad.
+            Tu sesión expirará en <span className="font-semibold text-amber-500">{tiempo}</span> por
+            inactividad.
           </p>
         </div>
 

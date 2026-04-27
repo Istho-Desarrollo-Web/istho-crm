@@ -1,11 +1,11 @@
 /**
  * ISTHO CRM - Controlador de Reportes
- * 
+ *
  * Maneja la generación y descarga de reportes.
- * 
+ *
  * CORRECCIÓN v1.1.0:
  * - getDashboard ahora retorna porTipo y porEstado como objetos
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.1.0
  */
@@ -25,7 +25,7 @@ const {
   MovimientoCajaMenor,
   Usuario,
   CajaInventario,
-  sequelize
+  sequelize,
 } = require('../models');
 const excelService = require('../services/excelService');
 const pdfService = require('../services/pdfService');
@@ -39,29 +39,29 @@ const { getClientIP } = require('../utils/helpers');
  */
 const parsearFiltrosFecha = (query) => {
   const where = {};
-  
+
   if (query.fecha_desde) {
     where.fecha_operacion = where.fecha_operacion || {};
     where.fecha_operacion[Op.gte] = query.fecha_desde;
   }
-  
+
   if (query.fecha_hasta) {
     where.fecha_operacion = where.fecha_operacion || {};
     where.fecha_operacion[Op.lte] = query.fecha_hasta;
   }
-  
+
   if (query.cliente_id) {
     where.cliente_id = query.cliente_id;
   }
-  
+
   if (query.tipo && query.tipo !== 'todos') {
     where.tipo = query.tipo;
   }
-  
+
   if (query.estado && query.estado !== 'todos') {
     where.estado = query.estado;
   }
-  
+
   return where;
 };
 
@@ -79,24 +79,26 @@ const MAX_EXPORT_ROWS = 5000;
 const exportarOperacionesExcel = async (req, res) => {
   try {
     const where = parsearFiltrosFecha(req.query);
-    
+
     const operaciones = await Operacion.findAll({
       where,
       include: [
-        { model: Cliente, as: 'cliente', attributes: ['id', 'codigo_cliente', 'razon_social'] }
+        { model: Cliente, as: 'cliente', attributes: ['id', 'codigo_cliente', 'razon_social'] },
       ],
       order: [['fecha_operacion', 'DESC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await excelService.exportarOperaciones(operaciones, req.query);
-    
+
     const filename = `operaciones_${new Date().toISOString().split('T')[0]}.xlsx`;
-    
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
-    
   } catch (error) {
     logger.error('Error al exportar operaciones Excel:', { message: error.message });
     return serverError(res, 'Error al generar el reporte', error);
@@ -110,24 +112,23 @@ const exportarOperacionesExcel = async (req, res) => {
 const exportarOperacionesPDF = async (req, res) => {
   try {
     const where = parsearFiltrosFecha(req.query);
-    
+
     const operaciones = await Operacion.findAll({
       where,
       include: [
-        { model: Cliente, as: 'cliente', attributes: ['id', 'codigo_cliente', 'razon_social'] }
+        { model: Cliente, as: 'cliente', attributes: ['id', 'codigo_cliente', 'razon_social'] },
       ],
       order: [['fecha_operacion', 'DESC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await pdfService.generarPDFOperaciones(operaciones, req.query);
-    
+
     const filename = `operaciones_${new Date().toISOString().split('T')[0]}.pdf`;
-    
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
-    
   } catch (error) {
     logger.error('Error al exportar operaciones PDF:', { message: error.message });
     return serverError(res, 'Error al generar el reporte', error);
@@ -141,26 +142,28 @@ const exportarOperacionesPDF = async (req, res) => {
 const exportarDetalleOperacionExcel = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const operacion = await Operacion.findByPk(id, {
       include: [
         { model: Cliente, as: 'cliente' },
-        { model: OperacionDetalle, as: 'detalles' }
-      ]
+        { model: OperacionDetalle, as: 'detalles' },
+      ],
     });
-    
+
     if (!operacion) {
       return notFound(res, 'Operación no encontrada');
     }
-    
+
     const buffer = await excelService.exportarDetalleOperacion(operacion);
-    
+
     const filename = `operacion_${operacion.numero_operacion}.xlsx`;
-    
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
-    
   } catch (error) {
     logger.error('Error al exportar detalle Excel:', { message: error.message });
     return serverError(res, 'Error al generar el reporte', error);
@@ -174,26 +177,25 @@ const exportarDetalleOperacionExcel = async (req, res) => {
 const exportarDetalleOperacionPDF = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const operacion = await Operacion.findByPk(id, {
       include: [
         { model: Cliente, as: 'cliente' },
-        { model: OperacionDetalle, as: 'detalles' }
-      ]
+        { model: OperacionDetalle, as: 'detalles' },
+      ],
     });
-    
+
     if (!operacion) {
       return notFound(res, 'Operación no encontrada');
     }
-    
+
     const buffer = await pdfService.generarPDFDetalleOperacion(operacion);
-    
+
     const filename = `operacion_${operacion.numero_operacion}.pdf`;
-    
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
-    
   } catch (error) {
     logger.error('Error al exportar detalle PDF:', { message: error.message });
     return serverError(res, 'Error al generar el reporte', error);
@@ -237,20 +239,22 @@ const exportarInventarioExcel = async (req, res) => {
     const inventario = await Inventario.findAll({
       where,
       include: [
-        { model: Cliente, as: 'cliente', attributes: ['id', 'codigo_cliente', 'razon_social'] }
+        { model: Cliente, as: 'cliente', attributes: ['id', 'codigo_cliente', 'razon_social'] },
       ],
       order: [['producto', 'ASC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await excelService.exportarInventario(inventario, req.query);
-    
+
     const filename = `inventario_${new Date().toISOString().split('T')[0]}.xlsx`;
-    
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
-    
   } catch (error) {
     logger.error('Error al exportar inventario Excel:', { message: error.message });
     return serverError(res, 'Error al generar el reporte', error);
@@ -286,20 +290,19 @@ const exportarInventarioPDF = async (req, res) => {
     const inventario = await Inventario.findAll({
       where,
       include: [
-        { model: Cliente, as: 'cliente', attributes: ['id', 'codigo_cliente', 'razon_social'] }
+        { model: Cliente, as: 'cliente', attributes: ['id', 'codigo_cliente', 'razon_social'] },
       ],
       order: [['producto', 'ASC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await pdfService.generarPDFInventario(inventario, req.query);
-    
+
     const filename = `inventario_${new Date().toISOString().split('T')[0]}.pdf`;
-    
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
-    
   } catch (error) {
     logger.error('Error al exportar inventario PDF:', { message: error.message });
     return serverError(res, 'Error al generar el reporte', error);
@@ -340,24 +343,29 @@ const exportarClientesExcel = async (req, res) => {
       where,
       attributes: {
         include: [
-          [sequelize.literal('(SELECT COUNT(*) FROM inventario WHERE inventario.cliente_id = Cliente.id)'), 'total_productos']
-        ]
+          [
+            sequelize.literal(
+              '(SELECT COUNT(*) FROM inventario WHERE inventario.cliente_id = Cliente.id)'
+            ),
+            'total_productos',
+          ],
+        ],
       },
-      include: [
-        { model: Contacto, as: 'contactos', where: { activo: true }, required: false }
-      ],
+      include: [{ model: Contacto, as: 'contactos', where: { activo: true }, required: false }],
       order: [['razon_social', 'ASC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await excelService.exportarClientes(clientes);
 
     const filename = `clientes_${new Date().toISOString().split('T')[0]}.xlsx`;
-    
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
-    
   } catch (error) {
     logger.error('Error al exportar clientes Excel:', { message: error.message });
     return serverError(res, 'Error al generar el reporte', error);
@@ -391,14 +399,17 @@ const exportarClientesPDF = async (req, res) => {
       where,
       attributes: {
         include: [
-          [sequelize.literal('(SELECT COUNT(*) FROM inventario WHERE inventario.cliente_id = Cliente.id)'), 'total_productos']
-        ]
+          [
+            sequelize.literal(
+              '(SELECT COUNT(*) FROM inventario WHERE inventario.cliente_id = Cliente.id)'
+            ),
+            'total_productos',
+          ],
+        ],
       },
-      include: [
-        { model: Contacto, as: 'contactos', where: { activo: true }, required: false }
-      ],
+      include: [{ model: Contacto, as: 'contactos', where: { activo: true }, required: false }],
       order: [['razon_social', 'ASC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await pdfService.generarPDFClientes(clientes);
@@ -408,7 +419,6 @@ const exportarClientesPDF = async (req, res) => {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
-
   } catch (error) {
     logger.error('Error al exportar clientes PDF:', { message: error.message });
     return serverError(res, 'Error al generar el reporte', error);
@@ -422,7 +432,7 @@ const exportarClientesPDF = async (req, res) => {
 /**
  * GET /reportes/dashboard
  * Datos consolidados para dashboard
- * 
+ *
  * CORREGIDO: porTipo y porEstado ahora son objetos, no arrays
  */
 const getDashboard = async (req, res) => {
@@ -466,114 +476,124 @@ const getDashboard = async (req, res) => {
       entradasPendientes,
       salidasPendientes,
       enProceso,
-      cerradasMes
+      cerradasMes,
     ] = await Promise.all([
       Operacion.count({ where: { ...clienteFilter } }),
       Operacion.count({ where: { ...clienteFilter, created_at: { [Op.gte]: inicioMes } } }),
       Operacion.count({ where: { ...clienteFilter, created_at: { [Op.gte]: inicioSemana } } }),
-      Operacion.count({ where: { ...clienteFilter, estado: { [Op.in]: ['pendiente', 'en_proceso'] } } }),
+      Operacion.count({
+        where: { ...clienteFilter, estado: { [Op.in]: ['pendiente', 'en_proceso'] } },
+      }),
       Operacion.findAll({
         attributes: ['tipo', [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']],
         where: { ...clienteFilter, created_at: { [Op.between]: [inicioMes, finMes] } },
         group: ['tipo'],
-        raw: true
+        raw: true,
       }),
       Operacion.findAll({
         attributes: ['estado', [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']],
         where: { ...clienteFilter },
         group: ['estado'],
-        raw: true
+        raw: true,
       }),
       // KPIs de auditoría
-      Operacion.count({ where: { ...clienteFilter, tipo: 'ingreso', estado: { [Op.in]: ['pendiente', 'en_proceso'] } } }),
-      Operacion.count({ where: { ...clienteFilter, tipo: 'salida', estado: { [Op.in]: ['pendiente', 'en_proceso'] } } }),
+      Operacion.count({
+        where: {
+          ...clienteFilter,
+          tipo: 'ingreso',
+          estado: { [Op.in]: ['pendiente', 'en_proceso'] },
+        },
+      }),
+      Operacion.count({
+        where: {
+          ...clienteFilter,
+          tipo: 'salida',
+          estado: { [Op.in]: ['pendiente', 'en_proceso'] },
+        },
+      }),
       Operacion.count({ where: { ...clienteFilter, estado: 'en_proceso' } }),
-      Operacion.count({ where: { ...clienteFilter, estado: 'cerrado', created_at: { [Op.gte]: inicioMes } } }),
+      Operacion.count({
+        where: { ...clienteFilter, estado: 'cerrado', created_at: { [Op.gte]: inicioMes } },
+      }),
     ]);
-    
+
     // Convertir arrays a objetos para el frontend
     const porTipo = {
       ingreso: 0,
       salida: 0,
       transferencia: 0,
-      ajuste: 0
+      ajuste: 0,
     };
-    operacionesPorTipoRaw.forEach(item => {
+    operacionesPorTipoRaw.forEach((item) => {
       if (item.tipo) {
         porTipo[item.tipo] = parseInt(item.cantidad) || 0;
       }
     });
-    
+
     const porEstado = {
       pendiente: 0,
       en_proceso: 0,
       cerrado: 0,
-      anulado: 0
+      anulado: 0,
     };
-    operacionesPorEstadoRaw.forEach(item => {
+    operacionesPorEstadoRaw.forEach((item) => {
       if (item.estado) {
         porEstado[item.estado] = parseInt(item.cantidad) || 0;
       }
     });
-    
+
     // ═══════════════════════════════════════════════════════════════════════
     // INVENTARIO
     // ═══════════════════════════════════════════════════════════════════════
-    
+
     const invFilter = clienteFilter;
-    const [
-      totalItems,
-      totalUnidades,
-      valorInventarioRaw,
-      itemsStockBajo,
-      itemsPorVencer
-    ] = await Promise.all([
-      Inventario.count({ where: { ...invFilter } }),
-      Inventario.sum('cantidad', { where: { ...invFilter } }),
-      Inventario.findAll({
-        attributes: [[sequelize.literal('SUM(cantidad * COALESCE(costo_unitario, 0))'), 'valor']],
-        where: { ...invFilter },
-        raw: true
-      }),
-      Inventario.count({
-        where: { ...invFilter, [Op.and]: [sequelize.literal('cantidad <= stock_minimo AND stock_minimo > 0')] }
-      }),
-      Inventario.count({
-        where: {
-          ...invFilter,
-          fecha_vencimiento: {
-            [Op.between]: [hoy, new Date(hoy.getTime() + 30 * 24 * 60 * 60 * 1000)]
-          }
-        }
-      })
-    ]);
-    
+    const [totalItems, totalUnidades, valorInventarioRaw, itemsStockBajo, itemsPorVencer] =
+      await Promise.all([
+        Inventario.count({ where: { ...invFilter } }),
+        Inventario.sum('cantidad', { where: { ...invFilter } }),
+        Inventario.findAll({
+          attributes: [[sequelize.literal('SUM(cantidad * COALESCE(costo_unitario, 0))'), 'valor']],
+          where: { ...invFilter },
+          raw: true,
+        }),
+        Inventario.count({
+          where: {
+            ...invFilter,
+            [Op.and]: [sequelize.literal('cantidad <= stock_minimo AND stock_minimo > 0')],
+          },
+        }),
+        Inventario.count({
+          where: {
+            ...invFilter,
+            fecha_vencimiento: {
+              [Op.between]: [hoy, new Date(hoy.getTime() + 30 * 24 * 60 * 60 * 1000)],
+            },
+          },
+        }),
+      ]);
+
     // ═══════════════════════════════════════════════════════════════════════
     // CLIENTES
     // ═══════════════════════════════════════════════════════════════════════
-    
+
     // Para clientes, solo mostrar su propio dato
     const clienteWhere = esCliente ? { id: req.query.cliente_id } : {};
-    const [
-      totalClientes,
-      clientesActivos,
-      clientesNuevosMes
-    ] = await Promise.all([
+    const [totalClientes, clientesActivos, clientesNuevosMes] = await Promise.all([
       Cliente.count({ where: { ...clienteWhere } }),
       Cliente.count({ where: { ...clienteWhere, estado: 'activo' } }),
-      esCliente ? 0 : Cliente.count({ where: { created_at: { [Op.gte]: inicioMes } } })
+      esCliente ? 0 : Cliente.count({ where: { created_at: { [Op.gte]: inicioMes } } }),
     ]);
-    
+
     // ═══════════════════════════════════════════════════════════════════════
     // ÚLTIMAS OPERACIONES
     // ═══════════════════════════════════════════════════════════════════════
-    
+
     const ultimasOperaciones = await Operacion.findAll({
       where: { ...clienteFilter },
       limit: 5,
       order: [['created_at', 'DESC']],
       include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
-      attributes: ['id', 'numero_operacion', 'tipo', 'estado', 'total_unidades', 'created_at']
+      attributes: ['id', 'numero_operacion', 'tipo', 'estado', 'total_unidades', 'created_at'],
     });
 
     // Últimas entradas y salidas por separado (para tablas del dashboard)
@@ -584,9 +604,18 @@ const getDashboard = async (req, res) => {
         order: [['created_at', 'DESC']],
         include: [
           { model: Cliente, as: 'cliente', attributes: ['razon_social'] },
-          { model: OperacionDetalle, as: 'detalles', attributes: ['id', 'verificado'] }
+          { model: OperacionDetalle, as: 'detalles', attributes: ['id', 'verificado'] },
         ],
-        attributes: ['id', 'numero_operacion', 'documento_wms', 'tipo', 'estado', 'total_unidades', 'total_referencias', 'created_at']
+        attributes: [
+          'id',
+          'numero_operacion',
+          'documento_wms',
+          'tipo',
+          'estado',
+          'total_unidades',
+          'total_referencias',
+          'created_at',
+        ],
       }),
       Operacion.findAll({
         where: { ...clienteFilter, tipo: 'salida' },
@@ -594,16 +623,25 @@ const getDashboard = async (req, res) => {
         order: [['created_at', 'DESC']],
         include: [
           { model: Cliente, as: 'cliente', attributes: ['razon_social'] },
-          { model: OperacionDetalle, as: 'detalles', attributes: ['id', 'verificado'] }
+          { model: OperacionDetalle, as: 'detalles', attributes: ['id', 'verificado'] },
         ],
-        attributes: ['id', 'numero_operacion', 'documento_wms', 'tipo', 'estado', 'total_unidades', 'total_referencias', 'created_at']
+        attributes: [
+          'id',
+          'numero_operacion',
+          'documento_wms',
+          'tipo',
+          'estado',
+          'total_unidades',
+          'total_referencias',
+          'created_at',
+        ],
       }),
     ]);
 
     const formatOp = (op) => {
       const detalles = op.detalles || [];
       const lineas = op.total_referencias || detalles.length || 0;
-      const verificadas = detalles.filter(d => d.verificado).length;
+      const verificadas = detalles.filter((d) => d.verificado).length;
       return {
         id: op.id,
         documento: op.documento_wms || op.numero_operacion,
@@ -614,11 +652,11 @@ const getDashboard = async (req, res) => {
         estado: op.estado,
       };
     };
-    
+
     // ═══════════════════════════════════════════════════════════════════════
     // RESPUESTA
     // ═══════════════════════════════════════════════════════════════════════
-    
+
     return res.json({
       success: true,
       data: {
@@ -632,7 +670,7 @@ const getDashboard = async (req, res) => {
           enProceso: enProceso || 0,
           cerradasMes: cerradasMes || 0,
           porTipo,
-          porEstado
+          porEstado,
         },
         inventario: {
           totalItems: totalItems || 0,
@@ -640,20 +678,19 @@ const getDashboard = async (req, res) => {
           valorTotal: parseFloat(valorInventarioRaw[0]?.valor) || 0,
           alertas: {
             stockBajo: itemsStockBajo || 0,
-            porVencer: itemsPorVencer || 0
-          }
+            porVencer: itemsPorVencer || 0,
+          },
         },
         clientes: {
           total: totalClientes || 0,
           activos: clientesActivos || 0,
-          nuevosMes: clientesNuevosMes || 0
+          nuevosMes: clientesNuevosMes || 0,
         },
         ultimasOperaciones: ultimasOperaciones || [],
         ultimasEntradas: ultimasEntradas.map(formatOp),
-        ultimasSalidas: ultimasSalidas.map(formatOp)
-      }
+        ultimasSalidas: ultimasSalidas.map(formatOp),
+      },
     });
-    
   } catch (error) {
     logger.error('Error al obtener dashboard:', { message: error.message, stack: error.stack });
     return serverError(res, 'Error al obtener datos del dashboard', error);
@@ -666,7 +703,14 @@ const getDashboard = async (req, res) => {
 
 const enviarReportePorEmail = async (req, res) => {
   try {
-    const { tipo_reporte, formato = 'excel', formatos, destinatarios, cliente_id, filtros = {} } = req.body;
+    const {
+      tipo_reporte,
+      formato = 'excel',
+      formatos,
+      destinatarios,
+      cliente_id,
+      filtros = {},
+    } = req.body;
 
     if (!tipo_reporte || !destinatarios || destinatarios.length === 0) {
       return serverError(res, 'tipo_reporte y destinatarios son requeridos');
@@ -682,9 +726,12 @@ const enviarReportePorEmail = async (req, res) => {
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
 
     // Determinar qué formatos generar
-    const formatosAGenerar = formatos && Array.isArray(formatos)
-      ? formatos
-      : formato === 'ambos' ? ['excel', 'pdf'] : [formato];
+    const formatosAGenerar =
+      formatos && Array.isArray(formatos)
+        ? formatos
+        : formato === 'ambos'
+          ? ['excel', 'pdf']
+          : [formato];
 
     // Consultar datos una sola vez
     const where = {};
@@ -699,7 +746,7 @@ const enviarReportePorEmail = async (req, res) => {
           where,
           include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
           order: [['created_at', 'DESC']],
-          limit: MAX_EXPORT_ROWS
+          limit: MAX_EXPORT_ROWS,
         });
         break;
       }
@@ -708,18 +755,25 @@ const enviarReportePorEmail = async (req, res) => {
           where,
           include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
           order: [['producto', 'ASC']],
-          limit: MAX_EXPORT_ROWS
+          limit: MAX_EXPORT_ROWS,
         });
         break;
       }
       case 'clientes': {
         datos = await Cliente.findAll({
           attributes: {
-            include: [[sequelize.literal('(SELECT COUNT(*) FROM inventario WHERE inventario.cliente_id = Cliente.id)'), 'total_productos']]
+            include: [
+              [
+                sequelize.literal(
+                  '(SELECT COUNT(*) FROM inventario WHERE inventario.cliente_id = Cliente.id)'
+                ),
+                'total_productos',
+              ],
+            ],
           },
           include: [{ model: Contacto, as: 'contactos', where: { activo: true }, required: false }],
           order: [['razon_social', 'ASC']],
-          limit: MAX_EXPORT_ROWS
+          limit: MAX_EXPORT_ROWS,
         });
         break;
       }
@@ -775,13 +829,34 @@ const enviarReportePorEmail = async (req, res) => {
     const tmpFiles = [];
 
     const generadores = {
-      operaciones: { excel: () => excelService.exportarOperaciones(datos), pdf: () => pdfServiceMod.generarPDFOperaciones(datos) },
-      inventario: { excel: () => excelService.exportarInventario(datos), pdf: () => pdfServiceMod.generarPDFInventario(datos) },
-      inventario_ubicacion: { excel: () => excelService.exportarInventarioUbicacion(datos), pdf: () => pdfServiceMod.generarPDFInventarioUbicacion(datos) },
-      clientes: { excel: () => excelService.exportarClientes(datos), pdf: () => pdfServiceMod.generarPDFClientes(datos) },
-      viajes: { excel: () => excelService.exportarViajes(datos), pdf: () => pdfServiceMod.generarPDFViajes(datos) },
-      cajas_menores: { excel: () => excelService.exportarCajasMenores(datos), pdf: () => pdfServiceMod.generarPDFCajasMenores(datos) },
-      gastos: { excel: () => excelService.exportarMovimientos(datos), pdf: () => pdfServiceMod.generarPDFGastos(datos) },
+      operaciones: {
+        excel: () => excelService.exportarOperaciones(datos),
+        pdf: () => pdfServiceMod.generarPDFOperaciones(datos),
+      },
+      inventario: {
+        excel: () => excelService.exportarInventario(datos),
+        pdf: () => pdfServiceMod.generarPDFInventario(datos),
+      },
+      inventario_ubicacion: {
+        excel: () => excelService.exportarInventarioUbicacion(datos),
+        pdf: () => pdfServiceMod.generarPDFInventarioUbicacion(datos),
+      },
+      clientes: {
+        excel: () => excelService.exportarClientes(datos),
+        pdf: () => pdfServiceMod.generarPDFClientes(datos),
+      },
+      viajes: {
+        excel: () => excelService.exportarViajes(datos),
+        pdf: () => pdfServiceMod.generarPDFViajes(datos),
+      },
+      cajas_menores: {
+        excel: () => excelService.exportarCajasMenores(datos),
+        pdf: () => pdfServiceMod.generarPDFCajasMenores(datos),
+      },
+      gastos: {
+        excel: () => excelService.exportarMovimientos(datos),
+        pdf: () => pdfServiceMod.generarPDFGastos(datos),
+      },
     };
 
     for (const fmt of formatosAGenerar) {
@@ -790,7 +865,10 @@ const enviarReportePorEmail = async (req, res) => {
 
       const buffer = await gen();
       const ext = fmt === 'pdf' ? 'pdf' : 'xlsx';
-      const mime = fmt === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      const mime =
+        fmt === 'pdf'
+          ? 'application/pdf'
+          : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
       const fname = `${tipo_reporte}_${fechaStr}.${ext}`;
       const tmpPath = path.join(tmpDir, `${Date.now()}_${fname}`);
 
@@ -801,9 +879,11 @@ const enviarReportePorEmail = async (req, res) => {
 
     // Enviar email
     try {
-      const emailDest = Array.isArray(destinatarios) ? destinatarios : destinatarios.split(',').map(e => e.trim());
+      const emailDest = Array.isArray(destinatarios)
+        ? destinatarios
+        : destinatarios.split(',').map((e) => e.trim());
       const tipoLabel = tipo_reporte.charAt(0).toUpperCase() + tipo_reporte.slice(1);
-      const formatoLabel = formatosAGenerar.map(f => f.toUpperCase()).join(' + ');
+      const formatoLabel = formatosAGenerar.map((f) => f.toUpperCase()).join(' + ');
 
       await emailService.enviarCorreo({
         para: emailDest,
@@ -812,14 +892,19 @@ const enviarReportePorEmail = async (req, res) => {
         datos: {
           titulo: `Reporte de ${tipoLabel}`,
           mensaje: `Se adjunta el reporte de ${tipo_reporte} en formato ${formatoLabel}, generado el ${hoy.toLocaleDateString('es-CO')}.`,
-          asunto: `Reporte de ${tipoLabel}`
+          asunto: `Reporte de ${tipoLabel}`,
         },
-        adjuntos
+        adjuntos,
       });
 
-      return res.json({ success: true, message: `Reporte enviado en formato ${formatoLabel} a ${emailDest.length} destinatario(s)` });
+      return res.json({
+        success: true,
+        message: `Reporte enviado en formato ${formatoLabel} a ${emailDest.length} destinatario(s)`,
+      });
     } finally {
-      tmpFiles.forEach(f => { if (fs.existsSync(f)) fs.unlinkSync(f); });
+      tmpFiles.forEach((f) => {
+        if (fs.existsSync(f)) fs.unlinkSync(f);
+      });
     }
   } catch (error) {
     logger.error('Error al enviar reporte por email:', { message: error.message });
@@ -846,14 +931,22 @@ const getComparativo = async (req, res) => {
       const mesLabel = inicio.toLocaleDateString('es-CO', { month: 'short', year: 'numeric' });
 
       const [entradas, salidas, kardex, productosNuevos, _valorInventario] = await Promise.all([
-        Operacion.count({ where: { ...clienteFilter, tipo: 'ingreso', created_at: { [Op.between]: [inicio, fin] } } }),
-        Operacion.count({ where: { ...clienteFilter, tipo: 'salida', created_at: { [Op.between]: [inicio, fin] } } }),
-        Operacion.count({ where: { ...clienteFilter, tipo: 'kardex', created_at: { [Op.between]: [inicio, fin] } } }),
-        Inventario.count({ where: { ...clienteFilter, created_at: { [Op.between]: [inicio, fin] } } }),
+        Operacion.count({
+          where: { ...clienteFilter, tipo: 'ingreso', created_at: { [Op.between]: [inicio, fin] } },
+        }),
+        Operacion.count({
+          where: { ...clienteFilter, tipo: 'salida', created_at: { [Op.between]: [inicio, fin] } },
+        }),
+        Operacion.count({
+          where: { ...clienteFilter, tipo: 'kardex', created_at: { [Op.between]: [inicio, fin] } },
+        }),
+        Inventario.count({
+          where: { ...clienteFilter, created_at: { [Op.between]: [inicio, fin] } },
+        }),
         Inventario.findAll({
           attributes: [[sequelize.literal('SUM(cantidad * COALESCE(costo_unitario, 0))'), 'valor']],
           where: { ...clienteFilter },
-          raw: true
+          raw: true,
         }),
       ]);
 
@@ -896,8 +989,8 @@ const getComparativo = async (req, res) => {
             anterior: mesAnterior.salidas || 0,
             variacion: calcVariacion(mesActual.salidas, mesAnterior.salidas),
           },
-        }
-      }
+        },
+      },
     });
   } catch (error) {
     logger.error('Error al obtener comparativo:', { message: error.message });
@@ -929,20 +1022,20 @@ const getPeriodosDisponibles = async (req, res) => {
     const mesActual = hoy.getMonth() + 1;
     const anioActual = hoy.getFullYear();
 
-    const periodos = (Array.isArray(rows) ? rows : []).map(r => ({
+    const periodos = (Array.isArray(rows) ? rows : []).map((r) => ({
       mes: parseInt(r.mes),
       anio: parseInt(r.anio),
       total: parseInt(r.total),
     }));
 
     // Siempre incluir el mes actual aunque no tenga datos
-    if (!periodos.some(p => p.mes === mesActual && p.anio === anioActual)) {
+    if (!periodos.some((p) => p.mes === mesActual && p.anio === anioActual)) {
       periodos.unshift({ mes: mesActual, anio: anioActual, total: 0 });
     }
 
-    periodos.sort((a, b) => b.anio !== a.anio ? b.anio - a.anio : b.mes - a.mes);
+    periodos.sort((a, b) => (b.anio !== a.anio ? b.anio - a.anio : b.mes - a.mes));
 
-    const anios = [...new Set(periodos.map(p => p.anio))].sort((a, b) => b - a);
+    const anios = [...new Set(periodos.map((p) => p.anio))].sort((a, b) => b - a);
 
     return res.json({ success: true, data: { periodos, anios } });
   } catch (error) {
@@ -1084,10 +1177,14 @@ const listarProgramados = async (req, res) => {
   try {
     const reportes = await ReporteProgramado.findAll({
       include: [
-        { model: require('../models').Usuario, as: 'creador', attributes: ['id', 'nombre_completo', 'username'] },
-        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }
+        {
+          model: require('../models').Usuario,
+          as: 'creador',
+          attributes: ['id', 'nombre_completo', 'username'],
+        },
+        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] },
       ],
-      order: [['created_at', 'DESC']]
+      order: [['created_at', 'DESC']],
     });
     return res.json({ success: true, data: reportes });
   } catch (error) {
@@ -1098,10 +1195,22 @@ const listarProgramados = async (req, res) => {
 
 const crearProgramado = async (req, res) => {
   try {
-    const { nombre, tipo_reporte, formato, cron_expresion, frecuencia_label, destinatarios, cliente_id, filtros } = req.body;
+    const {
+      nombre,
+      tipo_reporte,
+      formato,
+      cron_expresion,
+      frecuencia_label,
+      destinatarios,
+      cliente_id,
+      filtros,
+    } = req.body;
 
     if (!nombre || !tipo_reporte || !cron_expresion || !destinatarios) {
-      return serverError(res, 'nombre, tipo_reporte, cron_expresion y destinatarios son requeridos');
+      return serverError(
+        res,
+        'nombre, tipo_reporte, cron_expresion y destinatarios son requeridos'
+      );
     }
 
     const cron = require('node-cron');
@@ -1119,7 +1228,7 @@ const crearProgramado = async (req, res) => {
       cliente_id,
       filtros,
       creado_por: req.user.id,
-      activo: true
+      activo: true,
     });
 
     // Programar inmediatamente
@@ -1127,11 +1236,14 @@ const crearProgramado = async (req, res) => {
 
     // Auditoría
     Auditoria.registrar({
-      tabla: 'reportes_programados', registro_id: reporte.id, accion: 'crear',
-      usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
+      tabla: 'reportes_programados',
+      registro_id: reporte.id,
+      accion: 'crear',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
       datos_nuevos: { nombre, tipo_reporte, formato, cron_expresion, destinatarios },
       ip_address: getClientIP(req),
-      descripcion: `Reporte programado "${nombre}" creado`
+      descripcion: `Reporte programado "${nombre}" creado`,
     });
 
     // Notificar admins
@@ -1156,7 +1268,17 @@ const actualizarProgramado = async (req, res) => {
     const reporte = await ReporteProgramado.findByPk(req.params.id);
     if (!reporte) return notFound(res, 'Reporte programado no encontrado');
 
-    const { nombre, tipo_reporte, formato, cron_expresion, frecuencia_label, destinatarios, cliente_id, filtros, activo } = req.body;
+    const {
+      nombre,
+      tipo_reporte,
+      formato,
+      cron_expresion,
+      frecuencia_label,
+      destinatarios,
+      cliente_id,
+      filtros,
+      activo,
+    } = req.body;
 
     if (cron_expresion) {
       const cron = require('node-cron');
@@ -1171,7 +1293,9 @@ const actualizarProgramado = async (req, res) => {
       ...(formato !== undefined && { formato }),
       ...(cron_expresion !== undefined && { cron_expresion }),
       ...(frecuencia_label !== undefined && { frecuencia_label }),
-      ...(destinatarios !== undefined && { destinatarios: Array.isArray(destinatarios) ? destinatarios.join(',') : destinatarios }),
+      ...(destinatarios !== undefined && {
+        destinatarios: Array.isArray(destinatarios) ? destinatarios.join(',') : destinatarios,
+      }),
       ...(cliente_id !== undefined && { cliente_id }),
       ...(filtros !== undefined && { filtros }),
       ...(activo !== undefined && { activo }),
@@ -1186,10 +1310,14 @@ const actualizarProgramado = async (req, res) => {
 
     // Auditoría
     Auditoria.registrar({
-      tabla: 'reportes_programados', registro_id: reporte.id, accion: 'actualizar',
-      usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
-      datos_nuevos: req.body, ip_address: getClientIP(req),
-      descripcion: `Reporte programado "${reporte.nombre}" actualizado${activo !== undefined ? (activo ? ' (activado)' : ' (pausado)') : ''}`
+      tabla: 'reportes_programados',
+      registro_id: reporte.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_nuevos: req.body,
+      ip_address: getClientIP(req),
+      descripcion: `Reporte programado "${reporte.nombre}" actualizado${activo !== undefined ? (activo ? ' (activado)' : ' (pausado)') : ''}`,
     });
 
     return res.json({ success: true, message: 'Reporte programado actualizado', data: reporte });
@@ -1210,10 +1338,14 @@ const eliminarProgramado = async (req, res) => {
 
     // Auditoría
     Auditoria.registrar({
-      tabla: 'reportes_programados', registro_id: req.params.id, accion: 'eliminar',
-      usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo || req.user.username,
-      datos_anteriores: { nombre: nombreReporte }, ip_address: getClientIP(req),
-      descripcion: `Reporte programado "${nombreReporte}" eliminado`
+      tabla: 'reportes_programados',
+      registro_id: req.params.id,
+      accion: 'eliminar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_anteriores: { nombre: nombreReporte },
+      ip_address: getClientIP(req),
+      descripcion: `Reporte programado "${nombreReporte}" eliminado`,
     });
 
     return res.json({ success: true, message: 'Reporte programado eliminado' });
@@ -1238,10 +1370,13 @@ const ejecutarProgramadoManual = async (req, res) => {
       usuario_nombre: req.user.nombre_completo || req.user.username,
       datos_nuevos: { nombre: reporte.nombre, tipo: reporte.tipo },
       ip_address: getClientIP(req),
-      descripcion: `Reporte programado ejecutado manualmente: "${reporte.nombre}"`
+      descripcion: `Reporte programado ejecutado manualmente: "${reporte.nombre}"`,
     });
 
-    return res.json({ success: true, message: `Reporte "${reporte.nombre}" ejecutado y enviado exitosamente` });
+    return res.json({
+      success: true,
+      message: `Reporte "${reporte.nombre}" ejecutado y enviado exitosamente`,
+    });
   } catch (error) {
     logger.error('Error al ejecutar programado manual:', { message: error.message });
     return serverError(res, 'Error al ejecutar el reporte', error);
@@ -1271,15 +1406,18 @@ const exportarViajesExcel = async (req, res) => {
       include: [
         { model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa', 'tipo_vehiculo'] },
         { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
-        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] }
+        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
       ],
       order: [['fecha', 'DESC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await excelService.exportarViajes(viajes, req.query);
     const filename = `viajes_${new Date().toISOString().split('T')[0]}.xlsx`;
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
 
@@ -1302,18 +1440,20 @@ const exportarCajaMenorExcel = async (req, res) => {
         { model: Usuario, as: 'asignado', attributes: ['id', 'nombre_completo'] },
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo', 'username'] },
         {
-          model: MovimientoCajaMenor, as: 'movimientos',
+          model: MovimientoCajaMenor,
+          as: 'movimientos',
           include: [
             { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
-            { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] }
+            { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
           ],
-          order: [['consecutivo', 'ASC']]
+          order: [['consecutivo', 'ASC']],
         },
         {
-          model: Viaje, as: 'viajes',
-          include: [{ model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa'] }]
-        }
-      ]
+          model: Viaje,
+          as: 'viajes',
+          include: [{ model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa'] }],
+        },
+      ],
     });
 
     if (!caja) return res.status(404).json({ success: false, message: 'Caja menor no encontrada' });
@@ -1323,8 +1463,14 @@ const exportarCajaMenorExcel = async (req, res) => {
 
     // Hoja 1: Resumen
     const resumen = workbook.addWorksheet('Resumen');
-    resumen.columns = [{ header: 'Campo', key: 'campo', width: 25 }, { header: 'Valor', key: 'valor', width: 30 }];
-    resumen.getRow(1).eachCell(c => { c.font = { bold: true, color: { argb: 'FFFFFF' } }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } }; });
+    resumen.columns = [
+      { header: 'Campo', key: 'campo', width: 25 },
+      { header: 'Valor', key: 'valor', width: 30 },
+    ];
+    resumen.getRow(1).eachCell((c) => {
+      c.font = { bold: true, color: { argb: 'FFFFFF' } };
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } };
+    });
     [
       ['Número', caja.numero],
       ['Conductor', caja.asignado?.nombre_completo || ''],
@@ -1354,9 +1500,12 @@ const exportarCajaMenorExcel = async (req, res) => {
       { header: 'Descripción', key: 'descripcion', width: 30 },
       { header: 'Fecha', key: 'fecha', width: 18 },
     ];
-    movSheet.getRow(1).eachCell(c => { c.font = { bold: true, color: { argb: 'FFFFFF' } }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } }; });
+    movSheet.getRow(1).eachCell((c) => {
+      c.font = { bold: true, color: { argb: 'FFFFFF' } };
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } };
+    });
 
-    (caja.movimientos || []).forEach(m => {
+    (caja.movimientos || []).forEach((m) => {
       movSheet.addRow({
         consecutivo: m.consecutivo,
         tipo: m.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso',
@@ -1381,9 +1530,12 @@ const exportarCajaMenorExcel = async (req, res) => {
       { header: 'Valor', key: 'valor', width: 15 },
       { header: 'Estado', key: 'estado', width: 12 },
     ];
-    viajesSheet.getRow(1).eachCell(c => { c.font = { bold: true, color: { argb: 'FFFFFF' } }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } }; });
+    viajesSheet.getRow(1).eachCell((c) => {
+      c.font = { bold: true, color: { argb: 'FFFFFF' } };
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B3A5C' } };
+    });
 
-    (caja.viajes || []).forEach(v => {
+    (caja.viajes || []).forEach((v) => {
       viajesSheet.addRow({
         numero: v.numero,
         fecha: v.fecha,
@@ -1397,11 +1549,17 @@ const exportarCajaMenorExcel = async (req, res) => {
 
     const buffer = await workbook.xlsx.writeBuffer();
     const filename = `caja_menor_${caja.numero}_${new Date().toISOString().split('T')[0]}.xlsx`;
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
 
-    logger.info('Excel caja menor generado:', { numero: caja.numero, movimientos: caja.movimientos?.length });
+    logger.info('Excel caja menor generado:', {
+      numero: caja.numero,
+      movimientos: caja.movimientos?.length,
+    });
   } catch (error) {
     logger.error('Error al exportar caja menor Excel:', { message: error.message });
     return serverError(res, 'Error al generar reporte de caja menor', error);
@@ -1420,25 +1578,27 @@ const exportarCajaMenorPDF = async (req, res) => {
         { model: Usuario, as: 'asignado', attributes: ['id', 'nombre_completo'] },
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo', 'username'] },
         {
-          model: MovimientoCajaMenor, as: 'movimientos',
+          model: MovimientoCajaMenor,
+          as: 'movimientos',
           include: [
             { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
-            { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] }
+            { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
           ],
-          order: [['consecutivo', 'ASC']]
+          order: [['consecutivo', 'ASC']],
         },
         {
-          model: Viaje, as: 'viajes',
-          include: [{ model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa'] }]
-        }
-      ]
+          model: Viaje,
+          as: 'viajes',
+          include: [{ model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa'] }],
+        },
+      ],
     });
 
     if (!caja) return res.status(404).json({ success: false, message: 'Caja menor no encontrada' });
 
     const buffer = await pdfService.generarPDFDetalleCajaMenor(caja);
     const filename = `caja_menor_liquidacion_${caja.numero}_${new Date().toISOString().split('T')[0]}.pdf`;
-    
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
@@ -1468,12 +1628,15 @@ const exportarCajasMenoresExcel = async (req, res) => {
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo', 'username'] },
       ],
       order: [['created_at', 'DESC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await excelService.exportarCajasMenores(cajas);
     const filename = `cajas_menores_${new Date().toISOString().split('T')[0]}.xlsx`;
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
 
@@ -1502,16 +1665,17 @@ const exportarVehiculosExcel = async (req, res) => {
 
     const vehiculos = await Vehiculo.findAll({
       where,
-      include: [
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
-      ],
+      include: [{ model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] }],
       order: [['placa', 'ASC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await excelService.exportarVehiculos(vehiculos);
     const filename = `vehiculos_${new Date().toISOString().split('T')[0]}.xlsx`;
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
 
@@ -1540,16 +1704,14 @@ const exportarVehiculosPDF = async (req, res) => {
 
     const vehiculos = await Vehiculo.findAll({
       where,
-      include: [
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
-      ],
+      include: [{ model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] }],
       order: [['placa', 'ASC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await pdfService.generarPDFVehiculos(vehiculos, req.query);
     const filename = `vehiculos_${new Date().toISOString().split('T')[0]}.pdf`;
-    
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
@@ -1591,12 +1753,15 @@ const exportarMovimientosExcel = async (req, res) => {
         { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
       ],
       order: [['created_at', 'DESC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await excelService.exportarMovimientos(movimientos);
     const filename = `movimientos_${new Date().toISOString().split('T')[0]}.xlsx`;
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
 
@@ -1625,14 +1790,25 @@ const exportarVehiculosCsv = async (req, res) => {
 
     const vehiculos = await Vehiculo.findAll({
       where,
-      include: [
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] },
-      ],
+      include: [{ model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] }],
       order: [['placa', 'ASC']],
     });
 
-    const headers = ['Placa', 'Tipo', 'Marca', 'Modelo', 'Color', 'Capacidad (Ton)', 'Conductor', 'SOAT Vence', 'Tecnomecanica Vence', 'No. Motor', 'No. Chasis', 'Estado'];
-    const rows = vehiculos.map(v => [
+    const headers = [
+      'Placa',
+      'Tipo',
+      'Marca',
+      'Modelo',
+      'Color',
+      'Capacidad (Ton)',
+      'Conductor',
+      'SOAT Vence',
+      'Tecnomecanica Vence',
+      'No. Motor',
+      'No. Chasis',
+      'Estado',
+    ];
+    const rows = vehiculos.map((v) => [
       v.placa,
       v.tipo_vehiculo,
       v.marca || '',
@@ -1650,10 +1826,14 @@ const exportarVehiculosCsv = async (req, res) => {
     const escapeCsv = (val) => {
       const str = String(val ?? '');
       return str.includes(',') || str.includes('"') || str.includes('\n')
-        ? `"${str.replace(/"/g, '""')}"` : str;
+        ? `"${str.replace(/"/g, '""')}"`
+        : str;
     };
 
-    const csv = [headers.map(escapeCsv).join(','), ...rows.map(r => r.map(escapeCsv).join(','))].join('\n');
+    const csv = [
+      headers.map(escapeCsv).join(','),
+      ...rows.map((r) => r.map(escapeCsv).join(',')),
+    ].join('\n');
     const filename = `vehiculos_${new Date().toISOString().split('T')[0]}.csv`;
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -1698,8 +1878,21 @@ const exportarMovimientosCsv = async (req, res) => {
       order: [['created_at', 'DESC']],
     });
 
-    const headers = ['#', 'Caja Menor', 'Usuario', 'Tipo', 'Concepto', 'Descripcion', 'Valor', 'Aprobado', 'Valor Aprobado', 'Aprobador', 'Viaje', 'Fecha'];
-    const rows = movimientos.map(m => [
+    const headers = [
+      '#',
+      'Caja Menor',
+      'Usuario',
+      'Tipo',
+      'Concepto',
+      'Descripcion',
+      'Valor',
+      'Aprobado',
+      'Valor Aprobado',
+      'Aprobador',
+      'Viaje',
+      'Fecha',
+    ];
+    const rows = movimientos.map((m) => [
       m.consecutivo,
       m.cajaMenor?.numero || '',
       m.usuario?.nombre_completo || '',
@@ -1717,10 +1910,14 @@ const exportarMovimientosCsv = async (req, res) => {
     const escapeCsv = (val) => {
       const str = String(val ?? '');
       return str.includes(',') || str.includes('"') || str.includes('\n')
-        ? `"${str.replace(/"/g, '""')}"` : str;
+        ? `"${str.replace(/"/g, '""')}"`
+        : str;
     };
 
-    const csv = [headers.map(escapeCsv).join(','), ...rows.map(r => r.map(escapeCsv).join(','))].join('\n');
+    const csv = [
+      headers.map(escapeCsv).join(','),
+      ...rows.map((r) => r.map(escapeCsv).join(',')),
+    ].join('\n');
     const filename = `movimientos_${new Date().toISOString().split('T')[0]}.csv`;
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -1761,8 +1958,23 @@ const exportarViajesCsv = async (req, res) => {
       order: [['fecha', 'DESC']],
     });
 
-    const headers = ['Numero', 'Fecha', 'Origen', 'Destino', 'Cliente', 'Doc. Cliente', 'Vehiculo', 'Conductor', 'Peso (kg)', 'Valor Viaje', 'Facturado', 'No. Factura', 'Caja Menor', 'Estado'];
-    const rows = viajes.map(v => [
+    const headers = [
+      'Numero',
+      'Fecha',
+      'Origen',
+      'Destino',
+      'Cliente',
+      'Doc. Cliente',
+      'Vehiculo',
+      'Conductor',
+      'Peso (kg)',
+      'Valor Viaje',
+      'Facturado',
+      'No. Factura',
+      'Caja Menor',
+      'Estado',
+    ];
+    const rows = viajes.map((v) => [
       v.numero,
       v.fecha,
       v.origen,
@@ -1782,10 +1994,14 @@ const exportarViajesCsv = async (req, res) => {
     const escapeCsv = (val) => {
       const str = String(val ?? '');
       return str.includes(',') || str.includes('"') || str.includes('\n')
-        ? `"${str.replace(/"/g, '""')}"` : str;
+        ? `"${str.replace(/"/g, '""')}"`
+        : str;
     };
 
-    const csv = [headers.map(escapeCsv).join(','), ...rows.map(r => r.map(escapeCsv).join(','))].join('\n');
+    const csv = [
+      headers.map(escapeCsv).join(','),
+      ...rows.map((r) => r.map(escapeCsv).join(',')),
+    ].join('\n');
     const filename = `viajes_${new Date().toISOString().split('T')[0]}.csv`;
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -1805,8 +2021,10 @@ const exportarViajesCsv = async (req, res) => {
 const getReporteViajes = async (req, res) => {
   try {
     const where = {};
-    if (req.query.fecha_desde) where.fecha = { ...(where.fecha || {}), [Op.gte]: req.query.fecha_desde };
-    if (req.query.fecha_hasta) where.fecha = { ...(where.fecha || {}), [Op.lte]: req.query.fecha_hasta };
+    if (req.query.fecha_desde)
+      where.fecha = { ...(where.fecha || {}), [Op.gte]: req.query.fecha_desde };
+    if (req.query.fecha_hasta)
+      where.fecha = { ...(where.fecha || {}), [Op.lte]: req.query.fecha_hasta };
     if (req.user.esConductor) where.conductor_id = req.user.id;
 
     const viajes = await Viaje.findAll({
@@ -1820,10 +2038,10 @@ const getReporteViajes = async (req, res) => {
     });
 
     const total = viajes.length;
-    const activos = viajes.filter(v => v.estado === 'activo').length;
-    const completados = viajes.filter(v => v.estado === 'completado').length;
-    const anulados = viajes.filter(v => v.estado === 'anulado').length;
-    const facturados = viajes.filter(v => v.facturado).length;
+    const activos = viajes.filter((v) => v.estado === 'activo').length;
+    const completados = viajes.filter((v) => v.estado === 'completado').length;
+    const anulados = viajes.filter((v) => v.estado === 'anulado').length;
+    const facturados = viajes.filter((v) => v.facturado).length;
     const valorTotal = viajes.reduce((s, v) => s + (parseFloat(v.valor_viaje) || 0), 0);
     const pesoTotal = viajes.reduce((s, v) => s + (parseFloat(v.peso) || 0), 0);
 
@@ -1832,7 +2050,7 @@ const getReporteViajes = async (req, res) => {
       { label: 'Activos', value: activos, color: '#3B82F6' },
       { label: 'Completados', value: completados, color: '#10B981' },
       { label: 'Anulados', value: anulados, color: '#EF4444' },
-    ].filter(i => i.value > 0);
+    ].filter((i) => i.value > 0);
 
     // Viajes por mes (last 6 months, for bar chart)
     const meses = {};
@@ -1843,7 +2061,7 @@ const getReporteViajes = async (req, res) => {
       const label = d.toLocaleDateString('es-CO', { month: 'short', year: '2-digit' });
       meses[key] = { label, value1: 0 };
     }
-    viajes.forEach(v => {
+    viajes.forEach((v) => {
       if (!v.fecha) return;
       const d = new Date(v.fecha);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -1853,7 +2071,7 @@ const getReporteViajes = async (req, res) => {
 
     // Top 5 conductores
     const conductorMap = {};
-    viajes.forEach(v => {
+    viajes.forEach((v) => {
       const nombre = v.conductor?.nombre_completo || 'Sin asignar';
       conductorMap[nombre] = (conductorMap[nombre] || 0) + 1;
     });
@@ -1863,12 +2081,16 @@ const getReporteViajes = async (req, res) => {
       .map(([label, value1]) => ({ label, value1 }));
 
     // Ultimos 10 viajes
-    const ultimos = viajes.slice(0, 10).map(v => ({
-      id: v.id, numero: v.numero, fecha: v.fecha,
-      origen: v.origen, destino: v.destino,
+    const ultimos = viajes.slice(0, 10).map((v) => ({
+      id: v.id,
+      numero: v.numero,
+      fecha: v.fecha,
+      origen: v.origen,
+      destino: v.destino,
       conductor: v.conductor?.nombre_completo || '-',
       vehiculo: v.vehiculo?.placa || '-',
-      valor_viaje: v.valor_viaje, estado: v.estado,
+      valor_viaje: v.valor_viaje,
+      estado: v.estado,
       facturado: v.facturado,
     }));
 
@@ -1876,7 +2098,10 @@ const getReporteViajes = async (req, res) => {
       success: true,
       data: {
         kpis: { total, activos, completados, anulados, facturados, valorTotal, pesoTotal },
-        porEstado, porMes, topConductores, ultimos,
+        porEstado,
+        porMes,
+        topConductores,
+        ultimos,
       },
     });
   } catch (error) {
@@ -1896,16 +2121,14 @@ const getReporteCajasMenores = async (req, res) => {
 
     const cajas = await CajaMenor.findAll({
       where,
-      include: [
-        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre_completo'] },
-      ],
+      include: [{ model: Usuario, as: 'asignado', attributes: ['id', 'nombre_completo'] }],
       order: [['created_at', 'DESC']],
     });
 
     const total = cajas.length;
-    const abiertas = cajas.filter(c => c.estado === 'abierta').length;
-    const cerradas = cajas.filter(c => c.estado === 'cerrada').length;
-    const enRevision = cajas.filter(c => c.estado === 'en_revision').length;
+    const abiertas = cajas.filter((c) => c.estado === 'abierta').length;
+    const cerradas = cajas.filter((c) => c.estado === 'cerrada').length;
+    const enRevision = cajas.filter((c) => c.estado === 'en_revision').length;
     const totalSaldoInicial = cajas.reduce((s, c) => s + (parseFloat(c.saldo_inicial) || 0), 0);
     const totalIngresos = cajas.reduce((s, c) => s + (parseFloat(c.total_ingresos) || 0), 0);
     const totalEgresos = cajas.reduce((s, c) => s + (parseFloat(c.total_egresos) || 0), 0);
@@ -1915,26 +2138,42 @@ const getReporteCajasMenores = async (req, res) => {
       { label: 'Abiertas', value: abiertas, color: '#10B981' },
       { label: 'En Revisión', value: enRevision, color: '#F59E0B' },
       { label: 'Cerradas', value: cerradas, color: '#6B7280' },
-    ].filter(i => i.value > 0);
+    ].filter((i) => i.value > 0);
 
     const egresosVsIngresos = [
       { label: 'Ingresos', value: totalIngresos, color: '#10B981' },
       { label: 'Egresos', value: totalEgresos, color: '#EF4444' },
-    ].filter(i => i.value > 0);
+    ].filter((i) => i.value > 0);
 
-    const ultimas = cajas.slice(0, 10).map(c => ({
-      id: c.id, numero: c.numero, estado: c.estado,
+    const ultimas = cajas.slice(0, 10).map((c) => ({
+      id: c.id,
+      numero: c.numero,
+      estado: c.estado,
       conductor: c.asignado?.nombre_completo || '-',
-      saldo_inicial: c.saldo_inicial, saldo_actual: c.saldo_actual,
-      total_egresos: c.total_egresos, total_ingresos: c.total_ingresos,
-      fecha_apertura: c.fecha_apertura, fecha_cierre: c.fecha_cierre,
+      saldo_inicial: c.saldo_inicial,
+      saldo_actual: c.saldo_actual,
+      total_egresos: c.total_egresos,
+      total_ingresos: c.total_ingresos,
+      fecha_apertura: c.fecha_apertura,
+      fecha_cierre: c.fecha_cierre,
     }));
 
     return res.json({
       success: true,
       data: {
-        kpis: { total, abiertas, cerradas, enRevision, totalSaldoInicial, totalIngresos, totalEgresos, totalSaldoActual },
-        porEstado, egresosVsIngresos, ultimas,
+        kpis: {
+          total,
+          abiertas,
+          cerradas,
+          enRevision,
+          totalSaldoInicial,
+          totalIngresos,
+          totalEgresos,
+          totalSaldoActual,
+        },
+        porEstado,
+        egresosVsIngresos,
+        ultimas,
       },
     });
   } catch (error) {
@@ -1950,8 +2189,10 @@ const getReporteCajasMenores = async (req, res) => {
 const getReporteGastos = async (req, res) => {
   try {
     const where = {};
-    if (req.query.fecha_desde) where.created_at = { ...(where.created_at || {}), [Op.gte]: req.query.fecha_desde };
-    if (req.query.fecha_hasta) where.created_at = { ...(where.created_at || {}), [Op.lte]: req.query.fecha_hasta };
+    if (req.query.fecha_desde)
+      where.created_at = { ...(where.created_at || {}), [Op.gte]: req.query.fecha_desde };
+    if (req.query.fecha_hasta)
+      where.created_at = { ...(where.created_at || {}), [Op.lte]: req.query.fecha_hasta };
     if (req.user.esConductor) where.usuario_id = req.user.id;
 
     const movimientos = await MovimientoCajaMenor.findAll({
@@ -1964,11 +2205,11 @@ const getReporteGastos = async (req, res) => {
     });
 
     const total = movimientos.length;
-    const ingresos = movimientos.filter(m => m.tipo_movimiento === 'ingreso');
-    const egresos = movimientos.filter(m => m.tipo_movimiento === 'egreso');
-    const aprobados = movimientos.filter(m => m.aprobado);
-    const pendientes = movimientos.filter(m => !m.aprobado && !m.rechazado);
-    const rechazados = movimientos.filter(m => m.rechazado);
+    const ingresos = movimientos.filter((m) => m.tipo_movimiento === 'ingreso');
+    const egresos = movimientos.filter((m) => m.tipo_movimiento === 'egreso');
+    const aprobados = movimientos.filter((m) => m.aprobado);
+    const pendientes = movimientos.filter((m) => !m.aprobado && !m.rechazado);
+    const rechazados = movimientos.filter((m) => m.rechazado);
     const valorTotal = movimientos.reduce((s, m) => s + (parseFloat(m.valor) || 0), 0);
     const valorAprobado = aprobados.reduce((s, m) => s + (parseFloat(m.valor_aprobado) || 0), 0);
 
@@ -1977,33 +2218,52 @@ const getReporteGastos = async (req, res) => {
       { label: 'Aprobados', value: aprobados.length, color: '#10B981' },
       { label: 'Pendientes', value: pendientes.length, color: '#F59E0B' },
       { label: 'Rechazados', value: rechazados.length, color: '#EF4444' },
-    ].filter(i => i.value > 0);
+    ].filter((i) => i.value > 0);
 
     // Gastos por concepto (bar chart - top 8 conceptos de egreso)
     const conceptoMap = {};
-    egresos.forEach(m => {
+    egresos.forEach((m) => {
       const concepto = m.concepto || 'otros';
       conceptoMap[concepto] = (conceptoMap[concepto] || 0) + (parseFloat(m.valor) || 0);
     });
     const CONCEPTO_LABELS = {
-      cuadre_de_caja: 'Cuadre', descargues: 'Descargues', acpm: 'ACPM',
-      administracion: 'Admin', alimentacion: 'Alimentación', comisiones: 'Comisiones',
-      desencarpe: 'Desencarpe', encarpe: 'Encarpe', hospedaje: 'Hospedaje',
-      otros: 'Otros', seguros: 'Seguros', repuestos: 'Repuestos',
-      tecnicomecanica: 'Tecnomec.', peajes: 'Peajes', ligas: 'Ligas',
-      parqueadero: 'Parqueadero', urea: 'UREA', liquidacion: 'Liquidación',
+      cuadre_de_caja: 'Cuadre',
+      descargues: 'Descargues',
+      acpm: 'ACPM',
+      administracion: 'Admin',
+      alimentacion: 'Alimentación',
+      comisiones: 'Comisiones',
+      desencarpe: 'Desencarpe',
+      encarpe: 'Encarpe',
+      hospedaje: 'Hospedaje',
+      otros: 'Otros',
+      seguros: 'Seguros',
+      repuestos: 'Repuestos',
+      tecnicomecanica: 'Tecnomec.',
+      peajes: 'Peajes',
+      ligas: 'Ligas',
+      parqueadero: 'Parqueadero',
+      urea: 'UREA',
+      liquidacion: 'Liquidación',
       recarga: 'Recarga',
     };
     const porConcepto = Object.entries(conceptoMap)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
-      .map(([concepto, valor]) => ({ label: CONCEPTO_LABELS[concepto] || concepto, value1: Math.round(valor) }));
+      .map(([concepto, valor]) => ({
+        label: CONCEPTO_LABELS[concepto] || concepto,
+        value1: Math.round(valor),
+      }));
 
     // Ultimos 10 movimientos
-    const ultimos = movimientos.slice(0, 10).map(m => ({
-      id: m.id, consecutivo: m.consecutivo,
-      tipo_movimiento: m.tipo_movimiento, concepto: m.concepto,
-      valor: m.valor, aprobado: m.aprobado, rechazado: m.rechazado,
+    const ultimos = movimientos.slice(0, 10).map((m) => ({
+      id: m.id,
+      consecutivo: m.consecutivo,
+      tipo_movimiento: m.tipo_movimiento,
+      concepto: m.concepto,
+      valor: m.valor,
+      aprobado: m.aprobado,
+      rechazado: m.rechazado,
       valor_aprobado: m.valor_aprobado,
       conductor: m.usuario?.nombre_completo || '-',
       caja_menor: m.cajaMenor?.numero || '-',
@@ -2013,8 +2273,19 @@ const getReporteGastos = async (req, res) => {
     return res.json({
       success: true,
       data: {
-        kpis: { total, ingresos: ingresos.length, egresos: egresos.length, aprobados: aprobados.length, pendientes: pendientes.length, rechazados: rechazados.length, valorTotal, valorAprobado },
-        porAprobacion, porConcepto, ultimos,
+        kpis: {
+          total,
+          ingresos: ingresos.length,
+          egresos: egresos.length,
+          aprobados: aprobados.length,
+          pendientes: pendientes.length,
+          rechazados: rechazados.length,
+          valorTotal,
+          valorAprobado,
+        },
+        porAprobacion,
+        porConcepto,
+        ultimos,
       },
     });
   } catch (error) {
@@ -2033,15 +2304,20 @@ const _fetchCajasUbicacion = async (query = {}) => {
 
   return CajaInventario.findAll({
     where: { estado: 'disponible' },
-    include: [{
-      model: Inventario,
-      as: 'inventario',
-      attributes: ['id', 'producto', 'sku', 'unidad_medida', 'cliente_id'],
-      where: Object.keys(invWhere).length ? invWhere : undefined,
-      required: true,
-      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }]
-    }],
-    order: [['ubicacion', 'ASC'], ['numero_caja', 'ASC']],
+    include: [
+      {
+        model: Inventario,
+        as: 'inventario',
+        attributes: ['id', 'producto', 'sku', 'unidad_medida', 'cliente_id'],
+        where: Object.keys(invWhere).length ? invWhere : undefined,
+        required: true,
+        include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }],
+      },
+    ],
+    order: [
+      ['ubicacion', 'ASC'],
+      ['numero_caja', 'ASC'],
+    ],
     limit: MAX_EXPORT_ROWS,
   });
 };
@@ -2053,10 +2329,10 @@ const getReporteInventarioUbicacion = async (req, res) => {
     const hoy = new Date();
     const totalCajas = cajas.length;
     const totalUnidades = cajas.reduce((s, c) => s + (parseFloat(c.cantidad) || 0), 0);
-    const ubicacionesUnicas = new Set(cajas.map(c => c.ubicacion).filter(Boolean)).size;
-    const productosUnicos = new Set(cajas.map(c => c.inventario_id)).size;
+    const ubicacionesUnicas = new Set(cajas.map((c) => c.ubicacion).filter(Boolean)).size;
+    const productosUnicos = new Set(cajas.map((c) => c.inventario_id)).size;
 
-    const rows = cajas.map(c => {
+    const rows = cajas.map((c) => {
       const fv = c.fecha_vencimiento ? new Date(c.fecha_vencimiento) : null;
       const diasVencimiento = fv ? Math.ceil((fv - hoy) / (1000 * 60 * 60 * 24)) : null;
       return {
@@ -2080,7 +2356,7 @@ const getReporteInventarioUbicacion = async (req, res) => {
         kpis: { totalCajas, totalUnidades, ubicacionesUnicas, productosUnicos },
         rows,
         cliente: cajas[0]?.inventario?.cliente || null,
-      }
+      },
     });
   } catch (error) {
     logger.error('Error reporte inventario-ubicacion:', { message: error.message });
@@ -2093,7 +2369,10 @@ const exportarInventarioUbicacionExcel = async (req, res) => {
     const cajas = await _fetchCajasUbicacion(req.query);
     const buffer = await excelService.exportarInventarioUbicacion(cajas, req.query);
     const filename = `inventario_ubicacion_${new Date().toISOString().split('T')[0]}.xlsx`;
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
     logger.info('Excel inventario-ubicacion generado:', { registros: cajas.length });
@@ -2127,12 +2406,22 @@ const getReporteAverias = async (req, res) => {
     const { fecha_desde, fecha_hasta, cliente_id } = req.query;
 
     const whereOperacion = {};
-    if (fecha_desde) whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.gte]: fecha_desde };
-    if (fecha_hasta) whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.lte]: fecha_hasta };
-    if (cliente_id)  whereOperacion.cliente_id = cliente_id;
+    if (fecha_desde)
+      whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.gte]: fecha_desde };
+    if (fecha_hasta)
+      whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.lte]: fecha_hasta };
+    if (cliente_id) whereOperacion.cliente_id = cliente_id;
 
     const averias = await OperacionAveria.findAll({
-      attributes: ['id', 'operacion_id', 'sku', 'tipo_averia', 'cantidad', 'descripcion', 'foto_url'],
+      attributes: [
+        'id',
+        'operacion_id',
+        'sku',
+        'tipo_averia',
+        'cantidad',
+        'descripcion',
+        'foto_url',
+      ],
       include: [
         {
           model: Operacion,
@@ -2140,32 +2429,30 @@ const getReporteAverias = async (req, res) => {
           required: true,
           where: whereOperacion,
           attributes: ['id', 'numero_operacion', 'tipo', 'fecha_operacion', 'origen'],
-          include: [
-            { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }
-          ]
+          include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }],
         },
         {
           model: OperacionDetalle,
           as: 'detalle',
           required: false,
-          attributes: ['producto']
+          attributes: ['producto'],
         },
         {
           model: Usuario,
           as: 'registrador',
-          attributes: ['id', 'nombre_completo']
-        }
+          attributes: ['id', 'nombre_completo'],
+        },
       ],
       order: [[{ model: Operacion, as: 'operacion' }, 'fecha_operacion', 'DESC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const totalUnidades = averias.reduce((s, a) => s + (parseFloat(a.cantidad) || 0), 0);
-    const operacionesAfectadas = new Set(averias.map(a => a.operacion_id)).size;
+    const operacionesAfectadas = new Set(averias.map((a) => a.operacion_id)).size;
 
     const conteoTipo = {};
     const unidadesPorTipo = {};
-    averias.forEach(a => {
+    averias.forEach((a) => {
       const t = a.tipo_averia || 'Sin tipo';
       conteoTipo[t] = (conteoTipo[t] || 0) + 1;
       unidadesPorTipo[t] = (unidadesPorTipo[t] || 0) + (parseFloat(a.cantidad) || 0);
@@ -2175,7 +2462,7 @@ const getReporteAverias = async (req, res) => {
     const porTipo = Object.entries(conteoTipo).map(([tipo, count]) => ({
       tipo,
       count,
-      unidades: unidadesPorTipo[tipo] || 0
+      unidades: unidadesPorTipo[tipo] || 0,
     }));
 
     return success(res, {
@@ -2184,9 +2471,9 @@ const getReporteAverias = async (req, res) => {
         totalAverias: averias.length,
         totalUnidades,
         operacionesAfectadas,
-        tipoFrecuente
+        tipoFrecuente,
       },
-      porTipo
+      porTipo,
     });
   } catch (error) {
     logger.error('Error en getReporteAverias:', { message: error.message });
@@ -2201,28 +2488,44 @@ const exportarAveriasExcel = async (req, res) => {
   try {
     const { fecha_desde, fecha_hasta, cliente_id } = req.query;
     const whereOperacion = {};
-    if (fecha_desde) whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.gte]: fecha_desde };
-    if (fecha_hasta) whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.lte]: fecha_hasta };
-    if (cliente_id)  whereOperacion.cliente_id = cliente_id;
+    if (fecha_desde)
+      whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.gte]: fecha_desde };
+    if (fecha_hasta)
+      whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.lte]: fecha_hasta };
+    if (cliente_id) whereOperacion.cliente_id = cliente_id;
 
     const averias = await OperacionAveria.findAll({
-      attributes: ['id', 'operacion_id', 'sku', 'tipo_averia', 'cantidad', 'descripcion', 'foto_url'],
+      attributes: [
+        'id',
+        'operacion_id',
+        'sku',
+        'tipo_averia',
+        'cantidad',
+        'descripcion',
+        'foto_url',
+      ],
       include: [
         {
-          model: Operacion, as: 'operacion', required: true, where: whereOperacion,
+          model: Operacion,
+          as: 'operacion',
+          required: true,
+          where: whereOperacion,
           attributes: ['id', 'numero_operacion', 'tipo', 'fecha_operacion', 'origen'],
-          include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }]
+          include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }],
         },
         { model: OperacionDetalle, as: 'detalle', required: false, attributes: ['producto'] },
-        { model: Usuario, as: 'registrador', attributes: ['id', 'nombre_completo'] }
+        { model: Usuario, as: 'registrador', attributes: ['id', 'nombre_completo'] },
       ],
       order: [[{ model: Operacion, as: 'operacion' }, 'fecha_operacion', 'DESC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await excelService.exportarAverias(averias, req.query);
     const filename = `averias_${new Date().toISOString().split('T')[0]}.xlsx`;
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
   } catch (error) {
@@ -2238,23 +2541,28 @@ const exportarAveriasPDF = async (req, res) => {
   try {
     const { fecha_desde, fecha_hasta, cliente_id } = req.query;
     const whereOperacion = {};
-    if (fecha_desde) whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.gte]: fecha_desde };
-    if (fecha_hasta) whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.lte]: fecha_hasta };
-    if (cliente_id)  whereOperacion.cliente_id = cliente_id;
+    if (fecha_desde)
+      whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.gte]: fecha_desde };
+    if (fecha_hasta)
+      whereOperacion.fecha_operacion = { ...whereOperacion.fecha_operacion, [Op.lte]: fecha_hasta };
+    if (cliente_id) whereOperacion.cliente_id = cliente_id;
 
     const averias = await OperacionAveria.findAll({
       attributes: ['id', 'operacion_id', 'sku', 'tipo_averia', 'cantidad', 'descripcion'],
       include: [
         {
-          model: Operacion, as: 'operacion', required: true, where: whereOperacion,
+          model: Operacion,
+          as: 'operacion',
+          required: true,
+          where: whereOperacion,
           attributes: ['id', 'numero_operacion', 'tipo', 'fecha_operacion', 'origen'],
-          include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }]
+          include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }],
         },
         { model: OperacionDetalle, as: 'detalle', required: false, attributes: ['producto'] },
-        { model: Usuario, as: 'registrador', attributes: ['id', 'nombre_completo'] }
+        { model: Usuario, as: 'registrador', attributes: ['id', 'nombre_completo'] },
       ],
       order: [[{ model: Operacion, as: 'operacion' }, 'fecha_operacion', 'DESC']],
-      limit: MAX_EXPORT_ROWS
+      limit: MAX_EXPORT_ROWS,
     });
 
     const buffer = await pdfService.generarPDFAverias(averias, req.query);

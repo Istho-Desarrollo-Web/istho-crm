@@ -40,7 +40,7 @@ export const SocketProvider = ({ children }) => {
     // En desarrollo: conectar via proxy de Vite (misma URL del frontend)
     // En producción: conectar al backend directamente
     const serverUrl = import.meta.env.PROD
-      ? (import.meta.env.VITE_API_URL?.replace('/api/v1', '') || window.location.origin)
+      ? import.meta.env.VITE_API_URL?.replace('/api/v1', '') || window.location.origin
       : undefined; // undefined = misma URL (proxy de Vite)
 
     const socket = io(serverUrl, {
@@ -73,10 +73,13 @@ export const SocketProvider = ({ children }) => {
 
     // Sesión cerrada por admin o cuenta desactivada
     socket.on('session:cerrada', (data) => {
-      sessionStorage.setItem('auth_mensaje_pendiente', JSON.stringify({
-        tipo: data?.tipo || 'admin_logout',
-        mensaje: data?.mensaje || 'Tu sesión fue cerrada por un administrador',
-      }));
+      sessionStorage.setItem(
+        'auth_mensaje_pendiente',
+        JSON.stringify({
+          tipo: data?.tipo || 'admin_logout',
+          mensaje: data?.mensaje || 'Tu sesión fue cerrada por un administrador',
+        })
+      );
       logout();
     });
 

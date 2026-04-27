@@ -51,14 +51,20 @@ const AlertaItem = ({ alerta }) => {
   }
 
   return (
-    <div className={`flex items-center gap-3 p-3 rounded-xl border ${
-      isVencimiento
-        ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/50'
-        : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50'
-    }`}>
-      <AlertTriangle className={`w-5 h-5 ${isVencimiento ? 'text-orange-600 dark:text-orange-400' : 'text-amber-600 dark:text-amber-400'}`} />
+    <div
+      className={`flex items-center gap-3 p-3 rounded-xl border ${
+        isVencimiento
+          ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/50'
+          : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50'
+      }`}
+    >
+      <AlertTriangle
+        className={`w-5 h-5 ${isVencimiento ? 'text-orange-600 dark:text-orange-400' : 'text-amber-600 dark:text-amber-400'}`}
+      />
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium truncate ${isVencimiento ? 'text-orange-700 dark:text-orange-300' : 'text-amber-700 dark:text-amber-300'}`}>
+        <p
+          className={`text-sm font-medium truncate ${isVencimiento ? 'text-orange-700 dark:text-orange-300' : 'text-amber-700 dark:text-amber-300'}`}
+        >
           {titulo}
         </p>
         <p className="text-xs text-slate-500 dark:text-slate-400">{mensaje}</p>
@@ -75,7 +81,8 @@ const ReporteInventario = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { hasPermission } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
-  const canDownload = hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
+  const canDownload =
+    hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
   const [loading, setLoading] = useState(true);
   const [firstLoad, setFirstLoad] = useState(true);
   const [stats, setStats] = useState(null);
@@ -95,7 +102,9 @@ const ReporteInventario = () => {
   const handleFiltersChange = (newFilters) => {
     setFilters(newFilters);
     const params = new URLSearchParams();
-    Object.entries(newFilters).forEach(([k, v]) => { if (v) params.set(k, v); });
+    Object.entries(newFilters).forEach(([k, v]) => {
+      if (v) params.set(k, v);
+    });
     setSearchParams(params, { replace: true });
   };
 
@@ -147,7 +156,8 @@ const ReporteInventario = () => {
   const handleExport = async (format) => {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      const endpoint = format === 'excel' ? '/reportes/inventario/excel' : '/reportes/inventario/pdf';
+      const endpoint =
+        format === 'excel' ? '/reportes/inventario/excel' : '/reportes/inventario/pdf';
       const ext = format === 'excel' ? 'xlsx' : 'pdf';
       await descargarArchivo(
         `${baseUrl}${endpoint}?${buildFilterParams()}`,
@@ -168,10 +178,13 @@ const ReporteInventario = () => {
   // Datos para gráficos
   const estadoData = (() => {
     const counts = {};
-    productos.forEach(p => {
-      const estado = p.cantidad === 0 ? 'Agotado'
-        : (p.stock_minimo > 0 && p.cantidad <= p.stock_minimo) ? 'Stock Bajo'
-        : 'Disponible';
+    productos.forEach((p) => {
+      const estado =
+        p.cantidad === 0
+          ? 'Agotado'
+          : p.stock_minimo > 0 && p.cantidad <= p.stock_minimo
+            ? 'Stock Bajo'
+            : 'Disponible';
       counts[estado] = (counts[estado] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
@@ -183,14 +196,16 @@ const ReporteInventario = () => {
     if (hayFiltroCliente) {
       // Agrupado por cliente (solo uno esperado)
       const grupos = {};
-      productos.forEach(p => {
+      productos.forEach((p) => {
         const nombre = p.cliente?.razon_social || p.cliente?.nombre || 'Sin cliente';
         if (!grupos[nombre]) grupos[nombre] = [];
         grupos[nombre].push(p);
       });
       return Object.entries(grupos).map(([cliente, items]) => ({
         cliente,
-        items: [...items].sort((a, b) => (parseFloat(b.cantidad) || 0) - (parseFloat(a.cantidad) || 0)).slice(0, 20),
+        items: [...items]
+          .sort((a, b) => (parseFloat(b.cantidad) || 0) - (parseFloat(a.cantidad) || 0))
+          .slice(0, 20),
       }));
     }
     // Sin filtro: tabla única con columna Cliente, top 20 general por cantidad
@@ -202,10 +217,10 @@ const ReporteInventario = () => {
 
   const cajasPorProducto = (() => {
     return [...productos]
-      .filter(p => (parseInt(p.total_cajas) || 0) > 0 || (parseFloat(p.cantidad) || 0) > 0)
+      .filter((p) => (parseInt(p.total_cajas) || 0) > 0 || (parseFloat(p.cantidad) || 0) > 0)
       .sort((a, b) => (parseInt(b.total_cajas) || 0) - (parseInt(a.total_cajas) || 0))
       .slice(0, 8)
-      .map(p => ({
+      .map((p) => ({
         label: (p.producto || p.nombre || p.sku || '').substring(0, 20),
         value1: parseInt(p.total_cajas) || 0,
         value2: parseFloat(p.cantidad) || 0,
@@ -248,18 +263,40 @@ const ReporteInventario = () => {
                 <Package className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Reporte de Inventario</h1>
-                <p className="text-slate-500 dark:text-slate-400">Estado y valorización del inventario</p>
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                  Reporte de Inventario
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400">
+                  Estado y valorización del inventario
+                </p>
               </div>
             </div>
           </div>
 
-          <AccionesDropdown acciones={[
-            { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
-            { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true), hidden: !canDownload },
-            { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel'), hidden: !canDownload },
-            { label: 'PDF', icon: Download, onClick: () => handleExport('pdf'), variant: 'primary', hidden: !canDownload },
-          ]} />
+          <AccionesDropdown
+            acciones={[
+              { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+              {
+                label: 'Enviar',
+                icon: Mail,
+                onClick: () => setEmailModal(true),
+                hidden: !canDownload,
+              },
+              {
+                label: 'Excel',
+                icon: FileSpreadsheet,
+                onClick: () => handleExport('excel'),
+                hidden: !canDownload,
+              },
+              {
+                label: 'PDF',
+                icon: Download,
+                onClick: () => handleExport('pdf'),
+                variant: 'primary',
+                hidden: !canDownload,
+              },
+            ]}
+          />
         </div>
 
         {error && (
@@ -320,7 +357,10 @@ const ReporteInventario = () => {
               title="Cajas por Producto"
               subtitle="Top 8 productos con más cajas en bodega"
               data={cajasPorProducto}
-              legend={[{ label: 'Cajas', color: '#3B82F6' }, { label: 'Unidades', color: '#10b981' }]}
+              legend={[
+                { label: 'Cajas', color: '#3B82F6' },
+                { label: 'Unidades', color: '#10b981' },
+              ]}
               height={300}
             />
           </div>
@@ -330,7 +370,9 @@ const ReporteInventario = () => {
         {alertas.length > 0 && (
           <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-100">Alertas de Inventario</h3>
+              <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                Alertas de Inventario
+              </h3>
               <Button variant="ghost" size="sm" onClick={() => navigate('/inventario/alertas')}>
                 Ver todas
               </Button>
@@ -347,7 +389,10 @@ const ReporteInventario = () => {
         {productosPorCliente.length > 0 && (
           <div className="space-y-6 mb-6">
             {productosPorCliente.map(({ cliente, items }) => (
-              <div key={cliente ?? '__all__'} className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+              <div
+                key={cliente ?? '__all__'}
+                className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden"
+              >
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold text-slate-800 dark:text-slate-100">
@@ -365,17 +410,35 @@ const ReporteInventario = () => {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-centhrix-surface/50">
-                        <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-8">#</th>
-                        <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">SKU</th>
-                        <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Producto</th>
+                        <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-8">
+                          #
+                        </th>
+                        <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                          SKU
+                        </th>
+                        <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                          Producto
+                        </th>
                         {!hayFiltroCliente && (
-                          <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Cliente</th>
+                          <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                            Cliente
+                          </th>
                         )}
-                        <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Categoría</th>
-                        <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Cantidad</th>
-                        <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Costo Unit.</th>
-                        <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Valor Total</th>
-                        <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Estado</th>
+                        <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                          Categoría
+                        </th>
+                        <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                          Cantidad
+                        </th>
+                        <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                          Costo Unit.
+                        </th>
+                        <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                          Valor Total
+                        </th>
+                        <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                          Estado
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
@@ -383,27 +446,55 @@ const ReporteInventario = () => {
                         const cantidad = parseFloat(p.cantidad) || 0;
                         const costo = parseFloat(p.costo_unitario) || 0;
                         const valorTotal = cantidad * costo;
-                        const estado = cantidad === 0 ? 'agotado'
-                          : (p.stock_minimo > 0 && cantidad <= p.stock_minimo) ? 'bajo_stock'
-                          : 'disponible';
-                        const estadoLabel = { disponible: 'Disponible', bajo_stock: 'Stock Bajo', agotado: 'Agotado' }[estado];
+                        const estado =
+                          cantidad === 0
+                            ? 'agotado'
+                            : p.stock_minimo > 0 && cantidad <= p.stock_minimo
+                              ? 'bajo_stock'
+                              : 'disponible';
+                        const estadoLabel = {
+                          disponible: 'Disponible',
+                          bajo_stock: 'Stock Bajo',
+                          agotado: 'Agotado',
+                        }[estado];
                         const estadoClass = {
-                          disponible: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-                          bajo_stock: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                          disponible:
+                            'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                          bajo_stock:
+                            'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
                           agotado: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
                         }[estado];
                         return (
-                          <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors">
-                            <td className="px-4 py-3 text-slate-400 dark:text-slate-500">{idx + 1}</td>
-                            <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-300">{p.sku}</td>
-                            <td className="px-4 py-3 text-slate-800 dark:text-slate-200 max-w-[200px] truncate" title={p.producto}>{p.producto}</td>
+                          <tr
+                            key={p.id}
+                            className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors"
+                          >
+                            <td className="px-4 py-3 text-slate-400 dark:text-slate-500">
+                              {idx + 1}
+                            </td>
+                            <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-300">
+                              {p.sku}
+                            </td>
+                            <td
+                              className="px-4 py-3 text-slate-800 dark:text-slate-200 max-w-[200px] truncate"
+                              title={p.producto}
+                            >
+                              {p.producto}
+                            </td>
                             {!hayFiltroCliente && (
-                              <td className="px-4 py-3 text-slate-500 dark:text-slate-400 max-w-[150px] truncate" title={p.cliente?.razon_social}>
+                              <td
+                                className="px-4 py-3 text-slate-500 dark:text-slate-400 max-w-[150px] truncate"
+                                title={p.cliente?.razon_social}
+                              >
                                 {p.cliente?.razon_social || '—'}
                               </td>
                             )}
-                            <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{p.categoria || '—'}</td>
-                            <td className="px-4 py-3 text-right font-medium text-slate-800 dark:text-slate-200">{cantidad.toLocaleString()} {p.unidad_medida || 'UND'}</td>
+                            <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                              {p.categoria || '—'}
+                            </td>
+                            <td className="px-4 py-3 text-right font-medium text-slate-800 dark:text-slate-200">
+                              {cantidad.toLocaleString()} {p.unidad_medida || 'UND'}
+                            </td>
                             <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300">
                               {costo > 0 ? `$${costo.toLocaleString('es-CO')}` : '—'}
                             </td>
@@ -411,7 +502,9 @@ const ReporteInventario = () => {
                               {valorTotal > 0 ? formatCurrency(valorTotal) : '—'}
                             </td>
                             <td className="px-4 py-3 text-center">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${estadoClass}`}>
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${estadoClass}`}
+                              >
                                 {estadoLabel}
                               </span>
                             </td>
@@ -428,21 +521,27 @@ const ReporteInventario = () => {
 
         {/* Export Info */}
         {canDownload && (
-        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-3">Exportar Inventario Completo</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-            Descarga el listado completo de inventario con cantidades, costos, lotes y fechas de vencimiento.
-            Los filtros seleccionados arriba se aplicarán a la exportación.
-          </p>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" icon={FileSpreadsheet} onClick={() => handleExport('excel')}>
-              Exportar Excel
-            </Button>
-            <Button variant="outline" icon={Download} onClick={() => handleExport('pdf')}>
-              Exportar PDF
-            </Button>
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-3">
+              Exportar Inventario Completo
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+              Descarga el listado completo de inventario con cantidades, costos, lotes y fechas de
+              vencimiento. Los filtros seleccionados arriba se aplicarán a la exportación.
+            </p>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                icon={FileSpreadsheet}
+                onClick={() => handleExport('excel')}
+              >
+                Exportar Excel
+              </Button>
+              <Button variant="outline" icon={Download} onClick={() => handleExport('pdf')}>
+                Exportar PDF
+              </Button>
+            </div>
           </div>
-        </div>
         )}
       </main>
 
@@ -451,7 +550,10 @@ const ReporteInventario = () => {
         onClose={() => setEmailModal(false)}
         tipoReporte="inventario"
         onSend={async (data) => {
-          const res = await reportesService.enviarPorEmail({ ...data, cliente_id: filters.cliente_id });
+          const res = await reportesService.enviarPorEmail({
+            ...data,
+            cliente_id: filters.cliente_id,
+          });
           if (res.success) enqueueSnackbar(res.message, { variant: 'success' });
           else throw new Error(res.message);
         }}

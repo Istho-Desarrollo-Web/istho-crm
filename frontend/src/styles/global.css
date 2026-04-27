@@ -4,13 +4,16 @@
  */
 
 /* Reset y configuración base */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -78,7 +81,8 @@ a {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

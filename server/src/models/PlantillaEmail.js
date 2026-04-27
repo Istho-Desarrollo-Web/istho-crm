@@ -12,81 +12,80 @@
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  const PlantillaEmail = sequelize.define('PlantillaEmail', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+  const PlantillaEmail = sequelize.define(
+    'PlantillaEmail',
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      nombre: {
+        type: DataTypes.STRING(150),
+        allowNull: false,
+        comment: 'Nombre interno de la plantilla',
+      },
+      tipo: {
+        type: DataTypes.ENUM('operacion_cierre', 'alerta_inventario', 'bienvenida', 'general'),
+        allowNull: false,
+        defaultValue: 'general',
+        comment: 'Tipo de evento al que aplica la plantilla',
+      },
+      subtipo: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        defaultValue: null,
+        comment: 'Subtipo para diferenciar plantillas del mismo tipo (ej: ingreso, salida)',
+      },
+      asunto_template: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        comment: 'Asunto del correo (acepta variables Handlebars)',
+      },
+      cuerpo_html: {
+        type: DataTypes.TEXT('long'),
+        allowNull: false,
+        comment: 'Cuerpo HTML de la plantilla (acepta variables Handlebars)',
+      },
+      firma_habilitada: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        comment: 'Si incluye la firma de ISTHO al final',
+      },
+      firma_html: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'Firma HTML personalizada (si es null se usa la firma por defecto)',
+      },
+      campos_disponibles: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        comment: 'Lista de campos/variables disponibles para esta plantilla',
+      },
+      es_predeterminada: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        comment: 'Si es la plantilla por defecto para su tipo',
+      },
+      activo: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      creado_por: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      actualizado_por: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
     },
-    nombre: {
-      type: DataTypes.STRING(150),
-      allowNull: false,
-      comment: 'Nombre interno de la plantilla',
-    },
-    tipo: {
-      type: DataTypes.ENUM(
-        'operacion_cierre',
-        'alerta_inventario',
-        'bienvenida',
-        'general'
-      ),
-      allowNull: false,
-      defaultValue: 'general',
-      comment: 'Tipo de evento al que aplica la plantilla',
-    },
-    subtipo: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-      defaultValue: null,
-      comment: 'Subtipo para diferenciar plantillas del mismo tipo (ej: ingreso, salida)',
-    },
-    asunto_template: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-      comment: 'Asunto del correo (acepta variables Handlebars)',
-    },
-    cuerpo_html: {
-      type: DataTypes.TEXT('long'),
-      allowNull: false,
-      comment: 'Cuerpo HTML de la plantilla (acepta variables Handlebars)',
-    },
-    firma_habilitada: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-      comment: 'Si incluye la firma de ISTHO al final',
-    },
-    firma_html: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      comment: 'Firma HTML personalizada (si es null se usa la firma por defecto)',
-    },
-    campos_disponibles: {
-      type: DataTypes.JSON,
-      allowNull: true,
-      comment: 'Lista de campos/variables disponibles para esta plantilla',
-    },
-    es_predeterminada: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      comment: 'Si es la plantilla por defecto para su tipo',
-    },
-    activo: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-    creado_por: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    actualizado_por: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-  }, {
-    tableName: 'plantillas_email',
-    timestamps: true,
-    underscored: true,
-  });
+    {
+      tableName: 'plantillas_email',
+      timestamps: true,
+      underscored: true,
+    }
+  );
 
   // Campos disponibles por tipo de plantilla
   PlantillaEmail.CAMPOS_POR_TIPO = {
@@ -95,7 +94,11 @@ module.exports = (sequelize) => {
       { variable: 'numeroOperacion', label: 'Número de Operación', ejemplo: 'OP-2026-0001' },
       { variable: 'documentoWms', label: 'Documento WMS', ejemplo: 'WMS-12345' },
       { variable: 'fecha', label: 'Fecha de la Operación', ejemplo: 'martes, 11 de marzo de 2026' },
-      { variable: 'fechaCierre', label: 'Fecha de Cierre', ejemplo: 'martes, 11 de marzo de 2026, 14:30' },
+      {
+        variable: 'fechaCierre',
+        label: 'Fecha de Cierre',
+        ejemplo: 'martes, 11 de marzo de 2026, 14:30',
+      },
       { variable: 'clienteNombre', label: 'Nombre del Cliente', ejemplo: 'LACTALIS COLOMBIA LTDA' },
       { variable: 'totalReferencias', label: 'Total Referencias/SKUs', ejemplo: '12' },
       { variable: 'totalUnidades', label: 'Total Unidades', ejemplo: '150' },
@@ -115,13 +118,21 @@ module.exports = (sequelize) => {
       { variable: 'sucursalEntrega', label: 'Sucursal Entrega', ejemplo: 'Sucursal Norte' },
       { variable: 'ciudadDestino', label: 'Ciudad Destino', ejemplo: 'Bogotá' },
       { variable: 'motivoKardex', label: 'Motivo del Kardex', ejemplo: 'Ajuste por conteo físico' },
-      { variable: 'averias', label: 'Lista de Averías ({{#each averias}})', ejemplo: '[{sku, tipo_averia, cantidad, descripcion}]' },
+      {
+        variable: 'averias',
+        label: 'Lista de Averías ({{#each averias}})',
+        ejemplo: '[{sku, tipo_averia, cantidad, descripcion}]',
+      },
     ],
     alerta_inventario: [
       { variable: 'totalAlertas', label: 'Total de Alertas', ejemplo: '5' },
       { variable: 'alertasAgotado', label: 'Productos Agotados', ejemplo: '2' },
       { variable: 'alertasStockBajo', label: 'Productos con Stock Bajo', ejemplo: '3' },
-      { variable: 'urlInventario', label: 'URL del Inventario', ejemplo: 'https://crm.istho.com/inventario' },
+      {
+        variable: 'urlInventario',
+        label: 'URL del Inventario',
+        ejemplo: 'https://crm.istho.com/inventario',
+      },
     ],
     bienvenida: [
       { variable: 'nombre', label: 'Nombre del Usuario', ejemplo: 'Juan Pérez' },
@@ -183,7 +194,9 @@ module.exports = (sequelize) => {
       if (fs.existsSync(defaultLogoPath)) {
         return `data:image/png;base64,${fs.readFileSync(defaultLogoPath).toString('base64')}`;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return null;
   };
 

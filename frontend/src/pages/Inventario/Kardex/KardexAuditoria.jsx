@@ -51,7 +51,10 @@ import { getServerFileUrl } from '../../../api/client';
 import { comprimirImagen, COMPRESS_PRESETS } from '../../../utils/compressImage';
 
 // URL base del servidor para archivos estaticos (sin /api/v1)
-const SERVER_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/api\/v1\/?$/, '');
+const SERVER_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(
+  /\/api\/v1\/?$/,
+  ''
+);
 
 /** Convierte URL relativa de archivo a URL absoluta del servidor */
 const resolveFileUrl = (url) => {
@@ -66,7 +69,12 @@ const resolveFileUrl = (url) => {
 
 const STEPS = [
   { key: 'pendiente', label: 'Pendiente', icon: Clock, description: 'Documento recibido del WMS' },
-  { key: 'en_proceso', label: 'En Proceso', icon: Loader2, description: 'Verificando lineas y datos' },
+  {
+    key: 'en_proceso',
+    label: 'En Proceso',
+    icon: Loader2,
+    description: 'Verificando lineas y datos',
+  },
   { key: 'cerrado', label: 'Cerrado', icon: CheckCircle2, description: 'Auditoria completada' },
 ];
 
@@ -89,21 +97,27 @@ const StatusStepper = ({ currentStatus }) => {
                   isCompleted
                     ? 'bg-purple-500 border-purple-500 text-white shadow-lg shadow-purple-500/30'
                     : isCurrent
-                    ? 'bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/30 animate-pulse'
-                    : 'bg-slate-100 dark:bg-centhrix-surface border-slate-300 dark:border-slate-600 text-slate-400'
+                      ? 'bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/30 animate-pulse'
+                      : 'bg-slate-100 dark:bg-centhrix-surface border-slate-300 dark:border-slate-600 text-slate-400'
                 }`}
               >
                 {isCompleted ? (
                   <Check className="w-6 h-6" />
                 ) : (
-                  <Icon className={`w-6 h-6 ${isCurrent && step.key === 'en_proceso' ? 'animate-spin' : ''}`} />
+                  <Icon
+                    className={`w-6 h-6 ${isCurrent && step.key === 'en_proceso' ? 'animate-spin' : ''}`}
+                  />
                 )}
               </div>
-              <p className={`mt-2 text-xs font-semibold ${
-                isCompleted ? 'text-purple-600 dark:text-purple-400'
-                  : isCurrent ? 'text-blue-600 dark:text-blue-400'
-                  : 'text-slate-400 dark:text-slate-500'
-              }`}>
+              <p
+                className={`mt-2 text-xs font-semibold ${
+                  isCompleted
+                    ? 'text-purple-600 dark:text-purple-400'
+                    : isCurrent
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-slate-400 dark:text-slate-500'
+                }`}
+              >
                 {step.label}
               </p>
               <p className="text-[10px] text-slate-400 dark:text-slate-500 hidden sm:block">
@@ -111,9 +125,11 @@ const StatusStepper = ({ currentStatus }) => {
               </p>
             </div>
             {idx < STEPS.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-3 mt-[-24px] transition-all duration-500 ${
-                idx < currentIdx ? 'bg-purple-500' : 'bg-slate-200 dark:bg-centhrix-surface'
-              }`} />
+              <div
+                className={`flex-1 h-0.5 mx-3 mt-[-24px] transition-all duration-500 ${
+                  idx < currentIdx ? 'bg-purple-500' : 'bg-slate-200 dark:bg-centhrix-surface'
+                }`}
+              />
             )}
           </div>
         );
@@ -127,11 +143,17 @@ const StatusStepper = ({ currentStatus }) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 const SECTION_COLORS = {
-  purple:  { bg: 'bg-purple-100 dark:bg-purple-900/30',  text: 'text-purple-600 dark:text-purple-400' },
-  blue:    { bg: 'bg-blue-100 dark:bg-blue-900/30',      text: 'text-blue-600 dark:text-blue-400' },
-  amber:   { bg: 'bg-amber-100 dark:bg-amber-900/30',    text: 'text-amber-600 dark:text-amber-400' },
-  violet:  { bg: 'bg-violet-100 dark:bg-violet-900/30',  text: 'text-violet-600 dark:text-violet-400' },
-  slate:   { bg: 'bg-slate-100 dark:bg-centhrix-bg/30',    text: 'text-slate-600 dark:text-slate-400' },
+  purple: {
+    bg: 'bg-purple-100 dark:bg-purple-900/30',
+    text: 'text-purple-600 dark:text-purple-400',
+  },
+  blue: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400' },
+  amber: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-600 dark:text-amber-400' },
+  violet: {
+    bg: 'bg-violet-100 dark:bg-violet-900/30',
+    text: 'text-violet-600 dark:text-violet-400',
+  },
+  slate: { bg: 'bg-slate-100 dark:bg-centhrix-bg/30', text: 'text-slate-600 dark:text-slate-400' },
 };
 
 const Section = ({ title, icon: Icon, children, badge, color = 'purple' }) => {
@@ -156,7 +178,17 @@ const Section = ({ title, icon: Icon, children, badge, color = 'purple' }) => {
 // INPUT FIELD
 // ════════════════════════════════════════════════════════════════════════════
 
-const FormField = ({ icon: Icon, label, value, onChange, placeholder, required, type = 'text', disabled, error }) => (
+const FormField = ({
+  icon: Icon,
+  label,
+  value,
+  onChange,
+  placeholder,
+  required,
+  type = 'text',
+  disabled,
+  error,
+}) => (
   <div>
     <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
       <Icon className="w-4 h-4 text-slate-400" />
@@ -192,7 +224,9 @@ const FormField = ({ icon: Icon, label, value, onChange, placeholder, required, 
 
 const Lightbox = ({ src, alt, onClose }) => {
   useEffect(() => {
-    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
+    const handleKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
     document.addEventListener('keydown', handleKey);
     document.body.style.overflow = 'hidden';
     return () => {
@@ -202,8 +236,14 @@ const Lightbox = ({ src, alt, onClose }) => {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
-      <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+      >
         <X className="w-6 h-6" />
       </button>
       <img
@@ -223,23 +263,25 @@ const Lightbox = ({ src, alt, onClose }) => {
 const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
   const [lightboxIdx, setLightboxIdx] = useState(null);
 
-  const previews = useMemo(() =>
-    files.map((file) => {
-      const type = file.type || '';
-      const isImage = type.startsWith('image/');
-      const isPdf = type === 'application/pdf';
-      const nativeFile = file instanceof File ? file : file._nativeFile;
-      let url = null;
-      let isBlob = false;
-      if (nativeFile && isImage) {
-        url = URL.createObjectURL(nativeFile);
-        isBlob = true;
-      } else if (file.isUploaded && file.url) {
-        url = file.url;
-      }
-      return { file, url, isImage, isPdf, isBlob };
-    }),
-  [files]);
+  const previews = useMemo(
+    () =>
+      files.map((file) => {
+        const type = file.type || '';
+        const isImage = type.startsWith('image/');
+        const isPdf = type === 'application/pdf';
+        const nativeFile = file instanceof File ? file : file._nativeFile;
+        let url = null;
+        let isBlob = false;
+        if (nativeFile && isImage) {
+          url = URL.createObjectURL(nativeFile);
+          isBlob = true;
+        } else if (file.isUploaded && file.url) {
+          url = file.url;
+        }
+        return { file, url, isImage, isPdf, isBlob };
+      }),
+    [files]
+  );
 
   useEffect(() => {
     return () => previews.forEach((p) => p.isBlob && p.url && URL.revokeObjectURL(p.url));
@@ -264,21 +306,32 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
 
       {pdfFiles.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Documento PDF</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+            Documento PDF
+          </p>
           {pdfFiles.map((p, idx) => (
-            <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-centhrix-bg rounded-xl border border-slate-200 dark:border-slate-700 group">
+            <div
+              key={idx}
+              className="flex items-center justify-between p-3 bg-slate-50 dark:bg-centhrix-bg rounded-xl border border-slate-200 dark:border-slate-700 group"
+            >
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
                   <FileText className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{p.file.name}</p>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
+                    {p.file.name}
+                  </p>
                   <p className="text-xs text-slate-400">{(p.file.size / 1024).toFixed(1)} KB</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => { const native = p.file instanceof File ? p.file : p.file._nativeFile; const pdfUrl = native ? URL.createObjectURL(native) : p.file.url; window.open(pdfUrl, '_blank'); }}
+                  onClick={() => {
+                    const native = p.file instanceof File ? p.file : p.file._nativeFile;
+                    const pdfUrl = native ? URL.createObjectURL(native) : p.file.url;
+                    window.open(pdfUrl, '_blank');
+                  }}
                   className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                   title="Ver PDF"
                 >
@@ -300,10 +353,15 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
 
       {imageFiles.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Fotografias</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+            Fotografias
+          </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {imageFiles.map((p, idx) => (
-              <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-centhrix-bg">
+              <div
+                key={idx}
+                className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-centhrix-bg"
+              >
                 <img
                   src={p.url}
                   alt={p.file.name}
@@ -348,23 +406,27 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
   const pdfInputRef = useRef(null);
   const photoInputRef = useRef(null);
 
-  const pdfFiles = files.filter((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
-  const imageFiles = files.filter((f) => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name));
+  const pdfFiles = files.filter(
+    (f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+  );
+  const imageFiles = files.filter(
+    (f) => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name)
+  );
 
   const onDrag = (type) => (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(prev => ({ ...prev, [type]: true }));
-    } else if (e.type === "dragleave") {
-      setDragActive(prev => ({ ...prev, [type]: false }));
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive((prev) => ({ ...prev, [type]: true }));
+    } else if (e.type === 'dragleave') {
+      setDragActive((prev) => ({ ...prev, [type]: false }));
     }
   };
 
   const onDrop = (type) => (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragActive(prev => ({ ...prev, [type]: false }));
+    setDragActive((prev) => ({ ...prev, [type]: false }));
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFiles(type, [...e.dataTransfer.files]);
     }
@@ -373,10 +435,14 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
   const handleFiles = (type, newFiles) => {
     const validFiles = [];
     if (type === 'pdf') {
-      const pdf = newFiles.find(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+      const pdf = newFiles.find(
+        (f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+      );
       if (pdf && pdfFiles.length === 0) validFiles.push(pdf);
     } else {
-      const photos = newFiles.filter(f => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name));
+      const photos = newFiles.filter(
+        (f) => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name)
+      );
       const remaining = maxPhotos - imageFiles.length;
       validFiles.push(...photos.slice(0, remaining));
     }
@@ -403,8 +469,8 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             pdfFiles.length > 0
               ? 'border-purple-500 bg-purple-50/30 dark:bg-purple-900/10'
               : dragActive.pdf
-              ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 scale-[1.02]'
-              : 'border-slate-300 dark:border-slate-600 hover:border-purple-400 cursor-pointer'
+                ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 scale-[1.02]'
+                : 'border-slate-300 dark:border-slate-600 hover:border-purple-400 cursor-pointer'
           }`}
         >
           <input
@@ -424,7 +490,10 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
                 {pdfFiles[0].name}
               </p>
               <button
-                onClick={(e) => { e.stopPropagation(); onRemoveFile(files.indexOf(pdfFiles[0])); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemoveFile(files.indexOf(pdfFiles[0]));
+                }}
                 className="mt-2 text-[10px] font-bold text-red-500 hover:text-red-600 uppercase tracking-wider"
               >
                 Cambiar archivo
@@ -458,8 +527,8 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             imageFiles.length >= maxPhotos
               ? 'border-blue-500 bg-blue-50/30 dark:bg-blue-900/10 cursor-default'
               : dragActive.photos
-              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.02]'
-              : 'border-slate-300 dark:border-slate-600 hover:border-blue-400 cursor-pointer'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.02]'
+                : 'border-slate-300 dark:border-slate-600 hover:border-blue-400 cursor-pointer'
           }`}
         >
           <input
@@ -471,7 +540,9 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             className="hidden"
           />
 
-          <Upload className={`w-8 h-8 mb-2 ${imageFiles.length >= maxPhotos ? 'text-blue-500' : 'text-slate-400'}`} />
+          <Upload
+            className={`w-8 h-8 mb-2 ${imageFiles.length >= maxPhotos ? 'text-blue-500' : 'text-slate-400'}`}
+          />
           <p className="text-xs text-slate-500 dark:text-slate-400 text-center px-4">
             {imageFiles.length >= maxPhotos
               ? 'Limite de fotos alcanzado'
@@ -533,7 +604,12 @@ const KardexAuditoria = () => {
 
   // Averias
   const [averias, setAverias] = useState([]);
-  const [averiaForm, setAveriaForm] = useState({ detalle_id: '', tipo_averia: '', descripcion_custom: '', cantidad_afectada: '' });
+  const [averiaForm, setAveriaForm] = useState({
+    detalle_id: '',
+    tipo_averia: '',
+    descripcion_custom: '',
+    cantidad_afectada: '',
+  });
   const [averiaFoto, setAveriaFoto] = useState(null);
   const [averiaFotoPreview, setAveriaFotoPreview] = useState(null);
   const averiaFotoRef = useRef(null);
@@ -567,24 +643,30 @@ const KardexAuditoria = () => {
             });
           }
           if (data.evidencias) {
-            setFiles(data.evidencias.map(ev => ({
-              id: ev.id,
-              name: ev.nombre,
-              url: resolveFileUrl(ev.url),
-              type: ev.tipo,
-              size: ev.tamanio,
-              isUploaded: true
-            })));
+            setFiles(
+              data.evidencias.map((ev) => ({
+                id: ev.id,
+                name: ev.nombre,
+                url: resolveFileUrl(ev.url),
+                type: ev.tipo,
+                size: ev.tamanio,
+                isUploaded: true,
+              }))
+            );
           }
 
           // Cargar averias existentes
           try {
             const averiasRes = await auditoriasService.getAverias(id);
             if (averiasRes?.success) setAverias(averiasRes.data || []);
-          } catch { /* silencioso */ }
+          } catch {
+            /* silencioso */
+          }
         }
       } catch {
-        setPageError('No se pudo cargar la auditoria. Verifique que el servidor este activo e intente nuevamente.');
+        setPageError(
+          'No se pudo cargar la auditoria. Verifique que el servidor este activo e intente nuevamente.'
+        );
       } finally {
         setPageLoading(false);
       }
@@ -613,14 +695,24 @@ const KardexAuditoria = () => {
 
   const sanitizeLogisticaField = (field, value) => {
     switch (field) {
-      case 'cedula':    return value.replace(/\D/g, '').slice(0, 15);
-      case 'placa':     return value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6);
-      case 'telefono':  return value.replace(/\D/g, '').slice(0, 10);
-      case 'conductor': return value.replace(/[^A-Za-záéíóúÁÉÍÓÚñÑüÜ\s]/g, '').slice(0, 100);
+      case 'cedula':
+        return value.replace(/\D/g, '').slice(0, 15);
+      case 'placa':
+        return value
+          .replace(/[^A-Za-z0-9]/g, '')
+          .toUpperCase()
+          .slice(0, 6);
+      case 'telefono':
+        return value.replace(/\D/g, '').slice(0, 10);
+      case 'conductor':
+        return value.replace(/[^A-Za-záéíóúÁÉÍÓÚñÑüÜ\s]/g, '').slice(0, 100);
       case 'origen':
-      case 'destino':   return value.toUpperCase().slice(0, 55);
-      case 'observaciones': return value.slice(0, 255);
-      default: return value;
+      case 'destino':
+        return value.toUpperCase().slice(0, 55);
+      case 'observaciones':
+        return value.slice(0, 255);
+      default:
+        return value;
     }
   };
 
@@ -632,7 +724,8 @@ const KardexAuditoria = () => {
       case 'placa':
         if (value.length < 6) return 'Mínimo 6 caracteres';
         return !/^[A-Z]{3}[0-9]{2}[A-Z0-9]$/.test(value)
-          ? 'Formato inválido (ej: ABC123 o ABC12D)' : null;
+          ? 'Formato inválido (ej: ABC123 o ABC12D)'
+          : null;
       case 'telefono':
         return value.length < 7 ? 'Mínimo 7 dígitos' : null;
       default:
@@ -654,28 +747,37 @@ const KardexAuditoria = () => {
   };
 
   // Subir evidencias inmediatamente al agregarlas
-  const handleUploadEvidencias = useCallback(async (newFiles) => {
-    setFiles((prev) => [...prev, ...newFiles]);
-    if (estado === 'pendiente') setEstado('en_proceso');
+  const handleUploadEvidencias = useCallback(
+    async (newFiles) => {
+      setFiles((prev) => [...prev, ...newFiles]);
+      if (estado === 'pendiente') setEstado('en_proceso');
 
-    setUploadingFiles(true);
-    try {
-      const filesParaSubir = await Promise.all(
-        newFiles.map(f => comprimirImagen(f, COMPRESS_PRESETS.EVIDENCIA))
-      );
-      await auditoriasService.subirEvidencias(id, filesParaSubir);
-      setFiles((prev) => prev.map(f => f instanceof File ? { ...f, isUploaded: true, type: f.type, name: f.name, size: f.size, _nativeFile: f } : f));
-    } catch {
-      showAlert({
-        type: 'error',
-        title: 'Error',
-        message: 'No se pudieron subir las evidencias. Intente nuevamente.'
-      });
-      setFiles((prev) => prev.filter(f => !(newFiles.includes(f))));
-    } finally {
-      setUploadingFiles(false);
-    }
-  }, [id, estado, showAlert]);
+      setUploadingFiles(true);
+      try {
+        const filesParaSubir = await Promise.all(
+          newFiles.map((f) => comprimirImagen(f, COMPRESS_PRESETS.EVIDENCIA))
+        );
+        await auditoriasService.subirEvidencias(id, filesParaSubir);
+        setFiles((prev) =>
+          prev.map((f) =>
+            f instanceof File
+              ? { ...f, isUploaded: true, type: f.type, name: f.name, size: f.size, _nativeFile: f }
+              : f
+          )
+        );
+      } catch {
+        showAlert({
+          type: 'error',
+          title: 'Error',
+          message: 'No se pudieron subir las evidencias. Intente nuevamente.',
+        });
+        setFiles((prev) => prev.filter((f) => !newFiles.includes(f)));
+      } finally {
+        setUploadingFiles(false);
+      }
+    },
+    [id, estado, showAlert]
+  );
 
   // Limpiar timer al desmontar
   useEffect(() => {
@@ -711,9 +813,7 @@ const KardexAuditoria = () => {
   };
 
   const handleEliminarLinea = async (lineaId) => {
-    setLineas((prev) =>
-      prev.map((l) => (l.id === lineaId ? { ...l, eliminado: true } : l))
-    );
+    setLineas((prev) => prev.map((l) => (l.id === lineaId ? { ...l, eliminado: true } : l)));
     if (estado === 'pendiente') setEstado('en_proceso');
 
     try {
@@ -724,9 +824,7 @@ const KardexAuditoria = () => {
   };
 
   const handleRestaurarLinea = async (lineaId) => {
-    setLineas((prev) =>
-      prev.map((l) => (l.id === lineaId ? { ...l, eliminado: false } : l))
-    );
+    setLineas((prev) => prev.map((l) => (l.id === lineaId ? { ...l, eliminado: false } : l)));
 
     try {
       await auditoriasService.restaurarLinea(id, lineaId);
@@ -735,9 +833,12 @@ const KardexAuditoria = () => {
     }
   };
 
-  const handleAddFiles = useCallback((newFiles) => {
-    handleUploadEvidencias(newFiles);
-  }, [handleUploadEvidencias]);
+  const handleAddFiles = useCallback(
+    (newFiles) => {
+      handleUploadEvidencias(newFiles);
+    },
+    [handleUploadEvidencias]
+  );
 
   const handleRemoveFile = async (idx) => {
     const file = files[idx];
@@ -772,26 +873,42 @@ const KardexAuditoria = () => {
   const handleRegistrarAveria = async () => {
     const { detalle_id, tipo_averia, descripcion_custom, cantidad_afectada } = averiaForm;
     if (!detalle_id || !tipo_averia) {
-      showAlert({ type: 'warning', title: 'Campos requeridos', message: 'Seleccione el producto y el tipo de averia.' });
+      showAlert({
+        type: 'warning',
+        title: 'Campos requeridos',
+        message: 'Seleccione el producto y el tipo de averia.',
+      });
       return;
     }
 
-    const linea = lineas.find(l => String(l.id) === String(detalle_id));
+    const linea = lineas.find((l) => String(l.id) === String(detalle_id));
     const tipoFinal = tipo_averia === 'Otra' ? descripcion_custom.trim() : tipo_averia;
 
     if (tipo_averia === 'Otra' && !tipoFinal) {
-      showAlert({ type: 'warning', title: 'Descripción requerida', message: 'Escriba el motivo de la avería.' });
+      showAlert({
+        type: 'warning',
+        title: 'Descripción requerida',
+        message: 'Escriba el motivo de la avería.',
+      });
       return;
     }
 
     if (!cantidad_afectada || parseInt(cantidad_afectada) < 1) {
-      showAlert({ type: 'warning', title: 'Campo requerido', message: 'Indique las unidades afectadas por la avería.' });
+      showAlert({
+        type: 'warning',
+        title: 'Campo requerido',
+        message: 'Indique las unidades afectadas por la avería.',
+      });
       return;
     }
 
     const cantAfectada = parseInt(cantidad_afectada);
     if (linea && cantAfectada > linea.cantidad_esperada) {
-      showAlert({ type: 'warning', title: 'Cantidad inválida', message: `Las unidades afectadas no pueden superar la cantidad de la línea (${new Intl.NumberFormat('es-CO').format(linea.cantidad_esperada)} ${linea.unidad || 'UND'}).` });
+      showAlert({
+        type: 'warning',
+        title: 'Cantidad inválida',
+        message: `Las unidades afectadas no pueden superar la cantidad de la línea (${new Intl.NumberFormat('es-CO').format(linea.cantidad_esperada)} ${linea.unidad || 'UND'}).`,
+      });
       return;
     }
 
@@ -807,15 +924,28 @@ const KardexAuditoria = () => {
       if (averiaFoto) payload.foto = averiaFoto;
       const res = await auditoriasService.registrarAveria(id, payload);
       if (res?.success) {
-        setAverias(prev => [res.data, ...prev]);
-        setAveriaForm({ detalle_id: '', tipo_averia: '', descripcion_custom: '', cantidad_afectada: '' });
+        setAverias((prev) => [res.data, ...prev]);
+        setAveriaForm({
+          detalle_id: '',
+          tipo_averia: '',
+          descripcion_custom: '',
+          cantidad_afectada: '',
+        });
         setAveriaFoto(null);
         setAveriaFotoPreview(null);
-        showAlert({ type: 'success', title: 'Averia registrada', message: 'La averia fue registrada correctamente.' });
+        showAlert({
+          type: 'success',
+          title: 'Averia registrada',
+          message: 'La averia fue registrada correctamente.',
+        });
         if (estado === 'pendiente') setEstado('en_proceso');
       }
     } catch (err) {
-      showAlert({ type: 'error', title: 'Error', message: err.message || 'No se pudo registrar la averia.' });
+      showAlert({
+        type: 'error',
+        title: 'Error',
+        message: err.message || 'No se pudo registrar la averia.',
+      });
     } finally {
       setSavingAveria(false);
     }
@@ -825,11 +955,19 @@ const KardexAuditoria = () => {
     try {
       const res = await auditoriasService.eliminarAveria(id, averiaId);
       if (res?.success) {
-        setAverias(prev => prev.filter(a => a.id !== averiaId));
-        showAlert({ type: 'success', title: 'Avería eliminada', message: 'La avería fue eliminada correctamente.' });
+        setAverias((prev) => prev.filter((a) => a.id !== averiaId));
+        showAlert({
+          type: 'success',
+          title: 'Avería eliminada',
+          message: 'La avería fue eliminada correctamente.',
+        });
       }
     } catch (err) {
-      showAlert({ type: 'error', title: 'Error', message: err.message || 'No se pudo eliminar la avería.' });
+      showAlert({
+        type: 'error',
+        title: 'Error',
+        message: err.message || 'No se pudo eliminar la avería.',
+      });
     }
   };
 
@@ -839,9 +977,15 @@ const KardexAuditoria = () => {
 
   const lineasActivas = lineas.filter((l) => !l.eliminado);
   const lineasVerificadas = lineasActivas.filter((l) => l.verificado);
-  const lineasProgress = lineasActivas.length > 0 ? Math.round((lineasVerificadas.length / lineasActivas.length) * 100) : 0;
+  const lineasProgress =
+    lineasActivas.length > 0
+      ? Math.round((lineasVerificadas.length / lineasActivas.length) * 100)
+      : 0;
   const totalPaginasLineas = Math.ceil(lineas.length / LINEAS_POR_PAGINA);
-  const lineasPaginadas = lineas.slice((lineaPage - 1) * LINEAS_POR_PAGINA, lineaPage * LINEAS_POR_PAGINA);
+  const lineasPaginadas = lineas.slice(
+    (lineaPage - 1) * LINEAS_POR_PAGINA,
+    lineaPage * LINEAS_POR_PAGINA
+  );
 
   const hasPdf = files.some((f) => f.type === 'application/pdf');
   const hasPhotos = files.some((f) => f.type.startsWith('image/'));
@@ -856,7 +1000,8 @@ const KardexAuditoria = () => {
 
   // Kardex: 2 factores (lineas + evidencias), logistica es opcional
   const totalProgress = Math.round((lineasProgress + evidenceProgress) / 2);
-  const canClose = lineasProgress === 100 && evidenceProgress === 100 && camposConError.length === 0;
+  const canClose =
+    lineasProgress === 100 && evidenceProgress === 100 && camposConError.length === 0;
 
   const isCerrado = estado === 'cerrado';
   const puedeEditar = hasPermission('auditoria', 'ver') && !isCerrado;
@@ -872,7 +1017,7 @@ const KardexAuditoria = () => {
     try {
       // Guardar logistica una ultima vez por seguridad (si hay datos)
       if (logisticaTimerRef.current) clearTimeout(logisticaTimerRef.current);
-      const hasAnyLogistica = Object.values(formData).some(v => v.trim() !== '');
+      const hasAnyLogistica = Object.values(formData).some((v) => v.trim() !== '');
       if (hasAnyLogistica) {
         await auditoriasService.guardarDatosLogisticos(id, formData);
       }
@@ -885,16 +1030,24 @@ const KardexAuditoria = () => {
       // Feedback: correo se envia en background
       const correoEstado = result?.data?.correo_enviado || result?.correo_enviado;
       if (correoEstado === 'enviando' || correoEstado === true) {
-        showAlert({ type: 'success', title: 'Auditoria Cerrada', message: 'El correo de notificacion se esta enviando en segundo plano.' });
+        showAlert({
+          type: 'success',
+          title: 'Auditoria Cerrada',
+          message: 'El correo de notificacion se esta enviando en segundo plano.',
+        });
       } else {
-        showAlert({ type: 'success', title: 'Auditoria Cerrada', message: 'Operacion cerrada. No se envio correo (sin destinatarios configurados).' });
+        showAlert({
+          type: 'success',
+          title: 'Auditoria Cerrada',
+          message: 'Operacion cerrada. No se envio correo (sin destinatarios configurados).',
+        });
       }
     } catch (error) {
       console.error('Error al cerrar auditoria:', error);
       showAlert({
         type: 'error',
         title: 'Error de Cierre',
-        message: 'No se pudo completar el cierre de la auditoria. Por favor reintente.'
+        message: 'No se pudo completar el cierre de la auditoria. Por favor reintente.',
       });
     } finally {
       setClosing(false);
@@ -915,7 +1068,7 @@ const KardexAuditoria = () => {
       title: 'Reenviar correo de cierre',
       message: 'Se reenviara el correo de notificacion a los contactos configurados del cliente.',
       confirmText: 'Reenviar',
-      cancelText: 'Cancelar'
+      cancelText: 'Cancelar',
     });
 
     if (!confirmed) return;
@@ -925,13 +1078,25 @@ const KardexAuditoria = () => {
       const result = await auditoriasService.reenviarCorreo(id);
       const success = result?.data?.correo_enviado || result?.correo_enviado;
       if (success) {
-        showAlert({ type: 'success', title: 'Correo Reenviado', message: 'El correo fue reenviado exitosamente.' });
+        showAlert({
+          type: 'success',
+          title: 'Correo Reenviado',
+          message: 'El correo fue reenviado exitosamente.',
+        });
       } else {
-        showAlert({ type: 'warning', title: 'Sin destinatarios', message: 'No hay contactos con notificaciones activas para este cliente.' });
+        showAlert({
+          type: 'warning',
+          title: 'Sin destinatarios',
+          message: 'No hay contactos con notificaciones activas para este cliente.',
+        });
       }
     } catch (error) {
       console.error('Error al reenviar correo:', error);
-      showAlert({ type: 'error', title: 'Error', message: error.message || 'No se pudo reenviar el correo.' });
+      showAlert({
+        type: 'error',
+        title: 'Error',
+        message: error.message || 'No se pudo reenviar el correo.',
+      });
     } finally {
       setReenviando(false);
     }
@@ -971,7 +1136,8 @@ const KardexAuditoria = () => {
               No se pudo cargar la auditoria
             </h2>
             <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-              {pageError || 'El kardex solicitado no fue encontrado. Es posible que haya sido eliminado o que el ID sea incorrecto.'}
+              {pageError ||
+                'El kardex solicitado no fue encontrado. Es posible que haya sido eliminado o que el ID sea incorrecto.'}
             </p>
             <div className="flex items-center justify-center gap-3">
               <button
@@ -996,7 +1162,6 @@ const KardexAuditoria = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-32 max-w-5xl mx-auto">
-
         {/* BACK NAVIGATION */}
         <button
           onClick={() => navigate('/operaciones/kardex')}
@@ -1045,19 +1210,25 @@ const KardexAuditoria = () => {
             <div className="flex items-center gap-3">
               <div className="text-right">
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Progreso</p>
-                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalProgress}%</p>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  {totalProgress}%
+                </p>
               </div>
               <div className="w-16 h-16 relative">
                 <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
                   <circle
-                    cx="32" cy="32" r="28"
+                    cx="32"
+                    cy="32"
+                    r="28"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="5"
                     className="text-slate-100 dark:text-slate-700"
                   />
                   <circle
-                    cx="32" cy="32" r="28"
+                    cx="32"
+                    cy="32"
+                    r="28"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="5"
@@ -1076,7 +1247,6 @@ const KardexAuditoria = () => {
 
         {/* MAIN CONTENT */}
         <div className="space-y-6">
-
           {/* ════════════════════════════════════════════════════════════════ */}
           {/* SECTION 1: LINEAS DE OPERACION */}
           {/* ════════════════════════════════════════════════════════════════ */}
@@ -1094,11 +1264,13 @@ const KardexAuditoria = () => {
                     Verificar todas
                   </button>
                 )}
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  lineasProgress === 100
-                    ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'
-                    : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
-                }`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    lineasProgress === 100
+                      ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'
+                      : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
+                  }`}
+                >
                   {lineasVerificadas.length}/{lineasActivas.length} verificadas
                 </span>
               </div>
@@ -1121,21 +1293,23 @@ const KardexAuditoria = () => {
                     linea.eliminado
                       ? 'bg-red-50/50 dark:bg-red-900/10 border-red-200 dark:border-red-800/50 opacity-60'
                       : linea.verificado
-                      ? 'bg-purple-50/50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800/50'
-                      : 'bg-white dark:bg-centhrix-bg border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700'
+                        ? 'bg-purple-50/50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800/50'
+                        : 'bg-white dark:bg-centhrix-bg border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700'
                   }`}
                 >
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     {/* Verify Checkbox */}
                     <button
-                      onClick={() => !linea.eliminado && puedeEditar && handleVerificarLinea(linea.id)}
+                      onClick={() =>
+                        !linea.eliminado && puedeEditar && handleVerificarLinea(linea.id)
+                      }
                       disabled={linea.eliminado || !puedeEditar}
                       className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-all ${
                         linea.eliminado
                           ? 'border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 cursor-not-allowed'
                           : linea.verificado
-                          ? 'border-purple-500 bg-purple-500 text-white cursor-pointer shadow-md shadow-purple-500/20'
-                          : 'border-slate-300 dark:border-slate-600 hover:border-purple-400 cursor-pointer'
+                            ? 'border-purple-500 bg-purple-500 text-white cursor-pointer shadow-md shadow-purple-500/20'
+                            : 'border-slate-300 dark:border-slate-600 hover:border-purple-400 cursor-pointer'
                       }`}
                     >
                       {linea.eliminado ? (
@@ -1147,18 +1321,25 @@ const KardexAuditoria = () => {
 
                     {/* Product Info */}
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${linea.eliminado ? 'line-through text-red-400' : 'text-slate-800 dark:text-slate-100'}`}>
+                      <p
+                        className={`text-sm font-medium ${linea.eliminado ? 'line-through text-red-400' : 'text-slate-800 dark:text-slate-100'}`}
+                      >
                         {linea.producto}
                       </p>
                       <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
                         SKU: {linea.sku} • {linea.cantidad_esperada} {linea.unidad}
-                        {linea.caja && <span className="ml-1 text-blue-500 font-bold">• Caja: {linea.caja}</span>}
+                        {linea.caja && (
+                          <span className="ml-1 text-blue-500 font-bold">• Caja: {linea.caja}</span>
+                        )}
                       </p>
                     </div>
 
                     {/* Motivo de la linea */}
                     {linea.motivo_linea && (
-                      <span className="hidden md:inline-flex px-2.5 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-lg text-xs font-medium flex-shrink-0 max-w-[180px] truncate" title={linea.motivo_linea}>
+                      <span
+                        className="hidden md:inline-flex px-2.5 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-lg text-xs font-medium flex-shrink-0 max-w-[180px] truncate"
+                        title={linea.motivo_linea}
+                      >
                         {linea.motivo_linea}
                       </span>
                     )}
@@ -1189,14 +1370,19 @@ const KardexAuditoria = () => {
               ))}
 
               {/* Mobile: show motivo below each line */}
-              {lineasPaginadas.some(l => l.motivo_linea) && (
+              {lineasPaginadas.some((l) => l.motivo_linea) && (
                 <div className="md:hidden mt-2 space-y-2">
-                  {lineasPaginadas.filter(l => l.motivo_linea).map(linea => (
-                    <div key={`motivo-${linea.id}`} className="flex items-center gap-2 px-4 py-1.5 text-xs text-purple-600 dark:text-purple-400">
-                      <span className="font-mono text-slate-400">{linea.sku}:</span>
-                      <span className="font-medium">{linea.motivo_linea}</span>
-                    </div>
-                  ))}
+                  {lineasPaginadas
+                    .filter((l) => l.motivo_linea)
+                    .map((linea) => (
+                      <div
+                        key={`motivo-${linea.id}`}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-purple-600 dark:text-purple-400"
+                      >
+                        <span className="font-mono text-slate-400">{linea.sku}:</span>
+                        <span className="font-medium">{linea.motivo_linea}</span>
+                      </div>
+                    ))}
                 </div>
               )}
             </div>
@@ -1250,13 +1436,19 @@ const KardexAuditoria = () => {
             badge={
               <div className="flex items-center gap-2">
                 {savingLogistica && <Loader2 className="w-3 h-3 animate-spin text-blue-500" />}
-                {!savingLogistica && camposConError.length > 0 && <X className="w-3 h-3 text-red-500" />}
-                {!savingLogistica && camposConError.length === 0 && logisticaSaved && <Check className="w-3 h-3 text-purple-500" />}
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  camposConError.length > 0
-                    ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
-                    : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
-                }`}>
+                {!savingLogistica && camposConError.length > 0 && (
+                  <X className="w-3 h-3 text-red-500" />
+                )}
+                {!savingLogistica && camposConError.length === 0 && logisticaSaved && (
+                  <Check className="w-3 h-3 text-purple-500" />
+                )}
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    camposConError.length > 0
+                      ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                      : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
+                  }`}
+                >
                   {camposConError.length > 0 ? `${camposConError.length} error(es)` : 'Opcional'}
                 </span>
               </div>
@@ -1339,11 +1531,13 @@ const KardexAuditoria = () => {
             icon={AlertTriangle}
             color="amber"
             badge={
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                averias.length > 0
-                  ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300'
-                  : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
-              }`}>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  averias.length > 0
+                    ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300'
+                    : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
+                }`}
+              >
                 {averias.length} averia{averias.length !== 1 ? 's' : ''}
               </span>
             }
@@ -1363,30 +1557,47 @@ const KardexAuditoria = () => {
                     <div className="relative">
                       <select
                         value={averiaForm.detalle_id}
-                        onChange={(e) => setAveriaForm(prev => ({ ...prev, detalle_id: e.target.value }))}
+                        onChange={(e) =>
+                          setAveriaForm((prev) => ({ ...prev, detalle_id: e.target.value }))
+                        }
                         className="w-full appearance-none pl-4 pr-10 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all cursor-pointer hover:border-amber-400 dark:hover:border-amber-500/50"
                       >
                         <option value="">-- Seleccionar producto --</option>
-                        {lineas.filter(l => !l.eliminado).map(l => (
-                          <option key={l.id} value={l.id}>
-                            {l.sku} — {l.producto} {l.caja ? `(${l.caja})` : ''} ({new Intl.NumberFormat('es-CO').format(l.cantidad_esperada)} {l.unidad || 'UND'})
-                          </option>
-                        ))}
+                        {lineas
+                          .filter((l) => !l.eliminado)
+                          .map((l) => (
+                            <option key={l.id} value={l.id}>
+                              {l.sku} — {l.producto} {l.caja ? `(${l.caja})` : ''} (
+                              {new Intl.NumberFormat('es-CO').format(l.cantidad_esperada)}{' '}
+                              {l.unidad || 'UND'})
+                            </option>
+                          ))}
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>
                     {/* Preview del producto seleccionado */}
-                    {averiaForm.detalle_id && (() => {
-                      const sel = lineas.find(l => String(l.id) === String(averiaForm.detalle_id));
-                      return sel ? (
-                        <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/15 border border-amber-200/60 dark:border-amber-700/30 rounded-lg">
-                          <Package className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                          <span className="text-xs font-mono font-semibold text-amber-700 dark:text-amber-300">{sel.sku}</span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{sel.producto}</span>
-                          {sel.caja && <span className="text-[10px] px-1.5 py-0.5 bg-amber-200/50 dark:bg-amber-800/30 text-amber-700 dark:text-amber-300 rounded font-medium">{sel.caja}</span>}
-                        </div>
-                      ) : null;
-                    })()}
+                    {averiaForm.detalle_id &&
+                      (() => {
+                        const sel = lineas.find(
+                          (l) => String(l.id) === String(averiaForm.detalle_id)
+                        );
+                        return sel ? (
+                          <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/15 border border-amber-200/60 dark:border-amber-700/30 rounded-lg">
+                            <Package className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                            <span className="text-xs font-mono font-semibold text-amber-700 dark:text-amber-300">
+                              {sel.sku}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                              {sel.producto}
+                            </span>
+                            {sel.caja && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-amber-200/50 dark:bg-amber-800/30 text-amber-700 dark:text-amber-300 rounded font-medium">
+                                {sel.caja}
+                              </span>
+                            )}
+                          </div>
+                        ) : null;
+                      })()}
                   </div>
 
                   {/* Selector de tipo de averia */}
@@ -1400,12 +1611,20 @@ const KardexAuditoria = () => {
                     <div className="relative">
                       <select
                         value={averiaForm.tipo_averia}
-                        onChange={(e) => setAveriaForm(prev => ({ ...prev, tipo_averia: e.target.value, descripcion_custom: '' }))}
+                        onChange={(e) =>
+                          setAveriaForm((prev) => ({
+                            ...prev,
+                            tipo_averia: e.target.value,
+                            descripcion_custom: '',
+                          }))
+                        }
                         className="w-full appearance-none pl-4 pr-10 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all cursor-pointer hover:border-amber-400 dark:hover:border-amber-500/50"
                       >
                         <option value="">-- Seleccionar causa --</option>
-                        {TIPOS_AVERIA.map(t => (
-                          <option key={t} value={t}>{t}</option>
+                        {TIPOS_AVERIA.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
                         ))}
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -1413,7 +1632,9 @@ const KardexAuditoria = () => {
                     {averiaForm.tipo_averia && averiaForm.tipo_averia !== 'Otra' && (
                       <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/15 border border-amber-200/60 dark:border-amber-700/30 rounded-lg">
                         <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                        <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">{averiaForm.tipo_averia}</span>
+                        <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+                          {averiaForm.tipo_averia}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -1428,7 +1649,9 @@ const KardexAuditoria = () => {
                           <MessageSquare className="w-3.5 h-3.5 text-amber-500" />
                           Describa el motivo <span className="text-red-500">*</span>
                         </div>
-                        <span className={`text-xs font-mono ${averiaForm.descripcion_custom.length >= 50 ? 'text-red-400' : 'text-slate-400'}`}>
+                        <span
+                          className={`text-xs font-mono ${averiaForm.descripcion_custom.length >= 50 ? 'text-red-400' : 'text-slate-400'}`}
+                        >
                           {averiaForm.descripcion_custom.length}/55
                         </span>
                       </div>
@@ -1437,7 +1660,9 @@ const KardexAuditoria = () => {
                       type="text"
                       maxLength={55}
                       value={averiaForm.descripcion_custom}
-                      onChange={(e) => setAveriaForm(prev => ({ ...prev, descripcion_custom: e.target.value }))}
+                      onChange={(e) =>
+                        setAveriaForm((prev) => ({ ...prev, descripcion_custom: e.target.value }))
+                      }
                       placeholder="Escriba el motivo de la averia..."
                       className="w-full px-4 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all hover:border-amber-400 dark:hover:border-amber-500/50"
                     />
@@ -1452,7 +1677,16 @@ const KardexAuditoria = () => {
                         Unidades afectadas <span className="text-red-500">*</span>
                       </div>
                     </label>
-                    <input type="number" min="1" value={averiaForm.cantidad_afectada} onChange={(e) => setAveriaForm(prev => ({ ...prev, cantidad_afectada: e.target.value }))} placeholder="Ej: 5" className="w-full px-4 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all hover:border-amber-400 dark:hover:border-amber-500/50" />
+                    <input
+                      type="number"
+                      min="1"
+                      value={averiaForm.cantidad_afectada}
+                      onChange={(e) =>
+                        setAveriaForm((prev) => ({ ...prev, cantidad_afectada: e.target.value }))
+                      }
+                      placeholder="Ej: 5"
+                      className="w-full px-4 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all hover:border-amber-400 dark:hover:border-amber-500/50"
+                    />
                   </div>
                 )}
 
@@ -1464,14 +1698,44 @@ const KardexAuditoria = () => {
                         Foto de evidencia <span className="text-slate-400 text-xs">(opcional)</span>
                       </div>
                     </label>
-                    <input ref={averiaFotoRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) { setAveriaFoto(file); setAveriaFotoPreview(URL.createObjectURL(file)); } e.target.value = ''; }} />
+                    <input
+                      ref={averiaFotoRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setAveriaFoto(file);
+                          setAveriaFotoPreview(URL.createObjectURL(file));
+                        }
+                        e.target.value = '';
+                      }}
+                    />
                     {averiaFotoPreview ? (
                       <div className="relative inline-block">
-                        <img src={averiaFotoPreview} alt="Vista previa" className="w-32 h-32 object-cover rounded-xl border-2 border-amber-300 dark:border-amber-700" />
-                        <button type="button" onClick={() => { setAveriaFoto(null); setAveriaFotoPreview(null); }} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"><X className="w-3 h-3" /></button>
+                        <img
+                          src={averiaFotoPreview}
+                          alt="Vista previa"
+                          className="w-32 h-32 object-cover rounded-xl border-2 border-amber-300 dark:border-amber-700"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAveriaFoto(null);
+                            setAveriaFotoPreview(null);
+                          }}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
                       </div>
                     ) : (
-                      <button type="button" onClick={() => averiaFotoRef.current?.click()} className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:border-amber-400 hover:text-amber-600 dark:hover:border-amber-500 dark:hover:text-amber-400 transition-all">
+                      <button
+                        type="button"
+                        onClick={() => averiaFotoRef.current?.click()}
+                        className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:border-amber-400 hover:text-amber-600 dark:hover:border-amber-500 dark:hover:text-amber-400 transition-all"
+                      >
                         <Camera className="w-4 h-4" />
                         Adjuntar foto
                       </button>
@@ -1484,7 +1748,11 @@ const KardexAuditoria = () => {
                   disabled={savingAveria || !averiaForm.detalle_id || !averiaForm.tipo_averia}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-amber-500/20 hover:shadow-amber-500/30"
                 >
-                  {savingAveria ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {savingAveria ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4" />
+                  )}
                   Registrar Averia
                 </button>
               </div>
@@ -1493,31 +1761,52 @@ const KardexAuditoria = () => {
             {/* Lista de averias registradas */}
             {averias.length > 0 ? (
               <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Averias registradas</h4>
+                <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">
+                  Averias registradas
+                </h4>
                 {averias.map((av, idx) => {
-                  const lineaRef = lineas.find(l => String(l.id) === String(av.detalle_id));
+                  const lineaRef = lineas.find((l) => String(l.id) === String(av.detalle_id));
                   return (
-                    <div key={av.id || idx} className="flex items-center gap-3 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl">
+                    <div
+                      key={av.id || idx}
+                      className="flex items-center gap-3 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl"
+                    >
                       {av.foto_url ? (
-                        <a href={getServerFileUrl(av.foto_url)} target="_blank" rel="noopener noreferrer">
-                          <img src={getServerFileUrl(av.foto_url)} alt="Evidencia" className="w-10 h-10 object-cover rounded-lg border border-amber-300 dark:border-amber-700 flex-shrink-0 hover:opacity-80 transition-opacity" />
+                        <a
+                          href={getServerFileUrl(av.foto_url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <img
+                            src={getServerFileUrl(av.foto_url)}
+                            alt="Evidencia"
+                            className="w-10 h-10 object-cover rounded-lg border border-amber-300 dark:border-amber-700 flex-shrink-0 hover:opacity-80 transition-opacity"
+                          />
                         </a>
                       ) : (
                         <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
-                          {lineaRef ? `${lineaRef.sku} — ${lineaRef.producto}` : av.sku || 'Producto'}
+                          {lineaRef
+                            ? `${lineaRef.sku} — ${lineaRef.producto}`
+                            : av.sku || 'Producto'}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {av.tipo_averia}{av.descripcion ? ` — ${av.descripcion}` : ''}{av.cantidad_afectada ? ` (${av.cantidad_afectada} uds afectadas)` : ''}
+                          {av.tipo_averia}
+                          {av.descripcion ? ` — ${av.descripcion}` : ''}
+                          {av.cantidad_afectada ? ` (${av.cantidad_afectada} uds afectadas)` : ''}
                         </p>
                       </div>
                       <span className="text-xs text-slate-400 flex-shrink-0">
                         Cant: {av.cantidad}
                       </span>
                       {puedeEditar && (
-                        <button onClick={() => handleEliminarAveria(av.id)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0" title="Eliminar avería">
+                        <button
+                          onClick={() => handleEliminarAveria(av.id)}
+                          className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
+                          title="Eliminar avería"
+                        >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       )}
@@ -1527,7 +1816,9 @@ const KardexAuditoria = () => {
               </div>
             ) : (
               <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-4">
-                {isCerrado ? 'No se registraron averias en esta operacion.' : 'No hay averias registradas aun.'}
+                {isCerrado
+                  ? 'No se registraron averias en esta operacion.'
+                  : 'No hay averias registradas aun.'}
               </p>
             )}
           </Section>
@@ -1542,12 +1833,16 @@ const KardexAuditoria = () => {
             badge={
               <div className="flex items-center gap-2">
                 {uploadingFiles && <Loader2 className="w-3 h-3 animate-spin text-violet-500" />}
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  evidenceProgress === 100
-                    ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'
-                    : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
-                }`}>
-                  {uploadingFiles ? 'Subiendo...' : `${files.length} archivo${files.length !== 1 ? 's' : ''}`}
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    evidenceProgress === 100
+                      ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'
+                      : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
+                  }`}
+                >
+                  {uploadingFiles
+                    ? 'Subiendo...'
+                    : `${files.length} archivo${files.length !== 1 ? 's' : ''}`}
                 </span>
               </div>
             }
@@ -1585,11 +1880,15 @@ const KardexAuditoria = () => {
             {/* Progress Summary */}
             <div className="hidden sm:flex items-center gap-6 text-sm">
               <div className="flex items-center gap-2">
-                <div className={`w-2.5 h-2.5 rounded-full ${lineasProgress === 100 ? 'bg-purple-500' : 'bg-slate-300 dark:bg-centhrix-surface'}`} />
+                <div
+                  className={`w-2.5 h-2.5 rounded-full ${lineasProgress === 100 ? 'bg-purple-500' : 'bg-slate-300 dark:bg-centhrix-surface'}`}
+                />
                 <span className="text-slate-600 dark:text-slate-300">Lineas</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className={`w-2.5 h-2.5 rounded-full ${evidenceProgress === 100 ? 'bg-purple-500' : 'bg-slate-300 dark:bg-centhrix-surface'}`} />
+                <div
+                  className={`w-2.5 h-2.5 rounded-full ${evidenceProgress === 100 ? 'bg-purple-500' : 'bg-slate-300 dark:bg-centhrix-surface'}`}
+                />
                 <span className="text-slate-600 dark:text-slate-300">Evidencias</span>
               </div>
             </div>
@@ -1615,7 +1914,11 @@ const KardexAuditoria = () => {
                     : 'bg-slate-200 dark:bg-centhrix-surface text-slate-400 dark:text-slate-500 cursor-not-allowed'
                 }`}
               >
-                {closing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                {closing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4" />
+                )}
                 {closing ? 'Completando...' : 'Completar Operación'}
               </button>
             </div>
@@ -1637,7 +1940,11 @@ const KardexAuditoria = () => {
                 disabled={reenviando}
                 className="flex items-center gap-2 px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
               >
-                {reenviando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                {reenviando ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Mail className="w-4 h-4" />
+                )}
                 {reenviando ? 'Enviando...' : 'Reenviar correo'}
               </button>
             )}

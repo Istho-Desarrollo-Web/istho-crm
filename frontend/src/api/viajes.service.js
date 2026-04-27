@@ -5,7 +5,12 @@
  */
 
 import apiClient from './client';
-import { VEHICULOS_ENDPOINTS, CAJAS_MENORES_ENDPOINTS, VIAJES_ENDPOINTS, MOVIMIENTOS_ENDPOINTS } from './endpoints';
+import {
+  VEHICULOS_ENDPOINTS,
+  CAJAS_MENORES_ENDPOINTS,
+  VIAJES_ENDPOINTS,
+  MOVIMIENTOS_ENDPOINTS,
+} from './endpoints';
 
 // ════════════════════════════════════════════════════════════════════════════
 // VEHÍCULOS
@@ -39,7 +44,7 @@ export const vehiculosService = {
   getAlertas: async () => {
     const response = await apiClient.get(VEHICULOS_ENDPOINTS.ALERTAS);
     return response;
-  }
+  },
 };
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -78,7 +83,7 @@ export const cajasMenoresService = {
   getStats: async () => {
     const response = await apiClient.get(CAJAS_MENORES_ENDPOINTS.STATS);
     return response;
-  }
+  },
 };
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -152,5 +157,5 @@ export const movimientosService = {
   getConceptos: async () => {
     const response = await apiClient.get(MOVIMIENTOS_ENDPOINTS.CONCEPTOS);
     return response;
-  }
+  },
 };

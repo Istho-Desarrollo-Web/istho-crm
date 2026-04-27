@@ -16,9 +16,25 @@ const { requierePermiso } = require('../middleware/roles');
 
 router.use(verificarToken);
 
-router.get('/status',       requierePermiso('configuracion_wms', 'ver'), wmsDashboardController.getStatus);
-router.get('/estadisticas', requierePermiso('configuracion_wms', 'ver'), wmsDashboardController.getEstadisticas);
-router.get('/historial',    requierePermiso('configuracion_wms', 'ver'), wmsDashboardController.getHistorial);
-router.post('/reejecutar',  requierePermiso('configuracion_wms', 'ver'), wmsDashboardController.reejecutarUltimoSync);
+router.get(
+  '/status',
+  requierePermiso('configuracion_wms', 'ver'),
+  wmsDashboardController.getStatus
+);
+router.get(
+  '/estadisticas',
+  requierePermiso('configuracion_wms', 'ver'),
+  wmsDashboardController.getEstadisticas
+);
+router.get(
+  '/historial',
+  requierePermiso('configuracion_wms', 'ver'),
+  wmsDashboardController.getHistorial
+);
+router.post(
+  '/reejecutar',
+  requierePermiso('configuracion_wms', 'ver'),
+  wmsDashboardController.reejecutarUltimoSync
+);
 
 module.exports = router;

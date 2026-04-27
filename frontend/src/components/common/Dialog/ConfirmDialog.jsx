@@ -1,12 +1,12 @@
 /**
  * ISTHO CRM - ConfirmDialog Component
  * Diálogo de confirmación para acciones destructivas
- * 
+ *
  * CORRECCIONES v1.1:
  * - Agregado tipo 'success'
  * - Corregidos template literals
  * - Agregado fallback para tipos no definidos
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 1.1.0
  * @date Enero 2026
@@ -84,40 +84,28 @@ const ConfirmDialog = ({
     >
       <div className="text-center">
         {/* Icon */}
-        <div className={`mx-auto w-14 h-14 ${config.iconBg} rounded-full flex items-center justify-center mb-4`}>
+        <div
+          className={`mx-auto w-14 h-14 ${config.iconBg} rounded-full flex items-center justify-center mb-4`}
+        >
           <Icon className={`w-7 h-7 ${config.iconColor}`} />
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">
-          {title}
-        </h3>
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">{title}</h3>
 
         {/* Message */}
-        {message && (
-          <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
-            {message}
-          </p>
-        )}
+        {message && <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">{message}</p>}
 
         {/* Custom content (e.g. opciones de estado) */}
         {customContent}
 
         {/* Actions */}
         <div className="flex items-center justify-center gap-3 mt-4">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={loading}
-          >
+          <Button variant="outline" onClick={onClose} disabled={loading}>
             {cancelText}
           </Button>
           {!hideConfirmButton && (
-            <Button
-              variant={config.confirmVariant}
-              onClick={handleConfirm}
-              loading={loading}
-            >
+            <Button variant={config.confirmVariant} onClick={handleConfirm} loading={loading}>
               {confirmText}
             </Button>
           )}

@@ -1,7 +1,7 @@
 /**
  * ISTHO CRM - FilterDropdown Component
  * Dropdown de filtros reutilizable
- * 
+ *
  * @author Coordinación TI ISTHO
  * @date Enero 2026
  */
@@ -55,12 +55,12 @@ const FilterDropdown = ({
       }
       return `${value.length} seleccionados`;
     }
-    
+
     if (!multiple && value) {
       const option = options.find((o) => o.value === value);
       return option?.label || value;
     }
-    
+
     return placeholder;
   };
 
@@ -73,12 +73,8 @@ const FilterDropdown = ({
 
   return (
     <div ref={dropdownRef} className="relative">
-      {label && (
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          {label}
-        </label>
-      )}
-      
+      {label && <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>}
+
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -92,23 +88,23 @@ const FilterDropdown = ({
       >
         <div className="flex items-center gap-2">
           {Icon && <Icon className="w-4 h-4 text-slate-400" />}
-          <span className={value ? 'text-slate-800' : 'text-slate-400'}>
-            {getDisplayValue()}
-          </span>
+          <span className={value ? 'text-slate-800' : 'text-slate-400'}>{getDisplayValue()}</span>
         </div>
-        <ChevronDown 
-          className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+        <ChevronDown
+          className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="
+        <div
+          className="
           absolute z-50 w-full mt-2
           bg-white border border-slate-200 rounded-xl shadow-lg
           max-h-60 overflow-y-auto
           animate-fadeIn
-        ">
+        "
+        >
           {options.map((option) => (
             <button
               key={option.value}
@@ -121,16 +117,12 @@ const FilterDropdown = ({
               "
             >
               <span>{option.label}</span>
-              {isSelected(option.value) && (
-                <Check className="w-4 h-4 text-orange-500" />
-              )}
+              {isSelected(option.value) && <Check className="w-4 h-4 text-orange-500" />}
             </button>
           ))}
-          
+
           {options.length === 0 && (
-            <div className="px-4 py-3 text-sm text-slate-500 text-center">
-              No hay opciones
-            </div>
+            <div className="px-4 py-3 text-sm text-slate-500 text-center">No hay opciones</div>
           )}
         </div>
       )}
@@ -146,11 +138,7 @@ FilterDropdown.propTypes = {
       label: PropTypes.string.isRequired,
     })
   ),
-  value: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-    PropTypes.array,
-  ]),
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.array]),
   onChange: PropTypes.func,
   placeholder: PropTypes.string,
   multiple: PropTypes.bool,

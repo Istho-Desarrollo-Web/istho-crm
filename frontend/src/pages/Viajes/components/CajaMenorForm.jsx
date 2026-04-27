@@ -71,7 +71,8 @@ const InputField = ({ label, icon: Icon, required, error, children }) => (
   </div>
 );
 
-const inputClasses = (hasIcon, hasError) => `
+const inputClasses = (hasIcon, hasError) =>
+  `
   w-full px-4 py-2.5
   bg-white dark:bg-centhrix-card border rounded-xl
   text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
@@ -232,14 +233,23 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
       isOpen={open}
       onClose={onClose}
       title={isEditing ? 'Editar Caja Menor' : 'Nueva Caja Menor'}
-      subtitle={isEditing ? 'Modifique los datos de la caja menor' : 'Complete la información para crear una caja menor'}
+      subtitle={
+        isEditing
+          ? 'Modifique los datos de la caja menor'
+          : 'Complete la información para crear una caja menor'
+      }
       size="lg"
       footer={
         <>
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             Cancelar
           </Button>
-          <Button variant="primary" onClick={handleSubmit(onSubmit)} loading={isSubmitting} disabled={loadingData}>
+          <Button
+            variant="primary"
+            onClick={handleSubmit(onSubmit)}
+            loading={isSubmitting}
+            disabled={loadingData}
+          >
             {isEditing ? 'Guardar Cambios' : 'Crear Caja Menor'}
           </Button>
         </>
@@ -253,9 +263,13 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
             {/* Usuario Asignado */}
-            <InputField label="Usuario Asignado" icon={User} required error={errors.asignado_a?.message}>
+            <InputField
+              label="Usuario Asignado"
+              icon={User}
+              required
+              error={errors.asignado_a?.message}
+            >
               <select
                 {...register('asignado_a')}
                 disabled={loadingData}
@@ -264,7 +278,9 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
                 <option value="">Seleccionar usuario...</option>
                 {usuarios.map((u) => (
                   <option key={u.id} value={u.id}>
-                    {u.nombre_completo || `${u.nombre || ''} ${u.apellido || ''}`.trim() || u.username}
+                    {u.nombre_completo ||
+                      `${u.nombre || ''} ${u.apellido || ''}`.trim() ||
+                      u.username}
                   </option>
                 ))}
               </select>
@@ -272,7 +288,9 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
 
             {/* Saldo Inicial — input con formato miles */}
             <InputField
-              label={saldoTrasladado > 0 && !isEditing ? 'Saldo Inicial (Heredado)' : 'Saldo Inicial'}
+              label={
+                saldoTrasladado > 0 && !isEditing ? 'Saldo Inicial (Heredado)' : 'Saldo Inicial'
+              }
               icon={DollarSign}
               required
               error={errors.saldo_inicial?.message}
@@ -301,7 +319,11 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
 
             {/* Caja Anterior (traslado de saldo) - solo en creación */}
             {!isEditing && (
-              <InputField label="Caja Anterior (Traslado de saldo)" icon={ArrowLeftRight} error={null}>
+              <InputField
+                label="Caja Anterior (Traslado de saldo)"
+                icon={ArrowLeftRight}
+                error={null}
+              >
                 <select
                   {...register('caja_anterior_id')}
                   disabled={loadingData}
@@ -309,13 +331,16 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
                 >
                   <option value="">Sin traslado (opcional)</option>
                   {cajasCerradas
-                    .filter((c) =>
-                      parseFloat(c.saldo_actual) > 0 &&
-                      (!watchAsignado || String(c.asignado_a) === String(watchAsignado))
+                    .filter(
+                      (c) =>
+                        parseFloat(c.saldo_actual) > 0 &&
+                        (!watchAsignado || String(c.asignado_a) === String(watchAsignado))
                     )
                     .map((c) => (
                       <option key={c.id} value={c.id}>
-                        Caja #{c.numero || c.id} - {c.asignado_nombre || c.asignado?.nombre_completo || 'Sin asignar'} - {formatMoney(c.saldo_actual)}
+                        Caja #{c.numero || c.id} -{' '}
+                        {c.asignado_nombre || c.asignado?.nombre_completo || 'Sin asignar'} -{' '}
+                        {formatMoney(c.saldo_actual)}
                       </option>
                     ))}
                 </select>
@@ -327,14 +352,23 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
 
             {/* Observaciones */}
             <div className="md:col-span-2">
-              <InputField label="Observaciones" icon={FileText} error={errors.observaciones?.message}>
+              <InputField
+                label="Observaciones"
+                icon={FileText}
+                error={errors.observaciones?.message}
+              >
                 <textarea
                   {...register('observaciones')}
                   placeholder="Notas adicionales sobre la caja menor..."
                   rows={3}
                   maxLength={500}
                   disabled={loadingData}
-                  onChange={makeSanitizeHandler(setValue, 'observaciones', SANITIZE.TEXTO_LIBRE, 500)}
+                  onChange={makeSanitizeHandler(
+                    setValue,
+                    'observaciones',
+                    SANITIZE.TEXTO_LIBRE,
+                    500
+                  )}
                   className={inputClasses(true, !!errors.observaciones)}
                 />
               </InputField>
@@ -368,7 +402,8 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
                   </p>
                   {saldoTrasladado > 0 && (
                     <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
-                      ({formatMoney(watchSaldoInicial || 0)} inicial + {formatMoney(saldoTrasladado)} trasladado)
+                      ({formatMoney(watchSaldoInicial || 0)} inicial +{' '}
+                      {formatMoney(saldoTrasladado)} trasladado)
                     </p>
                   )}
                 </div>

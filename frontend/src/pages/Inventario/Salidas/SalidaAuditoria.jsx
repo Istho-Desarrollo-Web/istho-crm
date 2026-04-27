@@ -5,7 +5,7 @@
  * Pantalla completa de verificación de un documento de salida del WMS.
  * Incluye: Stepper de estado, líneas interactivas, formulario logístico,
  * y zona de carga de evidencias.
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 1.0.0
  * @date Marzo 2026
@@ -50,7 +50,10 @@ import { formatDateShort } from '../../../utils/formatDate';
 import { getServerFileUrl } from '../../../api/client';
 import { comprimirImagen, COMPRESS_PRESETS } from '../../../utils/compressImage';
 
-const SERVER_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/api\/v1\/?$/, '');
+const SERVER_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(
+  /\/api\/v1\/?$/,
+  ''
+);
 const resolveFileUrl = (url) => {
   if (!url) return null;
   if (url.startsWith('http')) return url;
@@ -63,7 +66,12 @@ const resolveFileUrl = (url) => {
 
 const STEPS = [
   { key: 'pendiente', label: 'Pendiente', icon: Clock, description: 'Documento recibido del WMS' },
-  { key: 'en_proceso', label: 'En Proceso', icon: Loader2, description: 'Verificando líneas y datos' },
+  {
+    key: 'en_proceso',
+    label: 'En Proceso',
+    icon: Loader2,
+    description: 'Verificando líneas y datos',
+  },
   { key: 'cerrado', label: 'Cerrado', icon: CheckCircle2, description: 'Operación completada' },
 ];
 
@@ -85,21 +93,27 @@ const StatusStepper = ({ currentStatus }) => {
                   isCompleted
                     ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/30'
                     : isCurrent
-                    ? 'bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/30 animate-pulse'
-                    : 'bg-slate-100 dark:bg-centhrix-surface border-slate-300 dark:border-slate-600 text-slate-400'
+                      ? 'bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/30 animate-pulse'
+                      : 'bg-slate-100 dark:bg-centhrix-surface border-slate-300 dark:border-slate-600 text-slate-400'
                 }`}
               >
                 {isCompleted ? (
                   <Check className="w-6 h-6" />
                 ) : (
-                  <Icon className={`w-6 h-6 ${isCurrent && step.key === 'en_proceso' ? 'animate-spin' : ''}`} />
+                  <Icon
+                    className={`w-6 h-6 ${isCurrent && step.key === 'en_proceso' ? 'animate-spin' : ''}`}
+                  />
                 )}
               </div>
-              <p className={`mt-2 text-xs font-semibold ${
-                isCompleted ? 'text-emerald-600 dark:text-emerald-400'
-                  : isCurrent ? 'text-blue-600 dark:text-blue-400'
-                  : 'text-slate-400 dark:text-slate-500'
-              }`}>
+              <p
+                className={`mt-2 text-xs font-semibold ${
+                  isCompleted
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : isCurrent
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-slate-400 dark:text-slate-500'
+                }`}
+              >
                 {step.label}
               </p>
               <p className="text-[10px] text-slate-400 dark:text-slate-500 hidden sm:block">
@@ -107,9 +121,11 @@ const StatusStepper = ({ currentStatus }) => {
               </p>
             </div>
             {idx < STEPS.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-3 mt-[-24px] transition-all duration-500 ${
-                idx < currentIdx ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-centhrix-surface'
-              }`} />
+              <div
+                className={`flex-1 h-0.5 mx-3 mt-[-24px] transition-all duration-500 ${
+                  idx < currentIdx ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-centhrix-surface'
+                }`}
+              />
             )}
           </div>
         );
@@ -123,11 +139,17 @@ const StatusStepper = ({ currentStatus }) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 const SECTION_COLORS = {
-  emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400' },
-  blue:    { bg: 'bg-blue-100 dark:bg-blue-900/30',    text: 'text-blue-600 dark:text-blue-400' },
-  amber:   { bg: 'bg-amber-100 dark:bg-amber-900/30',   text: 'text-amber-600 dark:text-amber-400' },
-  violet:  { bg: 'bg-violet-100 dark:bg-violet-900/30',  text: 'text-violet-600 dark:text-violet-400' },
-  slate:   { bg: 'bg-slate-100 dark:bg-centhrix-bg/30',   text: 'text-slate-600 dark:text-slate-400' },
+  emerald: {
+    bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+    text: 'text-emerald-600 dark:text-emerald-400',
+  },
+  blue: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400' },
+  amber: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-600 dark:text-amber-400' },
+  violet: {
+    bg: 'bg-violet-100 dark:bg-violet-900/30',
+    text: 'text-violet-600 dark:text-violet-400',
+  },
+  slate: { bg: 'bg-slate-100 dark:bg-centhrix-bg/30', text: 'text-slate-600 dark:text-slate-400' },
 };
 
 const Section = ({ title, icon: Icon, children, badge, color = 'blue' }) => {
@@ -152,7 +174,17 @@ const Section = ({ title, icon: Icon, children, badge, color = 'blue' }) => {
 // INPUT FIELD
 // ════════════════════════════════════════════════════════════════════════════
 
-const FormField = ({ icon: Icon, label, value, onChange, placeholder, required, type = 'text', disabled, error }) => (
+const FormField = ({
+  icon: Icon,
+  label,
+  value,
+  onChange,
+  placeholder,
+  required,
+  type = 'text',
+  disabled,
+  error,
+}) => (
   <div>
     <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
       <Icon className="w-4 h-4 text-slate-400" />
@@ -188,7 +220,9 @@ const FormField = ({ icon: Icon, label, value, onChange, placeholder, required, 
 
 const Lightbox = ({ src, alt, onClose }) => {
   useEffect(() => {
-    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
+    const handleKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
     document.addEventListener('keydown', handleKey);
     document.body.style.overflow = 'hidden';
     return () => {
@@ -198,11 +232,22 @@ const Lightbox = ({ src, alt, onClose }) => {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
-      <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+      >
         <X className="w-6 h-6" />
       </button>
-      <img src={src} alt={alt} className="max-w-[90vw] max-h-[90vh] rounded-xl shadow-2xl object-contain" onClick={(e) => e.stopPropagation()} />
+      <img
+        src={src}
+        alt={alt}
+        className="max-w-[90vw] max-h-[90vh] rounded-xl shadow-2xl object-contain"
+        onClick={(e) => e.stopPropagation()}
+      />
     </div>
   );
 };
@@ -214,23 +259,25 @@ const Lightbox = ({ src, alt, onClose }) => {
 const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
   const [lightboxIdx, setLightboxIdx] = useState(null);
 
-  const previews = useMemo(() =>
-    files.map((file) => {
-      const type = file.type || '';
-      const isImage = type.startsWith('image/');
-      const isPdf = type === 'application/pdf';
-      const nativeFile = file instanceof File ? file : file._nativeFile;
-      let url = null;
-      let isBlob = false;
-      if (nativeFile && isImage) {
-        url = URL.createObjectURL(nativeFile);
-        isBlob = true;
-      } else if (file.isUploaded && file.url) {
-        url = file.url;
-      }
-      return { file, url, isImage, isPdf, isBlob };
-    }),
-  [files]);
+  const previews = useMemo(
+    () =>
+      files.map((file) => {
+        const type = file.type || '';
+        const isImage = type.startsWith('image/');
+        const isPdf = type === 'application/pdf';
+        const nativeFile = file instanceof File ? file : file._nativeFile;
+        let url = null;
+        let isBlob = false;
+        if (nativeFile && isImage) {
+          url = URL.createObjectURL(nativeFile);
+          isBlob = true;
+        } else if (file.isUploaded && file.url) {
+          url = file.url;
+        }
+        return { file, url, isImage, isPdf, isBlob };
+      }),
+    [files]
+  );
 
   useEffect(() => {
     return () => previews.forEach((p) => p.isBlob && p.url && URL.revokeObjectURL(p.url));
@@ -246,29 +293,51 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
   return (
     <div className="space-y-4">
       {lightboxIdx !== null && imageFiles[lightboxIdx] && (
-        <Lightbox src={imageFiles[lightboxIdx].url} alt={imageFiles[lightboxIdx].file.name} onClose={() => setLightboxIdx(null)} />
+        <Lightbox
+          src={imageFiles[lightboxIdx].url}
+          alt={imageFiles[lightboxIdx].file.name}
+          onClose={() => setLightboxIdx(null)}
+        />
       )}
 
       {pdfFiles.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Documento PDF</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+            Documento PDF
+          </p>
           {pdfFiles.map((p, idx) => (
-            <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-centhrix-bg rounded-xl border border-slate-200 dark:border-slate-700 group">
+            <div
+              key={idx}
+              className="flex items-center justify-between p-3 bg-slate-50 dark:bg-centhrix-bg rounded-xl border border-slate-200 dark:border-slate-700 group"
+            >
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
                   <FileText className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{p.file.name}</p>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
+                    {p.file.name}
+                  </p>
                   <p className="text-xs text-slate-400">{(p.file.size / 1024).toFixed(1)} KB</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => { const native = p.file instanceof File ? p.file : p.file._nativeFile; const pdfUrl = native ? URL.createObjectURL(native) : p.file.url; window.open(pdfUrl, '_blank'); }} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Ver PDF">
+                <button
+                  onClick={() => {
+                    const native = p.file instanceof File ? p.file : p.file._nativeFile;
+                    const pdfUrl = native ? URL.createObjectURL(native) : p.file.url;
+                    window.open(pdfUrl, '_blank');
+                  }}
+                  className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                  title="Ver PDF"
+                >
                   <Eye className="w-4 h-4" />
                 </button>
                 {!readOnly && (
-                  <button onClick={() => onRemoveFile(files.indexOf(p.file))} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                  <button
+                    onClick={() => onRemoveFile(files.indexOf(p.file))}
+                    className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  >
                     <X className="w-4 h-4" />
                   </button>
                 )}
@@ -280,17 +349,34 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
 
       {imageFiles.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Fotografías</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+            Fotografías
+          </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {imageFiles.map((p, idx) => (
-              <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-centhrix-bg">
-                <img src={p.url} alt={p.file.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+              <div
+                key={idx}
+                className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-centhrix-bg"
+              >
+                <img
+                  src={p.url}
+                  alt={p.file.name}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center gap-2">
-                  <button onClick={() => setLightboxIdx(idx)} className="p-2 bg-white/90 rounded-lg text-slate-700 hover:bg-white transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100" title="Ver imagen">
+                  <button
+                    onClick={() => setLightboxIdx(idx)}
+                    className="p-2 bg-white/90 rounded-lg text-slate-700 hover:bg-white transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
+                    title="Ver imagen"
+                  >
                     <Eye className="w-4 h-4" />
                   </button>
                   {!readOnly && (
-                    <button onClick={() => onRemoveFile(files.indexOf(p.file))} className="p-2 bg-red-500/90 rounded-lg text-white hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100" title="Eliminar">
+                    <button
+                      onClick={() => onRemoveFile(files.indexOf(p.file))}
+                      className="p-2 bg-red-500/90 rounded-lg text-white hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
+                      title="Eliminar"
+                    >
                       <X className="w-4 h-4" />
                     </button>
                   )}
@@ -315,23 +401,27 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
   const pdfInputRef = useRef(null);
   const photoInputRef = useRef(null);
 
-  const pdfFiles = files.filter((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
-  const imageFiles = files.filter((f) => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name));
+  const pdfFiles = files.filter(
+    (f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+  );
+  const imageFiles = files.filter(
+    (f) => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name)
+  );
 
   const onDrag = (type) => (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(prev => ({ ...prev, [type]: true }));
-    } else if (e.type === "dragleave") {
-      setDragActive(prev => ({ ...prev, [type]: false }));
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive((prev) => ({ ...prev, [type]: true }));
+    } else if (e.type === 'dragleave') {
+      setDragActive((prev) => ({ ...prev, [type]: false }));
     }
   };
 
   const onDrop = (type) => (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragActive(prev => ({ ...prev, [type]: false }));
+    setDragActive((prev) => ({ ...prev, [type]: false }));
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFiles(type, [...e.dataTransfer.files]);
     }
@@ -340,14 +430,18 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
   const handleFiles = (type, newFiles) => {
     const validFiles = [];
     if (type === 'pdf') {
-      const pdf = newFiles.find(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+      const pdf = newFiles.find(
+        (f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+      );
       if (pdf && pdfFiles.length === 0) validFiles.push(pdf);
     } else {
-      const photos = newFiles.filter(f => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name));
+      const photos = newFiles.filter(
+        (f) => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name)
+      );
       const remaining = maxPhotos - imageFiles.length;
       validFiles.push(...photos.slice(0, remaining));
     }
-    
+
     if (validFiles.length > 0) onAddFiles(validFiles);
   };
 
@@ -359,7 +453,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
           <FileText className="w-4 h-4 text-emerald-500" />
           Documento Soporte (PDF)
         </label>
-        
+
         <div
           onDragEnter={onDrag('pdf')}
           onDragLeave={onDrag('pdf')}
@@ -370,8 +464,8 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             pdfFiles.length > 0
               ? 'border-emerald-500 bg-emerald-50/30 dark:bg-emerald-900/10'
               : dragActive.pdf
-              ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 scale-[1.02]'
-              : 'border-slate-300 dark:border-slate-600 hover:border-emerald-400 cursor-pointer'
+                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 scale-[1.02]'
+                : 'border-slate-300 dark:border-slate-600 hover:border-emerald-400 cursor-pointer'
           }`}
         >
           <input
@@ -381,7 +475,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             onChange={(e) => handleFiles('pdf', [...e.target.files])}
             className="hidden"
           />
-          
+
           {pdfFiles.length > 0 ? (
             <div className="text-center p-4">
               <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center mx-auto mb-2">
@@ -391,7 +485,10 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
                 {pdfFiles[0].name}
               </p>
               <button
-                onClick={(e) => { e.stopPropagation(); onRemoveFile(files.indexOf(pdfFiles[0])); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemoveFile(files.indexOf(pdfFiles[0]));
+                }}
                 className="mt-2 text-[10px] font-bold text-red-500 hover:text-red-600 uppercase tracking-wider"
               >
                 Cambiar archivo
@@ -414,7 +511,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
           <Image className="w-4 h-4 text-blue-500" />
           Fotos de la Carga ({imageFiles.length}/{maxPhotos})
         </label>
-        
+
         <div
           onDragEnter={onDrag('photos')}
           onDragLeave={onDrag('photos')}
@@ -425,8 +522,8 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             imageFiles.length >= maxPhotos
               ? 'border-blue-500 bg-blue-50/30 dark:bg-blue-900/10 cursor-default'
               : dragActive.photos
-              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.02]'
-              : 'border-slate-300 dark:border-slate-600 hover:border-blue-400 cursor-pointer'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.02]'
+                : 'border-slate-300 dark:border-slate-600 hover:border-blue-400 cursor-pointer'
           }`}
         >
           <input
@@ -437,11 +534,13 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             onChange={(e) => handleFiles('photos', [...e.target.files])}
             className="hidden"
           />
-          
-          <Upload className={`w-8 h-8 mb-2 ${imageFiles.length >= maxPhotos ? 'text-blue-500' : 'text-slate-400'}`} />
+
+          <Upload
+            className={`w-8 h-8 mb-2 ${imageFiles.length >= maxPhotos ? 'text-blue-500' : 'text-slate-400'}`}
+          />
           <p className="text-xs text-slate-500 dark:text-slate-400 text-center px-4">
-            {imageFiles.length >= maxPhotos 
-              ? 'Límite de fotos alcanzado' 
+            {imageFiles.length >= maxPhotos
+              ? 'Límite de fotos alcanzado'
               : 'Sube fotos del precinto, placa y carga'}
           </p>
         </div>
@@ -492,7 +591,12 @@ const SalidaAuditoria = () => {
 
   // Averías
   const [averias, setAverias] = useState([]);
-  const [averiaForm, setAveriaForm] = useState({ detalle_id: '', tipo_averia: '', descripcion_custom: '', cantidad_afectada: '' });
+  const [averiaForm, setAveriaForm] = useState({
+    detalle_id: '',
+    tipo_averia: '',
+    descripcion_custom: '',
+    cantidad_afectada: '',
+  });
   const [averiaFoto, setAveriaFoto] = useState(null);
   const [averiaFotoPreview, setAveriaFotoPreview] = useState(null);
   const averiaFotoRef = useRef(null);
@@ -526,24 +630,30 @@ const SalidaAuditoria = () => {
             });
           }
           if (data.evidencias) {
-            setFiles(data.evidencias.map(ev => ({
-              id: ev.id,
-              name: ev.nombre,
-              url: resolveFileUrl(ev.url),
-              type: ev.tipo,
-              size: ev.tamanio,
-              isUploaded: true
-            })));
+            setFiles(
+              data.evidencias.map((ev) => ({
+                id: ev.id,
+                name: ev.nombre,
+                url: resolveFileUrl(ev.url),
+                type: ev.tipo,
+                size: ev.tamanio,
+                isUploaded: true,
+              }))
+            );
           }
 
           // Cargar averías existentes
           try {
             const averiasRes = await auditoriasService.getAverias(id);
             if (averiasRes?.success) setAverias(averiasRes.data || []);
-          } catch { /* silencioso */ }
+          } catch {
+            /* silencioso */
+          }
         }
       } catch {
-        setPageError('No se pudo cargar la auditoría. Verifique que el servidor esté activo e intente nuevamente.');
+        setPageError(
+          'No se pudo cargar la auditoría. Verifique que el servidor esté activo e intente nuevamente.'
+        );
       } finally {
         setPageLoading(false);
       }
@@ -569,14 +679,24 @@ const SalidaAuditoria = () => {
 
   const sanitizeLogisticaField = (field, value) => {
     switch (field) {
-      case 'cedula':    return value.replace(/\D/g, '').slice(0, 15);
-      case 'placa':     return value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6);
-      case 'telefono':  return value.replace(/\D/g, '').slice(0, 10);
-      case 'conductor': return value.replace(/[^A-Za-záéíóúÁÉÍÓÚñÑüÜ\s]/g, '').slice(0, 100);
+      case 'cedula':
+        return value.replace(/\D/g, '').slice(0, 15);
+      case 'placa':
+        return value
+          .replace(/[^A-Za-z0-9]/g, '')
+          .toUpperCase()
+          .slice(0, 6);
+      case 'telefono':
+        return value.replace(/\D/g, '').slice(0, 10);
+      case 'conductor':
+        return value.replace(/[^A-Za-záéíóúÁÉÍÓÚñÑüÜ\s]/g, '').slice(0, 100);
       case 'origen':
-      case 'destino':   return value.toUpperCase().slice(0, 55);
-      case 'observaciones': return value.slice(0, 255);
-      default: return value;
+      case 'destino':
+        return value.toUpperCase().slice(0, 55);
+      case 'observaciones':
+        return value.slice(0, 255);
+      default:
+        return value;
     }
   };
 
@@ -588,7 +708,8 @@ const SalidaAuditoria = () => {
       case 'placa':
         if (value.length < 6) return 'Mínimo 6 caracteres';
         return !/^[A-Z]{3}[0-9]{2}[A-Z0-9]$/.test(value)
-          ? 'Formato inválido (ej: ABC123 o ABC12D)' : null;
+          ? 'Formato inválido (ej: ABC123 o ABC12D)'
+          : null;
       case 'telefono':
         return value.length < 7 ? 'Mínimo 7 dígitos' : null;
       default:
@@ -608,28 +729,37 @@ const SalidaAuditoria = () => {
     }, 2000);
   };
 
-  const handleUploadEvidencias = useCallback(async (newFiles) => {
-    setFiles((prev) => [...prev, ...newFiles]);
-    if (estado === 'pendiente') setEstado('en_proceso');
+  const handleUploadEvidencias = useCallback(
+    async (newFiles) => {
+      setFiles((prev) => [...prev, ...newFiles]);
+      if (estado === 'pendiente') setEstado('en_proceso');
 
-    setUploadingFiles(true);
-    try {
-      const filesParaSubir = await Promise.all(
-        newFiles.map(f => comprimirImagen(f, COMPRESS_PRESETS.EVIDENCIA))
-      );
-      await auditoriasService.subirEvidencias(id, filesParaSubir);
-      setFiles((prev) => prev.map(f => f instanceof File ? { ...f, isUploaded: true, type: f.type, name: f.name, size: f.size, _nativeFile: f } : f));
-    } catch {
-      showAlert({
-        type: 'error',
-        title: 'Error',
-        message: 'No se pudieron subir las evidencias. Intente nuevamente.'
-      });
-      setFiles((prev) => prev.filter(f => !(newFiles.includes(f))));
-    } finally {
-      setUploadingFiles(false);
-    }
-  }, [id, estado, showAlert]);
+      setUploadingFiles(true);
+      try {
+        const filesParaSubir = await Promise.all(
+          newFiles.map((f) => comprimirImagen(f, COMPRESS_PRESETS.EVIDENCIA))
+        );
+        await auditoriasService.subirEvidencias(id, filesParaSubir);
+        setFiles((prev) =>
+          prev.map((f) =>
+            f instanceof File
+              ? { ...f, isUploaded: true, type: f.type, name: f.name, size: f.size, _nativeFile: f }
+              : f
+          )
+        );
+      } catch {
+        showAlert({
+          type: 'error',
+          title: 'Error',
+          message: 'No se pudieron subir las evidencias. Intente nuevamente.',
+        });
+        setFiles((prev) => prev.filter((f) => !newFiles.includes(f)));
+      } finally {
+        setUploadingFiles(false);
+      }
+    },
+    [id, estado, showAlert]
+  );
 
   useEffect(() => {
     return () => {
@@ -641,7 +771,9 @@ const SalidaAuditoria = () => {
     const linea = lineas.find((l) => l.id === lineaId);
     const nuevoEstado = !linea?.verificado;
 
-    setLineas((prev) => prev.map((l) => (l.id === lineaId ? { ...l, verificado: nuevoEstado } : l)));
+    setLineas((prev) =>
+      prev.map((l) => (l.id === lineaId ? { ...l, verificado: nuevoEstado } : l))
+    );
     if (estado === 'pendiente') setEstado('en_proceso');
 
     try {
@@ -682,9 +814,12 @@ const SalidaAuditoria = () => {
     }
   };
 
-  const handleAddFiles = useCallback((newFiles) => {
-    handleUploadEvidencias(newFiles);
-  }, [handleUploadEvidencias]);
+  const handleAddFiles = useCallback(
+    (newFiles) => {
+      handleUploadEvidencias(newFiles);
+    },
+    [handleUploadEvidencias]
+  );
 
   const handleRemoveFile = async (idx) => {
     const file = files[idx];
@@ -716,26 +851,42 @@ const SalidaAuditoria = () => {
   const handleRegistrarAveria = async () => {
     const { detalle_id, tipo_averia, descripcion_custom, cantidad_afectada } = averiaForm;
     if (!detalle_id || !tipo_averia) {
-      showAlert({ type: 'warning', title: 'Campos requeridos', message: 'Seleccione el producto y el tipo de avería.' });
+      showAlert({
+        type: 'warning',
+        title: 'Campos requeridos',
+        message: 'Seleccione el producto y el tipo de avería.',
+      });
       return;
     }
 
-    const linea = lineas.find(l => String(l.id) === String(detalle_id));
+    const linea = lineas.find((l) => String(l.id) === String(detalle_id));
     const tipoFinal = tipo_averia === 'Otra' ? descripcion_custom.trim() : tipo_averia;
 
     if (tipo_averia === 'Otra' && !tipoFinal) {
-      showAlert({ type: 'warning', title: 'Descripción requerida', message: 'Escriba el motivo de la avería.' });
+      showAlert({
+        type: 'warning',
+        title: 'Descripción requerida',
+        message: 'Escriba el motivo de la avería.',
+      });
       return;
     }
 
     if (!cantidad_afectada || parseInt(cantidad_afectada) < 1) {
-      showAlert({ type: 'warning', title: 'Campo requerido', message: 'Indique las unidades afectadas por la avería.' });
+      showAlert({
+        type: 'warning',
+        title: 'Campo requerido',
+        message: 'Indique las unidades afectadas por la avería.',
+      });
       return;
     }
 
     const cantAfectada = parseInt(cantidad_afectada);
     if (linea && cantAfectada > linea.cantidad_esperada) {
-      showAlert({ type: 'warning', title: 'Cantidad inválida', message: `Las unidades afectadas no pueden superar la cantidad de la línea (${new Intl.NumberFormat('es-CO').format(linea.cantidad_esperada)} ${linea.unidad || 'UND'}).` });
+      showAlert({
+        type: 'warning',
+        title: 'Cantidad inválida',
+        message: `Las unidades afectadas no pueden superar la cantidad de la línea (${new Intl.NumberFormat('es-CO').format(linea.cantidad_esperada)} ${linea.unidad || 'UND'}).`,
+      });
       return;
     }
 
@@ -751,15 +902,28 @@ const SalidaAuditoria = () => {
       if (averiaFoto) payload.foto = averiaFoto;
       const res = await auditoriasService.registrarAveria(id, payload);
       if (res?.success) {
-        setAverias(prev => [res.data, ...prev]);
-        setAveriaForm({ detalle_id: '', tipo_averia: '', descripcion_custom: '', cantidad_afectada: '' });
+        setAverias((prev) => [res.data, ...prev]);
+        setAveriaForm({
+          detalle_id: '',
+          tipo_averia: '',
+          descripcion_custom: '',
+          cantidad_afectada: '',
+        });
         setAveriaFoto(null);
         setAveriaFotoPreview(null);
-        showAlert({ type: 'success', title: 'Avería registrada', message: 'La avería fue registrada correctamente.' });
+        showAlert({
+          type: 'success',
+          title: 'Avería registrada',
+          message: 'La avería fue registrada correctamente.',
+        });
         if (estado === 'pendiente') setEstado('en_proceso');
       }
     } catch (err) {
-      showAlert({ type: 'error', title: 'Error', message: err.message || 'No se pudo registrar la avería.' });
+      showAlert({
+        type: 'error',
+        title: 'Error',
+        message: err.message || 'No se pudo registrar la avería.',
+      });
     } finally {
       setSavingAveria(false);
     }
@@ -769,20 +933,34 @@ const SalidaAuditoria = () => {
     try {
       const res = await auditoriasService.eliminarAveria(id, averiaId);
       if (res?.success) {
-        setAverias(prev => prev.filter(a => a.id !== averiaId));
-        showAlert({ type: 'success', title: 'Avería eliminada', message: 'La avería fue eliminada correctamente.' });
+        setAverias((prev) => prev.filter((a) => a.id !== averiaId));
+        showAlert({
+          type: 'success',
+          title: 'Avería eliminada',
+          message: 'La avería fue eliminada correctamente.',
+        });
       }
     } catch (err) {
-      showAlert({ type: 'error', title: 'Error', message: err.message || 'No se pudo eliminar la avería.' });
+      showAlert({
+        type: 'error',
+        title: 'Error',
+        message: err.message || 'No se pudo eliminar la avería.',
+      });
     }
   };
 
   // ── PROGRESS ──
   const lineasActivas = lineas.filter((l) => !l.eliminado);
   const lineasVerificadas = lineasActivas.filter((l) => l.verificado);
-  const lineasProgress = lineasActivas.length > 0 ? Math.round((lineasVerificadas.length / lineasActivas.length) * 100) : 0;
+  const lineasProgress =
+    lineasActivas.length > 0
+      ? Math.round((lineasVerificadas.length / lineasActivas.length) * 100)
+      : 0;
   const totalPaginasLineas = Math.ceil(lineas.length / LINEAS_POR_PAGINA);
-  const lineasPaginadas = lineas.slice((lineaPage - 1) * LINEAS_POR_PAGINA, lineaPage * LINEAS_POR_PAGINA);
+  const lineasPaginadas = lineas.slice(
+    (lineaPage - 1) * LINEAS_POR_PAGINA,
+    lineaPage * LINEAS_POR_PAGINA
+  );
 
   const requiredFields = ['conductor', 'cedula', 'placa', 'telefono', 'origen', 'destino'];
   const camposConError = requiredFields.filter((f) => {
@@ -825,16 +1003,24 @@ const SalidaAuditoria = () => {
       // Feedback: correo se envía en background
       const correoEstado = result?.data?.correo_enviado || result?.correo_enviado;
       if (correoEstado === 'enviando' || correoEstado === true) {
-        showAlert({ type: 'success', title: 'Despacho Completado', message: 'El correo de notificación se está enviando en segundo plano.' });
+        showAlert({
+          type: 'success',
+          title: 'Despacho Completado',
+          message: 'El correo de notificación se está enviando en segundo plano.',
+        });
       } else {
-        showAlert({ type: 'success', title: 'Despacho Completado', message: 'Operación cerrada. No se envió correo (sin destinatarios configurados).' });
+        showAlert({
+          type: 'success',
+          title: 'Despacho Completado',
+          message: 'Operación cerrada. No se envió correo (sin destinatarios configurados).',
+        });
       }
     } catch (error) {
       console.error('Error al cerrar auditoría:', error);
       showAlert({
         type: 'error',
         title: 'Error de Despacho',
-        message: 'No se pudo completar el cierre de la salida. Por favor reintente.'
+        message: 'No se pudo completar el cierre de la salida. Por favor reintente.',
       });
     } finally {
       setClosing(false);
@@ -852,7 +1038,7 @@ const SalidaAuditoria = () => {
       title: 'Reenviar correo de cierre',
       message: 'Se reenviará el correo de notificación a los contactos configurados del cliente.',
       confirmText: 'Reenviar',
-      cancelText: 'Cancelar'
+      cancelText: 'Cancelar',
     });
 
     if (!confirmed) return;
@@ -862,13 +1048,25 @@ const SalidaAuditoria = () => {
       const result = await auditoriasService.reenviarCorreo(id);
       const success = result?.data?.correo_enviado || result?.correo_enviado;
       if (success) {
-        showAlert({ type: 'success', title: 'Correo Reenviado', message: 'El correo fue reenviado exitosamente.' });
+        showAlert({
+          type: 'success',
+          title: 'Correo Reenviado',
+          message: 'El correo fue reenviado exitosamente.',
+        });
       } else {
-        showAlert({ type: 'warning', title: 'Sin destinatarios', message: 'No hay contactos con notificaciones activas para este cliente.' });
+        showAlert({
+          type: 'warning',
+          title: 'Sin destinatarios',
+          message: 'No hay contactos con notificaciones activas para este cliente.',
+        });
       }
     } catch (error) {
       console.error('Error al reenviar correo:', error);
-      showAlert({ type: 'error', title: 'Error', message: error.message || 'No se pudo reenviar el correo.' });
+      showAlert({
+        type: 'error',
+        title: 'Error',
+        message: error.message || 'No se pudo reenviar el correo.',
+      });
     } finally {
       setReenviando(false);
     }
@@ -905,7 +1103,8 @@ const SalidaAuditoria = () => {
               No se pudo cargar la auditoría
             </h2>
             <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-              {pageError || 'La salida solicitada no fue encontrada. Es posible que haya sido eliminada o que el ID sea incorrecto.'}
+              {pageError ||
+                'La salida solicitada no fue encontrada. Es posible que haya sido eliminada o que el ID sea incorrecto.'}
             </p>
             <div className="flex items-center justify-center gap-3">
               <button
@@ -930,7 +1129,6 @@ const SalidaAuditoria = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-32 max-w-5xl mx-auto">
-
         <button
           onClick={() => navigate('/operaciones/salidas')}
           className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 mb-6 transition-colors group"
@@ -968,12 +1166,32 @@ const SalidaAuditoria = () => {
             <div className="flex items-center gap-3">
               <div className="text-right">
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Progreso</p>
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{totalProgress}%</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {totalProgress}%
+                </p>
               </div>
               <div className="w-16 h-16 relative">
                 <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                  <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" strokeWidth="5" className="text-slate-100 dark:text-slate-700" />
-                  <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeDasharray={`${totalProgress * 1.76} 176`} className="text-blue-500 transition-all duration-700" />
+                  <circle
+                    cx="32"
+                    cy="32"
+                    r="28"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="5"
+                    className="text-slate-100 dark:text-slate-700"
+                  />
+                  <circle
+                    cx="32"
+                    cy="32"
+                    r="28"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="5"
+                    strokeLinecap="round"
+                    strokeDasharray={`${totalProgress * 1.76} 176`}
+                    className="text-blue-500 transition-all duration-700"
+                  />
                 </svg>
               </div>
             </div>
@@ -982,7 +1200,6 @@ const SalidaAuditoria = () => {
         </div>
 
         <div className="space-y-6">
-
           {/* LÍNEAS */}
           <Section
             title="Líneas de Operación (WMS)"
@@ -998,9 +1215,13 @@ const SalidaAuditoria = () => {
                     Verificar todas
                   </button>
                 )}
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  lineasProgress === 100 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
-                }`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    lineasProgress === 100
+                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                      : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
+                  }`}
+                >
                   {lineasVerificadas.length}/{lineasActivas.length} verificadas
                 </span>
               </div>
@@ -1014,42 +1235,59 @@ const SalidaAuditoria = () => {
                     linea.eliminado
                       ? 'bg-red-50/50 dark:bg-red-900/10 border-red-200 dark:border-red-800/50 opacity-60'
                       : linea.verificado
-                      ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800/50'
-                      : 'bg-white dark:bg-centhrix-bg border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700'
+                        ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800/50'
+                        : 'bg-white dark:bg-centhrix-bg border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700'
                   }`}
                 >
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <button
-                      onClick={() => !linea.eliminado && puedeEditar && handleVerificarLinea(linea.id)}
+                      onClick={() =>
+                        !linea.eliminado && puedeEditar && handleVerificarLinea(linea.id)
+                      }
                       disabled={linea.eliminado || !puedeEditar}
                       className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-all ${
                         linea.eliminado
                           ? 'border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 cursor-not-allowed'
                           : linea.verificado
-                          ? 'border-emerald-500 bg-emerald-500 text-white cursor-pointer shadow-md shadow-emerald-500/20'
-                          : 'border-slate-300 dark:border-slate-600 hover:border-blue-400 cursor-pointer'
+                            ? 'border-emerald-500 bg-emerald-500 text-white cursor-pointer shadow-md shadow-emerald-500/20'
+                            : 'border-slate-300 dark:border-slate-600 hover:border-blue-400 cursor-pointer'
                       }`}
                     >
-                      {linea.eliminado ? <X className="w-4 h-4 text-red-500 dark:text-red-400" /> : linea.verificado ? <Check className="w-4 h-4" /> : null}
+                      {linea.eliminado ? (
+                        <X className="w-4 h-4 text-red-500 dark:text-red-400" />
+                      ) : linea.verificado ? (
+                        <Check className="w-4 h-4" />
+                      ) : null}
                     </button>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${linea.eliminado ? 'line-through text-red-400' : 'text-slate-800 dark:text-slate-100'}`}>
+                      <p
+                        className={`text-sm font-medium ${linea.eliminado ? 'line-through text-red-400' : 'text-slate-800 dark:text-slate-100'}`}
+                      >
                         {linea.producto}
                       </p>
                       <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
                         SKU: {linea.sku} • {linea.cantidad_esperada} {linea.unidad}
-                        {linea.caja && <span className="ml-1 text-blue-500 font-bold">• Caja: {linea.caja}</span>}
+                        {linea.caja && (
+                          <span className="ml-1 text-blue-500 font-bold">• Caja: {linea.caja}</span>
+                        )}
                       </p>
                     </div>
                   </div>
                   {puedeEditar && (
                     <div className="flex items-center gap-2 ml-4">
                       {linea.eliminado ? (
-                        <button onClick={() => handleRestaurarLinea(linea.id)} className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                        <button
+                          onClick={() => handleRestaurarLinea(linea.id)}
+                          className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                        >
                           Restaurar
                         </button>
                       ) : (
-                        <button onClick={() => handleEliminarLinea(linea.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Quitar línea (no salió)">
+                        <button
+                          onClick={() => handleEliminarLinea(linea.id)}
+                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          title="Quitar línea (no salió)"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
@@ -1106,29 +1344,97 @@ const SalidaAuditoria = () => {
             badge={
               <div className="flex items-center gap-2">
                 {savingLogistica && <Loader2 className="w-3 h-3 animate-spin text-blue-500" />}
-                {!savingLogistica && camposConError.length > 0 && <X className="w-3 h-3 text-red-500" />}
-                {!savingLogistica && camposConError.length === 0 && logisticaSaved && <Check className="w-3 h-3 text-emerald-500" />}
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  camposConError.length > 0
-                    ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
-                    : formProgress === 100
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
-                    : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
-                }`}>
+                {!savingLogistica && camposConError.length > 0 && (
+                  <X className="w-3 h-3 text-red-500" />
+                )}
+                {!savingLogistica && camposConError.length === 0 && logisticaSaved && (
+                  <Check className="w-3 h-3 text-emerald-500" />
+                )}
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    camposConError.length > 0
+                      ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                      : formProgress === 100
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                        : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
+                  }`}
+                >
                   {validFields.length}/{requiredFields.length} campos
                 </span>
               </div>
             }
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField icon={User} label="Nombre del Conductor" value={formData.conductor} onChange={handleFieldChange('conductor')} placeholder="Ej: Juan Pérez" required disabled={!puedeEditar} error={fieldErrors.conductor} />
-              <FormField icon={CreditCard} label="Cédula del Conductor" value={formData.cedula} onChange={handleFieldChange('cedula')} placeholder="Ej: 1066601726" required disabled={!puedeEditar} error={fieldErrors.cedula} />
-              <FormField icon={Truck} label="Placa del Vehículo" value={formData.placa} onChange={handleFieldChange('placa')} placeholder="Ej: ABC123" required disabled={!puedeEditar} error={fieldErrors.placa} />
-              <FormField icon={Phone} label="Teléfono del Conductor" value={formData.telefono} onChange={handleFieldChange('telefono')} placeholder="Ej: 3001234567" required disabled={!puedeEditar} error={fieldErrors.telefono} />
-              <FormField icon={MapPin} label="Origen" value={formData.origen} onChange={handleFieldChange('origen')} placeholder="Ej: CEDI GIRARDOTA" required disabled={!puedeEditar} error={fieldErrors.origen} />
-              <FormField icon={MapPin} label="Destino" value={formData.destino} onChange={handleFieldChange('destino')} placeholder="Ej: TIENDA CAÑAVERAL" required disabled={!puedeEditar} error={fieldErrors.destino} />
+              <FormField
+                icon={User}
+                label="Nombre del Conductor"
+                value={formData.conductor}
+                onChange={handleFieldChange('conductor')}
+                placeholder="Ej: Juan Pérez"
+                required
+                disabled={!puedeEditar}
+                error={fieldErrors.conductor}
+              />
+              <FormField
+                icon={CreditCard}
+                label="Cédula del Conductor"
+                value={formData.cedula}
+                onChange={handleFieldChange('cedula')}
+                placeholder="Ej: 1066601726"
+                required
+                disabled={!puedeEditar}
+                error={fieldErrors.cedula}
+              />
+              <FormField
+                icon={Truck}
+                label="Placa del Vehículo"
+                value={formData.placa}
+                onChange={handleFieldChange('placa')}
+                placeholder="Ej: ABC123"
+                required
+                disabled={!puedeEditar}
+                error={fieldErrors.placa}
+              />
+              <FormField
+                icon={Phone}
+                label="Teléfono del Conductor"
+                value={formData.telefono}
+                onChange={handleFieldChange('telefono')}
+                placeholder="Ej: 3001234567"
+                required
+                disabled={!puedeEditar}
+                error={fieldErrors.telefono}
+              />
+              <FormField
+                icon={MapPin}
+                label="Origen"
+                value={formData.origen}
+                onChange={handleFieldChange('origen')}
+                placeholder="Ej: CEDI GIRARDOTA"
+                required
+                disabled={!puedeEditar}
+                error={fieldErrors.origen}
+              />
+              <FormField
+                icon={MapPin}
+                label="Destino"
+                value={formData.destino}
+                onChange={handleFieldChange('destino')}
+                placeholder="Ej: TIENDA CAÑAVERAL"
+                required
+                disabled={!puedeEditar}
+                error={fieldErrors.destino}
+              />
               <div className="md:col-span-2">
-                <FormField icon={MessageSquare} label="Observaciones" value={formData.observaciones} onChange={handleFieldChange('observaciones')} placeholder="Novedades de la operación (opcional)..." type="textarea" disabled={!puedeEditar} />
+                <FormField
+                  icon={MessageSquare}
+                  label="Observaciones"
+                  value={formData.observaciones}
+                  onChange={handleFieldChange('observaciones')}
+                  placeholder="Novedades de la operación (opcional)..."
+                  type="textarea"
+                  disabled={!puedeEditar}
+                />
               </div>
             </div>
           </Section>
@@ -1139,11 +1445,13 @@ const SalidaAuditoria = () => {
             icon={AlertTriangle}
             color="amber"
             badge={
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                averias.length > 0
-                  ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300'
-                  : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
-              }`}>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  averias.length > 0
+                    ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300'
+                    : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
+                }`}
+              >
                 {averias.length} avería{averias.length !== 1 ? 's' : ''}
               </span>
             }
@@ -1163,30 +1471,47 @@ const SalidaAuditoria = () => {
                     <div className="relative">
                       <select
                         value={averiaForm.detalle_id}
-                        onChange={(e) => setAveriaForm(prev => ({ ...prev, detalle_id: e.target.value }))}
+                        onChange={(e) =>
+                          setAveriaForm((prev) => ({ ...prev, detalle_id: e.target.value }))
+                        }
                         className="w-full appearance-none pl-4 pr-10 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all cursor-pointer hover:border-amber-400 dark:hover:border-amber-500/50"
                       >
                         <option value="">-- Seleccionar producto --</option>
-                        {lineas.filter(l => !l.eliminado).map(l => (
-                          <option key={l.id} value={l.id}>
-                            {l.sku} — {l.producto} {l.caja ? `(${l.caja})` : ''} ({new Intl.NumberFormat('es-CO').format(l.cantidad_esperada)} {l.unidad || 'UND'})
-                          </option>
-                        ))}
+                        {lineas
+                          .filter((l) => !l.eliminado)
+                          .map((l) => (
+                            <option key={l.id} value={l.id}>
+                              {l.sku} — {l.producto} {l.caja ? `(${l.caja})` : ''} (
+                              {new Intl.NumberFormat('es-CO').format(l.cantidad_esperada)}{' '}
+                              {l.unidad || 'UND'})
+                            </option>
+                          ))}
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>
                     {/* Preview del producto seleccionado */}
-                    {averiaForm.detalle_id && (() => {
-                      const sel = lineas.find(l => String(l.id) === String(averiaForm.detalle_id));
-                      return sel ? (
-                        <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/15 border border-amber-200/60 dark:border-amber-700/30 rounded-lg">
-                          <Package className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                          <span className="text-xs font-mono font-semibold text-amber-700 dark:text-amber-300">{sel.sku}</span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{sel.producto}</span>
-                          {sel.caja && <span className="text-[10px] px-1.5 py-0.5 bg-amber-200/50 dark:bg-amber-800/30 text-amber-700 dark:text-amber-300 rounded font-medium">{sel.caja}</span>}
-                        </div>
-                      ) : null;
-                    })()}
+                    {averiaForm.detalle_id &&
+                      (() => {
+                        const sel = lineas.find(
+                          (l) => String(l.id) === String(averiaForm.detalle_id)
+                        );
+                        return sel ? (
+                          <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/15 border border-amber-200/60 dark:border-amber-700/30 rounded-lg">
+                            <Package className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                            <span className="text-xs font-mono font-semibold text-amber-700 dark:text-amber-300">
+                              {sel.sku}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                              {sel.producto}
+                            </span>
+                            {sel.caja && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-amber-200/50 dark:bg-amber-800/30 text-amber-700 dark:text-amber-300 rounded font-medium">
+                                {sel.caja}
+                              </span>
+                            )}
+                          </div>
+                        ) : null;
+                      })()}
                   </div>
 
                   {/* Selector de tipo de avería */}
@@ -1200,12 +1525,20 @@ const SalidaAuditoria = () => {
                     <div className="relative">
                       <select
                         value={averiaForm.tipo_averia}
-                        onChange={(e) => setAveriaForm(prev => ({ ...prev, tipo_averia: e.target.value, descripcion_custom: '' }))}
+                        onChange={(e) =>
+                          setAveriaForm((prev) => ({
+                            ...prev,
+                            tipo_averia: e.target.value,
+                            descripcion_custom: '',
+                          }))
+                        }
                         className="w-full appearance-none pl-4 pr-10 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all cursor-pointer hover:border-amber-400 dark:hover:border-amber-500/50"
                       >
                         <option value="">-- Seleccionar causa --</option>
-                        {TIPOS_AVERIA.map(t => (
-                          <option key={t} value={t}>{t}</option>
+                        {TIPOS_AVERIA.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
                         ))}
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -1214,7 +1547,9 @@ const SalidaAuditoria = () => {
                     {averiaForm.tipo_averia && averiaForm.tipo_averia !== 'Otra' && (
                       <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/15 border border-amber-200/60 dark:border-amber-700/30 rounded-lg">
                         <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                        <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">{averiaForm.tipo_averia}</span>
+                        <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+                          {averiaForm.tipo_averia}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -1229,7 +1564,9 @@ const SalidaAuditoria = () => {
                           <MessageSquare className="w-3.5 h-3.5 text-amber-500" />
                           Describa el motivo <span className="text-red-500">*</span>
                         </div>
-                        <span className={`text-xs font-mono ${averiaForm.descripcion_custom.length >= 50 ? 'text-red-400' : 'text-slate-400'}`}>
+                        <span
+                          className={`text-xs font-mono ${averiaForm.descripcion_custom.length >= 50 ? 'text-red-400' : 'text-slate-400'}`}
+                        >
                           {averiaForm.descripcion_custom.length}/55
                         </span>
                       </div>
@@ -1238,7 +1575,9 @@ const SalidaAuditoria = () => {
                       type="text"
                       maxLength={55}
                       value={averiaForm.descripcion_custom}
-                      onChange={(e) => setAveriaForm(prev => ({ ...prev, descripcion_custom: e.target.value }))}
+                      onChange={(e) =>
+                        setAveriaForm((prev) => ({ ...prev, descripcion_custom: e.target.value }))
+                      }
                       placeholder="Escriba el motivo de la avería..."
                       className="w-full px-4 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all hover:border-amber-400 dark:hover:border-amber-500/50"
                     />
@@ -1253,7 +1592,16 @@ const SalidaAuditoria = () => {
                         Unidades afectadas <span className="text-red-500">*</span>
                       </div>
                     </label>
-                    <input type="number" min="1" value={averiaForm.cantidad_afectada} onChange={(e) => setAveriaForm(prev => ({ ...prev, cantidad_afectada: e.target.value }))} placeholder="Ej: 5" className="w-full px-4 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all hover:border-amber-400 dark:hover:border-amber-500/50" />
+                    <input
+                      type="number"
+                      min="1"
+                      value={averiaForm.cantidad_afectada}
+                      onChange={(e) =>
+                        setAveriaForm((prev) => ({ ...prev, cantidad_afectada: e.target.value }))
+                      }
+                      placeholder="Ej: 5"
+                      className="w-full px-4 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all hover:border-amber-400 dark:hover:border-amber-500/50"
+                    />
                   </div>
                 )}
 
@@ -1265,14 +1613,44 @@ const SalidaAuditoria = () => {
                         Foto de evidencia <span className="text-slate-400 text-xs">(opcional)</span>
                       </div>
                     </label>
-                    <input ref={averiaFotoRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) { setAveriaFoto(file); setAveriaFotoPreview(URL.createObjectURL(file)); } e.target.value = ''; }} />
+                    <input
+                      ref={averiaFotoRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setAveriaFoto(file);
+                          setAveriaFotoPreview(URL.createObjectURL(file));
+                        }
+                        e.target.value = '';
+                      }}
+                    />
                     {averiaFotoPreview ? (
                       <div className="relative inline-block">
-                        <img src={averiaFotoPreview} alt="Vista previa" className="w-32 h-32 object-cover rounded-xl border-2 border-amber-300 dark:border-amber-700" />
-                        <button type="button" onClick={() => { setAveriaFoto(null); setAveriaFotoPreview(null); }} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-sm">&#x2715;</button>
+                        <img
+                          src={averiaFotoPreview}
+                          alt="Vista previa"
+                          className="w-32 h-32 object-cover rounded-xl border-2 border-amber-300 dark:border-amber-700"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAveriaFoto(null);
+                            setAveriaFotoPreview(null);
+                          }}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-sm"
+                        >
+                          &#x2715;
+                        </button>
                       </div>
                     ) : (
-                      <button type="button" onClick={() => averiaFotoRef.current?.click()} className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:border-amber-400 hover:text-amber-600 dark:hover:border-amber-500 dark:hover:text-amber-400 transition-all">
+                      <button
+                        type="button"
+                        onClick={() => averiaFotoRef.current?.click()}
+                        className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:border-amber-400 hover:text-amber-600 dark:hover:border-amber-500 dark:hover:text-amber-400 transition-all"
+                      >
                         <Camera className="w-4 h-4" />
                         Adjuntar foto
                       </button>
@@ -1285,7 +1663,11 @@ const SalidaAuditoria = () => {
                   disabled={savingAveria || !averiaForm.detalle_id || !averiaForm.tipo_averia}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-amber-500/20 hover:shadow-amber-500/30"
                 >
-                  {savingAveria ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {savingAveria ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4" />
+                  )}
                   Registrar Avería
                 </button>
               </div>
@@ -1294,31 +1676,52 @@ const SalidaAuditoria = () => {
             {/* Lista de averías registradas */}
             {averias.length > 0 ? (
               <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Averías registradas</h4>
+                <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">
+                  Averías registradas
+                </h4>
                 {averias.map((av, idx) => {
-                  const lineaRef = lineas.find(l => String(l.id) === String(av.detalle_id));
+                  const lineaRef = lineas.find((l) => String(l.id) === String(av.detalle_id));
                   return (
-                    <div key={av.id || idx} className="flex items-center gap-3 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl">
+                    <div
+                      key={av.id || idx}
+                      className="flex items-center gap-3 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl"
+                    >
                       {av.foto_url ? (
-                        <a href={getServerFileUrl(av.foto_url)} target="_blank" rel="noopener noreferrer">
-                          <img src={getServerFileUrl(av.foto_url)} alt="Evidencia" className="w-10 h-10 object-cover rounded-lg border border-amber-300 dark:border-amber-700 flex-shrink-0 hover:opacity-80 transition-opacity" />
+                        <a
+                          href={getServerFileUrl(av.foto_url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <img
+                            src={getServerFileUrl(av.foto_url)}
+                            alt="Evidencia"
+                            className="w-10 h-10 object-cover rounded-lg border border-amber-300 dark:border-amber-700 flex-shrink-0 hover:opacity-80 transition-opacity"
+                          />
                         </a>
                       ) : (
                         <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
-                          {lineaRef ? `${lineaRef.sku} — ${lineaRef.producto}` : av.sku || 'Producto'}
+                          {lineaRef
+                            ? `${lineaRef.sku} — ${lineaRef.producto}`
+                            : av.sku || 'Producto'}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {av.tipo_averia}{av.descripcion ? ` — ${av.descripcion}` : ''}{av.cantidad_afectada ? ` (${av.cantidad_afectada} uds afectadas)` : ''}
+                          {av.tipo_averia}
+                          {av.descripcion ? ` — ${av.descripcion}` : ''}
+                          {av.cantidad_afectada ? ` (${av.cantidad_afectada} uds afectadas)` : ''}
                         </p>
                       </div>
                       <span className="text-xs text-slate-400 flex-shrink-0">
                         Cant: {av.cantidad}
                       </span>
                       {puedeEditar && (
-                        <button onClick={() => handleEliminarAveria(av.id)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0" title="Eliminar avería">
+                        <button
+                          onClick={() => handleEliminarAveria(av.id)}
+                          className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
+                          title="Eliminar avería"
+                        >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       )}
@@ -1328,7 +1731,9 @@ const SalidaAuditoria = () => {
               </div>
             ) : (
               <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-4">
-                {isCerrado ? 'No se registraron averías en esta operación.' : 'No hay averías registradas aún.'}
+                {isCerrado
+                  ? 'No se registraron averías en esta operación.'
+                  : 'No hay averías registradas aún.'}
               </p>
             )}
           </Section>
@@ -1341,10 +1746,16 @@ const SalidaAuditoria = () => {
             badge={
               <div className="flex items-center gap-2">
                 {uploadingFiles && <Loader2 className="w-3 h-3 animate-spin text-violet-500" />}
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  evidenceProgress === 100 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
-                }`}>
-                  {uploadingFiles ? 'Subiendo...' : `${files.length} archivo${files.length !== 1 ? 's' : ''}`}
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    evidenceProgress === 100
+                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                      : 'bg-slate-100 text-slate-500 dark:bg-centhrix-surface dark:text-slate-400'
+                  }`}
+                >
+                  {uploadingFiles
+                    ? 'Subiendo...'
+                    : `${files.length} archivo${files.length !== 1 ? 's' : ''}`}
                 </span>
               </div>
             }
@@ -1362,7 +1773,12 @@ const SalidaAuditoria = () => {
                 <FilePreviewGallery files={files} readOnly={true} />
               </div>
             ) : (
-              <EvidenceDropzone files={files} onAddFiles={handleAddFiles} onRemoveFile={handleRemoveFile} maxPhotos={5} />
+              <EvidenceDropzone
+                files={files}
+                onAddFiles={handleAddFiles}
+                onRemoveFile={handleRemoveFile}
+                maxPhotos={5}
+              />
             )}
           </Section>
         </div>
@@ -1374,22 +1790,31 @@ const SalidaAuditoria = () => {
           <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
             <div className="hidden sm:flex items-center gap-6 text-sm">
               <div className="flex items-center gap-2">
-                <div className={`w-2.5 h-2.5 rounded-full ${lineasProgress === 100 ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-centhrix-surface'}`} />
+                <div
+                  className={`w-2.5 h-2.5 rounded-full ${lineasProgress === 100 ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-centhrix-surface'}`}
+                />
                 <span className="text-slate-600 dark:text-slate-300">Líneas</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className={`w-2.5 h-2.5 rounded-full ${formProgress === 100 ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-centhrix-surface'}`} />
+                <div
+                  className={`w-2.5 h-2.5 rounded-full ${formProgress === 100 ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-centhrix-surface'}`}
+                />
                 <span className="text-slate-600 dark:text-slate-300">Datos</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className={`w-2.5 h-2.5 rounded-full ${evidenceProgress === 100 ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-centhrix-surface'}`} />
+                <div
+                  className={`w-2.5 h-2.5 rounded-full ${evidenceProgress === 100 ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-centhrix-surface'}`}
+                />
                 <span className="text-slate-600 dark:text-slate-300">Evidencias</span>
               </div>
             </div>
             <div className="flex items-center gap-4 flex-1 sm:flex-none">
               <div className="flex-1 sm:w-48">
                 <div className="h-2 bg-slate-100 dark:bg-centhrix-surface rounded-full overflow-hidden">
-                  <div className={`h-full w-full rounded-full transition-transform duration-700 origin-left ${canClose ? 'bg-emerald-500' : 'bg-blue-500'}`} style={{ transform: `scaleX(${totalProgress / 100})` }} />
+                  <div
+                    className={`h-full w-full rounded-full transition-transform duration-700 origin-left ${canClose ? 'bg-emerald-500' : 'bg-blue-500'}`}
+                    style={{ transform: `scaleX(${totalProgress / 100})` }}
+                  />
                 </div>
               </div>
               <button
@@ -1401,7 +1826,11 @@ const SalidaAuditoria = () => {
                     : 'bg-slate-200 dark:bg-centhrix-surface text-slate-400 dark:text-slate-500 cursor-not-allowed'
                 }`}
               >
-                {closing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                {closing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4" />
+                )}
                 {closing ? 'Completando...' : 'Completar Operación'}
               </button>
             </div>
@@ -1422,7 +1851,11 @@ const SalidaAuditoria = () => {
                 disabled={reenviando}
                 className="flex items-center gap-2 px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
               >
-                {reenviando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                {reenviando ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Mail className="w-4 h-4" />
+                )}
                 {reenviando ? 'Enviando...' : 'Reenviar correo'}
               </button>
             )}

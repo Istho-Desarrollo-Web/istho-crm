@@ -4,7 +4,7 @@
  * ============================================================================
  * Componente que muestra u oculta contenido basado en los permisos del usuario.
  * Útil para botones, menús y secciones que solo deben mostrarse a ciertos roles.
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 1.0.0
  * @date Enero 2026
@@ -19,79 +19,68 @@ import usePermissions from '../../hooks/usePermissions';
 
 /**
  * Componente que renderiza su contenido solo si el usuario tiene los permisos requeridos
- * 
+ *
  * @param {Object} props
  * @param {React.ReactNode} props.children - Contenido a renderizar si tiene permisos
  * @param {string} props.module - Módulo a verificar
  * @param {string|string[]} props.action - Acción(es) requerida(s)
  * @param {boolean} [props.requireAll=false] - Si true, requiere todos los permisos
  * @param {React.ReactNode} [props.fallback] - Contenido alternativo si no tiene permisos
- * 
+ *
  * @example
  * // Mostrar botón solo si puede crear clientes
  * <ProtectedAction module="clientes" action="crear">
  *   <Button onClick={handleCreate}>Nuevo Cliente</Button>
  * </ProtectedAction>
- * 
+ *
  * @example
  * // Mostrar si tiene al menos uno de los permisos
  * <ProtectedAction module="despachos" action={['editar', 'eliminar']}>
  *   <ActionsMenu />
  * </ProtectedAction>
- * 
+ *
  * @example
  * // Mostrar si tiene TODOS los permisos
  * <ProtectedAction module="inventario" action={['editar', 'ajustar']} requireAll>
  *   <AjusteCompleto />
  * </ProtectedAction>
- * 
+ *
  * @example
  * // Con contenido alternativo
- * <ProtectedAction 
- *   module="reportes" 
- *   action="exportar" 
+ * <ProtectedAction
+ *   module="reportes"
+ *   action="exportar"
  *   fallback={<span className="text-gray-400">No disponible</span>}
  * >
  *   <ExportButton />
  * </ProtectedAction>
  */
-const ProtectedAction = ({
-  children,
-  module,
-  action,
-  requireAll = false,
-  fallback = null,
-}) => {
+const ProtectedAction = ({ children, module, action, requireAll = false, fallback = null }) => {
   const { can, canAny, canAll } = usePermissions();
-  
+
   // Determinar si tiene permiso
   let hasPermission = false;
-  
+
   if (Array.isArray(action)) {
     // Múltiples acciones
-    hasPermission = requireAll 
-      ? canAll(module, action) 
-      : canAny(module, action);
+    hasPermission = requireAll ? canAll(module, action) : canAny(module, action);
   } else {
     // Una sola acción
     hasPermission = can(module, action);
   }
-  
+
   // Renderizar según permiso
   if (hasPermission) {
     return children;
   }
-  
+
   return fallback;
 };
 
 ProtectedAction.propTypes = {
   children: PropTypes.node.isRequired,
   module: PropTypes.string.isRequired,
-  action: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.arrayOf(PropTypes.string),
-  ]).isRequired,
+  action: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]).isRequired,
   requireAll: PropTypes.bool,
   fallback: PropTypes.node,
 };
@@ -185,21 +174,21 @@ ModuleAccess.propTypes = {
 
 /**
  * Hook que filtra una lista de acciones según los permisos del usuario
- * 
+ *
  * @example
  * const actions = [
  *   { key: 'ver', label: 'Ver', permission: 'ver' },
  *   { key: 'editar', label: 'Editar', permission: 'editar' },
  *   { key: 'eliminar', label: 'Eliminar', permission: 'eliminar' },
  * ];
- * 
+ *
  * const allowedActions = useFilteredActions('clientes', actions);
  * // Retorna solo las acciones que el usuario puede realizar
  */
 export const useFilteredActions = (module, actions) => {
   const { can } = usePermissions();
-  
-  return actions.filter(action => {
+
+  return actions.filter((action) => {
     if (!action.permission) return true;
     return can(module, action.permission);
   });

@@ -2,15 +2,15 @@
  * ============================================================================
  * ISTHO CRM - Middleware de Autenticación
  * ============================================================================
- * 
+ *
  * Verifica tokens JWT y protege rutas.
- * 
+ *
  * ACTUALIZACIÓN v2.0.0:
  * - Soporte para usuarios de cliente (rol='cliente')
  * - Incluye cliente_id y permisos_cliente en req.user
  * - Verificación de cambio de contraseña obligatorio
  * - Registro de último acceso
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 2.0.0
  */
@@ -40,18 +40,20 @@ const cargarCachePermisos = async () => {
   try {
     const roles = await Rol.findAll({
       where: { activo: true },
-      include: [{
-        model: Permiso,
-        as: 'permisos',
-        attributes: ['modulo', 'accion'],
-        through: { attributes: [] }
-      }]
+      include: [
+        {
+          model: Permiso,
+          as: 'permisos',
+          attributes: ['modulo', 'accion'],
+          through: { attributes: [] },
+        },
+      ],
     });
 
     const newPermisosCache = {};
     const newRolesCache = {};
 
-    roles.forEach(function(rol) {
+    roles.forEach(function (rol) {
       newRolesCache[rol.id] = {
         id: rol.id,
         codigo: rol.codigo,
@@ -59,12 +61,12 @@ const cargarCachePermisos = async () => {
         nivel_jerarquia: rol.nivel_jerarquia,
         es_sistema: rol.es_sistema,
         es_cliente: rol.es_cliente,
-        color: rol.color
+        color: rol.color,
       };
 
       // Permisos como { modulo: [acciones] }
       const permisos = {};
-      rol.permisos.forEach(function(p) {
+      rol.permisos.forEach(function (p) {
         if (!permisos[p.modulo]) permisos[p.modulo] = [];
         permisos[p.modulo].push(p.accion);
       });
@@ -145,14 +147,14 @@ const verificarToken = async (req, res, next) => {
     // Verificar token
     const decoded = jwt.verify(token, jwtConfig.secret, {
       issuer: jwtConfig.issuer,
-      audience: jwtConfig.audience
+      audience: jwtConfig.audience,
     });
 
     // Verificar que el token no haya sido revocado (blacklist)
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
     const revocado = await TokenBlacklist.findOne({
       where: { token_hash: tokenHash, expires_at: { [Op.gt]: new Date() } },
-      attributes: ['id']
+      attributes: ['id'],
     });
     if (revocado) {
       return unauthorized(res, 'Sesión cerrada. Inicie sesión nuevamente.');
@@ -179,18 +181,18 @@ const verificarToken = async (req, res, next) => {
         'cliente_id',
         'permisos_cliente',
         'requiere_cambio_password',
-        'ultimo_acceso'
-      ]
+        'ultimo_acceso',
+      ],
     });
-    
+
     if (!usuario) {
       return unauthorized(res, 'Usuario no encontrado');
     }
-    
+
     if (!usuario.activo) {
       return forbidden(res, 'Usuario desactivado. Contacte al administrador');
     }
-    
+
     // Obtener info del rol dinámico desde cache
     const rolInfo = usuario.rol_id ? getRolFromCache(usuario.rol_id) : null;
 
@@ -217,7 +219,7 @@ const verificarToken = async (req, res, next) => {
       esOperador: usuario.esOperador(),
       esFinanciera: usuario.esFinanciera(),
       // Función de verificación de permiso dinámico
-      tienePermiso: function(modulo, accion) {
+      tienePermiso: function (modulo, accion) {
         if (usuario.esAdmin()) return true;
         // Usuario cliente: verificar permisos_cliente individuales
         if (usuario.esCliente()) {
@@ -232,34 +234,33 @@ const verificarToken = async (req, res, next) => {
         // Fallback: buscar rol por código en cache si rol_id no tiene permisos
         const rolCodigo = usuario.rol;
         if (rolCodigo) {
-          const rolEnCache = Object.values(_rolesCache).find(r => r.codigo === rolCodigo);
+          const rolEnCache = Object.values(_rolesCache).find((r) => r.codigo === rolCodigo);
           if (rolEnCache && rolTienePermiso(rolEnCache.id, modulo, accion)) {
             return true;
           }
         }
         return false;
-      }
+      },
     };
-    
+
     // ✅ Referencia al modelo completo (útil para métodos)
     req.usuarioModel = usuario;
-    
+
     next();
-    
   } catch (error) {
-    logger.warn('Error de autenticación:', { 
+    logger.warn('Error de autenticación:', {
       message: error.message,
-      ip: req.ip 
+      ip: req.ip,
     });
-    
+
     if (error.name === 'TokenExpiredError') {
       return unauthorized(res, 'Token expirado. Inicie sesión nuevamente');
     }
-    
+
     if (error.name === 'JsonWebTokenError') {
       return unauthorized(res, 'Token inválido');
     }
-    
+
     return unauthorized(res, 'Error de autenticación');
   }
 };
@@ -270,13 +271,13 @@ const verificarToken = async (req, res, next) => {
  */
 const verificarTokenOpcional = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader) {
     req.user = null;
     req.usuarioModel = null;
     return next();
   }
-  
+
   // Si hay token, verificarlo normalmente
   return verificarToken(req, res, next);
 };
@@ -290,17 +291,17 @@ const checkRole = (rolesPermitidos) => {
     if (!req.user) {
       return unauthorized(res, 'Usuario no autenticado');
     }
-    
+
     if (!rolesPermitidos.includes(req.user.rol)) {
       logger.warn('Acceso denegado por rol:', {
         usuario: req.user.username,
         rol: req.user.rol,
         rolesRequeridos: rolesPermitidos,
-        ruta: req.originalUrl
+        ruta: req.originalUrl,
       });
       return forbidden(res, 'No tiene permisos para realizar esta acción');
     }
-    
+
     next();
   };
 };
@@ -313,16 +314,16 @@ const soloUsuariosInternos = (req, res, next) => {
   if (!req.user) {
     return unauthorized(res, 'Usuario no autenticado');
   }
-  
+
   if (req.user.esCliente) {
     logger.warn('Usuario cliente intentó acceder a ruta restringida:', {
       usuario: req.user.username,
       cliente_id: req.user.cliente_id,
-      ruta: req.originalUrl
+      ruta: req.originalUrl,
     });
     return forbidden(res, 'Esta funcionalidad no está disponible para usuarios de portal');
   }
-  
+
   next();
 };
 
@@ -350,7 +351,7 @@ const verificarPermisoCliente = (modulo, accion) => {
           rol: req.user.rol,
           modulo,
           accion,
-          ruta: req.originalUrl
+          ruta: req.originalUrl,
         });
         return forbidden(res, `No tiene permiso para ${accion} en ${modulo}`);
       }
@@ -365,7 +366,7 @@ const verificarPermisoCliente = (modulo, accion) => {
           cliente_id: req.user.cliente_id,
           modulo,
           accion,
-          ruta: req.originalUrl
+          ruta: req.originalUrl,
         });
         return forbidden(res, `No tiene permiso para ${accion} en ${modulo}`);
       }
@@ -383,21 +384,21 @@ const verificarCambioPassword = (req, res, next) => {
   if (!req.user) {
     return next();
   }
-  
+
   // Rutas permitidas aunque requiera cambio de contraseña
   const rutasPermitidas = [
     '/api/auth/cambiar-password',
     '/api/auth/logout',
-    '/api/usuarios/me/password'
+    '/api/usuarios/me/password',
   ];
-  
+
   if (req.user.requiere_cambio_password && !rutasPermitidas.includes(req.path)) {
     return forbidden(res, 'Debe cambiar su contraseña antes de continuar', {
       codigo: 'PASSWORD_CHANGE_REQUIRED',
-      requiere_cambio_password: true
+      requiere_cambio_password: true,
     });
   }
-  
+
   next();
 };
 
@@ -409,21 +410,21 @@ const filtrarPorCliente = (req, res, next) => {
   if (!req.user) {
     return next();
   }
-  
+
   // Si es usuario cliente, forzar filtro por su cliente_id
   if (req.user.esCliente && req.user.cliente_id) {
     // Inyectar en query params
     req.query.cliente_id = req.user.cliente_id;
-    
+
     // Inyectar en body si es POST/PUT
     if (['POST', 'PUT', 'PATCH'].includes(req.method) && req.body) {
       req.body.cliente_id = req.user.cliente_id;
     }
-    
+
     // Marcar que está filtrado
     req.filtradoPorCliente = true;
   }
-  
+
   next();
 };
 
@@ -435,36 +436,33 @@ const verificarAccesoCliente = (req, res, next) => {
   if (!req.user) {
     return unauthorized(res, 'Usuario no autenticado');
   }
-  
+
   // Admin y usuarios internos pueden acceder a cualquier cliente
   if (req.user.esAdmin || req.user.esInterno) {
     return next();
   }
-  
+
   // Obtener cliente_id del request (params, query o body)
   const clienteIdSolicitado = parseInt(
-    req.params.clienteId || 
-    req.params.cliente_id || 
-    req.query.cliente_id || 
-    req.body?.cliente_id
+    req.params.clienteId || req.params.cliente_id || req.query.cliente_id || req.body?.cliente_id
   );
-  
+
   // Si no hay cliente_id en el request, continuar
   if (!clienteIdSolicitado) {
     return next();
   }
-  
+
   // Verificar que el usuario cliente solo acceda a su propio cliente
   if (req.user.esCliente && req.user.cliente_id !== clienteIdSolicitado) {
     logger.warn('Intento de acceso a cliente no autorizado:', {
       usuario: req.user.username,
       cliente_id_usuario: req.user.cliente_id,
       cliente_id_solicitado: clienteIdSolicitado,
-      ruta: req.originalUrl
+      ruta: req.originalUrl,
     });
     return forbidden(res, 'No tiene acceso a este cliente');
   }
-  
+
   next();
 };
 
@@ -476,11 +474,13 @@ const registrarAcceso = async (req, res, next) => {
   if (req.usuarioModel) {
     try {
       // Actualizar en background, no bloquear la request
-      req.usuarioModel.update({ 
-        ultimo_acceso: new Date() 
-      }).catch(err => {
-        logger.error('Error registrando acceso:', err);
-      });
+      req.usuarioModel
+        .update({
+          ultimo_acceso: new Date(),
+        })
+        .catch((err) => {
+          logger.error('Error registrando acceso:', err);
+        });
     } catch (error) {
       // No bloquear si falla
       logger.error('Error registrando acceso:', error);
@@ -498,31 +498,30 @@ const obtenerClienteIdContexto = (req) => {
   if (req.user?.esCliente && req.user?.cliente_id) {
     return req.user.cliente_id;
   }
-  
+
   // Si no, buscar en params/query/body
-  return parseInt(
-    req.params.clienteId || 
-    req.params.cliente_id || 
-    req.query.cliente_id || 
-    req.body?.cliente_id
-  ) || null;
+  return (
+    parseInt(
+      req.params.clienteId || req.params.cliente_id || req.query.cliente_id || req.body?.cliente_id
+    ) || null
+  );
 };
 
 module.exports = {
   // Autenticación básica
   verificarToken,
   verificarTokenOpcional,
-  
+
   // Control de roles
   checkRole,
   soloUsuariosInternos,
-  
+
   // Permisos de cliente
   verificarPermisoCliente,
   verificarCambioPassword,
   filtrarPorCliente,
   verificarAccesoCliente,
-  
+
   // Utilidades
   registrarAcceso,
   obtenerClienteIdContexto,
@@ -531,5 +530,5 @@ module.exports = {
   invalidarCachePermisos,
   cargarCachePermisos,
   getRolFromCache,
-  getPermisosForRol
+  getPermisosForRol,
 };

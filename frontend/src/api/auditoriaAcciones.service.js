@@ -11,9 +11,8 @@ import { AUDITORIA_ACCIONES_ENDPOINTS } from './endpoints';
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
 const descargarBlob = async (endpoint, params, nombreArchivo) => {
-  const qs = params && Object.keys(params).length
-    ? '?' + new URLSearchParams(params).toString()
-    : '';
+  const qs =
+    params && Object.keys(params).length ? '?' + new URLSearchParams(params).toString() : '';
   const response = await fetch(`${API_BASE}${endpoint}${qs}`, {
     headers: { Authorization: `Bearer ${getAuthToken()}` },
   });

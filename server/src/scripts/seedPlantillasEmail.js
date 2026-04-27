@@ -729,7 +729,7 @@ async function seed({ standalone = true } = {}) {
     // Upsert plantilla de Entrada
     const [entrada, entradaCreated] = await PlantillaEmail.findOrCreate({
       where: { nombre: plantillaEntrada.nombre },
-      defaults: plantillaEntrada
+      defaults: plantillaEntrada,
     });
 
     if (!entradaCreated) {
@@ -742,7 +742,7 @@ async function seed({ standalone = true } = {}) {
     // Upsert plantilla de Salida
     const [salida, salidaCreated] = await PlantillaEmail.findOrCreate({
       where: { nombre: plantillaSalida.nombre },
-      defaults: plantillaSalida
+      defaults: plantillaSalida,
     });
 
     if (!salidaCreated) {
@@ -755,7 +755,7 @@ async function seed({ standalone = true } = {}) {
     // Upsert plantilla de Kardex
     const [kardex, kardexCreated] = await PlantillaEmail.findOrCreate({
       where: { nombre: plantillaKardex.nombre },
-      defaults: plantillaKardex
+      defaults: plantillaKardex,
     });
 
     if (!kardexCreated) {

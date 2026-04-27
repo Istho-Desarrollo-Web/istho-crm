@@ -22,7 +22,8 @@ const KpiCard = ({
         rounded-2xl p-5
         shadow-sm border border-gray-100 dark:border-slate-700
         animate-pulse
-      ">
+      "
+      >
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="h-4 bg-gray-200 dark:bg-centhrix-surface rounded w-24 mb-2" />
@@ -36,7 +37,7 @@ const KpiCard = ({
   }
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className={`
         bg-white dark:bg-centhrix-card
@@ -49,12 +50,8 @@ const KpiCard = ({
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-            {title}
-          </p>
-          <p className="text-3xl font-bold text-slate-800 dark:text-slate-100">
-            {value}
-          </p>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{title}</p>
+          <p className="text-3xl font-bold text-slate-800 dark:text-slate-100">{value}</p>
           {subtitle && (
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{subtitle}</p>
           )}
@@ -62,9 +59,11 @@ const KpiCard = ({
             <p
               className={`
                 text-sm mt-2 font-medium
-                ${positive
-                  ? 'text-emerald-600 dark:text-emerald-400'
-                  : 'text-red-500 dark:text-red-400'}
+                ${
+                  positive
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-red-500 dark:text-red-400'
+                }
               `}
             >
               {change}

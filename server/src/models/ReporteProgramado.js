@@ -10,100 +10,107 @@
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  const ReporteProgramado = sequelize.define('ReporteProgramado', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
+  const ReporteProgramado = sequelize.define(
+    'ReporteProgramado',
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
 
-    nombre: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      comment: 'Nombre descriptivo del reporte'
-    },
+      nombre: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        comment: 'Nombre descriptivo del reporte',
+      },
 
-    tipo_reporte: {
-      type: DataTypes.ENUM('operaciones', 'inventario', 'clientes', 'viajes', 'cajas_menores', 'gastos'),
-      allowNull: false
-    },
+      tipo_reporte: {
+        type: DataTypes.ENUM(
+          'operaciones',
+          'inventario',
+          'clientes',
+          'viajes',
+          'cajas_menores',
+          'gastos'
+        ),
+        allowNull: false,
+      },
 
-    formato: {
-      type: DataTypes.ENUM('excel', 'pdf', 'ambos'),
-      defaultValue: 'excel'
-    },
+      formato: {
+        type: DataTypes.ENUM('excel', 'pdf', 'ambos'),
+        defaultValue: 'excel',
+      },
 
-    // Expresión cron (ej: '0 8 * * 1' = lunes a las 8am)
-    cron_expresion: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-      comment: 'Expresión cron para programación'
-    },
+      // Expresión cron (ej: '0 8 * * 1' = lunes a las 8am)
+      cron_expresion: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        comment: 'Expresión cron para programación',
+      },
 
-    // Descripción legible de la frecuencia
-    frecuencia_label: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: 'Descripción legible (ej: Cada lunes a las 8:00 AM)'
-    },
+      // Descripción legible de la frecuencia
+      frecuencia_label: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        comment: 'Descripción legible (ej: Cada lunes a las 8:00 AM)',
+      },
 
-    // Destinatarios (CSV de emails)
-    destinatarios: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-      comment: 'Emails separados por coma'
-    },
+      // Destinatarios (CSV de emails)
+      destinatarios: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        comment: 'Emails separados por coma',
+      },
 
-    // Filtros opcionales
-    cliente_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: { model: 'clientes', key: 'id' }
-    },
+      // Filtros opcionales
+      cliente_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: 'clientes', key: 'id' },
+      },
 
-    filtros: {
-      type: DataTypes.JSON,
-      allowNull: true,
-      comment: 'Filtros adicionales (estado, tipo, etc.)'
-    },
+      filtros: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        comment: 'Filtros adicionales (estado, tipo, etc.)',
+      },
 
-    activo: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true
-    },
+      activo: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
 
-    creado_por: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: { model: 'usuarios', key: 'id' }
-    },
+      creado_por: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: 'usuarios', key: 'id' },
+      },
 
-    ultima_ejecucion: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
+      ultima_ejecucion: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
 
-    estado_ultima_ejecucion: {
-      type: DataTypes.ENUM('ejecutando', 'exitoso', 'fallido'),
-      allowNull: true,
-      comment: 'Resultado de la última ejecución'
-    },
+      estado_ultima_ejecucion: {
+        type: DataTypes.ENUM('ejecutando', 'exitoso', 'fallido'),
+        allowNull: true,
+        comment: 'Resultado de la última ejecución',
+      },
 
-    ultimo_error: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      comment: 'Mensaje del último error al ejecutar'
+      ultimo_error: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'Mensaje del último error al ejecutar',
+      },
+    },
+    {
+      tableName: 'reportes_programados',
+      timestamps: true,
+      underscored: true,
+      indexes: [{ fields: ['activo'] }, { fields: ['tipo_reporte'] }, { fields: ['creado_por'] }],
     }
-  }, {
-    tableName: 'reportes_programados',
-    timestamps: true,
-    underscored: true,
-    indexes: [
-      { fields: ['activo'] },
-      { fields: ['tipo_reporte'] },
-      { fields: ['creado_por'] }
-    ]
-  });
+  );
 
   return ReporteProgramado;
 };

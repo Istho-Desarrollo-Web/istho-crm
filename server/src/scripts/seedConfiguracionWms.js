@@ -35,7 +35,7 @@ async function seed({ standalone = true } = {}) {
         valor_crm: 'Recarga de stock',
         requiere_detalle: false,
         descripcion: 'Recarga de inventario desde el WMS',
-        orden: 1
+        orden: 1,
       },
       {
         categoria: 'motivo_kardex',
@@ -43,7 +43,7 @@ async function seed({ standalone = true } = {}) {
         valor_crm: 'Ajuste manual',
         requiere_detalle: true,
         descripcion: 'Motivo personalizado — el WMS envía el detalle adicional',
-        orden: 2
+        orden: 2,
       },
 
       // ═══════════════════════════════════════════
@@ -55,7 +55,7 @@ async function seed({ standalone = true } = {}) {
         valor_crm: 'Entrada (CO)',
         tipo_documento: 'CO',
         descripcion: 'Fallback: si no viene tipo_documento="CO", busca tipo_orden="Recepcion"',
-        orden: 1
+        orden: 1,
       },
       {
         categoria: 'tipo_orden',
@@ -63,7 +63,7 @@ async function seed({ standalone = true } = {}) {
         valor_crm: 'Salida (PK)',
         tipo_documento: 'PK',
         descripcion: 'Fallback: si no viene tipo_documento="PK", busca tipo_orden="Picking"',
-        orden: 2
+        orden: 2,
       },
 
       // ═══════════════════════════════════════════
@@ -74,8 +74,8 @@ async function seed({ standalone = true } = {}) {
         valor_wms: 'Finalizada',
         valor_crm: 'Finalizada',
         descripcion: 'Solo procesar órdenes con estado "Finalizada"',
-        orden: 1
-      }
+        orden: 1,
+      },
     ];
 
     let creados = 0;
@@ -85,9 +85,9 @@ async function seed({ standalone = true } = {}) {
       const [, created] = await ConfiguracionWms.findOrCreate({
         where: {
           categoria: config.categoria,
-          valor_wms: config.valor_wms
+          valor_wms: config.valor_wms,
         },
-        defaults: config
+        defaults: config,
       });
 
       if (created) {

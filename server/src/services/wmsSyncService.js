@@ -13,7 +13,16 @@
  * @version 1.0.0
  */
 
-const { sequelize, Cliente, Inventario, Operacion, OperacionDetalle, MovimientoInventario, CajaInventario, ConfiguracionWms } = require('../models');
+const {
+  sequelize,
+  Cliente,
+  Inventario,
+  Operacion,
+  OperacionDetalle,
+  MovimientoInventario,
+  CajaInventario,
+  ConfiguracionWms,
+} = require('../models');
 const { Op } = require('sequelize');
 const logger = require('../utils/logger');
 const notificacionService = require('./notificacionService');
@@ -102,7 +111,10 @@ const syncProductos = async (data) => {
     for (const prod of productos) {
       try {
         if (!prod.codigo || !prod.descripcion) {
-          resultado.errores.push({ codigo: prod.codigo, error: 'Código y descripción son requeridos' });
+          resultado.errores.push({
+            codigo: prod.codigo,
+            error: 'Código y descripción son requeridos',
+          });
           continue;
         }
 
@@ -126,10 +138,13 @@ const syncProductos = async (data) => {
           resultado.creados++;
         } else {
           // Actualizar descripción si cambió
-          await inventario.update({
-            producto: prod.descripcion.trim(),
-            ultima_sincronizacion_wms: new Date(),
-          }, { transaction });
+          await inventario.update(
+            {
+              producto: prod.descripcion.trim(),
+              ultima_sincronizacion_wms: new Date(),
+            },
+            { transaction }
+          );
           resultado.actualizados++;
         }
       } catch (err) {
@@ -138,15 +153,19 @@ const syncProductos = async (data) => {
     }
 
     await transaction.commit();
-    logger.info(`[WMS Sync] Productos sincronizados para ${cliente.razon_social}: ${resultado.creados} creados, ${resultado.actualizados} actualizados`);
+    logger.info(
+      `[WMS Sync] Productos sincronizados para ${cliente.razon_social}: ${resultado.creados} creados, ${resultado.actualizados} actualizados`
+    );
 
     // Notificar sync de productos solo si hubo cambios
     if (resultado.creados > 0 || resultado.errores.length > 0) {
-      notificacionService.notificarSyncWms({
-        exitosa: resultado.errores.length === 0,
-        mensaje: `Productos sincronizados para ${cliente.razon_social}: ${resultado.creados} creados, ${resultado.actualizados} actualizados${resultado.errores.length > 0 ? `, ${resultado.errores.length} errores` : ''}.`,
-        detalles: resultado,
-      }).catch(() => {});
+      notificacionService
+        .notificarSyncWms({
+          exitosa: resultado.errores.length === 0,
+          mensaje: `Productos sincronizados para ${cliente.razon_social}: ${resultado.creados} creados, ${resultado.actualizados} actualizados${resultado.errores.length > 0 ? `, ${resultado.errores.length} errores` : ''}.`,
+          detalles: resultado,
+        })
+        .catch(() => {});
     }
 
     return resultado;
@@ -172,7 +191,16 @@ const syncProductos = async (data) => {
  * @returns {Object} operación creada
  */
 const syncEntrada = async (data) => {
-  const { nit, documento_origen, fecha_ingreso, tipo_documento, tipo_orden, estado, detalles, observaciones } = data;
+  const {
+    nit,
+    documento_origen,
+    fecha_ingreso,
+    tipo_documento,
+    tipo_orden,
+    estado,
+    detalles,
+    observaciones,
+  } = data;
 
   if (!documento_origen) throw new Error('documento_origen es requerido');
   if (!detalles || !Array.isArray(detalles) || detalles.length === 0) {
@@ -183,7 +211,9 @@ const syncEntrada = async (data) => {
   if (estado) {
     const estadoValido = await ConfiguracionWms.esEstadoValido(estado);
     if (!estadoValido) {
-      throw new Error(`Estado "${estado}" no es válido para procesar. Solo se procesan órdenes con estado finalizado.`);
+      throw new Error(
+        `Estado "${estado}" no es válido para procesar. Solo se procesan órdenes con estado finalizado.`
+      );
     }
   }
 
@@ -191,7 +221,9 @@ const syncEntrada = async (data) => {
   if (tipo_orden && !tipo_documento) {
     const tipoResuelto = await ConfiguracionWms.resolverTipoDocumento(null, tipo_orden);
     if (tipoResuelto && tipoResuelto !== 'CO') {
-      throw new Error(`Tipo de orden "${tipo_orden}" no corresponde a una entrada (CO). Se resolvió como "${tipoResuelto}".`);
+      throw new Error(
+        `Tipo de orden "${tipo_orden}" no corresponde a una entrada (CO). Se resolvió como "${tipoResuelto}".`
+      );
     }
   }
 
@@ -202,7 +234,9 @@ const syncEntrada = async (data) => {
     where: { documento_wms: documento_origen.toString().trim() },
   });
   if (existente) {
-    throw new Error(`Ya existe una operación con documento WMS: ${documento_origen} (${existente.numero_operacion})`);
+    throw new Error(
+      `Ya existe una operación con documento WMS: ${documento_origen} (${existente.numero_operacion})`
+    );
   }
 
   const transaction = await sequelize.transaction();
@@ -215,19 +249,23 @@ const syncEntrada = async (data) => {
     const skusUnicos = new Set(detalles.map((d) => d.producto)).size;
 
     // Crear operación
-    const operacion = await Operacion.create({
-      numero_operacion: numeroOperacion,
-      tipo: 'ingreso',
-      documento_wms: documento_origen.toString().trim(),
-      cliente_id: cliente.id,
-      fecha_documento: fecha_ingreso || new Date(),
-      fecha_operacion: new Date(),
-      tipo_documento_wms: 'CO',
-      total_referencias: skusUnicos,
-      total_unidades: totalUnidades,
-      estado: 'pendiente',
-      observaciones: observaciones || `Entrada sincronizada desde WMS - ${tipo_documento || 'N/A'}`,
-    }, { transaction });
+    const operacion = await Operacion.create(
+      {
+        numero_operacion: numeroOperacion,
+        tipo: 'ingreso',
+        documento_wms: documento_origen.toString().trim(),
+        cliente_id: cliente.id,
+        fecha_documento: fecha_ingreso || new Date(),
+        fecha_operacion: new Date(),
+        tipo_documento_wms: 'CO',
+        total_referencias: skusUnicos,
+        total_unidades: totalUnidades,
+        estado: 'pendiente',
+        observaciones:
+          observaciones || `Entrada sincronizada desde WMS - ${tipo_documento || 'N/A'}`,
+      },
+      { transaction }
+    );
 
     // Crear detalles y actualizar inventario
     for (const linea of detalles) {
@@ -239,29 +277,34 @@ const syncEntrada = async (data) => {
       // Buscar descripción en el catálogo maestro
       const productoMaestro = await Inventario.findOne({
         where: { cliente_id: cliente.id, sku },
-        transaction
+        transaction,
       });
 
       // Lógica de descripción: Preferir maestro si lo que viene es el SKU o está vacío
-      let descripcionProducto = (linea.descripcion || linea.producto || 'Producto S/D').toString().trim();
+      let descripcionProducto = (linea.descripcion || linea.producto || 'Producto S/D')
+        .toString()
+        .trim();
       if (productoMaestro?.producto && (descripcionProducto === sku || !linea.descripcion)) {
         descripcionProducto = productoMaestro.producto;
       }
 
       // Crear detalle de operación
-      const detalle = await OperacionDetalle.create({
-        operacion_id: operacion.id,
-        sku,
-        producto: descripcionProducto,
-        cantidad,
-        unidad_medida: linea.unidad_medida || 'UND',
-        lote: linea.lote || null,
-        lote_externo: linea.lote_externo || null,
-        fecha_vencimiento: linea.fecha_vencimiento || null,
-        documento_asociado: linea.documento_asociado || null,
-        numero_caja: linea.caja ? linea.caja.toString() : null,
-        peso: linea.peso || null,
-      }, { transaction });
+      const detalle = await OperacionDetalle.create(
+        {
+          operacion_id: operacion.id,
+          sku,
+          producto: descripcionProducto,
+          cantidad,
+          unidad_medida: linea.unidad_medida || 'UND',
+          lote: linea.lote || null,
+          lote_externo: linea.lote_externo || null,
+          fecha_vencimiento: linea.fecha_vencimiento || null,
+          documento_asociado: linea.documento_asociado || null,
+          numero_caja: linea.caja ? linea.caja.toString() : null,
+          peso: linea.peso || null,
+        },
+        { transaction }
+      );
 
       // Upsert inventario por referencia (cliente_id + sku, SIN lote)
       const [inventario] = await Inventario.findOrCreate({
@@ -285,11 +328,14 @@ const syncEntrada = async (data) => {
       await detalle.update({ inventario_id: inventario.id }, { transaction });
 
       const stockAnterior = parseFloat(inventario.cantidad) || 0;
-      await inventario.update({
-        cantidad: stockAnterior + cantidad,
-        ultima_sincronizacion_wms: new Date(),
-        alertas_silenciadas: null, // Limpiar alertas silenciadas al cambiar stock
-      }, { transaction });
+      await inventario.update(
+        {
+          cantidad: stockAnterior + cantidad,
+          ultima_sincronizacion_wms: new Date(),
+          alertas_silenciadas: null, // Limpiar alertas silenciadas al cambiar stock
+        },
+        { transaction }
+      );
 
       // El WMS envía el número de caja autoincremental
       // Si no viene, generar uno basado en el ID del registro
@@ -299,55 +345,68 @@ const syncEntrada = async (data) => {
       if (numeroCajaWms) {
         const cajaExistente = await CajaInventario.findOne({
           where: { numero_caja: numeroCajaWms, inventario_id: inventario.id },
-          transaction
+          transaction,
         });
         if (cajaExistente) {
-          logger.warn(`[WMS Sync] Caja ${numeroCajaWms} ya existe para este producto. Omitiendo duplicado.`);
+          logger.warn(
+            `[WMS Sync] Caja ${numeroCajaWms} ya existe para este producto. Omitiendo duplicado.`
+          );
           continue;
         }
       }
 
-      const nuevaCaja = await CajaInventario.create({
-        inventario_id: inventario.id,
-        operacion_id: operacion.id,
-        operacion_detalle_id: detalle.id,
-        numero_caja: numeroCajaWms,
-        lote: linea.lote || null,
-        lote_externo: linea.lote_externo || null,
-        ubicacion: linea.ubicacion || null,
-        cantidad,
-        peso: linea.peso || null,
-        unidad_medida: linea.unidad_medida || 'UND',
-        tipo: 'entrada',
-        estado: 'disponible',
-        documento_asociado: linea.documento_asociado || null,
-        fecha_vencimiento: linea.fecha_vencimiento || null,
-        fecha_movimiento: new Date(),
-      }, { transaction });
+      const nuevaCaja = await CajaInventario.create(
+        {
+          inventario_id: inventario.id,
+          operacion_id: operacion.id,
+          operacion_detalle_id: detalle.id,
+          numero_caja: numeroCajaWms,
+          lote: linea.lote || null,
+          lote_externo: linea.lote_externo || null,
+          ubicacion: linea.ubicacion || null,
+          cantidad,
+          peso: linea.peso || null,
+          unidad_medida: linea.unidad_medida || 'UND',
+          tipo: 'entrada',
+          estado: 'disponible',
+          documento_asociado: linea.documento_asociado || null,
+          fecha_vencimiento: linea.fecha_vencimiento || null,
+          fecha_movimiento: new Date(),
+        },
+        { transaction }
+      );
 
       // Si no venía número de caja del WMS, asignar uno autoincremental
       if (!numeroCajaWms) {
-        await nuevaCaja.update({ numero_caja: `CJ-${nuevaCaja.id.toString().padStart(6, '0')}` }, { transaction });
+        await nuevaCaja.update(
+          { numero_caja: `CJ-${nuevaCaja.id.toString().padStart(6, '0')}` },
+          { transaction }
+        );
       }
 
       // Registrar movimiento
-      await MovimientoInventario.create({
-        inventario_id: inventario.id,
-        operacion_id: operacion.id,
-        tipo: 'entrada',
-        motivo: 'Ingreso WMS',
-        cantidad,
-        stock_anterior: stockAnterior,
-        stock_resultante: stockAnterior + cantidad,
-        documento_referencia: documento_origen,
-        observaciones: `Sync WMS - ${tipo_documento || 'Ingreso'}`,
-        fecha_movimiento: new Date(),
-      }, { transaction });
+      await MovimientoInventario.create(
+        {
+          inventario_id: inventario.id,
+          operacion_id: operacion.id,
+          tipo: 'entrada',
+          motivo: 'Ingreso WMS',
+          cantidad,
+          stock_anterior: stockAnterior,
+          stock_resultante: stockAnterior + cantidad,
+          documento_referencia: documento_origen,
+          observaciones: `Sync WMS - ${tipo_documento || 'Ingreso'}`,
+          fecha_movimiento: new Date(),
+        },
+        { transaction }
+      );
     }
 
     await transaction.commit();
 
-    logger.info(`[WMS Sync] Entrada creada: ${numeroOperacion} para ${cliente.razon_social} (${detalles.length} líneas, ${totalUnidades} unidades)`);
+    logger.info(
+      `[WMS Sync] Entrada creada: ${numeroOperacion} para ${cliente.razon_social} (${detalles.length} líneas, ${totalUnidades} unidades)`
+    );
 
     const resultado = {
       operacion_id: operacion.id,
@@ -387,7 +446,17 @@ const syncEntrada = async (data) => {
  * @returns {Object} operación creada
  */
 const syncSalida = async (data) => {
-  const { nit, numero_picking, documento_wms, tipo_orden, estado, sucursal_entrega, ciudad_destino, detalles, observaciones } = data;
+  const {
+    nit,
+    numero_picking,
+    documento_wms,
+    tipo_orden,
+    estado,
+    sucursal_entrega,
+    ciudad_destino,
+    detalles,
+    observaciones,
+  } = data;
 
   if (!detalles || !Array.isArray(detalles) || detalles.length === 0) {
     throw new Error('Se requiere al menos una línea de detalle');
@@ -397,7 +466,9 @@ const syncSalida = async (data) => {
   if (estado) {
     const estadoValido = await ConfiguracionWms.esEstadoValido(estado);
     if (!estadoValido) {
-      throw new Error(`Estado "${estado}" no es válido para procesar. Solo se procesan órdenes con estado finalizado.`);
+      throw new Error(
+        `Estado "${estado}" no es válido para procesar. Solo se procesan órdenes con estado finalizado.`
+      );
     }
   }
 
@@ -405,7 +476,9 @@ const syncSalida = async (data) => {
   if (tipo_orden && !documento_wms) {
     const tipoResuelto = await ConfiguracionWms.resolverTipoDocumento(null, tipo_orden);
     if (tipoResuelto && tipoResuelto !== 'PK') {
-      throw new Error(`Tipo de orden "${tipo_orden}" no corresponde a una salida (PK). Se resolvió como "${tipoResuelto}".`);
+      throw new Error(
+        `Tipo de orden "${tipo_orden}" no corresponde a una salida (PK). Se resolvió como "${tipoResuelto}".`
+      );
     }
   }
 
@@ -416,14 +489,13 @@ const syncSalida = async (data) => {
   if (docRef) {
     const existente = await Operacion.findOne({
       where: {
-        [Op.or]: [
-          { numero_picking: docRef },
-          { documento_wms: docRef },
-        ],
+        [Op.or]: [{ numero_picking: docRef }, { documento_wms: docRef }],
       },
     });
     if (existente) {
-      throw new Error(`Ya existe una operación con picking/documento: ${docRef} (${existente.numero_operacion})`);
+      throw new Error(
+        `Ya existe una operación con picking/documento: ${docRef} (${existente.numero_operacion})`
+      );
     }
   }
 
@@ -436,22 +508,28 @@ const syncSalida = async (data) => {
     const skusUnicos = new Set(detalles.map((d) => d.producto)).size;
 
     // Crear operación
-    const operacion = await Operacion.create({
-      numero_operacion: numeroOperacion,
-      tipo: 'salida',
-      documento_wms: documento_wms || numero_picking || null,
-      numero_picking: numero_picking || null,
-      cliente_id: cliente.id,
-      fecha_operacion: new Date(),
-      sucursal_entrega: sucursal_entrega || null,
-      ciudad_destino: ciudad_destino || null,
-      destino: sucursal_entrega ? `${sucursal_entrega}${ciudad_destino ? `, ${ciudad_destino}` : ''}` : null,
-      tipo_documento_wms: 'PK',
-      total_referencias: skusUnicos,
-      total_unidades: totalUnidades,
-      estado: 'pendiente',
-      observaciones: observaciones || `Salida sincronizada desde WMS - Picking ${numero_picking || 'N/A'}`,
-    }, { transaction });
+    const operacion = await Operacion.create(
+      {
+        numero_operacion: numeroOperacion,
+        tipo: 'salida',
+        documento_wms: documento_wms || numero_picking || null,
+        numero_picking: numero_picking || null,
+        cliente_id: cliente.id,
+        fecha_operacion: new Date(),
+        sucursal_entrega: sucursal_entrega || null,
+        ciudad_destino: ciudad_destino || null,
+        destino: sucursal_entrega
+          ? `${sucursal_entrega}${ciudad_destino ? `, ${ciudad_destino}` : ''}`
+          : null,
+        tipo_documento_wms: 'PK',
+        total_referencias: skusUnicos,
+        total_unidades: totalUnidades,
+        estado: 'pendiente',
+        observaciones:
+          observaciones || `Salida sincronizada desde WMS - Picking ${numero_picking || 'N/A'}`,
+      },
+      { transaction }
+    );
 
     // Crear detalles y actualizar inventario
     for (const linea of detalles) {
@@ -463,27 +541,32 @@ const syncSalida = async (data) => {
       // Buscar descripción en el catálogo maestro
       const productoMaestro = await Inventario.findOne({
         where: { cliente_id: cliente.id, sku },
-        transaction
+        transaction,
       });
 
       // Lógica de descripción: Preferir maestro si lo que viene es el SKU o está vacío
-      let descripcionProducto = (linea.descripcion || linea.producto || 'Producto S/D').toString().trim();
+      let descripcionProducto = (linea.descripcion || linea.producto || 'Producto S/D')
+        .toString()
+        .trim();
       if (productoMaestro?.producto && (descripcionProducto === sku || !linea.descripcion)) {
         descripcionProducto = productoMaestro.producto;
       }
-     const detalle = await OperacionDetalle.create({
-        operacion_id: operacion.id,
-        sku,
-        producto: descripcionProducto,
-        cantidad,
-        unidad_medida: linea.unidad_medida || 'UND',
-        lote: linea.lote_interno || linea.lote || null,
-        lote_externo: linea.lote_externo || null,
-        fecha_vencimiento: linea.fecha_vencimiento || null,
-        numero_caja: linea.caja ? linea.caja.toString() : null,
-        documento_asociado: linea.pedido || linea.documento_asociado || null,
-        peso: linea.peso || null,
-      }, { transaction });
+      const detalle = await OperacionDetalle.create(
+        {
+          operacion_id: operacion.id,
+          sku,
+          producto: descripcionProducto,
+          cantidad,
+          unidad_medida: linea.unidad_medida || 'UND',
+          lote: linea.lote_interno || linea.lote || null,
+          lote_externo: linea.lote_externo || null,
+          fecha_vencimiento: linea.fecha_vencimiento || null,
+          numero_caja: linea.caja ? linea.caja.toString() : null,
+          documento_asociado: linea.pedido || linea.documento_asociado || null,
+          peso: linea.peso || null,
+        },
+        { transaction }
+      );
 
       // Buscar inventario por referencia (cliente_id + sku, SIN lote)
       const inventario = await Inventario.findOne({
@@ -501,72 +584,86 @@ const syncSalida = async (data) => {
         const stockAnterior = parseFloat(inventario.cantidad) || 0;
         const nuevoStock = Math.max(0, stockAnterior - cantidad);
 
-        await inventario.update({
-          cantidad: nuevoStock,
-          ultima_sincronizacion_wms: new Date(),
-          alertas_silenciadas: null, // Limpiar alertas silenciadas al cambiar stock
-        }, { transaction });
+        await inventario.update(
+          {
+            cantidad: nuevoStock,
+            ultima_sincronizacion_wms: new Date(),
+            alertas_silenciadas: null, // Limpiar alertas silenciadas al cambiar stock
+          },
+          { transaction }
+        );
 
         // Manejo de cajas para la salida
         const numeroCajaSalida = linea.caja ? linea.caja.toString() : null;
-        
+
         if (numeroCajaSalida) {
           // Intentar encontrar la caja específica que está saliendo
           const cajaStock = await CajaInventario.findOne({
-            where: { 
-              numero_caja: numeroCajaSalida, 
+            where: {
+              numero_caja: numeroCajaSalida,
               inventario_id: inventario.id,
-              estado: 'disponible' 
+              estado: 'disponible',
             },
-            transaction
+            transaction,
           });
 
           if (cajaStock) {
             // Marcar la caja original como despachada
-            await cajaStock.update({ 
-              estado: 'despachada',
-              operacion_id: operacion.id // Vincular a la salida
-            }, { transaction });
+            await cajaStock.update(
+              {
+                estado: 'despachada',
+                operacion_id: operacion.id, // Vincular a la salida
+              },
+              { transaction }
+            );
           }
         }
 
         // Crear registro de movimiento de caja (tipo salida)
-        await CajaInventario.create({
-          inventario_id: inventario.id,
-          operacion_id: operacion.id,
-          operacion_detalle_id: detalle.id,
-          numero_caja: numeroCajaSalida,
-          lote: linea.lote_interno || linea.lote || null,
-          lote_externo: linea.lote_externo || null,
-          ubicacion: linea.ubicacion || null,
-          cantidad,
-          peso: linea.peso || null,
-          unidad_medida: linea.unidad_medida || 'UND',
-          tipo: 'salida',
-          estado: 'despachada',
-          documento_asociado: linea.pedido || linea.documento_asociado || null,
-          fecha_vencimiento: linea.fecha_vencimiento || null,
-          fecha_movimiento: new Date(),
-        }, { transaction });
+        await CajaInventario.create(
+          {
+            inventario_id: inventario.id,
+            operacion_id: operacion.id,
+            operacion_detalle_id: detalle.id,
+            numero_caja: numeroCajaSalida,
+            lote: linea.lote_interno || linea.lote || null,
+            lote_externo: linea.lote_externo || null,
+            ubicacion: linea.ubicacion || null,
+            cantidad,
+            peso: linea.peso || null,
+            unidad_medida: linea.unidad_medida || 'UND',
+            tipo: 'salida',
+            estado: 'despachada',
+            documento_asociado: linea.pedido || linea.documento_asociado || null,
+            fecha_vencimiento: linea.fecha_vencimiento || null,
+            fecha_movimiento: new Date(),
+          },
+          { transaction }
+        );
 
-        await MovimientoInventario.create({
-          inventario_id: inventario.id,
-          operacion_id: operacion.id,
-          tipo: 'salida',
-          motivo: 'Salida WMS',
-          cantidad,
-          stock_anterior: stockAnterior,
-          stock_resultante: nuevoStock,
-          documento_referencia: numero_picking || documento_wms,
-          observaciones: `Sync WMS - Picking ${numero_picking || 'N/A'}`,
-          fecha_movimiento: new Date(),
-        }, { transaction });
+        await MovimientoInventario.create(
+          {
+            inventario_id: inventario.id,
+            operacion_id: operacion.id,
+            tipo: 'salida',
+            motivo: 'Salida WMS',
+            cantidad,
+            stock_anterior: stockAnterior,
+            stock_resultante: nuevoStock,
+            documento_referencia: numero_picking || documento_wms,
+            observaciones: `Sync WMS - Picking ${numero_picking || 'N/A'}`,
+            fecha_movimiento: new Date(),
+          },
+          { transaction }
+        );
       }
     }
 
     await transaction.commit();
 
-    logger.info(`[WMS Sync] Salida creada: ${numeroOperacion} para ${cliente.razon_social} (Picking: ${numero_picking}, ${detalles.length} líneas)`);
+    logger.info(
+      `[WMS Sync] Salida creada: ${numeroOperacion} para ${cliente.razon_social} (Picking: ${numero_picking}, ${detalles.length} líneas)`
+    );
 
     const resultado = {
       operacion_id: operacion.id,
@@ -617,7 +714,16 @@ const syncSalida = async (data) => {
  * @returns {Object} operación creada
  */
 const syncKardex = async (data) => {
-  const { nit, documento_origen, fecha_ingreso, motivo, detalle_motivo, estado, detalles, observaciones } = data;
+  const {
+    nit,
+    documento_origen,
+    fecha_ingreso,
+    motivo,
+    detalle_motivo,
+    estado,
+    detalles,
+    observaciones,
+  } = data;
 
   if (!motivo) throw new Error('motivo es requerido para Kardex');
   if (!detalles || !Array.isArray(detalles) || detalles.length === 0) {
@@ -628,20 +734,25 @@ const syncKardex = async (data) => {
   if (estado) {
     const estadoValido = await ConfiguracionWms.esEstadoValido(estado);
     if (!estadoValido) {
-      throw new Error(`Estado "${estado}" no es válido para procesar. Solo se procesan órdenes con estado finalizado.`);
+      throw new Error(
+        `Estado "${estado}" no es válido para procesar. Solo se procesan órdenes con estado finalizado.`
+      );
     }
   }
 
   // Validar motivo contra lista blanca de configuración
   const motivoConfig = await ConfiguracionWms.verificarMotivoKardex(motivo);
   if (!motivoConfig.permitido) {
-    throw new Error(`Motivo de Kardex "${motivo}" no está permitido. Motivos válidos: consultar configuración WMS.`);
+    throw new Error(
+      `Motivo de Kardex "${motivo}" no está permitido. Motivos válidos: consultar configuración WMS.`
+    );
   }
 
   // Si el motivo requiere detalle y no viene, usar el motivo como detalle
-  const motivoFinal = motivoConfig.requiereDetalle && detalle_motivo
-    ? `${motivoConfig.valorCrm}: ${detalle_motivo}`
-    : motivoConfig.valorCrm;
+  const motivoFinal =
+    motivoConfig.requiereDetalle && detalle_motivo
+      ? `${motivoConfig.valorCrm}: ${detalle_motivo}`
+      : motivoConfig.valorCrm;
 
   const cliente = await findClienteByNit(nit);
 
@@ -651,7 +762,9 @@ const syncKardex = async (data) => {
       where: { documento_wms: documento_origen.toString().trim(), tipo_documento_wms: 'CR' },
     });
     if (existente) {
-      throw new Error(`Ya existe un Kardex con documento: ${documento_origen} (${existente.numero_operacion})`);
+      throw new Error(
+        `Ya existe un Kardex con documento: ${documento_origen} (${existente.numero_operacion})`
+      );
     }
   }
 
@@ -660,30 +773,34 @@ const syncKardex = async (data) => {
   try {
     const numeroOperacion = await generarNumeroOperacion();
 
-    const totalUnidades = detalles.reduce((sum, d) => sum + Math.abs(parseFloat(d.cantidad) || 0), 0);
+    const totalUnidades = detalles.reduce(
+      (sum, d) => sum + Math.abs(parseFloat(d.cantidad) || 0),
+      0
+    );
     const skusUnicos = new Set(detalles.map((d) => d.producto)).size;
 
     // Crear operación tipo kardex
     // Si no viene documento_origen, usar el motivo como documento_wms para que
     // el listado de auditoría muestre algo significativo en la columna "Documento"
-    const documentoWms = documento_origen
-      ? documento_origen.toString().trim()
-      : motivo.trim();
+    const documentoWms = documento_origen ? documento_origen.toString().trim() : motivo.trim();
 
-    const operacion = await Operacion.create({
-      numero_operacion: numeroOperacion,
-      tipo: 'kardex',
-      documento_wms: documentoWms,
-      cliente_id: cliente.id,
-      fecha_documento: fecha_ingreso || new Date(),
-      fecha_operacion: new Date(),
-      tipo_documento_wms: 'CR',
-      motivo_kardex: motivoFinal,
-      total_referencias: skusUnicos,
-      total_unidades: totalUnidades,
-      estado: 'pendiente',
-      observaciones: observaciones || `Kardex WMS - ${motivoFinal}`,
-    }, { transaction });
+    const operacion = await Operacion.create(
+      {
+        numero_operacion: numeroOperacion,
+        tipo: 'kardex',
+        documento_wms: documentoWms,
+        cliente_id: cliente.id,
+        fecha_documento: fecha_ingreso || new Date(),
+        fecha_operacion: new Date(),
+        tipo_documento_wms: 'CR',
+        motivo_kardex: motivoFinal,
+        total_referencias: skusUnicos,
+        total_unidades: totalUnidades,
+        estado: 'pendiente',
+        observaciones: observaciones || `Kardex WMS - ${motivoFinal}`,
+      },
+      { transaction }
+    );
 
     // Procesar cada línea de ajuste
     let lineasProcesadas = 0;
@@ -704,7 +821,9 @@ const syncKardex = async (data) => {
       });
 
       if (!inventario) {
-        logger.warn(`[WMS Sync] Kardex: SKU ${sku} no encontrado en inventario para ${cliente.razon_social}. Omitiendo.`);
+        logger.warn(
+          `[WMS Sync] Kardex: SKU ${sku} no encontrado en inventario para ${cliente.razon_social}. Omitiendo.`
+        );
         continue;
       }
 
@@ -717,36 +836,43 @@ const syncKardex = async (data) => {
             inventario_id: inventario.id,
           },
           order: [['created_at', 'DESC']],
-          transaction
+          transaction,
         });
 
         if (cajaExistente && !esSuma && cajaExistente.estado === 'despachada') {
-          logger.warn(`[WMS Sync] Kardex: No se puede restar a caja ${numeroCaja} en estado 'despachada'. Omitiendo.`);
+          logger.warn(
+            `[WMS Sync] Kardex: No se puede restar a caja ${numeroCaja} en estado 'despachada'. Omitiendo.`
+          );
           continue;
         }
       }
 
       // Buscar descripción en el catálogo maestro
-      let descripcionProducto = (linea.descripcion || linea.producto || 'Producto S/D').toString().trim();
+      let descripcionProducto = (linea.descripcion || linea.producto || 'Producto S/D')
+        .toString()
+        .trim();
       if (inventario.producto && (descripcionProducto === sku || !linea.descripcion)) {
         descripcionProducto = inventario.producto;
       }
 
       // Crear detalle de operación (documento_asociado = motivo del kardex)
-      await OperacionDetalle.create({
-        operacion_id: operacion.id,
-        sku,
-        producto: descripcionProducto,
-        cantidad: Math.abs(cantidad),
-        unidad_medida: linea.unidad_medida || 'UND',
-        lote: linea.lote || null,
-        lote_externo: linea.lote_externo || null,
-        fecha_vencimiento: linea.fecha_vencimiento || null,
-        documento_asociado: motivo, // El motivo va como documento
-        numero_caja: numeroCaja,
-        peso: linea.peso || null,
-        inventario_id: inventario.id,
-      }, { transaction });
+      await OperacionDetalle.create(
+        {
+          operacion_id: operacion.id,
+          sku,
+          producto: descripcionProducto,
+          cantidad: Math.abs(cantidad),
+          unidad_medida: linea.unidad_medida || 'UND',
+          lote: linea.lote || null,
+          lote_externo: linea.lote_externo || null,
+          fecha_vencimiento: linea.fecha_vencimiento || null,
+          documento_asociado: motivo, // El motivo va como documento
+          numero_caja: numeroCaja,
+          peso: linea.peso || null,
+          inventario_id: inventario.id,
+        },
+        { transaction }
+      );
 
       lineasProcesadas++;
       unidadesProcesadas += Math.abs(cantidad);
@@ -754,7 +880,6 @@ const syncKardex = async (data) => {
       const stockAnterior = parseFloat(inventario.cantidad) || 0;
 
       if (cajaExistente) {
-
         const cantidadCajaAnterior = parseFloat(cajaExistente.cantidad) || 0;
         const nuevaCantidadCaja = esSuma
           ? cantidadCajaAnterior + Math.abs(cantidad)
@@ -764,7 +889,10 @@ const syncKardex = async (data) => {
         let nuevoEstado = cajaExistente.estado;
         let nuevaUbicacion = cajaExistente.ubicacion;
 
-        if (esSuma && (cajaExistente.estado === 'inactiva' || cajaExistente.estado === 'despachada')) {
+        if (
+          esSuma &&
+          (cajaExistente.estado === 'inactiva' || cajaExistente.estado === 'despachada')
+        ) {
           // Reactivar caja → disponible, zona recepción
           nuevoEstado = 'disponible';
           nuevaUbicacion = 'RECEPCIÓN';
@@ -774,13 +902,16 @@ const syncKardex = async (data) => {
           nuevaUbicacion = null;
         }
 
-        await cajaExistente.update({
-          cantidad: nuevaCantidadCaja,
-          estado: nuevoEstado,
-          ubicacion: nuevaUbicacion,
-          operacion_id: operacion.id,
-          fecha_movimiento: new Date(),
-        }, { transaction });
+        await cajaExistente.update(
+          {
+            cantidad: nuevaCantidadCaja,
+            estado: nuevoEstado,
+            ubicacion: nuevaUbicacion,
+            operacion_id: operacion.id,
+            fecha_movimiento: new Date(),
+          },
+          { transaction }
+        );
       }
 
       // Actualizar inventario maestro
@@ -788,38 +919,49 @@ const syncKardex = async (data) => {
         ? stockAnterior + Math.abs(cantidad)
         : Math.max(0, stockAnterior - Math.abs(cantidad));
 
-      await inventario.update({
-        cantidad: nuevoStock,
-        ultima_sincronizacion_wms: new Date(),
-        alertas_silenciadas: null,
-      }, { transaction });
+      await inventario.update(
+        {
+          cantidad: nuevoStock,
+          ultima_sincronizacion_wms: new Date(),
+          alertas_silenciadas: null,
+        },
+        { transaction }
+      );
 
       // Registrar movimiento
-      await MovimientoInventario.create({
-        inventario_id: inventario.id,
-        operacion_id: operacion.id,
-        tipo: esSuma ? 'entrada' : 'salida',
-        motivo: `Kardex WMS - ${motivo}`,
-        cantidad: Math.abs(cantidad),
-        stock_anterior: stockAnterior,
-        stock_resultante: nuevoStock,
-        documento_referencia: documento_origen || motivo,
-        observaciones: `Sync WMS Kardex - ${esSuma ? 'Suma' : 'Resta'} - ${motivo}`,
-        fecha_movimiento: new Date(),
-      }, { transaction });
+      await MovimientoInventario.create(
+        {
+          inventario_id: inventario.id,
+          operacion_id: operacion.id,
+          tipo: esSuma ? 'entrada' : 'salida',
+          motivo: `Kardex WMS - ${motivo}`,
+          cantidad: Math.abs(cantidad),
+          stock_anterior: stockAnterior,
+          stock_resultante: nuevoStock,
+          documento_referencia: documento_origen || motivo,
+          observaciones: `Sync WMS Kardex - ${esSuma ? 'Suma' : 'Resta'} - ${motivo}`,
+          fecha_movimiento: new Date(),
+        },
+        { transaction }
+      );
     }
 
     // Actualizar totales reales en la operación (descontando líneas omitidas)
     if (lineasProcesadas !== detalles.length || unidadesProcesadas !== totalUnidades) {
-      await operacion.update({
-        total_unidades: unidadesProcesadas,
-        total_referencias: lineasProcesadas,
-      }, { transaction });
+      await operacion.update(
+        {
+          total_unidades: unidadesProcesadas,
+          total_referencias: lineasProcesadas,
+        },
+        { transaction }
+      );
     }
 
     await transaction.commit();
 
-    logger.info(`[WMS Sync] Kardex creado: ${numeroOperacion} para ${cliente.razon_social} (${lineasProcesadas}/${detalles.length} líneas procesadas, motivo: ${motivo})`);
+    logger.info(
+      `[WMS Sync] Kardex creado: ${numeroOperacion} para ${cliente.razon_social} (${lineasProcesadas}/${detalles.length} líneas procesadas, motivo: ${motivo})`
+    );
 
     const resultado = {
       operacion_id: operacion.id,
@@ -834,10 +976,12 @@ const syncKardex = async (data) => {
     };
 
     // Notificar usuarios del cliente + admins
-    notificacionService.notificarEntradaWms({
-      ...resultado,
-      documento_wms: documento_origen || motivo,
-    }).catch(() => {});
+    notificacionService
+      .notificarEntradaWms({
+        ...resultado,
+        documento_wms: documento_origen || motivo,
+      })
+      .catch(() => {});
 
     return resultado;
   } catch (error) {

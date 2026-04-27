@@ -4,7 +4,7 @@
  * ============================================================================
  * Definición centralizada de todos los endpoints de la API.
  * Facilita mantenimiento y evita strings hardcodeados.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 2.1.0
  * @date Enero 2026
@@ -43,7 +43,8 @@ export const CLIENTES_ENDPOINTS = {
   STATS: '/clientes/stats',
   CONTACTOS: (id) => `/clientes/${id}/contactos`,
   CONTACTO: (clienteId, contactoId) => `/clientes/${clienteId}/contactos/${contactoId}`,
-  CONTACTO_PRINCIPAL: (clienteId, contactoId) => `/clientes/${clienteId}/contactos/${contactoId}/principal`,
+  CONTACTO_PRINCIPAL: (clienteId, contactoId) =>
+    `/clientes/${clienteId}/contactos/${contactoId}/principal`,
   INVENTARIO: (id) => `/clientes/${id}/inventario`,
   DESPACHOS: (id) => `/clientes/${id}/despachos`,
   DOCUMENTOS: (id) => `/clientes/${id}/documentos`,
@@ -61,21 +62,21 @@ export const INVENTARIO_ENDPOINTS = {
   BASE: '/inventario',
   BY_ID: (id) => `/inventario/${id}`,
   BY_CLIENTE: (clienteId) => `/inventario/cliente/${clienteId}`,
-  
+
   // Estadísticas y Alertas
   STATS: '/inventario/stats',
   ALERTAS: '/inventario/alertas',
-  
+
   // Movimientos (entradas, salidas, ajustes)
   AJUSTAR: (id) => `/inventario/${id}/ajustar`,
   MOVIMIENTOS: (id) => `/inventario/${id}/movimientos`,
   ESTADISTICAS_PRODUCTO: (id) => `/inventario/${id}/estadisticas`,
-  
+
   // Gestión de alertas
   ATENDER_ALERTA: (alertaId) => `/inventario/alertas/${alertaId}/atender`,
   DESCARTAR_ALERTA: (alertaId) => `/inventario/alertas/${alertaId}`,
   DESCARTAR_TODAS_ALERTAS: '/inventario/alertas/descartar-todas',
-  
+
   // Cajas (detalle por operación)
   CAJAS: (id) => `/inventario/${id}/cajas`,
 
@@ -95,11 +96,11 @@ export const OPERACIONES_ENDPOINTS = {
   BASE: '/operaciones',
   BY_ID: (id) => `/operaciones/${id}`,
   STATS: '/operaciones/stats',
-  
+
   // WMS
   WMS_DOCUMENTOS: '/operaciones/wms/documentos',
   WMS_DOCUMENTO: (numero) => `/operaciones/wms/documento/${numero}`,
-  
+
   // Acciones
   AVERIAS: (id) => `/operaciones/${id}/averias`,
   DOCUMENTOS: (id) => `/operaciones/${id}/documentos`,
@@ -278,10 +279,10 @@ export const ADMIN_ENDPOINTS = {
 // ════════════════════════════════════════════════════════════════════════════
 
 export const WMS_DASHBOARD_ENDPOINTS = {
-  STATUS:        '/wms/dashboard/status',
-  ESTADISTICAS:  '/wms/dashboard/estadisticas',
-  HISTORIAL:     '/wms/dashboard/historial',
-  REEJECUTAR:    '/wms/dashboard/reejecutar',
+  STATUS: '/wms/dashboard/status',
+  ESTADISTICAS: '/wms/dashboard/estadisticas',
+  HISTORIAL: '/wms/dashboard/historial',
+  REEJECUTAR: '/wms/dashboard/reejecutar',
 };
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -348,7 +349,7 @@ export const MOVIMIENTOS_ENDPOINTS = {
 
 export const BACKUP_ENDPOINTS = {
   HISTORIAL: '/backup/historial',
-  EJECUTAR:  '/backup/ejecutar',
+  EJECUTAR: '/backup/ejecutar',
 };
 
 // ════════════════════════════════════════════════════════════════════════════

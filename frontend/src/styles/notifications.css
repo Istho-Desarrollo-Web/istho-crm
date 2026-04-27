@@ -33,7 +33,12 @@
 .notistack-MuiContent-warning,
 .notistack-MuiContent-info,
 .notistack-MuiContent-default {
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+  font-family:
+    'Inter',
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    sans-serif !important;
   font-size: 14px !important;
   font-weight: 500 !important;
   border-radius: 12px !important;
@@ -52,7 +57,7 @@
 .notistack-MuiContent-success {
   background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
   color: #ffffff !important;
-  box-shadow: 
+  box-shadow:
     0 10px 40px -10px rgba(5, 150, 105, 0.5),
     0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
 }
@@ -64,7 +69,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to right, rgba(255,255,255,0.1), transparent);
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.1), transparent);
   border-radius: 12px;
   pointer-events: none;
 }
@@ -74,9 +79,9 @@
 /* ════════════════════════════════════════════════════════════════════════════ */
 
 .notistack-MuiContent-error {
-  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%) !important;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
   color: #ffffff !important;
-  box-shadow: 
+  box-shadow:
     0 10px 40px -10px rgba(220, 38, 38, 0.5),
     0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
 }
@@ -86,9 +91,9 @@
 /* ════════════════════════════════════════════════════════════════════════════ */
 
 .notistack-MuiContent-warning {
-  background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%) !important;
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
   color: #ffffff !important;
-  box-shadow: 
+  box-shadow:
     0 10px 40px -10px rgba(231, 76, 60, 0.5),
     0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
 }
@@ -98,9 +103,9 @@
 /* ════════════════════════════════════════════════════════════════════════════ */
 
 .notistack-MuiContent-info {
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
   color: #ffffff !important;
-  box-shadow: 
+  box-shadow:
     0 10px 40px -10px rgba(59, 130, 246, 0.5),
     0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
 }
@@ -110,9 +115,9 @@
 /* ════════════════════════════════════════════════════════════════════════════ */
 
 .notistack-MuiContent-default {
-  background: linear-gradient(135deg, #455A64 0%, #37474F 100%) !important;
+  background: linear-gradient(135deg, #455a64 0%, #37474f 100%) !important;
   color: #ffffff !important;
-  box-shadow: 
+  box-shadow:
     0 10px 40px -10px rgba(69, 90, 100, 0.5),
     0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
 }
@@ -133,7 +138,7 @@
 /* ════════════════════════════════════════════════════════════════════════════ */
 
 .notistack-MuiContent button,
-.notistack-MuiContent [class*="closeButton"] {
+.notistack-MuiContent [class*='closeButton'] {
   color: rgba(255, 255, 255, 0.8) !important;
   padding: 4px !important;
   border-radius: 8px !important;
@@ -141,7 +146,7 @@
 }
 
 .notistack-MuiContent button:hover,
-.notistack-MuiContent [class*="closeButton"]:hover {
+.notistack-MuiContent [class*='closeButton']:hover {
   background: rgba(255, 255, 255, 0.2) !important;
   color: #ffffff !important;
 }
@@ -241,13 +246,25 @@
 }
 
 @keyframes toastSlideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes toastSlideDown {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(100%); opacity: 0; }
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════════════════ */
@@ -255,11 +272,11 @@
 /* ════════════════════════════════════════════════════════════════════════════ */
 
 .toast-inventory {
-  background: linear-gradient(135deg, #E74C3C 0%, #BF360C 100%) !important;
+  background: linear-gradient(135deg, #e74c3c 0%, #bf360c 100%) !important;
   background-color: rgba(231, 76, 60, 0.08) !important;
   border: 1px solid rgba(231, 76, 60, 0.2) !important;
   border-radius: 8px !important;
-  box-shadow: 
+  box-shadow:
     0 10px 40px -10px rgba(231, 76, 60, 0.6),
     0 4px 6px -2px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
@@ -271,18 +288,18 @@
 
 @media (prefers-color-scheme: dark) {
   .notistack-MuiContent-success {
-    background: linear-gradient(135deg, #047857 0%, #065F46 100%) !important;
+    background: linear-gradient(135deg, #047857 0%, #065f46 100%) !important;
   }
-  
+
   .notistack-MuiContent-error {
-    background: linear-gradient(135deg, #B91C1C 0%, #991B1B 100%) !important;
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
   }
-  
+
   .notistack-MuiContent-warning {
-    background: linear-gradient(135deg, #C0392B 0%, #BF360C 100%) !important;
+    background: linear-gradient(135deg, #c0392b 0%, #bf360c 100%) !important;
   }
-  
+
   .notistack-MuiContent-info {
-    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
   }
 }

@@ -9,9 +9,22 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Search, RefreshCw, ChevronLeft, ChevronRight, Filter,
-  Activity, LogIn, Plus, Pencil, Trash2, Clock,
-  X, ChevronDown, FileSpreadsheet, FileText, Loader2,
+  Search,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Activity,
+  LogIn,
+  Plus,
+  Pencil,
+  Trash2,
+  Clock,
+  X,
+  ChevronDown,
+  FileSpreadsheet,
+  FileText,
+  Loader2,
 } from 'lucide-react';
 import useNotification from '@hooks/useNotification';
 import auditoriaAccionesService from '../../api/auditoriaAcciones.service';
@@ -20,11 +33,31 @@ import PageFooter from '@components/common/PageFooter';
 // ════════════════════════════════════════════════════════════════════════════
 
 const ACCION_CONFIG = {
-  crear: { label: 'Crear', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: Plus },
-  actualizar: { label: 'Actualizar', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: Pencil },
-  eliminar: { label: 'Eliminar', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: Trash2 },
-  login: { label: 'Login', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400', icon: LogIn },
-  logout: { label: 'Logout', color: 'bg-slate-100 text-slate-700 dark:bg-centhrix-surface/50 dark:text-slate-300', icon: LogIn },
+  crear: {
+    label: 'Crear',
+    color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    icon: Plus,
+  },
+  actualizar: {
+    label: 'Actualizar',
+    color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    icon: Pencil,
+  },
+  eliminar: {
+    label: 'Eliminar',
+    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    icon: Trash2,
+  },
+  login: {
+    label: 'Login',
+    color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+    icon: LogIn,
+  },
+  logout: {
+    label: 'Logout',
+    color: 'bg-slate-100 text-slate-700 dark:bg-centhrix-surface/50 dark:text-slate-300',
+    icon: LogIn,
+  },
 };
 
 const TABLA_LABELS = {
@@ -68,18 +101,26 @@ const AuditoriaAcciones = () => {
 
       const res = await auditoriaAccionesService.listar(params);
       setRegistros(res.data?.registros || []);
-      setPagination(prev => ({ ...prev, ...res.data?.pagination }));
+      setPagination((prev) => ({ ...prev, ...res.data?.pagination }));
     } catch (error) {
       console.error('Error cargando auditoría:', error);
     }
     setLoading(false);
-  }, [pagination.page, pagination.limit, search, filtroAccion, filtroTabla, fechaDesde, fechaHasta]);
+  }, [
+    pagination.page,
+    pagination.limit,
+    search,
+    filtroAccion,
+    filtroTabla,
+    fechaDesde,
+    fechaHasta,
+  ]);
 
   const fetchMeta = useCallback(async () => {
     try {
       const [tablasRes, statsRes] = await Promise.all([
         auditoriaAccionesService.getTablas(),
-        auditoriaAccionesService.getStats({ dias: 7 })
+        auditoriaAccionesService.getStats({ dias: 7 }),
       ]);
       setTablas(tablasRes.data || []);
       setStats(statsRes.data || null);
@@ -88,12 +129,16 @@ const AuditoriaAcciones = () => {
     }
   }, []);
 
-  useEffect(() => { fetchMeta(); }, [fetchMeta]);
-  useEffect(() => { fetchRegistros(); }, [fetchRegistros]);
+  useEffect(() => {
+    fetchMeta();
+  }, [fetchMeta]);
+  useEffect(() => {
+    fetchRegistros();
+  }, [fetchRegistros]);
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const clearFilters = () => {
@@ -102,7 +147,7 @@ const AuditoriaAcciones = () => {
     setFiltroTabla('');
     setFechaDesde('');
     setFechaHasta('');
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const hasActiveFilters = search || filtroAccion || filtroTabla || fechaDesde || fechaHasta;
@@ -135,7 +180,7 @@ const AuditoriaAcciones = () => {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleString('es-CO', {
       dateStyle: 'short',
-      timeStyle: 'medium'
+      timeStyle: 'medium',
     });
   };
 
@@ -187,20 +232,31 @@ const AuditoriaAcciones = () => {
             <div className="bg-white dark:bg-centhrix-card rounded-xl border border-gray-200 dark:border-slate-700 p-4">
               <div className="flex items-center gap-2 mb-1">
                 <Activity className="w-4 h-4 text-orange-500" />
-                <span className="text-xs text-slate-500 dark:text-slate-400">Últimos {stats.dias} días</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  Últimos {stats.dias} días
+                </span>
               </div>
-              <span className="text-2xl font-bold text-slate-800 dark:text-slate-100">{stats.total}</span>
+              <span className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                {stats.total}
+              </span>
               <span className="text-xs text-slate-400 ml-1">acciones</span>
             </div>
             {stats.por_accion?.map((a) => {
               const config = ACCION_CONFIG[a.accion] || {};
               return (
-                <div key={a.accion} className="bg-white dark:bg-centhrix-card rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+                <div
+                  key={a.accion}
+                  className="bg-white dark:bg-centhrix-card rounded-xl border border-gray-200 dark:border-slate-700 p-4"
+                >
                   <div className="flex items-center gap-2 mb-1">
                     {config.icon && <config.icon className="w-4 h-4 text-slate-400" />}
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{config.label || a.accion}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {config.label || a.accion}
+                    </span>
                   </div>
-                  <span className="text-2xl font-bold text-slate-800 dark:text-slate-100">{a.total}</span>
+                  <span className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                    {a.total}
+                  </span>
                 </div>
               );
             })}
@@ -232,9 +288,7 @@ const AuditoriaAcciones = () => {
             >
               <Filter className="w-4 h-4" />
               Filtros
-              {hasActiveFilters && (
-                <span className="w-2 h-2 bg-orange-500 rounded-full" />
-              )}
+              {hasActiveFilters && <span className="w-2 h-2 bg-orange-500 rounded-full" />}
             </button>
 
             <div className="flex items-center gap-1 ml-auto">
@@ -244,9 +298,11 @@ const AuditoriaAcciones = () => {
                 title="Exportar a Excel"
                 className="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-50 transition-colors"
               >
-                {exportando === 'excel'
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <FileSpreadsheet className="w-4 h-4" />}
+                {exportando === 'excel' ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FileSpreadsheet className="w-4 h-4" />
+                )}
                 <span className="hidden sm:inline">Excel</span>
               </button>
 
@@ -256,14 +312,19 @@ const AuditoriaAcciones = () => {
                 title="Exportar a PDF"
                 className="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
               >
-                {exportando === 'pdf'
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <FileText className="w-4 h-4" />}
+                {exportando === 'pdf' ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FileText className="w-4 h-4" />
+                )}
                 <span className="hidden sm:inline">PDF</span>
               </button>
 
               <button
-                onClick={() => { fetchRegistros(); fetchMeta(); }}
+                onClick={() => {
+                  fetchRegistros();
+                  fetchMeta();
+                }}
                 aria-label="Actualizar auditoría"
                 className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl"
               >
@@ -277,10 +338,15 @@ const AuditoriaAcciones = () => {
             <div className="border-t border-gray-200 dark:border-slate-700 px-4 py-3">
               <div className="flex flex-wrap items-end gap-3">
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-500 mb-1">Acción</label>
+                  <label className="block text-[11px] font-medium text-slate-500 mb-1">
+                    Acción
+                  </label>
                   <select
                     value={filtroAccion}
-                    onChange={(e) => { setFiltroAccion(e.target.value); setPagination(p => ({ ...p, page: 1 })); }}
+                    onChange={(e) => {
+                      setFiltroAccion(e.target.value);
+                      setPagination((p) => ({ ...p, page: 1 }));
+                    }}
                     className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   >
                     <option value="">Todas</option>
@@ -293,15 +359,22 @@ const AuditoriaAcciones = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-500 mb-1">Módulo/Tabla</label>
+                  <label className="block text-[11px] font-medium text-slate-500 mb-1">
+                    Módulo/Tabla
+                  </label>
                   <select
                     value={filtroTabla}
-                    onChange={(e) => { setFiltroTabla(e.target.value); setPagination(p => ({ ...p, page: 1 })); }}
+                    onChange={(e) => {
+                      setFiltroTabla(e.target.value);
+                      setPagination((p) => ({ ...p, page: 1 }));
+                    }}
                     className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   >
                     <option value="">Todas</option>
-                    {tablas.map(t => (
-                      <option key={t} value={t}>{TABLA_LABELS[t] || t}</option>
+                    {tablas.map((t) => (
+                      <option key={t} value={t}>
+                        {TABLA_LABELS[t] || t}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -311,7 +384,10 @@ const AuditoriaAcciones = () => {
                   <input
                     type="date"
                     value={fechaDesde}
-                    onChange={(e) => { setFechaDesde(e.target.value); setPagination(p => ({ ...p, page: 1 })); }}
+                    onChange={(e) => {
+                      setFechaDesde(e.target.value);
+                      setPagination((p) => ({ ...p, page: 1 }));
+                    }}
                     className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   />
                 </div>
@@ -321,7 +397,10 @@ const AuditoriaAcciones = () => {
                   <input
                     type="date"
                     value={fechaHasta}
-                    onChange={(e) => { setFechaHasta(e.target.value); setPagination(p => ({ ...p, page: 1 })); }}
+                    onChange={(e) => {
+                      setFechaHasta(e.target.value);
+                      setPagination((p) => ({ ...p, page: 1 }));
+                    }}
                     className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   />
                 </div>
@@ -345,11 +424,21 @@ const AuditoriaAcciones = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 dark:bg-centhrix-bg/50 border-b border-gray-200 dark:border-slate-700">
-                  <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-[170px]">Fecha</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Usuario</th>
-                  <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-[100px]">Acción</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-[120px]">Módulo</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Descripción</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-[170px]">
+                    Fecha
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                    Usuario
+                  </th>
+                  <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-[100px]">
+                    Acción
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-[120px]">
+                    Módulo
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                    Descripción
+                  </th>
                   <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-[50px]"></th>
                 </tr>
               </thead>
@@ -358,7 +447,9 @@ const AuditoriaAcciones = () => {
                   <tr>
                     <td colSpan={6} className="text-center py-12">
                       <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                      <p className="text-slate-500 dark:text-slate-400 text-sm">Cargando registros...</p>
+                      <p className="text-slate-500 dark:text-slate-400 text-sm">
+                        Cargando registros...
+                      </p>
                     </td>
                   </tr>
                 ) : registros.length === 0 ? (
@@ -369,13 +460,19 @@ const AuditoriaAcciones = () => {
                   </tr>
                 ) : (
                   registros.map((reg) => {
-                    const accionConf = ACCION_CONFIG[reg.accion] || { label: reg.accion, color: 'bg-slate-100 text-slate-600' };
+                    const accionConf = ACCION_CONFIG[reg.accion] || {
+                      label: reg.accion,
+                      color: 'bg-slate-100 text-slate-600',
+                    };
                     const AccionIcon = accionConf.icon || Activity;
                     const isExpanded = expandedRow === reg.id;
                     const hasDetails = reg.datos_anteriores || reg.datos_nuevos;
 
                     return (
-                      <tr key={reg.id} className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors group">
+                      <tr
+                        key={reg.id}
+                        className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors group"
+                      >
                         <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
                             <Clock className="w-3 h-3 text-slate-300" />
@@ -385,20 +482,26 @@ const AuditoriaAcciones = () => {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <div className="w-7 h-7 bg-slate-200 dark:bg-centhrix-surface rounded-full flex items-center justify-center text-[10px] font-bold text-slate-500 dark:text-slate-400 shrink-0">
-                              {(reg.usuario?.nombre_completo || reg.usuario_nombre || '?').charAt(0).toUpperCase()}
+                              {(reg.usuario?.nombre_completo || reg.usuario_nombre || '?')
+                                .charAt(0)
+                                .toUpperCase()}
                             </div>
                             <div>
                               <div className="text-sm font-medium text-slate-700 dark:text-slate-200 leading-tight">
                                 {reg.usuario?.nombre_completo || reg.usuario_nombre || 'Sistema'}
                               </div>
                               {reg.usuario?.username && (
-                                <div className="text-[11px] text-slate-400">@{reg.usuario.username}</div>
+                                <div className="text-[11px] text-slate-400">
+                                  @{reg.usuario.username}
+                                </div>
                               )}
                             </div>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded-full ${accionConf.color}`}>
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded-full ${accionConf.color}`}
+                          >
                             <AccionIcon className="w-3 h-3" />
                             {accionConf.label}
                           </span>
@@ -413,9 +516,13 @@ const AuditoriaAcciones = () => {
                             {reg.descripcion || '-'}
                           </div>
                           {reg.ip_address && (
-                            <div className="text-[10px] text-slate-400 mt-0.5">IP: {reg.ip_address}</div>
+                            <div className="text-[10px] text-slate-400 mt-0.5">
+                              IP: {reg.ip_address}
+                            </div>
                           )}
-                          {isExpanded && hasDetails && renderJsonDiff(reg.datos_anteriores, reg.datos_nuevos)}
+                          {isExpanded &&
+                            hasDetails &&
+                            renderJsonDiff(reg.datos_anteriores, reg.datos_nuevos)}
                         </td>
                         <td className="px-4 py-3 text-center">
                           {hasDetails && (
@@ -424,7 +531,9 @@ const AuditoriaAcciones = () => {
                               aria-label={isExpanded ? 'Contraer detalles' : 'Expandir detalles'}
                               className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface text-slate-400 transition-colors"
                             >
-                              <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                              <ChevronDown
+                                className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                              />
                             </button>
                           )}
                         </td>
@@ -445,7 +554,7 @@ const AuditoriaAcciones = () => {
               <div className="flex items-center gap-1">
                 <button
                   disabled={pagination.page <= 1}
-                  onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
+                  onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
                   aria-label="Página anterior"
                   className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
                 >
@@ -456,7 +565,7 @@ const AuditoriaAcciones = () => {
                 </span>
                 <button
                   disabled={pagination.page >= pagination.totalPages}
-                  onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
+                  onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
                   aria-label="Página siguiente"
                   className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
                 >

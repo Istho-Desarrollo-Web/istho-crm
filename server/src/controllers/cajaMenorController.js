@@ -8,14 +8,45 @@
  */
 
 const { Op } = require('sequelize');
-const { CajaMenor, MovimientoCajaMenor, Viaje, Usuario, Vehiculo, Auditoria, sequelize } = require('../models');
+const {
+  CajaMenor,
+  MovimientoCajaMenor,
+  Viaje,
+  Usuario,
+  Vehiculo,
+  Auditoria,
+  sequelize,
+} = require('../models');
 const notificacionService = require('../services/notificacionService');
 const socketService = require('../services/socketService');
-const { success, created, paginated, notFound, conflict, serverError, error: errorResponse } = require('../utils/responses');
-const { parsePaginacion, buildPaginacion, parseOrdenamiento, limpiarObjeto, getClientIP, sanitizarBusqueda } = require('../utils/helpers');
+const {
+  success,
+  created,
+  paginated,
+  notFound,
+  conflict,
+  serverError,
+  error: errorResponse,
+} = require('../utils/responses');
+const {
+  parsePaginacion,
+  buildPaginacion,
+  parseOrdenamiento,
+  limpiarObjeto,
+  getClientIP,
+  sanitizarBusqueda,
+} = require('../utils/helpers');
 const logger = require('../utils/logger');
 
-const CAMPOS_ORDENAMIENTO = ['numero', 'saldo_inicial', 'saldo_actual', 'estado', 'fecha_apertura', 'fecha_cierre', 'created_at'];
+const CAMPOS_ORDENAMIENTO = [
+  'numero',
+  'saldo_inicial',
+  'saldo_actual',
+  'estado',
+  'fecha_apertura',
+  'fecha_cierre',
+  'created_at',
+];
 
 /**
  * GET /cajas-menores
@@ -44,7 +75,7 @@ const listar = async (req, res) => {
       const s = sanitizarBusqueda(req.query.search);
       where[Op.or] = [
         { numero: { [Op.like]: `%${s}%` } },
-        { observaciones: { [Op.like]: `%${s}%` } }
+        { observaciones: { [Op.like]: `%${s}%` } },
       ];
     }
 
@@ -57,10 +88,14 @@ const listar = async (req, res) => {
       limit,
       offset,
       include: [
-        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
+        {
+          model: Usuario,
+          as: 'asignado',
+          attributes: ['id', 'nombre', 'apellido', 'nombre_completo'],
+        },
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] },
-        { model: CajaMenor, as: 'cajaAnterior', attributes: ['id', 'numero'] }
-      ]
+        { model: CajaMenor, as: 'cajaAnterior', attributes: ['id', 'numero'] },
+      ],
     });
 
     return paginated(res, rows, buildPaginacion(count, page, limit));
@@ -77,30 +112,36 @@ const obtenerPorId = async (req, res) => {
   try {
     const caja = await CajaMenor.findByPk(req.params.id, {
       include: [
-        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre', 'apellido', 'nombre_completo', 'rol'] },
+        {
+          model: Usuario,
+          as: 'asignado',
+          attributes: ['id', 'nombre', 'apellido', 'nombre_completo', 'rol'],
+        },
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] },
         { model: Usuario, as: 'cerrador', attributes: ['id', 'nombre_completo'] },
         { model: CajaMenor, as: 'cajaAnterior', attributes: ['id', 'numero', 'saldo_actual'] },
         { model: CajaMenor, as: 'cajaSiguiente', attributes: ['id', 'numero'] },
         {
-          model: Viaje, as: 'viajes',
+          model: Viaje,
+          as: 'viajes',
           attributes: ['id', 'numero', 'fecha', 'destino', 'valor_viaje', 'estado'],
           include: [{ model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa'] }],
-          separate: true,  // Query separada (no JOIN, más rápido)
+          separate: true, // Query separada (no JOIN, más rápido)
           order: [['fecha', 'DESC']],
         },
         {
-          model: MovimientoCajaMenor, as: 'movimientos',
+          model: MovimientoCajaMenor,
+          as: 'movimientos',
           attributes: { exclude: ['soporte_url'] }, // Excluir base64 pesado del listado
           include: [
             { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
             { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
-            { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] }
+            { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
           ],
-          separate: true,  // Query separada (no JOIN, más rápido)
+          separate: true, // Query separada (no JOIN, más rápido)
           order: [['consecutivo', 'DESC']],
-        }
-      ]
+        },
+      ],
     });
 
     if (!caja) return notFound(res, 'Caja menor no encontrada');
@@ -128,7 +169,9 @@ const crear = async (req, res) => {
     // Verificar que el usuario asignado existe
     const asignado = await Usuario.findByPk(datos.asignado_a);
     if (!asignado) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Usuario asignado no encontrado');
     }
 
@@ -145,7 +188,8 @@ const crear = async (req, res) => {
       }
     }
 
-    datos.saldo_actual = parseFloat(datos.saldo_inicial || 0) + parseFloat(datos.saldo_trasladado || 0);
+    datos.saldo_actual =
+      parseFloat(datos.saldo_inicial || 0) + parseFloat(datos.saldo_trasladado || 0);
 
     const caja = await CajaMenor.create(datos, { transaction });
 
@@ -158,37 +202,45 @@ const crear = async (req, res) => {
       datos_nuevos: datos,
       ip_address: getClientIP(req),
       user_agent: req.get('user-agent'),
-      descripcion: `Caja menor ${caja.numero} creada para ${asignado.nombre_completo}`
+      descripcion: `Caja menor ${caja.numero} creada para ${asignado.nombre_completo}`,
     });
 
     await transaction.commit();
 
     // Notificar al usuario asignado
-    notificacionService.notificar({
-      usuario_id: datos.asignado_a,
-      tipo: 'sistema',
-      titulo: 'Nueva caja menor asignada',
-      mensaje: `Se te ha asignado la caja menor ${caja.numero} con saldo de $${Number(caja.saldo_actual).toLocaleString('es-CO')}`,
-      prioridad: 'alta',
-      accion_url: `/viajes/cajas-menores/${caja.id}`,
-    }).catch(() => {});
+    notificacionService
+      .notificar({
+        usuario_id: datos.asignado_a,
+        tipo: 'sistema',
+        titulo: 'Nueva caja menor asignada',
+        mensaje: `Se te ha asignado la caja menor ${caja.numero} con saldo de $${Number(caja.saldo_actual).toLocaleString('es-CO')}`,
+        prioridad: 'alta',
+        accion_url: `/viajes/cajas-menores/${caja.id}`,
+      })
+      .catch(() => {});
 
     // Notificar a financieros
-    notificacionService.notificarCajaMenorAbierta({
-      id: caja.id,
-      numero: caja.numero,
-      saldo_inicial: caja.saldo_inicial,
-      saldo_actual: caja.saldo_actual,
-      conductor_nombre: asignado.nombre_completo,
-    }).catch(() => {});
+    notificacionService
+      .notificarCajaMenorAbierta({
+        id: caja.id,
+        numero: caja.numero,
+        saldo_inicial: caja.saldo_inicial,
+        saldo_actual: caja.saldo_actual,
+        conductor_nombre: asignado.nombre_completo,
+      })
+      .catch(() => {});
 
     logger.info('Caja menor creada:', { id: caja.id, numero: caja.numero });
 
     const resultado = await CajaMenor.findByPk(caja.id, {
       include: [
-        { model: Usuario, as: 'asignado', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
-        { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] }
-      ]
+        {
+          model: Usuario,
+          as: 'asignado',
+          attributes: ['id', 'nombre', 'apellido', 'nombre_completo'],
+        },
+        { model: Usuario, as: 'creador', attributes: ['id', 'nombre_completo'] },
+      ],
     });
 
     socketService.emitToAll('caja:creada', {
@@ -203,7 +255,9 @@ const crear = async (req, res) => {
 
     return created(res, resultado, 'Caja menor creada exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al crear caja menor:', { message: error.message });
     return serverError(res, 'Error al crear caja menor', error);
   }
@@ -220,12 +274,16 @@ const actualizar = async (req, res) => {
 
     const caja = await CajaMenor.findByPk(id, { transaction });
     if (!caja) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Caja menor no encontrada');
     }
 
     if (caja.estado === 'cerrada') {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return errorResponse(res, 'No se puede modificar una caja cerrada', 400);
     }
 
@@ -246,7 +304,7 @@ const actualizar = async (req, res) => {
       datos_anteriores: datosAnteriores,
       datos_nuevos: datos,
       ip_address: getClientIP(req),
-      descripcion: `Caja menor ${caja.numero} actualizada`
+      descripcion: `Caja menor ${caja.numero} actualizada`,
     });
 
     await transaction.commit();
@@ -258,7 +316,9 @@ const actualizar = async (req, res) => {
     });
     return success(res, caja, 'Caja menor actualizada exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al actualizar caja menor:', { message: error.message });
     return serverError(res, 'Error al actualizar caja menor', error);
   }
@@ -276,12 +336,16 @@ const cerrar = async (req, res) => {
 
     const caja = await CajaMenor.findByPk(id, { transaction });
     if (!caja) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Caja menor no encontrada');
     }
 
     if (caja.estado === 'cerrada') {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return errorResponse(res, 'La caja ya está cerrada', 400);
     }
 
@@ -295,38 +359,45 @@ const cerrar = async (req, res) => {
     // Si hay saldo sobrante y se elige liquidar al conductor, crear egreso de liquidación
     if (accion_sobrante === 'liquidar' && saldoAntesCierre > 0) {
       const consecutivo = await MovimientoCajaMenor.generarConsecutivo();
-      await MovimientoCajaMenor.create({
-        caja_menor_id: caja.id,
-        usuario_id: caja.asignado_a,
-        tipo_movimiento: 'egreso',
-        concepto: 'liquidacion',
-        descripcion: `Liquidación de saldo al cerrar caja ${caja.numero}. Saldo entregado al conductor.`,
-        valor: saldoAntesCierre,
-        valor_aprobado: saldoAntesCierre,
-        aprobado: true,
-        aprobado_por: req.user.id,
-        fecha_aprobacion: new Date(),
-        consecutivo,
-      }, { transaction });
+      await MovimientoCajaMenor.create(
+        {
+          caja_menor_id: caja.id,
+          usuario_id: caja.asignado_a,
+          tipo_movimiento: 'egreso',
+          concepto: 'liquidacion',
+          descripcion: `Liquidación de saldo al cerrar caja ${caja.numero}. Saldo entregado al conductor.`,
+          valor: saldoAntesCierre,
+          valor_aprobado: saldoAntesCierre,
+          aprobado: true,
+          aprobado_por: req.user.id,
+          fecha_aprobacion: new Date(),
+          consecutivo,
+        },
+        { transaction }
+      );
 
       // Recalcular saldo (ahora debería quedar en 0)
       await caja.recalcularSaldo(transaction);
       await caja.reload({ transaction });
     }
 
-    await caja.update({
-      estado: 'cerrada',
-      fecha_cierre: new Date(),
-      cerrada_por: req.user.id,
-      observaciones_cierre: observaciones_cierre || null
-    }, { transaction });
+    await caja.update(
+      {
+        estado: 'cerrada',
+        fecha_cierre: new Date(),
+        cerrada_por: req.user.id,
+        observaciones_cierre: observaciones_cierre || null,
+      },
+      { transaction }
+    );
 
     const saldoFinal = parseFloat(caja.saldo_actual) || 0;
-    const accionDesc = accion_sobrante === 'liquidar'
-      ? `Saldo de $${saldoAntesCierre.toLocaleString('es-CO')} liquidado y entregado al conductor.`
-      : accion_sobrante === 'transferir' && saldoAntesCierre > 0
-        ? `Saldo de $${saldoFinal.toLocaleString('es-CO')} transferido a la siguiente caja.`
-        : '';
+    const accionDesc =
+      accion_sobrante === 'liquidar'
+        ? `Saldo de $${saldoAntesCierre.toLocaleString('es-CO')} liquidado y entregado al conductor.`
+        : accion_sobrante === 'transferir' && saldoAntesCierre > 0
+          ? `Saldo de $${saldoFinal.toLocaleString('es-CO')} transferido a la siguiente caja.`
+          : '';
 
     await Auditoria.registrar({
       tabla: 'cajas_menores',
@@ -337,27 +408,40 @@ const cerrar = async (req, res) => {
       datos_anteriores: datosAnteriores,
       datos_nuevos: { estado: 'cerrada', saldo_actual: saldoFinal, accion_sobrante },
       ip_address: getClientIP(req),
-      descripcion: `Caja menor ${caja.numero} cerrada. ${accionDesc}`
+      descripcion: `Caja menor ${caja.numero} cerrada. ${accionDesc}`,
     });
 
     await transaction.commit();
 
-    socketService.emitToAll('caja:actualizada', { id: caja.id, estado: 'cerrada', saldo_actual: caja.saldo_actual });
+    socketService.emitToAll('caja:actualizada', {
+      id: caja.id,
+      estado: 'cerrada',
+      saldo_actual: caja.saldo_actual,
+    });
 
     // Notificar al usuario asignado
-    notificacionService.notificar({
-      usuario_id: caja.asignado_a,
-      titulo: 'Caja menor cerrada',
-      mensaje: `La caja ${caja.numero} ha sido cerrada. Saldo final: $${saldoFinal.toLocaleString('es-CO')}. ${accionDesc}`,
-      tipo: 'sistema',
-      prioridad: 'alta',
-      metadata: { caja_menor_id: caja.id }
-    }).catch(() => {});
+    notificacionService
+      .notificar({
+        usuario_id: caja.asignado_a,
+        titulo: 'Caja menor cerrada',
+        mensaje: `La caja ${caja.numero} ha sido cerrada. Saldo final: $${saldoFinal.toLocaleString('es-CO')}. ${accionDesc}`,
+        tipo: 'sistema',
+        prioridad: 'alta',
+        metadata: { caja_menor_id: caja.id },
+      })
+      .catch(() => {});
 
-    logger.info('Caja menor cerrada:', { id: caja.id, numero: caja.numero, saldo: saldoFinal, accion_sobrante });
+    logger.info('Caja menor cerrada:', {
+      id: caja.id,
+      numero: caja.numero,
+      saldo: saldoFinal,
+      accion_sobrante,
+    });
     return success(res, caja, 'Caja menor cerrada exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al cerrar caja menor:', { message: error.message });
     return serverError(res, 'Error al cerrar caja menor', error);
   }
@@ -372,13 +456,17 @@ const eliminar = async (req, res) => {
     const { id } = req.params;
     const caja = await CajaMenor.findByPk(id, { transaction });
     if (!caja) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Caja menor no encontrada');
     }
 
     const movimientos = await MovimientoCajaMenor.count({ where: { caja_menor_id: id } });
     if (movimientos > 0) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return conflict(res, `No se puede eliminar: tiene ${movimientos} movimiento(s) asociado(s)`);
     }
 
@@ -393,14 +481,16 @@ const eliminar = async (req, res) => {
       usuario_nombre: req.user.nombre_completo,
       datos_anteriores: datosAnteriores,
       ip_address: getClientIP(req),
-      descripcion: `Caja menor ${caja.numero} eliminada`
+      descripcion: `Caja menor ${caja.numero} eliminada`,
     });
 
     await transaction.commit();
     socketService.emitToAll('caja:eliminada', { id: parseInt(id) });
     return success(res, { id }, 'Caja menor eliminada exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al eliminar caja menor:', { message: error.message });
     return serverError(res, 'Error al eliminar caja menor', error);
   }
@@ -422,7 +512,7 @@ const estadisticas = async (req, res) => {
       CajaMenor.count({ where: { ...where, estado: 'en_revision' } }),
       CajaMenor.count({ where: { ...where, estado: 'cerrada' } }),
       CajaMenor.sum('total_egresos', { where: { ...where, estado: { [Op.ne]: 'cerrada' } } }),
-      CajaMenor.sum('total_ingresos', { where: { ...where, estado: { [Op.ne]: 'cerrada' } } })
+      CajaMenor.sum('total_ingresos', { where: { ...where, estado: { [Op.ne]: 'cerrada' } } }),
     ]);
 
     return success(res, {
@@ -430,7 +520,7 @@ const estadisticas = async (req, res) => {
       en_revision: enRevision || 0,
       cerradas: cerradas || 0,
       total_egresos_activos: totalEgresos || 0,
-      total_ingresos_activos: totalIngresos || 0
+      total_ingresos_activos: totalIngresos || 0,
     });
   } catch (error) {
     logger.error('Error al obtener estadísticas:', { message: error.message });
@@ -457,4 +547,13 @@ const listarUsuariosAsignables = async (req, res) => {
   }
 };
 
-module.exports = { listar, obtenerPorId, crear, actualizar, cerrar, eliminar, estadisticas, listarUsuariosAsignables };
+module.exports = {
+  listar,
+  obtenerPorId,
+  crear,
+  actualizar,
+  cerrar,
+  eliminar,
+  estadisticas,
+  listarUsuariosAsignables,
+};

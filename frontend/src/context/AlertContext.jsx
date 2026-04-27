@@ -1,7 +1,7 @@
 /**
  * ISTHO CRM - Alert Context & Hook
  * Sistema global para disparar alertas y confirmaciones premium.
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 1.0.0
  * @date Marzo 2026
@@ -37,71 +37,73 @@ export const AlertProvider = ({ children }) => {
   /**
    * Disparar una alerta (éxito, error, info)
    */
-  const showAlert = useCallback(({ 
-    type = 'info', 
-    title = '', 
-    message = '', 
-    confirmText = 'Aceptar',
-    onConfirm = null 
-  }) => {
-    setAlertState({
-      isOpen: true,
-      type,
-      title,
-      message,
-      confirmText,
-      showCancel: false,
-      onConfirm: () => {
-        setAlertState(prev => ({ ...prev, isOpen: false }));
-        if (onConfirm) onConfirm();
-      },
-      loading: false,
-    });
-  }, []);
-
-  /**
-   * Disparar una confirmación (sí/no)
-   */
-  const showConfirm = useCallback(({ 
-    type = 'warning', 
-    title = '¿Estás seguro?', 
-    message = '', 
-    confirmText = 'Confirmar',
-    cancelText = 'Cancelar',
-    onConfirm = null,
-    onCancel = null
-  }) => {
-    return new Promise((resolve) => {
+  const showAlert = useCallback(
+    ({ type = 'info', title = '', message = '', confirmText = 'Aceptar', onConfirm = null }) => {
       setAlertState({
         isOpen: true,
         type,
         title,
         message,
         confirmText,
-        cancelText,
-        showCancel: true,
-        onConfirm: async () => {
-          setAlertState(prev => ({ ...prev, loading: true }));
-          if (onConfirm) await onConfirm();
-          setAlertState(prev => ({ ...prev, isOpen: false, loading: false }));
-          resolve(true);
-        },
-        onCancel: () => {
-          setAlertState(prev => ({ ...prev, isOpen: false }));
-          if (onCancel) onCancel();
-          resolve(false);
+        showCancel: false,
+        onConfirm: () => {
+          setAlertState((prev) => ({ ...prev, isOpen: false }));
+          if (onConfirm) onConfirm();
         },
         loading: false,
       });
-    });
-  }, []);
+    },
+    []
+  );
+
+  /**
+   * Disparar una confirmación (sí/no)
+   */
+  const showConfirm = useCallback(
+    ({
+      type = 'warning',
+      title = '¿Estás seguro?',
+      message = '',
+      confirmText = 'Confirmar',
+      cancelText = 'Cancelar',
+      onConfirm = null,
+      onCancel = null,
+    }) => {
+      return new Promise((resolve) => {
+        setAlertState({
+          isOpen: true,
+          type,
+          title,
+          message,
+          confirmText,
+          cancelText,
+          showCancel: true,
+          onConfirm: async () => {
+            setAlertState((prev) => ({ ...prev, loading: true }));
+            if (onConfirm) await onConfirm();
+            setAlertState((prev) => ({ ...prev, isOpen: false, loading: false }));
+            resolve(true);
+          },
+          onCancel: () => {
+            setAlertState((prev) => ({ ...prev, isOpen: false }));
+            if (onCancel) onCancel();
+            resolve(false);
+          },
+          loading: false,
+        });
+      });
+    },
+    []
+  );
 
   return (
     <AlertContext.Provider value={{ showAlert, showConfirm }}>
       {children}
-      <CustomAlert 
+      <CustomAlert
         {...alertState}
-        onCancel={alertState.onCancel || (() => setAlertState(prev => ({ ...prev, isOpen: false })))}
+        onCancel={
+          alertState.onCancel || (() => setAlertState((prev) => ({ ...prev, isOpen: false })))
+        }
       />
     </AlertContext.Provider>
   );

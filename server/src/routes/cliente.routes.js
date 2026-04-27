@@ -1,8 +1,8 @@
 /**
  * ISTHO CRM - Rutas de Clientes
- * 
+ *
  * Endpoints para gestión de clientes y contactos.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  */
@@ -29,7 +29,7 @@ const {
   listarClientesValidator,
   crearContactoValidator,
   actualizarContactoValidator,
-  contactoParamsValidator
+  contactoParamsValidator,
 } = require('../validators/clienteValidator');
 
 // =============================================
@@ -64,7 +64,12 @@ router.get('/stats', requiereRolMinimo('operador'), clienteController.estadistic
  * @desc    Descargar plantilla Excel para importación de clientes
  * @access  Privado (operador o superior)
  */
-router.get('/plantilla-importacion', noClientes, requiereRolMinimo('operador'), clienteController.descargarPlantillaImportacion);
+router.get(
+  '/plantilla-importacion',
+  noClientes,
+  requiereRolMinimo('operador'),
+  clienteController.descargarPlantillaImportacion
+);
 
 /**
  * @route   GET /clientes/:id
@@ -78,7 +83,13 @@ router.get('/:id', idParamValidator, clienteController.obtenerPorId);
  * @desc    Crear un nuevo cliente
  * @access  Privado (supervisor o superior)
  */
-router.post('/', noClientes, requiereRolMinimo('operador'), crearClienteValidator, clienteController.crear);
+router.post(
+  '/',
+  noClientes,
+  requiereRolMinimo('operador'),
+  crearClienteValidator,
+  clienteController.crear
+);
 
 /**
  * @route   POST /clientes/importar
@@ -86,29 +97,55 @@ router.post('/', noClientes, requiereRolMinimo('operador'), crearClienteValidato
  * @access  Privado (supervisor o superior)
  */
 const multer = require('multer');
-const uploadMemory = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
-router.post('/importar', noClientes, requiereRolMinimo('supervisor'), uploadMemory.single('archivo'), clienteController.importarClientes);
+const uploadMemory = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
+router.post(
+  '/importar',
+  noClientes,
+  requiereRolMinimo('supervisor'),
+  uploadMemory.single('archivo'),
+  clienteController.importarClientes
+);
 
 /**
  * @route   PUT /clientes/:id
  * @desc    Actualizar un cliente
  * @access  Privado (supervisor o superior)
  */
-router.put('/:id', noClientes, requiereRolMinimo('operador'), actualizarClienteValidator, clienteController.actualizar);
+router.put(
+  '/:id',
+  noClientes,
+  requiereRolMinimo('operador'),
+  actualizarClienteValidator,
+  clienteController.actualizar
+);
 
 /**
  * @route   DELETE /clientes/:id
  * @desc    Eliminar un cliente (soft delete)
  * @access  Privado (admin o supervisor)
  */
-router.delete('/:id', requiereRolMinimo('supervisor'), idParamValidator, clienteController.eliminar);
+router.delete(
+  '/:id',
+  requiereRolMinimo('supervisor'),
+  idParamValidator,
+  clienteController.eliminar
+);
 
 /**
  * @route   POST /clientes/:id/logo
  * @desc    Subir logo del cliente
  * @access  Privado (operador o superior)
  */
-router.post('/:id/logo', noClientes, requiereRolMinimo('operador'), uploadLogo.single('logo'), clienteController.subirLogo);
+router.post(
+  '/:id/logo',
+  noClientes,
+  requiereRolMinimo('operador'),
+  uploadLogo.single('logo'),
+  clienteController.subirLogo
+);
 
 // =============================================
 // RUTAS DE CONTACTOS (anidadas en clientes)
@@ -134,20 +171,37 @@ router.get('/:id/contactos', idParamValidator, clienteController.listarContactos
  * @desc    Agregar contacto a un cliente
  * @access  Privado (operador o superior)
  */
-router.post('/:id/contactos', noClientes, requiereRolMinimo('operador'), crearContactoValidator, clienteController.crearContacto);
+router.post(
+  '/:id/contactos',
+  noClientes,
+  requiereRolMinimo('operador'),
+  crearContactoValidator,
+  clienteController.crearContacto
+);
 
 /**
  * @route   PUT /clientes/:id/contactos/:contactoId
  * @desc    Actualizar contacto de un cliente
  * @access  Privado (operador o superior)
  */
-router.put('/:id/contactos/:contactoId', noClientes, requiereRolMinimo('operador'), actualizarContactoValidator, clienteController.actualizarContacto);
+router.put(
+  '/:id/contactos/:contactoId',
+  noClientes,
+  requiereRolMinimo('operador'),
+  actualizarContactoValidator,
+  clienteController.actualizarContacto
+);
 
 /**
  * @route   DELETE /clientes/:id/contactos/:contactoId
  * @desc    Eliminar contacto de un cliente
  * @access  Privado (supervisor o superior)
  */
-router.delete('/:id/contactos/:contactoId', requiereRolMinimo('supervisor'), contactoParamsValidator, clienteController.eliminarContacto);
+router.delete(
+  '/:id/contactos/:contactoId',
+  requiereRolMinimo('supervisor'),
+  contactoParamsValidator,
+  clienteController.eliminarContacto
+);
 
 module.exports = router;

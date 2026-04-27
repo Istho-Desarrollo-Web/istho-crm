@@ -9,11 +9,33 @@
 
 const { Op } = require('sequelize');
 const { Vehiculo, Usuario, Viaje, Auditoria, sequelize } = require('../models');
-const { success, created, paginated, notFound, conflict, serverError } = require('../utils/responses');
-const { parsePaginacion, buildPaginacion, parseOrdenamiento, limpiarObjeto, getClientIP, sanitizarBusqueda } = require('../utils/helpers');
+const {
+  success,
+  created,
+  paginated,
+  notFound,
+  conflict,
+  serverError,
+} = require('../utils/responses');
+const {
+  parsePaginacion,
+  buildPaginacion,
+  parseOrdenamiento,
+  limpiarObjeto,
+  getClientIP,
+  sanitizarBusqueda,
+} = require('../utils/helpers');
 const logger = require('../utils/logger');
 
-const CAMPOS_ORDENAMIENTO = ['placa', 'tipo_vehiculo', 'capacidad_ton', 'vencimiento_soat', 'vencimiento_tecnicomecanica', 'estado', 'created_at'];
+const CAMPOS_ORDENAMIENTO = [
+  'placa',
+  'tipo_vehiculo',
+  'capacidad_ton',
+  'vencimiento_soat',
+  'vencimiento_tecnicomecanica',
+  'estado',
+  'created_at',
+];
 
 /**
  * GET /vehiculos
@@ -42,7 +64,7 @@ const listar = async (req, res) => {
       where[Op.or] = [
         { placa: { [Op.like]: `%${s}%` } },
         { marca: { [Op.like]: `%${s}%` } },
-        { poliza_responsabilidad: { [Op.like]: `%${s}%` } }
+        { poliza_responsabilidad: { [Op.like]: `%${s}%` } },
       ];
     }
 
@@ -52,12 +74,16 @@ const listar = async (req, res) => {
       limit,
       offset,
       include: [
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] }
-      ]
+        {
+          model: Usuario,
+          as: 'conductor',
+          attributes: ['id', 'nombre', 'apellido', 'nombre_completo'],
+        },
+      ],
     });
 
     // Agregar alertas de vencimiento
-    const data = rows.map(v => {
+    const data = rows.map((v) => {
       const json = v.toJSON();
       json.alerta_soat = v.alertaSOAT();
       json.alerta_tecnicomecanica = v.alertaTecnicomecanica();
@@ -78,9 +104,19 @@ const obtenerPorId = async (req, res) => {
   try {
     const vehiculo = await Vehiculo.findByPk(req.params.id, {
       include: [
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
-        { model: Viaje, as: 'viajes', limit: 10, order: [['fecha', 'DESC']], attributes: ['id', 'numero', 'fecha', 'destino', 'estado'] }
-      ]
+        {
+          model: Usuario,
+          as: 'conductor',
+          attributes: ['id', 'nombre', 'apellido', 'nombre_completo'],
+        },
+        {
+          model: Viaje,
+          as: 'viajes',
+          limit: 10,
+          order: [['fecha', 'DESC']],
+          attributes: ['id', 'numero', 'fecha', 'destino', 'estado'],
+        },
+      ],
     });
 
     if (!vehiculo) return notFound(res, 'Vehículo no encontrado');
@@ -106,7 +142,9 @@ const crear = async (req, res) => {
 
     const existe = await Vehiculo.findOne({ where: { placa: datos.placa }, transaction });
     if (existe) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return conflict(res, 'Ya existe un vehículo con esta placa');
     }
 
@@ -121,19 +159,27 @@ const crear = async (req, res) => {
       datos_nuevos: datos,
       ip_address: getClientIP(req),
       user_agent: req.get('user-agent'),
-      descripcion: `Vehículo registrado: ${vehiculo.placa}`
+      descripcion: `Vehículo registrado: ${vehiculo.placa}`,
     });
 
     await transaction.commit();
     logger.info('Vehículo creado:', { id: vehiculo.id, placa: vehiculo.placa });
 
     const resultado = await Vehiculo.findByPk(vehiculo.id, {
-      include: [{ model: Usuario, as: 'conductor', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] }]
+      include: [
+        {
+          model: Usuario,
+          as: 'conductor',
+          attributes: ['id', 'nombre', 'apellido', 'nombre_completo'],
+        },
+      ],
     });
 
     return created(res, resultado, 'Vehículo registrado exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al crear vehículo:', { message: error.message });
     return serverError(res, 'Error al crear vehículo', error);
   }
@@ -150,14 +196,21 @@ const actualizar = async (req, res) => {
 
     const vehiculo = await Vehiculo.findByPk(id, { transaction });
     if (!vehiculo) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Vehículo no encontrado');
     }
 
     if (datos.placa && datos.placa !== vehiculo.placa) {
-      const existe = await Vehiculo.findOne({ where: { placa: datos.placa, id: { [Op.ne]: id } }, transaction });
+      const existe = await Vehiculo.findOne({
+        where: { placa: datos.placa, id: { [Op.ne]: id } },
+        transaction,
+      });
       if (existe) {
-        try { await transaction.rollback(); } catch (_) {}
+        try {
+          await transaction.rollback();
+        } catch (_) {}
         return conflict(res, 'Ya existe otro vehículo con esta placa');
       }
     }
@@ -174,18 +227,26 @@ const actualizar = async (req, res) => {
       datos_anteriores: datosAnteriores,
       datos_nuevos: datos,
       ip_address: getClientIP(req),
-      descripcion: `Vehículo actualizado: ${vehiculo.placa}`
+      descripcion: `Vehículo actualizado: ${vehiculo.placa}`,
     });
 
     await transaction.commit();
 
     const resultado = await Vehiculo.findByPk(id, {
-      include: [{ model: Usuario, as: 'conductor', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] }]
+      include: [
+        {
+          model: Usuario,
+          as: 'conductor',
+          attributes: ['id', 'nombre', 'apellido', 'nombre_completo'],
+        },
+      ],
     });
 
     return success(res, resultado, 'Vehículo actualizado exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al actualizar vehículo:', { message: error.message });
     return serverError(res, 'Error al actualizar vehículo', error);
   }
@@ -200,13 +261,17 @@ const eliminar = async (req, res) => {
     const { id } = req.params;
     const vehiculo = await Vehiculo.findByPk(id, { transaction });
     if (!vehiculo) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Vehículo no encontrado');
     }
 
     const viajesActivos = await Viaje.count({ where: { vehiculo_id: id, estado: 'activo' } });
     if (viajesActivos > 0) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return conflict(res, `No se puede eliminar: tiene ${viajesActivos} viaje(s) activo(s)`);
     }
 
@@ -221,13 +286,15 @@ const eliminar = async (req, res) => {
       usuario_nombre: req.user.nombre_completo,
       datos_anteriores: datosAnteriores,
       ip_address: getClientIP(req),
-      descripcion: `Vehículo eliminado: ${vehiculo.placa}`
+      descripcion: `Vehículo eliminado: ${vehiculo.placa}`,
     });
 
     await transaction.commit();
     return success(res, { id }, 'Vehículo eliminado exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al eliminar vehículo:', { message: error.message });
     return serverError(res, 'Error al eliminar vehículo', error);
   }
@@ -242,7 +309,7 @@ const listarConductores = async (req, res) => {
     const conductores = await Usuario.findAll({
       where: { rol: 'conductor', activo: true },
       attributes: ['id', 'nombre', 'apellido', 'nombre_completo', 'username'],
-      order: [['nombre', 'ASC']]
+      order: [['nombre', 'ASC']],
     });
     return success(res, conductores);
   } catch (error) {
@@ -265,19 +332,17 @@ const alertasVencimiento = async (req, res) => {
         estado: 'activo',
         [Op.or]: [
           { vencimiento_soat: { [Op.lte]: en30dias } },
-          { vencimiento_tecnicomecanica: { [Op.lte]: en30dias } }
-        ]
+          { vencimiento_tecnicomecanica: { [Op.lte]: en30dias } },
+        ],
       },
-      include: [
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] }
-      ],
-      order: [['vencimiento_soat', 'ASC']]
+      include: [{ model: Usuario, as: 'conductor', attributes: ['id', 'nombre_completo'] }],
+      order: [['vencimiento_soat', 'ASC']],
     });
 
-    const alertas = vehiculos.map(v => ({
+    const alertas = vehiculos.map((v) => ({
       ...v.toJSON(),
       alerta_soat: v.alertaSOAT(),
-      alerta_tecnicomecanica: v.alertaTecnicomecanica()
+      alerta_tecnicomecanica: v.alertaTecnicomecanica(),
     }));
 
     return success(res, alertas);
@@ -287,4 +352,12 @@ const alertasVencimiento = async (req, res) => {
   }
 };
 
-module.exports = { listar, obtenerPorId, crear, actualizar, eliminar, listarConductores, alertasVencimiento };
+module.exports = {
+  listar,
+  obtenerPorId,
+  crear,
+  actualizar,
+  eliminar,
+  listarConductores,
+  alertasVencimiento,
+};

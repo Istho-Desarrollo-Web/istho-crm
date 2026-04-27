@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "./styles/notifications.css";
+@import 'tailwindcss';
+@import './styles/notifications.css';
 
 @variant dark (&:is(.dark *));
 
@@ -10,31 +10,39 @@
   --color-orange-200: #fecaca;
   --color-orange-300: #fca5a5;
   --color-orange-400: #f87171;
-  --color-orange-500: #E74C3C;
-  --color-orange-600: #E74C3C;
-  --color-orange-700: #C0392B;
-  --color-orange-800: #991B1B;
-  --color-orange-900: #7F1D1D;
+  --color-orange-500: #e74c3c;
+  --color-orange-600: #e74c3c;
+  --color-orange-700: #c0392b;
+  --color-orange-800: #991b1b;
+  --color-orange-900: #7f1d1d;
 
   /* Dark mode backgrounds CENTHRIX */
-  --color-centhrix-bg: #0F1023;
+  --color-centhrix-bg: #0f1023;
   --color-centhrix-surface: #151631;
-  --color-centhrix-card: #1A1B3A;
+  --color-centhrix-card: #1a1b3a;
 
   /* Tipografía display — headings de páginas principales */
   --font-display: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
 }
 
 body {
-  font-family: "Segoe UI", Calibri, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family:
+    'Segoe UI',
+    Calibri,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   @apply bg-slate-50 text-slate-900 dark:text-slate-100 transition-colors duration-300;
-  background-color: #F8F9FA;
+  background-color: #f8f9fa;
 }
 
-.dark body, body.dark, :root.dark body {
-  background-color: #0F1023;
-  color: #F0F0F5;
+.dark body,
+body.dark,
+:root.dark body {
+  background-color: #0f1023;
+  color: #f0f0f5;
 }
 
 /* ==========================================================================
@@ -43,41 +51,87 @@ body {
    These rules automatically convert hardcoded light-mode Tailwind utilities 
    to their dark-mode semantic equivalents across all modules when .dark is active.
 */
-.dark .bg-white { background-color: #1A1B3A; }
-.dark .bg-slate-50 { background-color: #0F1023; }
-.dark .bg-slate-100 { background-color: #151631; }
-
-.dark .text-slate-900 { color: #F0F0F5; }
-.dark .text-slate-800 { color: #E8E8F0; }
-.dark .text-slate-700 { color: #D0D0DD; }
-.dark .text-slate-600 { color: #B0BEC5; }
-.dark .text-slate-500 { color: #9AA5AD; }
-
-.dark .text-gray-900 { color: var(--color-gray-50); }
-.dark .text-gray-800 { color: var(--color-gray-100); }
-.dark .text-gray-700 { color: var(--color-gray-200); }
-.dark .text-gray-600 { color: var(--color-gray-300); }
-.dark .text-gray-500 { color: var(--color-gray-400); }
-
-.dark .border-gray-50 { border-color: color-mix(in srgb, var(--color-slate-700) 50%, transparent); }
-.dark .border-gray-100 { border-color: var(--color-slate-700); }
-.dark .border-gray-200 { border-color: var(--color-slate-600); }
-
-.dark .border-slate-100 { border-color: rgba(255,255,255,0.08); }
-.dark .border-slate-200 { border-color: rgba(255,255,255,0.12); }
-
-.dark .bg-gradient-to-br.from-slate-50.to-slate-100 {
-  background-image: linear-gradient(to bottom right, #0F1023, #151631);
+.dark .bg-white {
+  background-color: #1a1b3a;
+}
+.dark .bg-slate-50 {
+  background-color: #0f1023;
+}
+.dark .bg-slate-100 {
+  background-color: #151631;
 }
 
-.dark .hover\:bg-slate-50:hover { background-color: #1A1B3A; }
-.dark .hover\:bg-slate-100:hover { background-color: #252650; }
-.dark .hover\:text-slate-600:hover { color: #D0D0DD; }
+.dark .text-slate-900 {
+  color: #f0f0f5;
+}
+.dark .text-slate-800 {
+  color: #e8e8f0;
+}
+.dark .text-slate-700 {
+  color: #d0d0dd;
+}
+.dark .text-slate-600 {
+  color: #b0bec5;
+}
+.dark .text-slate-500 {
+  color: #9aa5ad;
+}
+
+.dark .text-gray-900 {
+  color: var(--color-gray-50);
+}
+.dark .text-gray-800 {
+  color: var(--color-gray-100);
+}
+.dark .text-gray-700 {
+  color: var(--color-gray-200);
+}
+.dark .text-gray-600 {
+  color: var(--color-gray-300);
+}
+.dark .text-gray-500 {
+  color: var(--color-gray-400);
+}
+
+.dark .border-gray-50 {
+  border-color: color-mix(in srgb, var(--color-slate-700) 50%, transparent);
+}
+.dark .border-gray-100 {
+  border-color: var(--color-slate-700);
+}
+.dark .border-gray-200 {
+  border-color: var(--color-slate-600);
+}
+
+.dark .border-slate-100 {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.dark .border-slate-200 {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.dark .bg-gradient-to-br.from-slate-50.to-slate-100 {
+  background-image: linear-gradient(to bottom right, #0f1023, #151631);
+}
+
+.dark .hover\:bg-slate-50:hover {
+  background-color: #1a1b3a;
+}
+.dark .hover\:bg-slate-100:hover {
+  background-color: #252650;
+}
+.dark .hover\:text-slate-600:hover {
+  color: #d0d0dd;
+}
 
 /* Animaciones */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes zoomIn {
@@ -100,8 +154,13 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .animate-pulse {
@@ -109,13 +168,25 @@ body {
 }
 
 @keyframes forgotFadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes forgotSlideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-forgotFadeIn {
@@ -173,7 +244,7 @@ body {
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #E74C3C;
+  background: #e74c3c;
 }
 
 .dark ::-webkit-scrollbar-corner {
@@ -187,5 +258,9 @@ body {
 }
 
 /* Variable para toggle apagado — cambia con dark mode */
-:root { --toggle-off: #d1d5db; }
-.dark { --toggle-off: #374151; }
+:root {
+  --toggle-off: #d1d5db;
+}
+.dark {
+  --toggle-off: #374151;
+}

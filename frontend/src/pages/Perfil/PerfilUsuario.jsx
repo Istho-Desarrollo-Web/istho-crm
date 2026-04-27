@@ -73,15 +73,17 @@ const EditProfileModal = ({ isOpen, onClose, usuario, onSave, loading }) => {
   }, [usuario]);
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {
     onSave(formData);
   };
 
-  const inputClasses = 'w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
-  const readOnlyClasses = 'w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm bg-slate-50 dark:bg-centhrix-card text-slate-500 dark:text-slate-400';
+  const inputClasses =
+    'w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
+  const readOnlyClasses =
+    'w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm bg-slate-50 dark:bg-centhrix-card text-slate-500 dark:text-slate-400';
 
   return (
     <Modal
@@ -91,7 +93,9 @@ const EditProfileModal = ({ isOpen, onClose, usuario, onSave, loading }) => {
       size="md"
       footer={
         <>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
           <Button variant="primary" icon={Save} onClick={handleSubmit} loading={loading}>
             Guardar Cambios
           </Button>
@@ -101,50 +105,61 @@ const EditProfileModal = ({ isOpen, onClose, usuario, onSave, loading }) => {
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nombre</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Nombre
+            </label>
             <input
               type="text"
               value={formData.nombre || ''}
               maxLength={50}
-              onChange={(e) => handleChange('nombre', sanitizeField(SANITIZE.TEXTO_LETRAS, e.target.value, 50))}
+              onChange={(e) =>
+                handleChange('nombre', sanitizeField(SANITIZE.TEXTO_LETRAS, e.target.value, 50))
+              }
               className={inputClasses}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Apellido</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Apellido
+            </label>
             <input
               type="text"
               value={formData.apellido || ''}
               maxLength={50}
-              onChange={(e) => handleChange('apellido', sanitizeField(SANITIZE.TEXTO_LETRAS, e.target.value, 50))}
+              onChange={(e) =>
+                handleChange('apellido', sanitizeField(SANITIZE.TEXTO_LETRAS, e.target.value, 50))
+              }
               className={inputClasses}
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Teléfono</label>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Teléfono
+          </label>
           <input
             type="tel"
             value={formData.telefono || ''}
             maxLength={10}
-            onChange={(e) => handleChange('telefono', sanitizeField(SANITIZE.SOLO_DIGITOS, e.target.value, 10))}
+            onChange={(e) =>
+              handleChange('telefono', sanitizeField(SANITIZE.SOLO_DIGITOS, e.target.value, 10))
+            }
             className={inputClasses}
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cargo</label>
-            <input
-              type="text"
-              value={formData.cargo || ''}
-              readOnly
-              className={readOnlyClasses}
-            />
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Cargo
+            </label>
+            <input type="text" value={formData.cargo || ''} readOnly className={readOnlyClasses} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Departamento</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Departamento
+            </label>
             <input
               type="text"
               value={formData.departamento || ''}
@@ -161,11 +176,14 @@ const EditProfileModal = ({ isOpen, onClose, usuario, onSave, loading }) => {
 // ════════════════════════════════════════════════════════════════════════════
 // INPUT DE CONTRASEÑA (fuera del modal para evitar re-mount en cada render)
 // ════════════════════════════════════════════════════════════════════════════
-const passwordInputClasses = 'w-full px-4 py-2.5 pr-10 border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
+const passwordInputClasses =
+  'w-full px-4 py-2.5 pr-10 border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
 
 const PasswordInput = ({ label, field, value, show, onChange, onToggleShow }) => (
   <div>
-    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{label}</label>
+    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+      {label}
+    </label>
     <div className="relative">
       <input
         type={show ? 'text' : 'password'}
@@ -193,16 +211,20 @@ const ChangePasswordModal = ({ isOpen, onClose, onSubmit, loading }) => {
     newPassword: '',
     confirmPassword: '',
   });
-  const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
   const [error, setError] = useState('');
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setError('');
   };
 
   const toggleShow = (field) => {
-    setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
+    setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
   const handleSubmit = () => {
@@ -241,7 +263,9 @@ const ChangePasswordModal = ({ isOpen, onClose, onSubmit, loading }) => {
       size="sm"
       footer={
         <>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
           <Button variant="primary" icon={Key} onClick={handleSubmit} loading={loading}>
             Cambiar Contraseña
           </Button>
@@ -249,9 +273,30 @@ const ChangePasswordModal = ({ isOpen, onClose, onSubmit, loading }) => {
       }
     >
       <div className="space-y-4">
-        <PasswordInput label="Contraseña Actual" field="currentPassword" value={formData.currentPassword} show={showPasswords.current} onChange={handleChange} onToggleShow={() => toggleShow('current')} />
-        <PasswordInput label="Nueva Contraseña" field="newPassword" value={formData.newPassword} show={showPasswords.new} onChange={handleChange} onToggleShow={() => toggleShow('new')} />
-        <PasswordInput label="Confirmar Contraseña" field="confirmPassword" value={formData.confirmPassword} show={showPasswords.confirm} onChange={handleChange} onToggleShow={() => toggleShow('confirm')} />
+        <PasswordInput
+          label="Contraseña Actual"
+          field="currentPassword"
+          value={formData.currentPassword}
+          show={showPasswords.current}
+          onChange={handleChange}
+          onToggleShow={() => toggleShow('current')}
+        />
+        <PasswordInput
+          label="Nueva Contraseña"
+          field="newPassword"
+          value={formData.newPassword}
+          show={showPasswords.new}
+          onChange={handleChange}
+          onToggleShow={() => toggleShow('new')}
+        />
+        <PasswordInput
+          label="Confirmar Contraseña"
+          field="confirmPassword"
+          value={formData.confirmPassword}
+          show={showPasswords.confirm}
+          onChange={handleChange}
+          onToggleShow={() => toggleShow('confirm')}
+        />
 
         {error && (
           <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-700 dark:text-red-400">
@@ -269,12 +314,20 @@ const ChangePasswordModal = ({ isOpen, onClose, onSubmit, loading }) => {
             { ok: /[0-9]/.test(formData.newPassword), text: 'Al menos un número' },
           ].map((req, i) => (
             <div key={i} className="flex items-center gap-2 text-xs">
-              <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center ${
-                req.ok ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-centhrix-surface'
-              }`}>
+              <div
+                className={`w-3.5 h-3.5 rounded-full flex items-center justify-center ${
+                  req.ok ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-centhrix-surface'
+                }`}
+              >
                 {req.ok && <Check className="w-2 h-2 text-white" />}
               </div>
-              <span className={req.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}>
+              <span
+                className={
+                  req.ok
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-slate-500 dark:text-slate-400'
+                }
+              >
                 {req.text}
               </span>
             </div>
@@ -349,9 +402,12 @@ const calcularAntiguedad = (fecha) => {
   const hoy = new Date();
   const diff = hoy - ingreso;
   const years = Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
-  const months = Math.floor((diff % (365.25 * 24 * 60 * 60 * 1000)) / (30.44 * 24 * 60 * 60 * 1000));
+  const months = Math.floor(
+    (diff % (365.25 * 24 * 60 * 60 * 1000)) / (30.44 * 24 * 60 * 60 * 1000)
+  );
 
-  if (years > 0) return `${years} año${years > 1 ? 's' : ''}, ${months} mes${months > 1 ? 'es' : ''}`;
+  if (years > 0)
+    return `${years} año${years > 1 ? 's' : ''}, ${months} mes${months > 1 ? 'es' : ''}`;
   if (months > 0) return `${months} mes${months > 1 ? 'es' : ''}`;
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   return `${days} día${days !== 1 ? 's' : ''}`;
@@ -362,7 +418,14 @@ const calcularAntiguedad = (fecha) => {
 // ════════════════════════════════════════════════════════════════════════════
 const PerfilUsuario = () => {
   const navigate = useNavigate();
-  const { user, logout, updateUser, hasPermission, isCliente: _isCliente, checkPermission: _checkPermission } = useAuth();
+  const {
+    user,
+    logout,
+    updateUser,
+    hasPermission,
+    isCliente: _isCliente,
+    checkPermission: _checkPermission,
+  } = useAuth();
   const { success, error: apiError } = useNotification();
 
   // Estados
@@ -458,14 +521,16 @@ const PerfilUsuario = () => {
     try {
       const res = await authService.revocarDispositivoConfiable(jti);
       if (res.success) {
-        setDispositivos(prev => prev.filter(d => d.jti !== jti));
+        setDispositivos((prev) => prev.filter((d) => d.jti !== jti));
         // Si el dispositivo revocado es el activo en este navegador, limpiar localStorage
         const tokenActual = localStorage.getItem('istho_trusted_device');
         if (tokenActual) {
           try {
             const payload = JSON.parse(atob(tokenActual.split('.')[1]));
             if (payload.jti === jti) localStorage.removeItem('istho_trusted_device');
-          } catch { /* token malformado, ignorar */ }
+          } catch {
+            /* token malformado, ignorar */
+          }
         }
         success('Dispositivo de confianza revocado');
       } else {
@@ -504,7 +569,9 @@ const PerfilUsuario = () => {
         // Solo agregar cache-buster para URLs de servidor, NO para data: URIs (base64)
         const finalUrl = avatarUrl.startsWith('data:')
           ? avatarUrl
-          : avatarUrl.includes('?') ? `${avatarUrl}&t=${Date.now()}` : `${avatarUrl}?t=${Date.now()}`;
+          : avatarUrl.includes('?')
+            ? `${avatarUrl}&t=${Date.now()}`
+            : `${avatarUrl}?t=${Date.now()}`;
         updateUser({ avatar_url: finalUrl });
         success('Foto de perfil actualizada');
       } else {
@@ -590,7 +657,9 @@ const PerfilUsuario = () => {
       modulo,
       acciones: Array.isArray(acciones)
         ? acciones.reduce((acc, a) => ({ ...acc, [a]: true }), {})
-        : (typeof acciones === 'object' ? acciones : {}),
+        : typeof acciones === 'object'
+          ? acciones
+          : {},
     }));
   })();
 
@@ -627,9 +696,13 @@ const PerfilUsuario = () => {
     cambiar_password: 'Cambiar Contraseña',
   };
 
-  const diasActivo = Math.max(1, Math.ceil(
-    (new Date() - new Date(user.created_at || user.createdAt || Date.now())) / (1000 * 60 * 60 * 24)
-  ));
+  const diasActivo = Math.max(
+    1,
+    Math.ceil(
+      (new Date() - new Date(user.created_at || user.createdAt || Date.now())) /
+        (1000 * 60 * 60 * 24)
+    )
+  );
 
   // Rol label
   const rolLabels = {
@@ -747,9 +820,32 @@ const PerfilUsuario = () => {
         {/* STATS ROW */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <StatCardMini icon={Activity} label="Rol" value={rolLabels[user.rol] || user.rol} color="bg-blue-500" />
-          <StatCardMini icon={Building2} label={isPortalUser ? 'Cliente' : 'Departamento'} value={isPortalUser ? (clienteInfo?.razon_social?.split(' ')[0] || '-') : (user.departamento || 'Operaciones')} color="bg-emerald-500" />
-          <StatCardMini icon={Clock} label="Último Acceso" value={user.ultimo_acceso ? formatDate(user.ultimo_acceso, { day: 'numeric', month: 'short' }) : 'N/A'} color="bg-violet-500" />
+          <StatCardMini
+            icon={Activity}
+            label="Rol"
+            value={rolLabels[user.rol] || user.rol}
+            color="bg-blue-500"
+          />
+          <StatCardMini
+            icon={Building2}
+            label={isPortalUser ? 'Cliente' : 'Departamento'}
+            value={
+              isPortalUser
+                ? clienteInfo?.razon_social?.split(' ')[0] || '-'
+                : user.departamento || 'Operaciones'
+            }
+            color="bg-emerald-500"
+          />
+          <StatCardMini
+            icon={Clock}
+            label="Último Acceso"
+            value={
+              user.ultimo_acceso
+                ? formatDate(user.ultimo_acceso, { day: 'numeric', month: 'short' })
+                : 'N/A'
+            }
+            color="bg-violet-500"
+          />
           <StatCardMini icon={Award} label="Días Activo" value={diasActivo} color="bg-amber-500" />
         </div>
 
@@ -787,27 +883,35 @@ const PerfilUsuario = () => {
                 {activeTab === 'info' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-slate-800 dark:text-slate-100">Datos Personales</h4>
+                      <h4 className="font-semibold text-slate-800 dark:text-slate-100">
+                        Datos Personales
+                      </h4>
                       <div className="space-y-3">
                         <div className="flex items-center gap-3 text-sm">
                           <User className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                           <div>
                             <p className="text-slate-500 dark:text-slate-400">Nombre Completo</p>
-                            <p className="font-medium text-slate-800 dark:text-slate-100">{displayName}</p>
+                            <p className="font-medium text-slate-800 dark:text-slate-100">
+                              {displayName}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           <Mail className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                           <div>
                             <p className="text-slate-500 dark:text-slate-400">Correo Electrónico</p>
-                            <p className="font-medium text-slate-800 dark:text-slate-100">{user.email}</p>
+                            <p className="font-medium text-slate-800 dark:text-slate-100">
+                              {user.email}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           <Phone className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                           <div>
                             <p className="text-slate-500 dark:text-slate-400">Teléfono</p>
-                            <p className="font-medium text-slate-800 dark:text-slate-100">{user.telefono || 'No registrado'}</p>
+                            <p className="font-medium text-slate-800 dark:text-slate-100">
+                              {user.telefono || 'No registrado'}
+                            </p>
                           </div>
                         </div>
                         {user.username && (
@@ -815,7 +919,9 @@ const PerfilUsuario = () => {
                             <User className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                             <div>
                               <p className="text-slate-500 dark:text-slate-400">Usuario</p>
-                              <p className="font-medium text-slate-800 dark:text-slate-100 font-mono">{user.username}</p>
+                              <p className="font-medium text-slate-800 dark:text-slate-100 font-mono">
+                                {user.username}
+                              </p>
                             </div>
                           </div>
                         )}
@@ -823,14 +929,18 @@ const PerfilUsuario = () => {
                     </div>
 
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-slate-800 dark:text-slate-100">Información Laboral</h4>
+                      <h4 className="font-semibold text-slate-800 dark:text-slate-100">
+                        Información Laboral
+                      </h4>
                       <div className="space-y-3">
                         <div className="flex items-center gap-3 text-sm">
                           <Building2 className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                           <div>
                             <p className="text-slate-500 dark:text-slate-400">Empresa</p>
                             <p className="font-medium text-slate-800 dark:text-slate-100">
-                              {isPortalUser && clienteInfo ? clienteInfo.razon_social : 'ISTHO S.A.S'}
+                              {isPortalUser && clienteInfo
+                                ? clienteInfo.razon_social
+                                : 'ISTHO S.A.S'}
                             </p>
                           </div>
                         </div>
@@ -839,7 +949,9 @@ const PerfilUsuario = () => {
                             <MapPin className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                             <div>
                               <p className="text-slate-500 dark:text-slate-400">Sede</p>
-                              <p className="font-medium text-slate-800 dark:text-slate-100">Centro Logístico Industrial del Norte</p>
+                              <p className="font-medium text-slate-800 dark:text-slate-100">
+                                Centro Logístico Industrial del Norte
+                              </p>
                               <p className="text-xs text-slate-400">Girardota, Antioquia</p>
                             </div>
                           </div>
@@ -849,7 +961,9 @@ const PerfilUsuario = () => {
                             <Award className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                             <div>
                               <p className="text-slate-500 dark:text-slate-400">Cargo</p>
-                              <p className="font-medium text-slate-800 dark:text-slate-100">{user.cargo}</p>
+                              <p className="font-medium text-slate-800 dark:text-slate-100">
+                                {user.cargo}
+                              </p>
                             </div>
                           </div>
                         )}
@@ -858,7 +972,9 @@ const PerfilUsuario = () => {
                             <Settings className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                             <div>
                               <p className="text-slate-500 dark:text-slate-400">Departamento</p>
-                              <p className="font-medium text-slate-800 dark:text-slate-100">{user.departamento}</p>
+                              <p className="font-medium text-slate-800 dark:text-slate-100">
+                                {user.departamento}
+                              </p>
                             </div>
                           </div>
                         )}
@@ -868,9 +984,12 @@ const PerfilUsuario = () => {
                             <p className="text-slate-500 dark:text-slate-400">Fecha de Registro</p>
                             <p className="font-medium text-slate-800 dark:text-slate-100">
                               {user.created_at
-                                ? formatDate(user.created_at, { year: 'numeric', month: 'long', day: 'numeric' })
-                                : 'No disponible'
-                              }
+                                ? formatDate(user.created_at, {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                  })
+                                : 'No disponible'}
                             </p>
                             {user.created_at && (
                               <p className="text-xs text-emerald-600 dark:text-emerald-400">
@@ -890,7 +1009,9 @@ const PerfilUsuario = () => {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <Shield className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                        <span className="text-sm text-slate-500 dark:text-slate-400">Rol actual:</span>
+                        <span className="text-sm text-slate-500 dark:text-slate-400">
+                          Rol actual:
+                        </span>
                         <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full text-sm font-medium">
                           {rolLabels[user.rol] || user.rol}
                         </span>
@@ -901,7 +1022,10 @@ const PerfilUsuario = () => {
                       /* Todos los roles: tarjetas con pills por módulo */
                       <div className="space-y-3">
                         {permisosTabla.map((permiso, idx) => (
-                          <div key={idx} className="bg-slate-50 dark:bg-centhrix-surface/30 rounded-lg p-4">
+                          <div
+                            key={idx}
+                            className="bg-slate-50 dark:bg-centhrix-surface/30 rounded-lg p-4"
+                          >
                             <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2 capitalize">
                               {PORTAL_MODULO_LABELS[permiso.modulo] || permiso.modulo}
                             </h4>
@@ -956,18 +1080,21 @@ const PerfilUsuario = () => {
                   <span className="text-slate-800 dark:text-slate-200 text-xs">
                     {user.ultimo_acceso
                       ? new Date(user.ultimo_acceso).toLocaleString('es-CO')
-                      : 'Ahora'
-                    }
+                      : 'Ahora'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-500 dark:text-slate-400">ID Usuario</span>
-                  <span className="text-slate-800 dark:text-slate-200 font-mono">{user.id || '-'}</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-mono">
+                    {user.id || '-'}
+                  </span>
                 </div>
                 {user.username && (
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-500 dark:text-slate-400">Username</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-mono text-xs">{user.username}</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-mono text-xs">
+                      {user.username}
+                    </span>
                   </div>
                 )}
               </div>
@@ -987,12 +1114,18 @@ const PerfilUsuario = () => {
                   </p>
                 ) : (
                   <ul className="space-y-2">
-                    {dispositivos.map(d => (
-                      <li key={d.jti} className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 dark:bg-centhrix-surface/50">
+                    {dispositivos.map((d) => (
+                      <li
+                        key={d.jti}
+                        className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 dark:bg-centhrix-surface/50"
+                      >
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{d.nombre}</p>
+                          <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
+                            {d.nombre}
+                          </p>
                           <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                            {new Date(d.creado_en).toLocaleDateString('es-CO')} · vence {new Date(d.expira_en).toLocaleDateString('es-CO')}
+                            {new Date(d.creado_en).toLocaleDateString('es-CO')} · vence{' '}
+                            {new Date(d.expira_en).toLocaleDateString('es-CO')}
                           </p>
                         </div>
                         <button
@@ -1001,9 +1134,11 @@ const PerfilUsuario = () => {
                           title="Revocar acceso"
                           className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50 flex-shrink-0"
                         >
-                          {revocando === d.jti
-                            ? <Clock className="w-3.5 h-3.5 animate-spin" />
-                            : <Trash2 className="w-3.5 h-3.5" />}
+                          {revocando === d.jti ? (
+                            <Clock className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3.5 h-3.5" />
+                          )}
                         </button>
                       </li>
                     ))}

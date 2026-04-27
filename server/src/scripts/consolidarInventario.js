@@ -24,7 +24,14 @@ const path = require('path');
 // Cargar variables de entorno
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-const { sequelize, Inventario, MovimientoInventario, OperacionDetalle, CajaInventario, Operacion } = require('../models');
+const {
+  sequelize,
+  Inventario,
+  MovimientoInventario,
+  OperacionDetalle,
+  CajaInventario,
+  Operacion,
+} = require('../models');
 const { Op, QueryTypes } = require('sequelize');
 
 const consolidar = async () => {
@@ -40,12 +47,15 @@ const consolidar = async () => {
 
     // Paso 1: Encontrar grupos duplicados
     console.log('[1] Buscando duplicados (mismo cliente_id + sku, diferente lote)...');
-    const duplicados = await sequelize.query(`
+    const duplicados = await sequelize.query(
+      `
       SELECT cliente_id, sku, COUNT(*) as total, GROUP_CONCAT(id ORDER BY cantidad DESC) as ids
       FROM inventario
       GROUP BY cliente_id, sku
       HAVING COUNT(*) > 1
-    `, { type: QueryTypes.SELECT });
+    `,
+      { type: QueryTypes.SELECT }
+    );
 
     console.log(`    Encontrados: ${duplicados.length} grupos con duplicados\n`);
 
@@ -62,7 +72,9 @@ const consolidar = async () => {
       const keepId = ids[0]; // El que tiene mayor cantidad
       const removeIds = ids.slice(1);
 
-      console.log(`  [${grupo.sku}] cliente=${grupo.cliente_id}: conservar ID ${keepId}, eliminar IDs [${removeIds.join(', ')}]`);
+      console.log(
+        `  [${grupo.sku}] cliente=${grupo.cliente_id}: conservar ID ${keepId}, eliminar IDs [${removeIds.join(', ')}]`
+      );
 
       const transaction = await sequelize.transaction();
 
@@ -70,7 +82,7 @@ const consolidar = async () => {
         // Sumar cantidades de todas las filas
         const filas = await Inventario.findAll({
           where: { id: { [Op.in]: ids } },
-          transaction
+          transaction,
         });
 
         const cantidadTotal = filas.reduce((sum, f) => sum + (parseFloat(f.cantidad) || 0), 0);
@@ -96,15 +108,16 @@ const consolidar = async () => {
         // Eliminar filas duplicadas
         await Inventario.destroy({
           where: { id: { [Op.in]: removeIds } },
-          transaction
+          transaction,
         });
 
         await transaction.commit();
 
         totalConsolidados++;
         totalEliminados += removeIds.length;
-        console.log(`    ✅ Consolidado (cantidad total: ${cantidadTotal}, movs: ${movsActualizados[0]}, dets: ${detsActualizados[0]})`);
-
+        console.log(
+          `    ✅ Consolidado (cantidad total: ${cantidadTotal}, movs: ${movsActualizados[0]}, dets: ${detsActualizados[0]})`
+        );
       } catch (err) {
         await transaction.rollback();
         console.error(`    ❌ Error consolidando ${grupo.sku}: ${err.message}`);
@@ -120,11 +133,13 @@ const consolidar = async () => {
     } else {
       const detallesConOp = await OperacionDetalle.findAll({
         where: { inventario_id: { [Op.ne]: null } },
-        include: [{
-          model: Operacion,
-          as: 'operacion',
-          attributes: ['id', 'tipo', 'numero_operacion']
-        }]
+        include: [
+          {
+            model: Operacion,
+            as: 'operacion',
+            attributes: ['id', 'tipo', 'numero_operacion'],
+          },
+        ],
       });
 
       for (const det of detallesConOp) {
@@ -157,15 +172,19 @@ const consolidar = async () => {
     console.log('[3] Actualizando índice único de inventario...');
     try {
       // Intentar eliminar el índice antiguo
-      await sequelize.query('ALTER TABLE inventario DROP INDEX idx_cliente_sku_lote').catch(() => {});
+      await sequelize
+        .query('ALTER TABLE inventario DROP INDEX idx_cliente_sku_lote')
+        .catch(() => {});
       // Crear el nuevo índice
-      await sequelize.query('ALTER TABLE inventario ADD UNIQUE INDEX idx_cliente_sku (cliente_id, sku)').catch((e) => {
-        if (e.message.includes('Duplicate')) {
-          console.log('    ⚠️  Aún hay duplicados. Ejecuta el script de nuevo.');
-        } else {
-          console.log(`    ℹ️  Índice: ${e.message}`);
-        }
-      });
+      await sequelize
+        .query('ALTER TABLE inventario ADD UNIQUE INDEX idx_cliente_sku (cliente_id, sku)')
+        .catch((e) => {
+          if (e.message.includes('Duplicate')) {
+            console.log('    ⚠️  Aún hay duplicados. Ejecuta el script de nuevo.');
+          } else {
+            console.log(`    ℹ️  Índice: ${e.message}`);
+          }
+        });
       console.log('    ✅ Índice actualizado\n');
     } catch (err) {
       console.log(`    ℹ️  ${err.message}\n`);

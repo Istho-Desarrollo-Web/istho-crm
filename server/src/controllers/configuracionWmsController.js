@@ -32,14 +32,18 @@ const listar = async (req, res) => {
 
     const configuraciones = await ConfiguracionWms.findAll({
       where,
-      order: [['categoria', 'ASC'], ['orden', 'ASC'], ['valor_wms', 'ASC']]
+      order: [
+        ['categoria', 'ASC'],
+        ['orden', 'ASC'],
+        ['valor_wms', 'ASC'],
+      ],
     });
 
     // Agrupar por categoría
     const agrupadas = {
-      motivo_kardex: configuraciones.filter(c => c.categoria === 'motivo_kardex'),
-      tipo_orden: configuraciones.filter(c => c.categoria === 'tipo_orden'),
-      estado_valido: configuraciones.filter(c => c.categoria === 'estado_valido')
+      motivo_kardex: configuraciones.filter((c) => c.categoria === 'motivo_kardex'),
+      tipo_orden: configuraciones.filter((c) => c.categoria === 'tipo_orden'),
+      estado_valido: configuraciones.filter((c) => c.categoria === 'estado_valido'),
     };
 
     return success(res, categoria ? configuraciones : agrupadas);
@@ -77,7 +81,15 @@ const obtener = async (req, res) => {
  */
 const crear = async (req, res) => {
   try {
-    const { categoria, valor_wms, valor_crm, tipo_documento, requiere_detalle, descripcion, orden } = req.body;
+    const {
+      categoria,
+      valor_wms,
+      valor_crm,
+      tipo_documento,
+      requiere_detalle,
+      descripcion,
+      orden,
+    } = req.body;
 
     if (!categoria || !valor_wms || !valor_crm) {
       return error(res, 'categoria, valor_wms y valor_crm son requeridos', 400);
@@ -85,11 +97,15 @@ const crear = async (req, res) => {
 
     // Verificar duplicado
     const existente = await ConfiguracionWms.findOne({
-      where: { categoria, valor_wms: valor_wms.trim() }
+      where: { categoria, valor_wms: valor_wms.trim() },
     });
 
     if (existente) {
-      return error(res, `Ya existe una configuración "${valor_wms}" en la categoría "${categoria}"`, 400);
+      return error(
+        res,
+        `Ya existe una configuración "${valor_wms}" en la categoría "${categoria}"`,
+        400
+      );
     }
 
     const config = await ConfiguracionWms.create({
@@ -99,7 +115,7 @@ const crear = async (req, res) => {
       tipo_documento: tipo_documento || null,
       requiere_detalle: requiere_detalle || false,
       descripcion: descripcion || null,
-      orden: orden || 0
+      orden: orden || 0,
     });
 
     logger.info('Configuración WMS creada:', { id: config.id, categoria, valor_wms });
@@ -110,9 +126,17 @@ const crear = async (req, res) => {
       accion: 'crear',
       usuario_id: req.user.id,
       usuario_nombre: req.user.nombre_completo || req.user.username,
-      datos_nuevos: { categoria, valor_wms, valor_crm, tipo_documento, requiere_detalle, descripcion, orden },
+      datos_nuevos: {
+        categoria,
+        valor_wms,
+        valor_crm,
+        tipo_documento,
+        requiere_detalle,
+        descripcion,
+        orden,
+      },
       ip_address: getClientIP(req),
-      descripcion: `Configuración WMS creada: [${categoria}] ${valor_wms} → ${valor_crm}`
+      descripcion: `Configuración WMS creada: [${categoria}] ${valor_wms} → ${valor_crm}`,
     });
 
     return created(res, 'Configuración creada exitosamente', config);
@@ -134,12 +158,13 @@ const actualizar = async (req, res) => {
     const config = await ConfiguracionWms.findByPk(req.params.id);
     if (!config) return notFound(res, 'Configuración no encontrada');
 
-    const { valor_wms, valor_crm, tipo_documento, requiere_detalle, descripcion, orden, activo } = req.body;
+    const { valor_wms, valor_crm, tipo_documento, requiere_detalle, descripcion, orden, activo } =
+      req.body;
 
     // Si cambia valor_wms, verificar duplicado
     if (valor_wms && valor_wms.trim() !== config.valor_wms) {
       const duplicado = await ConfiguracionWms.findOne({
-        where: { categoria: config.categoria, valor_wms: valor_wms.trim() }
+        where: { categoria: config.categoria, valor_wms: valor_wms.trim() },
       });
       if (duplicado) {
         return error(res, `Ya existe una configuración "${valor_wms}" en esta categoría`, 400);
@@ -153,7 +178,7 @@ const actualizar = async (req, res) => {
       requiere_detalle: requiere_detalle !== undefined ? requiere_detalle : config.requiere_detalle,
       descripcion: descripcion !== undefined ? descripcion : config.descripcion,
       orden: orden !== undefined ? orden : config.orden,
-      activo: activo !== undefined ? activo : config.activo
+      activo: activo !== undefined ? activo : config.activo,
     });
 
     logger.info('Configuración WMS actualizada:', { id: config.id, valor_wms: config.valor_wms });
@@ -166,7 +191,7 @@ const actualizar = async (req, res) => {
       usuario_nombre: req.user.nombre_completo || req.user.username,
       datos_nuevos: req.body,
       ip_address: getClientIP(req),
-      descripcion: `Configuración WMS actualizada: [${config.categoria}] ${config.valor_wms}`
+      descripcion: `Configuración WMS actualizada: [${config.categoria}] ${config.valor_wms}`,
     });
 
     return successMessage(res, 'Configuración actualizada exitosamente', config);
@@ -198,9 +223,13 @@ const eliminar = async (req, res) => {
       accion: 'eliminar',
       usuario_id: req.user.id,
       usuario_nombre: req.user.nombre_completo || req.user.username,
-      datos_anteriores: { categoria: config.categoria, valor_wms: config.valor_wms, valor_crm: config.valor_crm },
+      datos_anteriores: {
+        categoria: config.categoria,
+        valor_wms: config.valor_wms,
+        valor_crm: config.valor_crm,
+      },
       ip_address: getClientIP(req),
-      descripcion: `Configuración WMS eliminada: [${config.categoria}] ${config.valor_wms}`
+      descripcion: `Configuración WMS eliminada: [${config.categoria}] ${config.valor_wms}`,
     });
 
     return successMessage(res, 'Configuración eliminada exitosamente');
@@ -234,10 +263,14 @@ const toggleActivo = async (req, res) => {
       usuario_nombre: req.user.nombre_completo || req.user.username,
       datos_nuevos: { activo: config.activo },
       ip_address: getClientIP(req),
-      descripcion: `Configuración WMS ${config.activo ? 'activada' : 'desactivada'}: [${config.categoria}] ${config.valor_wms}`
+      descripcion: `Configuración WMS ${config.activo ? 'activada' : 'desactivada'}: [${config.categoria}] ${config.valor_wms}`,
     });
 
-    return successMessage(res, `Configuración ${config.activo ? 'activada' : 'desactivada'}`, config);
+    return successMessage(
+      res,
+      `Configuración ${config.activo ? 'activada' : 'desactivada'}`,
+      config
+    );
   } catch (err) {
     logger.error('Error al cambiar estado de configuración WMS:', { message: err.message });
     return error(res, 'Error al cambiar estado', 500);
@@ -250,5 +283,5 @@ module.exports = {
   crear,
   actualizar,
   eliminar,
-  toggleActivo
+  toggleActivo,
 };

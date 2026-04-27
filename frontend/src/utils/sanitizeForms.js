@@ -8,12 +8,12 @@
 
 // Tipos de sanitización disponibles
 export const SANITIZE = {
-  TEXTO_UPPER:    'texto_upper',    // Mayúsculas, sin restricción de chars
-  TEXTO_LETRAS:   'texto_letras',   // Solo letras, espacios y acentos (nombres)
-  ALFANUM_UPPER:  'alfanum_upper',  // Alfanumérico en mayúsculas (placa, códigos)
-  SOLO_DIGITOS:   'solo_digitos',   // Solo dígitos (teléfono, cédula)
-  TEXTO_LIBRE:    'texto_libre',    // Texto libre, solo aplica maxLength
-  NIT:            'nit',            // NIT/documento: letras, dígitos, guión y punto
+  TEXTO_UPPER: 'texto_upper', // Mayúsculas, sin restricción de chars
+  TEXTO_LETRAS: 'texto_letras', // Solo letras, espacios y acentos (nombres)
+  ALFANUM_UPPER: 'alfanum_upper', // Alfanumérico en mayúsculas (placa, códigos)
+  SOLO_DIGITOS: 'solo_digitos', // Solo dígitos (teléfono, cédula)
+  TEXTO_LIBRE: 'texto_libre', // Texto libre, solo aplica maxLength
+  NIT: 'nit', // NIT/documento: letras, dígitos, guión y punto
 };
 
 /**

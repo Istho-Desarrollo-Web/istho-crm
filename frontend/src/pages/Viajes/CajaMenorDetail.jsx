@@ -13,13 +13,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Chip,
-  IconButton,
-  Tabs,
-  Tab,
-  Tooltip,
-} from '@mui/material';
+import { Chip, IconButton, Tabs, Tab, Tooltip } from '@mui/material';
 import {
   ArrowLeft,
   Pencil,
@@ -76,7 +70,9 @@ const SummaryCard = ({ title, value, icon: Icon, bg, iconColor, large = false })
     <div className="flex items-start justify-between">
       <div>
         <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{title}</p>
-        <p className={`font-bold text-slate-800 dark:text-slate-100 ${large ? 'text-3xl' : 'text-2xl'}`}>
+        <p
+          className={`font-bold text-slate-800 dark:text-slate-100 ${large ? 'text-3xl' : 'text-2xl'}`}
+        >
           {value}
         </p>
       </div>
@@ -120,20 +116,26 @@ const CajaMenorDetail = () => {
   // FETCH DATA
   // ──────────────────────────────────────────────────────────────────────────
 
-  const fetchCaja = useCallback(async (silencioso = false) => {
-    if (!silencioso) { setLoading(true); setError(null); }
-    try {
-      const response = await cajasMenoresService.getById(id);
-      setCaja(response.data || response);
-    } catch (err) {
+  const fetchCaja = useCallback(
+    async (silencioso = false) => {
       if (!silencioso) {
-        setError(err?.response?.data?.mensaje || 'Error al cargar la caja menor');
-        apiError(err);
+        setLoading(true);
+        setError(null);
       }
-    } finally {
-      if (!silencioso) setLoading(false);
-    }
-  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+      try {
+        const response = await cajasMenoresService.getById(id);
+        setCaja(response.data || response);
+      } catch (err) {
+        if (!silencioso) {
+          setError(err?.response?.data?.mensaje || 'Error al cargar la caja menor');
+          apiError(err);
+        }
+      } finally {
+        if (!silencioso) setLoading(false);
+      }
+    },
+    [id]
+  ); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchCaja();
@@ -153,12 +155,14 @@ const CajaMenorDetail = () => {
         fetchCaja(true);
       }
     };
-    const handleAprobacionMasiva = () => { fetchCaja(true); };
+    const handleAprobacionMasiva = () => {
+      fetchCaja(true);
+    };
 
     // Estado de la caja actualizado desde otro lado
     const handleCajaActualizada = (data) => {
       if (data.id === cajaId) {
-        setCaja((prev) => prev ? { ...prev, ...data } : prev);
+        setCaja((prev) => (prev ? { ...prev, ...data } : prev));
       }
     };
 
@@ -307,13 +311,13 @@ const CajaMenorDetail = () => {
               </div>
               <div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-2xl font-bold text-slate-800">
-                    {caja.numero}
-                  </h1>
+                  <h1 className="text-2xl font-bold text-slate-800">{caja.numero}</h1>
                   <StatusChip status={caja.estado} />
                 </div>
                 <div className="flex items-center gap-2 text-slate-500 text-sm mt-0.5">
-                  <span>{caja.asignado?.nombre_completo || caja.asignado?.username || 'Sin asignar'}</span>
+                  <span>
+                    {caja.asignado?.nombre_completo || caja.asignado?.username || 'Sin asignar'}
+                  </span>
                   <span>-</span>
                   <span>{formatFecha(caja.fecha_apertura)}</span>
                 </div>
@@ -323,29 +327,17 @@ const CajaMenorDetail = () => {
 
           <div className="flex items-center gap-2">
             {!isAbierta && (
-              <Button
-                variant="outline"
-                icon={FileText}
-                onClick={handleDownloadPDF}
-              >
+              <Button variant="outline" icon={FileText} onClick={handleDownloadPDF}>
                 Imprimir Liquidación (PDF)
               </Button>
             )}
             <ProtectedAction module="caja_menor" action="editar">
               {isAbierta && (
                 <>
-                  <Button
-                    variant="outline"
-                    icon={Pencil}
-                    onClick={() => setEditFormOpen(true)}
-                  >
+                  <Button variant="outline" icon={Pencil} onClick={() => setEditFormOpen(true)}>
                     Editar
                   </Button>
-                  <Button
-                    variant="danger"
-                    icon={Lock}
-                    onClick={() => setCerrarDialogOpen(true)}
-                  >
+                  <Button variant="danger" icon={Lock} onClick={() => setCerrarDialogOpen(true)}>
                     Cerrar Caja
                   </Button>
                 </>
@@ -431,12 +423,24 @@ const CajaMenorDetail = () => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-gray-100">
-                          <th className="text-left py-3 px-4 font-semibold text-slate-500">Numero</th>
-                          <th className="text-left py-3 px-4 font-semibold text-slate-500">Fecha</th>
-                          <th className="text-left py-3 px-4 font-semibold text-slate-500">Destino</th>
-                          <th className="text-left py-3 px-4 font-semibold text-slate-500">Placa</th>
-                          <th className="text-right py-3 px-4 font-semibold text-slate-500">Valor Viaje</th>
-                          <th className="text-center py-3 px-4 font-semibold text-slate-500">Estado</th>
+                          <th className="text-left py-3 px-4 font-semibold text-slate-500">
+                            Numero
+                          </th>
+                          <th className="text-left py-3 px-4 font-semibold text-slate-500">
+                            Fecha
+                          </th>
+                          <th className="text-left py-3 px-4 font-semibold text-slate-500">
+                            Destino
+                          </th>
+                          <th className="text-left py-3 px-4 font-semibold text-slate-500">
+                            Placa
+                          </th>
+                          <th className="text-right py-3 px-4 font-semibold text-slate-500">
+                            Valor Viaje
+                          </th>
+                          <th className="text-center py-3 px-4 font-semibold text-slate-500">
+                            Estado
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -449,7 +453,9 @@ const CajaMenorDetail = () => {
                             <td className="py-3 px-4 font-medium text-slate-800">{viaje.numero}</td>
                             <td className="py-3 px-4 text-slate-600">{formatFecha(viaje.fecha)}</td>
                             <td className="py-3 px-4 text-slate-600">{viaje.destino || '-'}</td>
-                            <td className="py-3 px-4 text-slate-600">{viaje.vehiculo?.placa || viaje.vehiculo_placa || '-'}</td>
+                            <td className="py-3 px-4 text-slate-600">
+                              {viaje.vehiculo?.placa || viaje.vehiculo_placa || '-'}
+                            </td>
                             <td className="py-3 px-4 text-right font-medium text-slate-800">
                               {formatCOP(viaje.valor_viaje)}
                             </td>
@@ -478,14 +484,28 @@ const CajaMenorDetail = () => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-gray-100 dark:border-slate-700">
-                          <th className="text-left py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Consecutivo</th>
-                          <th className="text-left py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Concepto</th>
-                          <th className="text-center py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Tipo</th>
-                          <th className="text-right py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Valor</th>
-                          <th className="text-center py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Estado</th>
-                          <th className="text-right py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Valor Aprobado</th>
+                          <th className="text-left py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">
+                            Consecutivo
+                          </th>
+                          <th className="text-left py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">
+                            Concepto
+                          </th>
+                          <th className="text-center py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">
+                            Tipo
+                          </th>
+                          <th className="text-right py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">
+                            Valor
+                          </th>
+                          <th className="text-center py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">
+                            Estado
+                          </th>
+                          <th className="text-right py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">
+                            Valor Aprobado
+                          </th>
                           {hasPermission('movimientos', 'aprobar') && (
-                            <th className="text-center py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">Acciones</th>
+                            <th className="text-center py-3 px-4 font-semibold text-slate-500 dark:text-slate-400">
+                              Acciones
+                            </th>
                           )}
                         </tr>
                       </thead>
@@ -497,8 +517,12 @@ const CajaMenorDetail = () => {
                               key={mov.id}
                               className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors"
                             >
-                              <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200">#{mov.consecutivo || '-'}</td>
-                              <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{mov.concepto || '-'}</td>
+                              <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+                                #{mov.consecutivo || '-'}
+                              </td>
+                              <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                                {mov.concepto || '-'}
+                              </td>
                               <td className="py-3 px-4 text-center">
                                 <Chip
                                   label={mov.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso'}
@@ -538,10 +562,15 @@ const CajaMenorDetail = () => {
                                       <button
                                         onClick={async () => {
                                           try {
-                                            await movimientosService.aprobar(mov.id, { aprobado: true, valor_aprobado: mov.valor });
+                                            await movimientosService.aprobar(mov.id, {
+                                              aprobado: true,
+                                              valor_aprobado: mov.valor,
+                                            });
                                             success('Movimiento aprobado');
                                             fetchCaja();
-                                          } catch (err) { apiError(err); }
+                                          } catch (err) {
+                                            apiError(err);
+                                          }
                                         }}
                                         className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors"
                                         title="Aprobar"
@@ -552,10 +581,14 @@ const CajaMenorDetail = () => {
                                       <button
                                         onClick={async () => {
                                           try {
-                                            await movimientosService.aprobar(mov.id, { aprobado: false });
+                                            await movimientosService.aprobar(mov.id, {
+                                              aprobado: false,
+                                            });
                                             success('Movimiento rechazado');
                                             fetchCaja();
-                                          } catch (err) { apiError(err); }
+                                          } catch (err) {
+                                            apiError(err);
+                                          }
                                         }}
                                         className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors"
                                         title="Rechazar"
@@ -584,7 +617,9 @@ const CajaMenorDetail = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Observaciones */}
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-slate-800 dark:text-slate-200">Observaciones</h4>
+                  <h4 className="font-semibold text-slate-800 dark:text-slate-200">
+                    Observaciones
+                  </h4>
                   <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-centhrix-card p-4 rounded-xl border border-slate-100 dark:border-slate-700">
                     {caja.observaciones || 'Sin observaciones'}
                   </p>
@@ -593,11 +628,15 @@ const CajaMenorDetail = () => {
                 {/* Caja anterior */}
                 {caja.caja_anterior && (
                   <div className="space-y-2">
-                    <h4 className="font-semibold text-slate-800 dark:text-slate-200">Caja Anterior</h4>
+                    <h4 className="font-semibold text-slate-800 dark:text-slate-200">
+                      Caja Anterior
+                    </h4>
                     <div className="bg-slate-50 dark:bg-centhrix-card p-4 rounded-xl border border-slate-100 dark:border-slate-700 space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-slate-500 dark:text-slate-400">Número</span>
-                        <span className="text-slate-800 dark:text-slate-200 font-medium">{caja.caja_anterior.numero || '-'}</span>
+                        <span className="text-slate-800 dark:text-slate-200 font-medium">
+                          {caja.caja_anterior.numero || '-'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500 dark:text-slate-400">Saldo Final</span>
@@ -651,8 +690,12 @@ const CajaMenorDetail = () => {
                       </div>
                       {caja.observaciones_cierre && (
                         <div className="flex justify-between">
-                          <span className="text-slate-500 dark:text-slate-400">Observaciones cierre</span>
-                          <span className="text-slate-800 dark:text-slate-200">{caja.observaciones_cierre}</span>
+                          <span className="text-slate-500 dark:text-slate-400">
+                            Observaciones cierre
+                          </span>
+                          <span className="text-slate-800 dark:text-slate-200">
+                            {caja.observaciones_cierre}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -702,19 +745,29 @@ const CajaMenorDetail = () => {
                   <span className="text-xs text-amber-500 ml-1">(incluye heredado)</span>
                 )}
               </span>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{formatCOP(caja?.saldo_inicial)}</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                {formatCOP(caja?.saldo_inicial)}
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-slate-500 dark:text-slate-400">Total Ingresos</span>
-              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">+{formatCOP(caja?.total_ingresos)}</span>
+              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                +{formatCOP(caja?.total_ingresos)}
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-slate-500 dark:text-slate-400">Total Egresos</span>
-              <span className="text-sm font-medium text-red-600 dark:text-red-400">-{formatCOP(caja?.total_egresos)}</span>
+              <span className="text-sm font-medium text-red-600 dark:text-red-400">
+                -{formatCOP(caja?.total_egresos)}
+              </span>
             </div>
             <div className="border-t border-slate-200 dark:border-slate-600 pt-2 flex justify-between items-center">
-              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Saldo Final</span>
-              <span className={`text-xl font-bold ${saldoActual >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Saldo Final
+              </span>
+              <span
+                className={`text-xl font-bold ${saldoActual >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}
+              >
                 {formatCOP(saldoActual)}
               </span>
             </div>
@@ -747,7 +800,8 @@ const CajaMenorDetail = () => {
                       Transferir saldo para siguiente caja
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      El saldo de {formatCOP(saldoActual)} quedará disponible para trasladar al crear una nueva caja menor
+                      El saldo de {formatCOP(saldoActual)} quedará disponible para trasladar al
+                      crear una nueva caja menor
                     </p>
                   </div>
                 </label>
@@ -772,7 +826,8 @@ const CajaMenorDetail = () => {
                       Liquidar saldo al usuario asignado
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Se registrará un egreso de liquidación por {formatCOP(saldoActual)} y la caja cerrará en $0
+                      Se registrará un egreso de liquidación por {formatCOP(saldoActual)} y la caja
+                      cerrará en $0
                     </p>
                   </div>
                 </label>

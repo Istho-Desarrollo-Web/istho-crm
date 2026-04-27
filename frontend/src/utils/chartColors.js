@@ -19,4 +19,9 @@ export const CHART_COLORS = [
 ];
 
 export const CHART_COLORS_OPACITY = (opacity = 0.7) =>
-  CHART_COLORS.map((c) => `${c}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`);
+  CHART_COLORS.map(
+    (c) =>
+      `${c}${Math.round(opacity * 255)
+        .toString(16)
+        .padStart(2, '0')}`
+  );

@@ -33,7 +33,7 @@ const PieChart = ({
   // VALIDACIÓN DE DATOS
   // ══════════════════════════════════════════════════════════════════════════
 
-  const validData = (data || []).filter(item => {
+  const validData = (data || []).filter((item) => {
     const value = Number(item?.value);
     return !isNaN(value) && value > 0;
   });
@@ -44,7 +44,9 @@ const PieChart = ({
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
-            {subtitle && <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>}
+            {subtitle && (
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>
+            )}
           </div>
           {headerActions && <div className="flex-shrink-0">{headerActions}</div>}
         </div>
@@ -80,56 +82,59 @@ const PieChart = ({
   const centerY = size / 2;
   const hoverOffset = 8; // px que se desplaza el slice al hacer hover
 
-  const slices = validData.reduce((acc, item, idx) => {
-    const angleStart = acc.currentAngle;
-    const value = Number(item.value);
-    const percentage = (value / total) * 100;
-    const angle = (value / total) * 360;
-    const endAngle = angleStart + angle;
-    const midAngle = angleStart + angle / 2; // ángulo del centroide del slice
+  const slices = validData.reduce(
+    (acc, item, idx) => {
+      const angleStart = acc.currentAngle;
+      const value = Number(item.value);
+      const percentage = (value / total) * 100;
+      const angle = (value / total) * 360;
+      const endAngle = angleStart + angle;
+      const midAngle = angleStart + angle / 2; // ángulo del centroide del slice
 
-    const startRad = (angleStart * Math.PI) / 180;
-    const endRad = (endAngle * Math.PI) / 180;
+      const startRad = (angleStart * Math.PI) / 180;
+      const endRad = (endAngle * Math.PI) / 180;
 
-    const x1 = centerX + radius * Math.cos(startRad);
-    const y1 = centerY + radius * Math.sin(startRad);
-    const x2 = centerX + radius * Math.cos(endRad);
-    const y2 = centerY + radius * Math.sin(endRad);
+      const x1 = centerX + radius * Math.cos(startRad);
+      const y1 = centerY + radius * Math.sin(startRad);
+      const x2 = centerX + radius * Math.cos(endRad);
+      const y2 = centerY + radius * Math.sin(endRad);
 
-    if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
-      return { ...acc, currentAngle: endAngle };
-    }
+      if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+        return { ...acc, currentAngle: endAngle };
+      }
 
-    const largeArcFlag = angle > 180 ? 1 : 0;
+      const largeArcFlag = angle > 180 ? 1 : 0;
 
-    let path;
-    if (validData.length === 1) {
-      path = `
+      let path;
+      if (validData.length === 1) {
+        path = `
         M ${centerX} ${centerY - radius}
         A ${radius} ${radius} 0 1 1 ${centerX} ${centerY + radius}
         A ${radius} ${radius} 0 1 1 ${centerX} ${centerY - radius}
         Z
       `;
-    } else {
-      path = `
+      } else {
+        path = `
         M ${centerX} ${centerY}
         L ${x1.toFixed(2)} ${y1.toFixed(2)}
         A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}
         Z
       `;
-    }
+      }
 
-    const slice = {
-      ...item,
-      value,
-      path,
-      percentage,
-      midAngle,
-      color: item.color || CHART_COLORS[idx % CHART_COLORS.length],
-    };
+      const slice = {
+        ...item,
+        value,
+        path,
+        percentage,
+        midAngle,
+        color: item.color || CHART_COLORS[idx % CHART_COLORS.length],
+      };
 
-    return { currentAngle: endAngle, items: [...acc.items, slice] };
-  }, { currentAngle: -90, items: [] }).items;
+      return { currentAngle: endAngle, items: [...acc.items, slice] };
+    },
+    { currentAngle: -90, items: [] }
+  ).items;
 
   // ══════════════════════════════════════════════════════════════════════════
   // RENDER
@@ -141,18 +146,16 @@ const PieChart = ({
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
-          {subtitle && <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>}
+          {subtitle && (
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>
+          )}
         </div>
         {headerActions && <div className="flex-shrink-0">{headerActions}</div>}
       </div>
 
       <div className="flex items-center gap-6">
         {/* Pie Chart */}
-        <div
-          ref={containerRef}
-          className="relative flex-shrink-0"
-          onMouseMove={handleMouseMove}
-        >
+        <div ref={containerRef} className="relative flex-shrink-0" onMouseMove={handleMouseMove}>
           <svg width={size} height={size}>
             {slices.map((slice, idx) => {
               const isHovered = hoveredSlice === idx;
@@ -239,11 +242,12 @@ const PieChart = ({
                 className={`
                   flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer
                   transition-colors duration-150
-                  ${hoveredSlice === idx
-                    ? 'bg-slate-100 dark:bg-centhrix-surface/60'
-                    : hoveredSlice !== null
-                      ? 'opacity-50'
-                      : ''
+                  ${
+                    hoveredSlice === idx
+                      ? 'bg-slate-100 dark:bg-centhrix-surface/60'
+                      : hoveredSlice !== null
+                        ? 'opacity-50'
+                        : ''
                   }
                 `}
               >

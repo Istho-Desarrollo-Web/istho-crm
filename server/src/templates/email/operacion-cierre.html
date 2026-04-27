@@ -1,55 +1,103 @@
-{{!--
-  ISTHO CRM - Plantilla Cierre de Operacion (v2.0)
-  Variables: tipoOperacion, numeroOperacion, documentoWms, fecha, clienteNombre,
-  totalReferencias, totalUnidades, totalAverias, origen, destino, placa, vehiculoTipo,
-  conductor, conductorCedula, conductorTelefono, motivoKardex, productos[], averias[]
---}}
+{{!-- ISTHO CRM - Plantilla Cierre de Operacion (v2.0) Variables: tipoOperacion, numeroOperacion,
+documentoWms, fecha, clienteNombre, totalReferencias, totalUnidades, totalAverias, origen, destino,
+placa, vehiculoTipo, conductor, conductorCedula, conductorTelefono, motivoKardex, productos[],
+averias[] --}}
 
-<div style="padding: 0;">
-  <h2 style="color: #1e293b; margin: 0 0 5px 0; font-size: 22px; font-weight: 700;">
+<div style="padding: 0">
+  <h2 style="color: #1e293b; margin: 0 0 5px 0; font-size: 22px; font-weight: 700">
     {{tipoOperacion}} Completado
   </h2>
-  <p style="color: #64748b; font-size: 14px; margin: 0 0 25px 0;">
+  <p style="color: #64748b; font-size: 14px; margin: 0 0 25px 0">
     Operacion {{numeroOperacion}} | {{fecha}}
   </p>
 
-  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 20px 0;">
+  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 20px 0">
     Estimado(a) cliente, le informamos que se ha completado exitosamente la siguiente operacion:
   </p>
 
   <!-- Resumen -->
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 20px 0;">
+  <table
+    role="presentation"
+    cellspacing="0"
+    cellpadding="0"
+    border="0"
+    width="100%"
+    style="margin: 20px 0"
+  >
     <tr>
-      <td style="width: 33%; padding: 15px; background-color: #f0fdf4; border-radius: 10px 0 0 10px; text-align: center;">
-        <p style="margin: 0; color: #166534; font-size: 24px; font-weight: 700;">{{totalReferencias}}</p>
-        <p style="margin: 4px 0 0 0; color: #16a34a; font-size: 12px; text-transform: uppercase;">Referencias</p>
+      <td
+        style="
+          width: 33%;
+          padding: 15px;
+          background-color: #f0fdf4;
+          border-radius: 10px 0 0 10px;
+          text-align: center;
+        "
+      >
+        <p style="margin: 0; color: #166534; font-size: 24px; font-weight: 700">
+          {{totalReferencias}}
+        </p>
+        <p style="margin: 4px 0 0 0; color: #16a34a; font-size: 12px; text-transform: uppercase">
+          Referencias
+        </p>
       </td>
-      <td style="width: 33%; padding: 15px; background-color: #eff6ff; text-align: center;">
-        <p style="margin: 0; color: #1e40af; font-size: 24px; font-weight: 700;">{{totalUnidades}}</p>
-        <p style="margin: 4px 0 0 0; color: #3b82f6; font-size: 12px; text-transform: uppercase;">Unidades</p>
+      <td style="width: 33%; padding: 15px; background-color: #eff6ff; text-align: center">
+        <p style="margin: 0; color: #1e40af; font-size: 24px; font-weight: 700">
+          {{totalUnidades}}
+        </p>
+        <p style="margin: 4px 0 0 0; color: #3b82f6; font-size: 12px; text-transform: uppercase">
+          Unidades
+        </p>
       </td>
-      <td style="width: 33%; padding: 15px; background-color: {{#if totalAverias}}#fef2f2{{else}}#f8fafc{{/if}}; border-radius: 0 10px 10px 0; text-align: center;">
-        <p style="margin: 0; color: {{#if totalAverias}}#dc2626{{else}}#64748b{{/if}}; font-size: 24px; font-weight: 700;">{{totalAverias}}</p>
-        <p style="margin: 4px 0 0 0; color: {{#if totalAverias}}#ef4444{{else}}#94a3b8{{/if}}; font-size: 12px; text-transform: uppercase;">Averias</p>
+      <td
+        style="width: 33%; padding: 15px; background-color: {{#if totalAverias}}#fef2f2{{else}}#f8fafc{{/if}}; border-radius: 0 10px 10px 0; text-align: center;"
+      >
+        <p
+          style="margin: 0; color: {{#if totalAverias}}#dc2626{{else}}#64748b{{/if}}; font-size: 24px; font-weight: 700;"
+        >
+          {{totalAverias}}
+        </p>
+        <p
+          style="margin: 4px 0 0 0; color: {{#if totalAverias}}#ef4444{{else}}#94a3b8{{/if}}; font-size: 12px; text-transform: uppercase;"
+        >
+          Averias
+        </p>
       </td>
     </tr>
   </table>
 
   <!-- Info operacion -->
   <div class="info-box success">
-    <table style="width: 100%; font-size: 14px;">
-      <tr><td style="padding: 4px 0; color: #64748b; width: 140px;"><strong>Operacion:</strong></td><td style="color: #1e293b;">{{numeroOperacion}}</td></tr>
-      <tr><td style="padding: 4px 0; color: #64748b;"><strong>Documento WMS:</strong></td><td style="color: #1e293b;">{{documentoWms}}</td></tr>
-      <tr><td style="padding: 4px 0; color: #64748b;"><strong>Cliente:</strong></td><td style="color: #1e293b;">{{clienteNombre}}</td></tr>
-      <tr><td style="padding: 4px 0; color: #64748b;"><strong>Fecha:</strong></td><td style="color: #1e293b;">{{fecha}}</td></tr>
+    <table style="width: 100%; font-size: 14px">
+      <tr>
+        <td style="padding: 4px 0; color: #64748b; width: 140px"><strong>Operacion:</strong></td>
+        <td style="color: #1e293b">{{numeroOperacion}}</td>
+      </tr>
+      <tr>
+        <td style="padding: 4px 0; color: #64748b"><strong>Documento WMS:</strong></td>
+        <td style="color: #1e293b">{{documentoWms}}</td>
+      </tr>
+      <tr>
+        <td style="padding: 4px 0; color: #64748b"><strong>Cliente:</strong></td>
+        <td style="color: #1e293b">{{clienteNombre}}</td>
+      </tr>
+      <tr>
+        <td style="padding: 4px 0; color: #64748b"><strong>Fecha:</strong></td>
+        <td style="color: #1e293b">{{fecha}}</td>
+      </tr>
       {{#if motivoKardex}}
-      <tr><td style="padding: 4px 0; color: #64748b;"><strong>Motivo:</strong></td><td style="color: #1e293b;">{{motivoKardex}}</td></tr>
+      <tr>
+        <td style="padding: 4px 0; color: #64748b"><strong>Motivo:</strong></td>
+        <td style="color: #1e293b">{{motivoKardex}}</td>
+      </tr>
       {{/if}}
     </table>
   </div>
 
   <!-- Tabla de productos -->
-  <h3 style="color: #1e293b; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600;">Detalle de la Operacion</h3>
+  <h3 style="color: #1e293b; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600">
+    Detalle de la Operacion
+  </h3>
 
   <table class="data-table">
     <thead>
@@ -57,21 +105,25 @@
         <th>SKU</th>
         <th>Producto</th>
         <th>Caja</th>
-        <th style="text-align: right;">Cantidad</th>
+        <th style="text-align: right">Cantidad</th>
         <th>U.M.</th>
-        {{#if tieneAverias}}<th style="text-align: right;">Averias</th>{{/if}}
+        {{#if tieneAverias}}
+        <th style="text-align: right">Averias</th>
+        {{/if}}
       </tr>
     </thead>
     <tbody>
       {{#each productos}}
       <tr>
-        <td style="font-family: monospace; font-size: 13px;">{{this.sku}}</td>
+        <td style="font-family: monospace; font-size: 13px">{{this.sku}}</td>
         <td>{{this.producto}}</td>
-        <td style="font-family: monospace; font-size: 13px;">{{this.numero_caja}}</td>
-        <td style="text-align: right; font-weight: 600;">{{this.cantidad}}</td>
+        <td style="font-family: monospace; font-size: 13px">{{this.numero_caja}}</td>
+        <td style="text-align: right; font-weight: 600">{{this.cantidad}}</td>
         <td>{{this.unidad_medida}}</td>
         {{#if ../tieneAverias}}
-        <td style="text-align: right; {{#if this.cantidad_averia}}color: #dc2626; font-weight: 700;{{/if}}">
+        <td
+          style="text-align: right; {{#if this.cantidad_averia}}color: #dc2626; font-weight: 700;{{/if}}"
+        >
           {{this.cantidad_averia}}
         </td>
         {{/if}}
@@ -79,79 +131,143 @@
       {{/each}}
     </tbody>
     <tfoot>
-      <tr style="background-color: #1e293b !important;">
-        <td colspan="3" style="color: #fff !important; font-weight: 700;">TOTAL</td>
-        <td style="text-align: right; color: #fff !important; font-weight: 700;">{{totalUnidades}}</td>
-        <td style="color: #fff !important;"></td>
-        {{#if tieneAverias}}<td style="text-align: right; color: #fca5a5 !important; font-weight: 700;">{{totalAverias}}</td>{{/if}}
+      <tr style="background-color: #1e293b !important">
+        <td colspan="3" style="color: #fff !important; font-weight: 700">TOTAL</td>
+        <td style="text-align: right; color: #fff !important; font-weight: 700">
+          {{totalUnidades}}
+        </td>
+        <td style="color: #fff !important"></td>
+        {{#if tieneAverias}}
+        <td style="text-align: right; color: #fca5a5 !important; font-weight: 700">
+          {{totalAverias}}
+        </td>
+        {{/if}}
       </tr>
     </tfoot>
   </table>
 
   {{#if tieneAverias}}
   <div class="info-box warning">
-    <strong>Nota:</strong> Se registraron {{totalAverias}} unidades con averia.{{#if tieneEvidencias}} Consulte las evidencias fotograficas en la seccion de archivos adjuntos.{{else}} Las evidencias fotograficas estan disponibles en el sistema.{{/if}}
+    <strong>Nota:</strong> Se registraron {{totalAverias}} unidades con averia.{{#if
+    tieneEvidencias}} Consulte las evidencias fotograficas en la seccion de archivos
+    adjuntos.{{else}} Las evidencias fotograficas estan disponibles en el sistema.{{/if}}
   </div>
   {{/if}}
 
   <!-- Transporte -->
   {{#if placa}}
-  <h3 style="color: #1e293b; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600;">Informacion de Transporte</h3>
+  <h3 style="color: #1e293b; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600">
+    Informacion de Transporte
+  </h3>
 
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin: 10px 0;">
+  <table
+    role="presentation"
+    cellspacing="0"
+    cellpadding="0"
+    border="0"
+    width="100%"
+    style="
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 10px 0;
+    "
+  >
     <tr>
-      <td style="padding: 12px 20px; border-bottom: 1px solid #e2e8f0; width: 50%;">
-        <p style="margin: 0 0 2px 0; color: #64748b; font-size: 11px; text-transform: uppercase;">Origen</p>
-        <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600;">{{origen}}</p>
+      <td style="padding: 12px 20px; border-bottom: 1px solid #e2e8f0; width: 50%">
+        <p style="margin: 0 0 2px 0; color: #64748b; font-size: 11px; text-transform: uppercase">
+          Origen
+        </p>
+        <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600">{{origen}}</p>
       </td>
-      <td style="padding: 12px 20px; border-bottom: 1px solid #e2e8f0;">
-        <p style="margin: 0 0 2px 0; color: #64748b; font-size: 11px; text-transform: uppercase;">Destino</p>
-        <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600;">{{destino}}</p>
+      <td style="padding: 12px 20px; border-bottom: 1px solid #e2e8f0">
+        <p style="margin: 0 0 2px 0; color: #64748b; font-size: 11px; text-transform: uppercase">
+          Destino
+        </p>
+        <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600">{{destino}}</p>
       </td>
     </tr>
     <tr>
-      <td style="padding: 12px 20px; border-bottom: 1px solid #e2e8f0;">
-        <p style="margin: 0 0 2px 0; color: #64748b; font-size: 11px; text-transform: uppercase;">Placa</p>
-        <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600;">{{placa}} {{#if vehiculoTipo}}<span style="color: #64748b; font-weight: 400;">({{vehiculoTipo}})</span>{{/if}}</p>
+      <td style="padding: 12px 20px; border-bottom: 1px solid #e2e8f0">
+        <p style="margin: 0 0 2px 0; color: #64748b; font-size: 11px; text-transform: uppercase">
+          Placa
+        </p>
+        <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600">
+          {{placa}} {{#if vehiculoTipo}}<span style="color: #64748b; font-weight: 400"
+            >({{vehiculoTipo}})</span
+          >{{/if}}
+        </p>
       </td>
-      <td style="padding: 12px 20px; border-bottom: 1px solid #e2e8f0;">
-        <p style="margin: 0 0 2px 0; color: #64748b; font-size: 11px; text-transform: uppercase;">Conductor</p>
-        <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600;">{{conductor}}</p>
+      <td style="padding: 12px 20px; border-bottom: 1px solid #e2e8f0">
+        <p style="margin: 0 0 2px 0; color: #64748b; font-size: 11px; text-transform: uppercase">
+          Conductor
+        </p>
+        <p style="margin: 0; color: #1e293b; font-size: 14px; font-weight: 600">{{conductor}}</p>
       </td>
     </tr>
     <tr>
-      <td style="padding: 12px 20px;">
-        <p style="margin: 0 0 2px 0; color: #64748b; font-size: 11px; text-transform: uppercase;">Cedula</p>
-        <p style="margin: 0; color: #1e293b; font-size: 14px;">{{conductorCedula}}</p>
+      <td style="padding: 12px 20px">
+        <p style="margin: 0 0 2px 0; color: #64748b; font-size: 11px; text-transform: uppercase">
+          Cedula
+        </p>
+        <p style="margin: 0; color: #1e293b; font-size: 14px">{{conductorCedula}}</p>
       </td>
-      <td style="padding: 12px 20px;">
-        <p style="margin: 0 0 2px 0; color: #64748b; font-size: 11px; text-transform: uppercase;">Telefono</p>
-        <p style="margin: 0; color: #1e293b; font-size: 14px;">{{conductorTelefono}}</p>
+      <td style="padding: 12px 20px">
+        <p style="margin: 0 0 2px 0; color: #64748b; font-size: 11px; text-transform: uppercase">
+          Telefono
+        </p>
+        <p style="margin: 0; color: #1e293b; font-size: 14px">{{conductorTelefono}}</p>
       </td>
     </tr>
   </table>
-  {{/if}}
-
-  {{#if observaciones}}
-  <div class="info-box info">
-    <strong>Observaciones:</strong><br>{{observaciones}}
-  </div>
-  {{/if}}
-
-  {{#if tieneEvidencias}}
-  <h3 style="color: #1e293b; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600;">📎 Evidencias Adjuntas ({{evidenciasLinks.length}} archivos)</h3>
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin: 10px 0;">
+  {{/if}} {{#if observaciones}}
+  <div class="info-box info"><strong>Observaciones:</strong><br />{{observaciones}}</div>
+  {{/if}} {{#if tieneEvidencias}}
+  <h3 style="color: #1e293b; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600">
+    📎 Evidencias Adjuntas ({{evidenciasLinks.length}} archivos)
+  </h3>
+  <table
+    role="presentation"
+    cellspacing="0"
+    cellpadding="0"
+    border="0"
+    width="100%"
+    style="
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 10px 0;
+    "
+  >
     {{#each evidenciasLinks}}
     <tr>
-      <td style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0;">
+      <td style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr>
-            <td style="vertical-align: middle;">
-              <p style="margin: 0; color: #1e293b; font-size: 13px; font-weight: 500;">{{this.nombre}}</p>
-              <p style="margin: 2px 0 0 0; color: #94a3b8; font-size: 11px;">{{this.tipo}}</p>
+            <td style="vertical-align: middle">
+              <p style="margin: 0; color: #1e293b; font-size: 13px; font-weight: 500">
+                {{this.nombre}}
+              </p>
+              <p style="margin: 2px 0 0 0; color: #94a3b8; font-size: 11px">{{this.tipo}}</p>
             </td>
-            <td style="text-align: right; vertical-align: middle;">
-              <a href="{{this.url}}" target="_blank" style="display: inline-block; padding: 6px 14px; background-color: #E74C3C; color: #ffffff; font-size: 12px; font-weight: 600; text-decoration: none; border-radius: 6px;">Ver archivo</a>
+            <td style="text-align: right; vertical-align: middle">
+              <a
+                href="{{this.url}}"
+                target="_blank"
+                style="
+                  display: inline-block;
+                  padding: 6px 14px;
+                  background-color: #e74c3c;
+                  color: #ffffff;
+                  font-size: 12px;
+                  font-weight: 600;
+                  text-decoration: none;
+                  border-radius: 6px;
+                "
+                >Ver archivo</a
+              >
             </td>
           </tr>
         </table>
@@ -160,14 +276,14 @@
     {{/each}}
   </table>
   {{else}}
-  <p style="color: #475569; font-size: 14px; margin: 25px 0 0 0;">
+  <p style="color: #475569; font-size: 14px; margin: 25px 0 0 0">
     Los documentos de soporte estan disponibles en el sistema CRM.
   </p>
   {{/if}}
 
-  <p style="color: #475569; font-size: 14px; margin: 20px 0 0 0;">
-    Atentamente,<br>
-    <strong>Equipo de Operaciones</strong><br>
-    <span style="color: #E65100; font-weight: 600;">ISTHO S.A.S.</span>
+  <p style="color: #475569; font-size: 14px; margin: 20px 0 0 0">
+    Atentamente,<br />
+    <strong>Equipo de Operaciones</strong><br />
+    <span style="color: #e65100; font-weight: 600">ISTHO S.A.S.</span>
   </p>
 </div>

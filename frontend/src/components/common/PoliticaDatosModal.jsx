@@ -45,15 +45,9 @@ const PoliticaDatosModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-      aria-hidden="true"
-    >
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" aria-hidden="true">
       {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
       <div
@@ -69,10 +63,15 @@ const PoliticaDatosModal = ({ isOpen, onClose }) => {
             <Shield className="w-5 h-5 text-[#E74C3C]" aria-hidden="true" />
           </div>
           <div>
-            <h2 id="politica-titulo" className="text-base font-semibold text-slate-800 dark:text-slate-100">
+            <h2
+              id="politica-titulo"
+              className="text-base font-semibold text-slate-800 dark:text-slate-100"
+            >
               Política de Tratamiento de Datos Personales
             </h2>
-            <p className="text-xs text-slate-400 dark:text-slate-500">Ley 1581 de 2012 — ISTHO S.A.S.</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">
+              Ley 1581 de 2012 — ISTHO S.A.S.
+            </p>
           </div>
           <button
             ref={closeRef}
@@ -86,9 +85,10 @@ const PoliticaDatosModal = ({ isOpen, onClose }) => {
 
         {/* Contenido scrolleable */}
         <div className="overflow-y-auto px-6 py-5 flex-1">
-
           <SECCION titulo="1. Responsable del Tratamiento">
-            <p><strong>ISTHO S.A.S.</strong> — NIT: 901.234.567-8</p>
+            <p>
+              <strong>ISTHO S.A.S.</strong> — NIT: 901.234.567-8
+            </p>
             <p>Centro Logístico Industrial del Norte, Girardota, Antioquia, Colombia</p>
             <p className="flex items-center gap-1.5 mt-1">
               <Mail className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
@@ -121,20 +121,32 @@ const PoliticaDatosModal = ({ isOpen, onClose }) => {
 
           <SECCION titulo="4. Base Legal">
             <p>
-              El tratamiento se realiza con fundamento en la <strong>Ley 1581 de 2012</strong>,
-              el <strong>Decreto 1377 de 2013</strong> y demás normas que los complementen o modifiquen.
-              El consentimiento es la base principal del tratamiento para usuarios del sistema.
+              El tratamiento se realiza con fundamento en la <strong>Ley 1581 de 2012</strong>, el{' '}
+              <strong>Decreto 1377 de 2013</strong> y demás normas que los complementen o
+              modifiquen. El consentimiento es la base principal del tratamiento para usuarios del
+              sistema.
             </p>
           </SECCION>
 
           <SECCION titulo="5. Derechos del Titular">
             <p>Como titular de los datos, usted tiene derecho a:</p>
             <ul className="list-disc pl-4 space-y-1">
-              <li><strong>Conocer</strong> los datos que ISTHO S.A.S. tiene sobre usted</li>
-              <li><strong>Actualizar y rectificar</strong> la información inexacta o incompleta</li>
-              <li><strong>Solicitar la supresión</strong> de sus datos cuando no sean necesarios</li>
-              <li><strong>Revocar</strong> la autorización de tratamiento en cualquier momento</li>
-              <li><strong>Presentar quejas</strong> ante la Superintendencia de Industria y Comercio (SIC)</li>
+              <li>
+                <strong>Conocer</strong> los datos que ISTHO S.A.S. tiene sobre usted
+              </li>
+              <li>
+                <strong>Actualizar y rectificar</strong> la información inexacta o incompleta
+              </li>
+              <li>
+                <strong>Solicitar la supresión</strong> de sus datos cuando no sean necesarios
+              </li>
+              <li>
+                <strong>Revocar</strong> la autorización de tratamiento en cualquier momento
+              </li>
+              <li>
+                <strong>Presentar quejas</strong> ante la Superintendencia de Industria y Comercio
+                (SIC)
+              </li>
             </ul>
           </SECCION>
 
@@ -147,24 +159,24 @@ const PoliticaDatosModal = ({ isOpen, onClose }) => {
               >
                 liderti@istho.com.co
               </a>{' '}
-              indicando su nombre, tipo de solicitud y los datos relacionados.
-              El tiempo de respuesta es de <strong>10 días hábiles</strong> conforme a la Ley 1581.
+              indicando su nombre, tipo de solicitud y los datos relacionados. El tiempo de
+              respuesta es de <strong>10 días hábiles</strong> conforme a la Ley 1581.
             </p>
           </SECCION>
 
           <SECCION titulo="7. Seguridad de la Información">
             <p>
               ISTHO S.A.S. implementa medidas técnicas y organizativas para proteger sus datos:
-              cifrado en tránsito (HTTPS/TLS), contraseñas almacenadas con hash seguro,
-              control de acceso por roles, auditoría de acciones y copias de seguridad periódicas.
+              cifrado en tránsito (HTTPS/TLS), contraseñas almacenadas con hash seguro, control de
+              acceso por roles, auditoría de acciones y copias de seguridad periódicas.
             </p>
           </SECCION>
 
           <SECCION titulo="8. Transferencias y Terceros">
             <p>
-              Sus datos no serán vendidos ni compartidos con terceros sin su consentimiento,
-              excepto cuando sea requerido por autoridad competente o sea necesario para
-              la prestación del servicio (ej. proveedor de correo para notificaciones operativas).
+              Sus datos no serán vendidos ni compartidos con terceros sin su consentimiento, excepto
+              cuando sea requerido por autoridad competente o sea necesario para la prestación del
+              servicio (ej. proveedor de correo para notificaciones operativas).
             </p>
           </SECCION>
 
@@ -172,7 +184,8 @@ const PoliticaDatosModal = ({ isOpen, onClose }) => {
             <p>
               Esta política rige desde el <strong>1 de enero de 2026</strong> y permanecerá vigente
               mientras ISTHO S.A.S. realice actividades de tratamiento de datos personales.
-              Cualquier modificación será comunicada a los titulares con al menos 10 días de antelación.
+              Cualquier modificación será comunicada a los titulares con al menos 10 días de
+              antelación.
             </p>
           </SECCION>
 

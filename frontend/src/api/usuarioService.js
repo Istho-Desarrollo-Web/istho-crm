@@ -3,15 +3,15 @@
  * ISTHO CRM - Servicio de Usuario (CORREGIDO v1.2.0)
  * ============================================================================
  * Gestiona operaciones del perfil de usuario.
- * 
+ *
  * getPermisos obtiene permisos reales desde el backend (GET /auth/me).
  * Fallback a permisos locales si el backend no responde.
- * 
+ *
  * CORRECCIONES v1.2.0:
  * - Compatible con client.js v1.1.0 (ya devuelve response.data)
  * - Eliminada definición duplicada de actualizarPerfil
  * - Eliminado doble acceso a .data
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 1.2.0
  * @date Enero 2026
@@ -119,11 +119,10 @@ const PERMISOS_POR_ROL = {
 // ============================================================================
 
 const usuarioService = {
-  
   // ──────────────────────────────────────────────────────────────────────────
   // OBTENER PERFIL
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener datos del perfil del usuario actual
    * @returns {Promise<Object>} Datos del usuario
@@ -141,11 +140,11 @@ const usuarioService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // ACTUALIZAR PERFIL
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Actualizar datos del perfil
    * @param {Object} datos - Datos a actualizar (nombre, apellido, telefono)
@@ -155,18 +154,21 @@ const usuarioService = {
     try {
       // client.js v1.1.0 ya devuelve response.data directamente
       const response = await apiClient.put(AUTH_ENDPOINTS.ME, datos);
-      
+
       // Actualizar también en localStorage
       if (response.success && response.data) {
         const currentUser = usuarioService.getStoredUser();
         if (currentUser) {
-          localStorage.setItem('istho_user', JSON.stringify({
-            ...currentUser,
-            ...response.data,
-          }));
+          localStorage.setItem(
+            'istho_user',
+            JSON.stringify({
+              ...currentUser,
+              ...response.data,
+            })
+          );
         }
       }
-      
+
       return response; // ✅ Sin .data adicional
     } catch (error) {
       return {
@@ -176,11 +178,11 @@ const usuarioService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // CAMBIAR CONTRASEÑA
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Cambiar contraseña del usuario
    * @param {Object} passwords - { password_actual, password_nuevo }
@@ -198,11 +200,11 @@ const usuarioService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // OBTENER PERMISOS (GENERADOS LOCALMENTE)
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener permisos del usuario actual desde el backend
    * Fallback a permisos locales si el backend no responde
@@ -232,8 +234,10 @@ const usuarioService = {
             permisos: permisos,
             permisosArray: Object.entries(permisos).flatMap(([modulo, acciones]) =>
               Array.isArray(acciones)
-                ? acciones.map(accion => `${modulo}.${accion}`)
-                : Object.keys(acciones).filter(k => acciones[k]).map(accion => `${modulo}.${accion}`)
+                ? acciones.map((accion) => `${modulo}.${accion}`)
+                : Object.keys(acciones)
+                    .filter((k) => acciones[k])
+                    .map((accion) => `${modulo}.${accion}`)
             ),
           },
         };
@@ -252,15 +256,17 @@ const usuarioService = {
             data: { rol: user.rol, permisos, permisosArray: [] },
           };
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       return { success: false, message: 'Error al obtener permisos', data: null };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // VERIFICAR PERMISO ESPECÍFICO
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Verificar si el usuario tiene un permiso específico
    * @param {string} modulo - Módulo (ej: 'clientes', 'inventario')
@@ -271,17 +277,17 @@ const usuarioService = {
     try {
       const userStr = localStorage.getItem('istho_user');
       if (!userStr) return false;
-      
+
       const user = JSON.parse(userStr);
       const rol = user.rol || 'cliente';
       const permisos = PERMISOS_POR_ROL[rol] || {};
-      
+
       return permisos[modulo]?.includes(accion) || false;
     } catch {
       return false;
     }
   },
-  
+
   /**
    * Verificar si el usuario puede acceder a un módulo
    * @param {string} modulo - Nombre del módulo
@@ -290,7 +296,7 @@ const usuarioService = {
   puedeAcceder: (modulo) => {
     return usuarioService.tienePermiso(modulo, 'ver');
   },
-  
+
   /**
    * Verificar si el usuario puede crear en un módulo
    * @param {string} modulo - Nombre del módulo
@@ -299,7 +305,7 @@ const usuarioService = {
   puedeCrear: (modulo) => {
     return usuarioService.tienePermiso(modulo, 'crear');
   },
-  
+
   /**
    * Verificar si el usuario puede editar en un módulo
    * @param {string} modulo - Nombre del módulo
@@ -308,7 +314,7 @@ const usuarioService = {
   puedeEditar: (modulo) => {
     return usuarioService.tienePermiso(modulo, 'editar');
   },
-  
+
   /**
    * Verificar si el usuario puede eliminar en un módulo
    * @param {string} modulo - Nombre del módulo
@@ -317,11 +323,11 @@ const usuarioService = {
   puedeEliminar: (modulo) => {
     return usuarioService.tienePermiso(modulo, 'eliminar');
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // OBTENER USUARIO ALMACENADO
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener usuario del localStorage (sin petición)
    * @returns {Object|null}
@@ -334,11 +340,11 @@ const usuarioService = {
       return null;
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // OBTENER ROL
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener rol del usuario actual
    * @returns {string|null}
@@ -347,7 +353,7 @@ const usuarioService = {
     const user = usuarioService.getStoredUser();
     return user?.rol || null;
   },
-  
+
   /**
    * Subir foto de perfil
    * @param {File} file - Archivo de imagen
@@ -370,7 +376,7 @@ const usuarioService = {
       formData.append('avatar', file);
       // uploadClient interceptor ya extrae response.data (body completo)
       const response = await uploadClient.post(AUTH_ENDPOINTS.ME_AVATAR, formData);
-      return response;  // devuelve { success, message, data: { avatar_url } }
+      return response; // devuelve { success, message, data: { avatar_url } }
     } catch (error) {
       return {
         success: false,
@@ -400,13 +406,13 @@ const usuarioService = {
    * @returns {boolean}
    */
   isAdmin: () => usuarioService.getRol() === 'admin',
-  
+
   /**
    * Verificar si es supervisor
    * @returns {boolean}
    */
   isSupervisor: () => ['admin', 'supervisor'].includes(usuarioService.getRol()),
-  
+
   /**
    * Verificar si es operador o superior
    * @returns {boolean}

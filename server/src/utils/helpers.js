@@ -1,8 +1,8 @@
 /**
  * ISTHO CRM - Funciones Helper
- * 
+ *
  * Utilidades comunes para toda la aplicación.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  */
@@ -17,14 +17,14 @@ const { PAGINATION } = require('./constants');
 const parsePaginacion = (query) => {
   let page = parseInt(query.page) || PAGINATION.DEFAULT_PAGE;
   let limit = parseInt(query.limit) || PAGINATION.DEFAULT_LIMIT;
-  
+
   // Validar límites
   if (page < 1) page = 1;
   if (limit < 1) limit = PAGINATION.DEFAULT_LIMIT;
   if (limit > PAGINATION.MAX_LIMIT) limit = PAGINATION.MAX_LIMIT;
-  
+
   const offset = (page - 1) * limit;
-  
+
   return { page, limit, offset };
 };
 
@@ -37,14 +37,14 @@ const parsePaginacion = (query) => {
  */
 const buildPaginacion = (total, page, limit) => {
   const totalPages = Math.ceil(total / limit);
-  
+
   return {
     total,
     page,
     limit,
     totalPages,
     hasNext: page < totalPages,
-    hasPrev: page > 1
+    hasPrev: page > 1,
   };
 };
 
@@ -56,20 +56,25 @@ const buildPaginacion = (total, page, limit) => {
  * @param {string} defaultOrder - Orden por defecto ('ASC' o 'DESC')
  * @returns {Array} Array para Sequelize order
  */
-const parseOrdenamiento = (query, camposPermitidos, defaultField = 'created_at', defaultOrder = 'DESC') => {
+const parseOrdenamiento = (
+  query,
+  camposPermitidos,
+  defaultField = 'created_at',
+  defaultOrder = 'DESC'
+) => {
   const { sort, order } = query;
-  
+
   let campo = defaultField;
   let direccion = defaultOrder;
-  
+
   if (sort && camposPermitidos.includes(sort)) {
     campo = sort;
   }
-  
+
   if (order && ['ASC', 'DESC', 'asc', 'desc'].includes(order)) {
     direccion = order.toUpperCase();
   }
-  
+
   return [[campo, direccion]];
 };
 
@@ -80,13 +85,13 @@ const parseOrdenamiento = (query, camposPermitidos, defaultField = 'created_at',
  */
 const limpiarObjeto = (obj) => {
   const limpio = {};
-  
-  Object.keys(obj).forEach(key => {
+
+  Object.keys(obj).forEach((key) => {
     if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '') {
       limpio[key] = obj[key];
     }
   });
-  
+
   return limpio;
 };
 
@@ -97,18 +102,18 @@ const limpiarObjeto = (obj) => {
  */
 const formatearNIT = (nit) => {
   if (!nit) return null;
-  
+
   // Remover caracteres no numéricos excepto guión
   const limpio = nit.replace(/[^0-9-]/g, '');
-  
+
   // Si ya tiene guión, retornar
   if (limpio.includes('-')) return limpio;
-  
+
   // Si tiene 10 dígitos, agregar guión
   if (limpio.length === 10) {
     return `${limpio.slice(0, 9)}-${limpio.slice(9)}`;
   }
-  
+
   return limpio;
 };
 
@@ -128,12 +133,14 @@ const generarCodigoCliente = (ultimoId) => {
  * @returns {string} IP del cliente
  */
 const getClientIP = (req) => {
-  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
-         req.headers['x-real-ip'] ||
-         req.connection?.remoteAddress ||
-         req.socket?.remoteAddress ||
-         req.ip ||
-         'unknown';
+  return (
+    req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+    req.headers['x-real-ip'] ||
+    req.connection?.remoteAddress ||
+    req.socket?.remoteAddress ||
+    req.ip ||
+    'unknown'
+  );
 };
 
 /**
@@ -154,5 +161,5 @@ module.exports = {
   formatearNIT,
   generarCodigoCliente,
   getClientIP,
-  sanitizarBusqueda
+  sanitizarBusqueda,
 };

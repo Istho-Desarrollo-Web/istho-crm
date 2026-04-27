@@ -37,20 +37,45 @@ import { ConfirmDialog } from '@components/common';
 // ════════════════════════════════════════════════════════════════════════════
 
 const ACCION_CONFIG = {
-  login:      { label: 'Login',     icon: LogIn,    color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-  logout:     { label: 'Logout',    icon: LogOut,   color: 'text-slate-500 dark:text-slate-400',    bg: 'bg-slate-50 dark:bg-slate-800/50' },
-  crear:      { label: 'Crear',     icon: CheckCircle, color: 'text-blue-600 dark:text-blue-400',  bg: 'bg-blue-50 dark:bg-blue-900/20' },
-  actualizar: { label: 'Editar',    icon: Activity, color: 'text-amber-600 dark:text-amber-400',    bg: 'bg-amber-50 dark:bg-amber-900/20' },
-  eliminar:   { label: 'Eliminar',  icon: Ban,      color: 'text-red-600 dark:text-red-400',        bg: 'bg-red-50 dark:bg-red-900/20' },
+  login: {
+    label: 'Login',
+    icon: LogIn,
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+  },
+  logout: {
+    label: 'Logout',
+    icon: LogOut,
+    color: 'text-slate-500 dark:text-slate-400',
+    bg: 'bg-slate-50 dark:bg-slate-800/50',
+  },
+  crear: {
+    label: 'Crear',
+    icon: CheckCircle,
+    color: 'text-blue-600 dark:text-blue-400',
+    bg: 'bg-blue-50 dark:bg-blue-900/20',
+  },
+  actualizar: {
+    label: 'Editar',
+    icon: Activity,
+    color: 'text-amber-600 dark:text-amber-400',
+    bg: 'bg-amber-50 dark:bg-amber-900/20',
+  },
+  eliminar: {
+    label: 'Eliminar',
+    icon: Ban,
+    color: 'text-red-600 dark:text-red-400',
+    bg: 'bg-red-50 dark:bg-red-900/20',
+  },
 };
 
 const ROL_COLORS = {
-  admin:      'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  admin: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   supervisor: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
   financiera: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  operador:   'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  conductor:  'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-  cliente:    'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+  operador: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  conductor: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+  cliente: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
 };
 
 const tiempoRestante = (fechaBloqueo) => {
@@ -65,8 +90,12 @@ const tiempoRestante = (fechaBloqueo) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 const KpiCard = ({ icon: Icon, label, value, sub, colorIcon, colorBg, alerta }) => (
-  <div className={`bg-white dark:bg-centhrix-card rounded-xl border ${alerta ? 'border-red-200 dark:border-red-800' : 'border-slate-200 dark:border-slate-700'} p-4 flex items-center gap-4`}>
-    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${colorBg}`}>
+  <div
+    className={`bg-white dark:bg-centhrix-card rounded-xl border ${alerta ? 'border-red-200 dark:border-red-800' : 'border-slate-200 dark:border-slate-700'} p-4 flex items-center gap-4`}
+  >
+    <div
+      className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${colorBg}`}
+    >
       <Icon className={`w-6 h-6 ${colorIcon}`} />
     </div>
     <div className="min-w-0">
@@ -100,7 +129,9 @@ const DashboardSeguridad = () => {
     }
   }, [notifError]);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
 
   const confirmarDesbloquear = (usuario) => setConfirmDesbloquear(usuario);
 
@@ -129,10 +160,13 @@ const DashboardSeguridad = () => {
 
   if (!datos) return null;
 
-  const { kpis, usuarios_bloqueados, actividad_reciente, logins_recientes, stats_auditoria_7d } = datos;
+  const { kpis, usuarios_bloqueados, actividad_reciente, logins_recientes, stats_auditoria_7d } =
+    datos;
 
   const statsMap = {};
-  stats_auditoria_7d.forEach(s => { statsMap[s.accion] = parseInt(s.total); });
+  stats_auditoria_7d.forEach((s) => {
+    statsMap[s.accion] = parseInt(s.total);
+  });
 
   return (
     <div className="space-y-6">
@@ -172,9 +206,15 @@ const DashboardSeguridad = () => {
           icon={Lock}
           label="Usuarios bloqueados"
           value={kpis.bloqueados}
-          sub={kpis.con_intentos_fallidos > 0 ? `+${kpis.con_intentos_fallidos} con intentos fallidos` : 'Sin intentos fallidos'}
+          sub={
+            kpis.con_intentos_fallidos > 0
+              ? `+${kpis.con_intentos_fallidos} con intentos fallidos`
+              : 'Sin intentos fallidos'
+          }
           colorIcon={kpis.bloqueados > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}
-          colorBg={kpis.bloqueados > 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-slate-100 dark:bg-slate-800'}
+          colorBg={
+            kpis.bloqueados > 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-slate-100 dark:bg-slate-800'
+          }
           alerta={kpis.bloqueados > 0}
         />
         <KpiCard
@@ -198,7 +238,10 @@ const DashboardSeguridad = () => {
             const Icon = cfg.icon;
             const total = statsMap[accion] || 0;
             return (
-              <div key={accion} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${cfg.bg}`}>
+              <div
+                key={accion}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg ${cfg.bg}`}
+              >
                 <Icon className={`w-4 h-4 ${cfg.color}`} />
                 <span className={`text-sm font-medium ${cfg.color}`}>{cfg.label}</span>
                 <span className={`text-base font-bold ${cfg.color}`}>{total}</span>
@@ -228,35 +271,39 @@ const DashboardSeguridad = () => {
                 <CheckCircle className="w-8 h-8 mb-2 text-emerald-400" />
                 <span className="text-sm">Sin usuarios bloqueados</span>
               </div>
-            ) : usuarios_bloqueados.map(u => (
-              <div key={u.id} className="flex items-center gap-3 px-4 py-3">
-                <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-                  <Lock className="w-4 h-4 text-red-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
-                    {u.nombre_completo || u.username}
-                  </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className={`inline-flex px-1.5 py-0.5 text-xs rounded-full font-medium ${ROL_COLORS[u.rol] || ROL_COLORS.cliente}`}>
-                      {u.rolInfo?.nombre || u.rol}
-                    </span>
-                    <span className="text-xs text-red-500 dark:text-red-400 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {tiempoRestante(u.bloqueado_hasta)}
-                    </span>
-                    <span className="text-xs text-slate-400">{u.intentos_fallidos} intentos</span>
+            ) : (
+              usuarios_bloqueados.map((u) => (
+                <div key={u.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                    <Lock className="w-4 h-4 text-red-500" />
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                      {u.nombre_completo || u.username}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span
+                        className={`inline-flex px-1.5 py-0.5 text-xs rounded-full font-medium ${ROL_COLORS[u.rol] || ROL_COLORS.cliente}`}
+                      >
+                        {u.rolInfo?.nombre || u.rol}
+                      </span>
+                      <span className="text-xs text-red-500 dark:text-red-400 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {tiempoRestante(u.bloqueado_hasta)}
+                      </span>
+                      <span className="text-xs text-slate-400">{u.intentos_fallidos} intentos</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => confirmarDesbloquear(u)}
+                    title="Desbloquear usuario"
+                    className="flex-shrink-0 p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors"
+                  >
+                    <Unlock className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => confirmarDesbloquear(u)}
-                  title="Desbloquear usuario"
-                  className="flex-shrink-0 p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors"
-                >
-                  <Unlock className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -271,27 +318,29 @@ const DashboardSeguridad = () => {
           <div className="divide-y divide-slate-100 dark:divide-slate-700/50 max-h-72 overflow-y-auto">
             {logins_recientes.length === 0 ? (
               <div className="py-8 text-center text-sm text-slate-400">Sin registros</div>
-            ) : logins_recientes.map(log => (
-              <div key={log.id} className="flex items-start gap-3 px-4 py-3">
-                <div className="w-7 h-7 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <LogIn className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
-                    {log.usuario_nombre}
-                  </p>
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <span className="text-xs text-slate-400 flex items-center gap-1">
-                      <Globe className="w-3 h-3" />
-                      {log.ip_address || '—'}
-                    </span>
-                    <span className="text-xs text-slate-400">
-                      {formatDate(log.created_at, { tiempo: true })}
-                    </span>
+            ) : (
+              logins_recientes.map((log) => (
+                <div key={log.id} className="flex items-start gap-3 px-4 py-3">
+                  <div className="w-7 h-7 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <LogIn className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                      {log.usuario_nombre}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                      <span className="text-xs text-slate-400 flex items-center gap-1">
+                        <Globe className="w-3 h-3" />
+                        {log.ip_address || '—'}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {formatDate(log.created_at, { tiempo: true })}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -307,37 +356,43 @@ const DashboardSeguridad = () => {
         <div className="divide-y divide-slate-100 dark:divide-slate-700/50 max-h-80 overflow-y-auto">
           {actividad_reciente.length === 0 ? (
             <div className="py-8 text-center text-sm text-slate-400">Sin actividad reciente</div>
-          ) : actividad_reciente.map(evt => {
-            const cfg = ACCION_CONFIG[evt.accion] || ACCION_CONFIG.actualizar;
-            const Icon = cfg.icon;
-            return (
-              <div key={evt.id} className="flex items-start gap-3 px-4 py-3">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${cfg.bg}`}>
-                  <Icon className={`w-3.5 h-3.5 ${cfg.color}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-700 dark:text-slate-300 truncate">
-                    <span className="font-medium">{evt.usuario_nombre}</span>
-                    {' — '}
-                    <span className="text-slate-500 dark:text-slate-400">{evt.descripcion || `${evt.accion} en ${evt.tabla}`}</span>
-                  </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className={`text-xs font-medium ${cfg.color}`}>{cfg.label}</span>
-                    <span className="text-xs text-slate-400">{evt.tabla}</span>
-                    {evt.ip_address && (
-                      <span className="text-xs text-slate-400 flex items-center gap-1">
-                        <Globe className="w-3 h-3" />
-                        {evt.ip_address}
+          ) : (
+            actividad_reciente.map((evt) => {
+              const cfg = ACCION_CONFIG[evt.accion] || ACCION_CONFIG.actualizar;
+              const Icon = cfg.icon;
+              return (
+                <div key={evt.id} className="flex items-start gap-3 px-4 py-3">
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${cfg.bg}`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${cfg.color}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                      <span className="font-medium">{evt.usuario_nombre}</span>
+                      {' — '}
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {evt.descripcion || `${evt.accion} en ${evt.tabla}`}
                       </span>
-                    )}
-                    <span className="text-xs text-slate-400 ml-auto">
-                      {formatDate(evt.created_at, { tiempo: true })}
-                    </span>
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={`text-xs font-medium ${cfg.color}`}>{cfg.label}</span>
+                      <span className="text-xs text-slate-400">{evt.tabla}</span>
+                      {evt.ip_address && (
+                        <span className="text-xs text-slate-400 flex items-center gap-1">
+                          <Globe className="w-3 h-3" />
+                          {evt.ip_address}
+                        </span>
+                      )}
+                      <span className="text-xs text-slate-400 ml-auto">
+                        {formatDate(evt.created_at, { tiempo: true })}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
 

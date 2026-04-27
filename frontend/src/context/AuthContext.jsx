@@ -8,23 +8,16 @@
  * - Verificación de sesión
  * - Verificación de permisos
  * - Persistencia en localStorage
- * 
+ *
  * CORRECCIÓN v1.2.0:
  * - Agregada función hasPermission para verificación de permisos
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 1.2.0
  * @date Enero 2026
  */
 
-import { 
-  createContext, 
-  useContext, 
-  useState, 
-  useEffect, 
-  useCallback,
-  useMemo 
-} from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import authService from '../api/auth.service';
 import { setAuthToken, clearAuthToken, isAuthenticated as checkToken } from '../api/client';
@@ -147,7 +140,7 @@ const PERMISOS_POR_ROL = {
 /**
  * Proveedor de contexto de autenticación
  * Envuelve la aplicación para proveer estado de auth global
- * 
+ *
  * @example
  * // En main.jsx o App.jsx
  * <AuthProvider>
@@ -157,11 +150,11 @@ const PERMISOS_POR_ROL = {
 export const AuthProvider = ({ children }) => {
   // Estado de autenticación
   const [state, setState] = useState(INITIAL_STATE);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // INICIALIZACIÓN - Verificar sesión existente
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -173,10 +166,10 @@ export const AuthProvider = ({ children }) => {
           });
           return;
         }
-        
+
         // Intentar obtener usuario actual
         const storedUser = authService.getStoredUser();
-        
+
         if (storedUser) {
           // Usar usuario almacenado temporalmente
           setState({
@@ -185,7 +178,7 @@ export const AuthProvider = ({ children }) => {
             isLoading: true,
             error: null,
           });
-          
+
           // Verificar con el servidor en background
           try {
             const response = await authService.getCurrentUser();
@@ -259,12 +252,12 @@ export const AuthProvider = ({ children }) => {
         });
       }
     };
-    
+
     initializeAuth();
 
     // Safety timeout: si isLoading queda true por más de 15s, forzar a false
     const safetyTimeout = setTimeout(() => {
-      setState(prev => {
+      setState((prev) => {
         if (prev.isLoading) {
           console.warn('⚠️ Auth timeout — forzando fin de carga');
           return { ...prev, isLoading: false };
@@ -284,7 +277,7 @@ export const AuthProvider = ({ children }) => {
   // ──────────────────────────────────────────────────────────────────────────
   // LOGIN
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Iniciar sesión
    * @param {string} email - Email del usuario
@@ -292,7 +285,7 @@ export const AuthProvider = ({ children }) => {
    * @returns {Promise<Object>} Resultado del login
    */
   const login = useCallback(async (email, password) => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const result = await authService.login({ email, password });
@@ -300,7 +293,7 @@ export const AuthProvider = ({ children }) => {
       if (result.success) {
         // Verificar si el servidor requiere 2FA
         if (result.data?.requiere_2fa) {
-          setState(prev => ({ ...prev, isLoading: false, error: null }));
+          setState((prev) => ({ ...prev, isLoading: false, error: null }));
           return {
             success: false,
             requiere_2fa: true,
@@ -316,12 +309,12 @@ export const AuthProvider = ({ children }) => {
             setAuthToken(result.data.temp_token);
           }
 
-          setState(prev => ({ ...prev, isLoading: false, error: null }));
+          setState((prev) => ({ ...prev, isLoading: false, error: null }));
           return {
             success: false,
             requiere_setup_2fa: true,
             temp_token: result.data.temp_token,
-            usuario_nombre: result.data.usuario_nombre
+            usuario_nombre: result.data.usuario_nombre,
           };
         }
 
@@ -335,7 +328,7 @@ export const AuthProvider = ({ children }) => {
         return { success: true, data: result.data, user: result.data.user };
       }
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: false,
         error: result.message || 'Error al iniciar sesión',
@@ -345,7 +338,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       const errorMessage = error.message || 'Error al iniciar sesión';
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
@@ -356,7 +349,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const validarTotp = useCallback(async (temp_token, codigo, recordar_dispositivo = false) => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const result = await authService.validarTotp({ temp_token, codigo, recordar_dispositivo });
@@ -371,7 +364,7 @@ export const AuthProvider = ({ children }) => {
         return { success: true, data: result.data, user: result.data.user };
       }
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: false,
         error: result.message || 'Código incorrecto',
@@ -379,7 +372,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: false, message: result.message, code: result.code };
     } finally {
-      setState(prev => ({ ...prev, isLoading: false }));
+      setState((prev) => ({ ...prev, isLoading: false }));
     }
   }, []);
 
@@ -409,17 +402,17 @@ export const AuthProvider = ({ children }) => {
       return { success: false, message: error.message };
     }
   }, []);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // LOGOUT
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Cerrar sesión
    * Limpia el estado y los tokens almacenados
    */
   const logout = useCallback(async (limpiarDispositivo = true) => {
-    setState(prev => ({ ...prev, isLoading: true }));
+    setState((prev) => ({ ...prev, isLoading: true }));
 
     try {
       await authService.logout(limpiarDispositivo);
@@ -432,35 +425,38 @@ export const AuthProvider = ({ children }) => {
       });
     }
   }, []);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // ACTUALIZAR USUARIO
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Actualizar datos del usuario en el estado
    * @param {Object} userData - Datos actualizados del usuario
    */
   const updateUser = useCallback((userData) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       user: { ...prev.user, ...userData },
     }));
-    
+
     // Actualizar en localStorage
     const currentUser = authService.getStoredUser();
     if (currentUser) {
-      localStorage.setItem('istho_user', JSON.stringify({
-        ...currentUser,
-        ...userData,
-      }));
+      localStorage.setItem(
+        'istho_user',
+        JSON.stringify({
+          ...currentUser,
+          ...userData,
+        })
+      );
     }
   }, []);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // REFRESCAR USUARIO
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Refrescar datos del usuario desde el servidor
    */
@@ -468,7 +464,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.getCurrentUser();
       if (response.success) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           user: response.data,
         }));
@@ -477,39 +473,42 @@ export const AuthProvider = ({ children }) => {
       console.error('Error refrescando usuario:', error);
     }
   }, []);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // LIMPIAR ERROR
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Limpiar mensaje de error
    */
   const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
+    setState((prev) => ({ ...prev, error: null }));
   }, []);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // VERIFICACIONES DE ROL
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Verificar si el usuario tiene un rol específico
    * @param {string|string[]} roles - Rol o lista de roles
    * @returns {boolean}
    */
-  const hasRole = useCallback((roles) => {
-    if (!state.user) return false;
-    const rolesArray = Array.isArray(roles) ? roles : [roles];
-    return rolesArray.includes(state.user.rol);
-  }, [state.user]);
-  
+  const hasRole = useCallback(
+    (roles) => {
+      if (!state.user) return false;
+      const rolesArray = Array.isArray(roles) ? roles : [roles];
+      return rolesArray.includes(state.user.rol);
+    },
+    [state.user]
+  );
+
   /**
    * Verificar si es administrador
    * @returns {boolean}
    */
   const isAdmin = useCallback(() => hasRole('admin'), [hasRole]);
-  
+
   /**
    * Verificar si es supervisor o superior
    * @returns {boolean}
@@ -517,7 +516,7 @@ export const AuthProvider = ({ children }) => {
   const isSupervisorOrAbove = useCallback(() => {
     return hasRole(['admin', 'supervisor']);
   }, [hasRole]);
-  
+
   /**
    * Verificar si es operador o superior
    * @returns {boolean}
@@ -525,62 +524,72 @@ export const AuthProvider = ({ children }) => {
   const isOperadorOrAbove = useCallback(() => {
     return hasRole(['admin', 'supervisor', 'operador']);
   }, [hasRole]);
-  
+
   /**
    * Verificar si es cliente externo
    * @returns {boolean}
    */
   const isCliente = useCallback(() => hasRole('cliente'), [hasRole]);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // VERIFICACIÓN DE PERMISOS
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Verificar si el usuario tiene un permiso específico
    * @param {string} modulo - Módulo (ej: 'clientes', 'inventario', 'despachos')
    * @param {string} accion - Acción (ej: 'ver', 'crear', 'editar', 'eliminar')
    * @returns {boolean}
-   * 
+   *
    * @example
    * const canCreate = hasPermission('despachos', 'crear');
    * const canEdit = hasPermission('clientes', 'editar');
    */
-  const hasPermission = useCallback((modulo, accion) => {
-    if (!state.user) return false;
+  const hasPermission = useCallback(
+    (modulo, accion) => {
+      if (!state.user) return false;
 
-    const rol = state.user.rol || 'cliente';
+      const rol = state.user.rol || 'cliente';
 
-    // Admin siempre tiene todos los permisos
-    if (rol === 'admin' || rol === 'administrador' || state.user.permisos?.esAdmin) return true;
+      // Admin siempre tiene todos los permisos
+      if (rol === 'admin' || rol === 'administrador' || state.user.permisos?.esAdmin) return true;
 
-    // Permisos dinámicos del backend — si están disponibles, son la fuente de verdad
-    const backendPermisos = state.user.permisos?.permisos;
-    if (backendPermisos && typeof backendPermisos === 'object') {
-      const moduloPermisos = backendPermisos[modulo];
-      if (Array.isArray(moduloPermisos) && moduloPermisos.includes(accion)) {
-        return true;
+      // Permisos dinámicos del backend — si están disponibles, son la fuente de verdad
+      const backendPermisos = state.user.permisos?.permisos;
+      if (backendPermisos && typeof backendPermisos === 'object') {
+        const moduloPermisos = backendPermisos[modulo];
+        if (Array.isArray(moduloPermisos) && moduloPermisos.includes(accion)) {
+          return true;
+        }
+        if (
+          moduloPermisos &&
+          typeof moduloPermisos === 'object' &&
+          moduloPermisos[accion] === true
+        ) {
+          return true;
+        }
+        // Backend cargó permisos pero no incluye este — denegar sin consultar fallback
+        return false;
       }
-      if (moduloPermisos && typeof moduloPermisos === 'object' && moduloPermisos[accion] === true) {
-        return true;
-      }
-      // Backend cargó permisos pero no incluye este — denegar sin consultar fallback
-      return false;
-    }
 
-    // Fallback solo cuando el backend no envió permisos (sesión offline o error de carga)
-    const permisosFallback = PERMISOS_POR_ROL[rol] || PERMISOS_POR_ROL.cliente;
-    return permisosFallback[modulo]?.includes(accion) || false;
-  }, [state.user]);
-  
+      // Fallback solo cuando el backend no envió permisos (sesión offline o error de carga)
+      const permisosFallback = PERMISOS_POR_ROL[rol] || PERMISOS_POR_ROL.cliente;
+      return permisosFallback[modulo]?.includes(accion) || false;
+    },
+    [state.user]
+  );
+
   /**
    * Verificar si el usuario puede acceder a un módulo
    * @param {string} modulo - Nombre del módulo
    * @returns {boolean}
    */
-  const canAccess = useCallback((modulo) => {
-    return hasPermission(modulo, 'ver');
-  }, [hasPermission]);
+  const canAccess = useCallback(
+    (modulo) => {
+      return hasPermission(modulo, 'ver');
+    },
+    [hasPermission]
+  );
 
   /**
    * Verificar permiso y mostrar toast si no tiene acceso
@@ -588,16 +597,21 @@ export const AuthProvider = ({ children }) => {
    * @param {string} accion - Acción
    * @returns {boolean} true si tiene permiso, false si no (y muestra toast)
    */
-  const checkPermission = useCallback((modulo, accion) => {
-    const allowed = hasPermission(modulo, accion);
-    if (!allowed) {
-      window.dispatchEvent(new CustomEvent('istho:permission-denied', {
-        detail: { message: `No tienes permiso para ${accion} en ${modulo}` }
-      }));
-    }
-    return allowed;
-  }, [hasPermission]);
-  
+  const checkPermission = useCallback(
+    (modulo, accion) => {
+      const allowed = hasPermission(modulo, accion);
+      if (!allowed) {
+        window.dispatchEvent(
+          new CustomEvent('istho:permission-denied', {
+            detail: { message: `No tienes permiso para ${accion} en ${modulo}` },
+          })
+        );
+      }
+      return allowed;
+    },
+    [hasPermission]
+  );
+
   /**
    * Obtener todos los permisos del usuario actual
    * @returns {Object} Permisos del usuario
@@ -614,66 +628,65 @@ export const AuthProvider = ({ children }) => {
     const rol = state.user.rol || 'cliente';
     return PERMISOS_POR_ROL[rol] || PERMISOS_POR_ROL.cliente;
   }, [state.user]);
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // VALOR DEL CONTEXTO
   // ──────────────────────────────────────────────────────────────────────────
-  
-  const value = useMemo(() => ({
-    // Estado
-    user: state.user,
-    isAuthenticated: state.isAuthenticated,
-    isLoading: state.isLoading,
-    error: state.error,
-    
-    // Acciones
-    login,
-    validarTotp,
-    setup2FA,
-    activar2FA,
-    logout,
-    updateUser,
-    refreshUser,
-    clearError,
-    
-    // Verificaciones de rol
-    hasRole,
-    isAdmin,
-    isSupervisorOrAbove,
-    isOperadorOrAbove,
-    isCliente,
-    
-    // ✅ NUEVO: Verificaciones de permisos
-    hasPermission,
-    checkPermission,
-    canAccess,
-    getPermisos,
-  }), [
-    state,
-    login,
-    validarTotp,
-    setup2FA,
-    activar2FA,
-    logout,
-    updateUser,
-    refreshUser,
-    clearError,
-    hasRole,
-    isAdmin,
-    isSupervisorOrAbove,
-    isOperadorOrAbove,
-    isCliente,
-    hasPermission,
-    checkPermission,
-    canAccess,
-    getPermisos,
-  ]);
-  
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+
+  const value = useMemo(
+    () => ({
+      // Estado
+      user: state.user,
+      isAuthenticated: state.isAuthenticated,
+      isLoading: state.isLoading,
+      error: state.error,
+
+      // Acciones
+      login,
+      validarTotp,
+      setup2FA,
+      activar2FA,
+      logout,
+      updateUser,
+      refreshUser,
+      clearError,
+
+      // Verificaciones de rol
+      hasRole,
+      isAdmin,
+      isSupervisorOrAbove,
+      isOperadorOrAbove,
+      isCliente,
+
+      // ✅ NUEVO: Verificaciones de permisos
+      hasPermission,
+      checkPermission,
+      canAccess,
+      getPermisos,
+    }),
+    [
+      state,
+      login,
+      validarTotp,
+      setup2FA,
+      activar2FA,
+      logout,
+      updateUser,
+      refreshUser,
+      clearError,
+      hasRole,
+      isAdmin,
+      isSupervisorOrAbove,
+      isOperadorOrAbove,
+      isCliente,
+      hasPermission,
+      checkPermission,
+      canAccess,
+      getPermisos,
+    ]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 AuthProvider.propTypes = {
@@ -686,24 +699,24 @@ AuthProvider.propTypes = {
 
 /**
  * Hook para acceder al contexto de autenticación
- * 
+ *
  * @returns {Object} Contexto de autenticación
  * @throws {Error} Si se usa fuera de AuthProvider
- * 
+ *
  * @example
  * const { user, login, logout, isAuthenticated, hasPermission } = useAuth();
- * 
+ *
  * // Verificar permisos
  * const canCreate = hasPermission('despachos', 'crear');
  * const canEdit = hasPermission('clientes', 'editar');
  */
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  
+
   if (!context) {
     throw new Error('useAuth debe ser usado dentro de un AuthProvider');
   }
-  
+
   return context;
 };
 

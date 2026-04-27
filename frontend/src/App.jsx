@@ -7,7 +7,7 @@
  * - SnackbarProvider para notificaciones toast
  * - Rutas protegidas por rol
  * - Lazy loading para mejor rendimiento
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 2.0.0
  * @date Enero 2026
@@ -24,10 +24,7 @@ import useIdleTimer from './hooks/useIdleTimer';
 // ════════════════════════════════════════════════════════════════════════════
 import { AlertProvider } from './context/AlertContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import PrivateRoute, {
-  AdminRoute,
-  PermissionRoute
-} from './components/auth/PrivateRoute';
+import PrivateRoute, { AdminRoute, PermissionRoute } from './components/auth/PrivateRoute';
 
 // Layout
 import { AlertTriangle, Wrench } from 'lucide-react';
@@ -78,7 +75,9 @@ const KardexAuditoria = lazy(() => import('./pages/Inventario/Kardex/KardexAudit
 const ReportesList = lazy(() => import('./pages/Reportes/ReportesList'));
 const ReporteOperaciones = lazy(() => import('./pages/Reportes/ReporteOperaciones'));
 const ReporteInventario = lazy(() => import('./pages/Reportes/ReporteInventario'));
-const ReporteInventarioUbicacion = lazy(() => import('./pages/Reportes/ReporteInventarioUbicacion'));
+const ReporteInventarioUbicacion = lazy(
+  () => import('./pages/Reportes/ReporteInventarioUbicacion')
+);
 const ReporteClientes = lazy(() => import('./pages/Reportes/ReporteClientes'));
 const ReportesProgramados = lazy(() => import('./pages/Reportes/ReportesProgramados'));
 const ReporteViajes = lazy(() => import('./pages/Reportes/ReporteViajes'));
@@ -95,7 +94,9 @@ const PerfilUsuario = lazy(() => import('./pages/Perfil/PerfilUsuario'));
 const Configuracion = lazy(() => import('./pages/Perfil/Configuracion'));
 const ConfiguracionWms = lazy(() => import('./pages/Configuracion/ConfiguracionWms'));
 const Notificaciones = lazy(() => import('./pages/Perfil/Notificaciones'));
-const PreferenciasNotificaciones = lazy(() => import('./pages/Notificaciones/PreferenciasNotificaciones'));
+const PreferenciasNotificaciones = lazy(
+  () => import('./pages/Notificaciones/PreferenciasNotificaciones')
+);
 
 // Administración
 const Administracion = lazy(() => import('./pages/Administracion'));
@@ -249,7 +250,9 @@ const PermissionDeniedListener = () => {
 // ════════════════════════════════════════════════════════════════════════════
 const ScrollToTop = () => {
   const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   return null;
 };
 
@@ -269,124 +272,441 @@ function App() {
           {/* Provider de autenticación */}
           <AuthProvider>
             <ErrorBoundary>
-            <Suspense fallback={<PageLoader />}>
-            <Routes>
-              {/* ══════════════════════════════════════════════════════════ */}
-              {/* RUTAS PÚBLICAS */}
-              {/* ══════════════════════════════════════════════════════════ */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* ══════════════════════════════════════════════════════════ */}
+                  {/* RUTAS PÚBLICAS */}
+                  {/* ══════════════════════════════════════════════════════════ */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
 
-              {/* ══════════════════════════════════════════════════════════ */}
-              {/* RUTAS PROTEGIDAS - Requieren autenticación */}
-              {/* ══════════════════════════════════════════════════════════ */}
-              <Route element={
-                <PrivateRoute>
-                  <ProtectedLayout />
-                </PrivateRoute>
-              }>
-                {/* Dashboard - Todos los roles */}
-                <Route path="/dashboard" element={<Dashboard />} />
+                  {/* ══════════════════════════════════════════════════════════ */}
+                  {/* RUTAS PROTEGIDAS - Requieren autenticación */}
+                  {/* ══════════════════════════════════════════════════════════ */}
+                  <Route
+                    element={
+                      <PrivateRoute>
+                        <ProtectedLayout />
+                      </PrivateRoute>
+                    }
+                  >
+                    {/* Dashboard - Todos los roles */}
+                    <Route path="/dashboard" element={<Dashboard />} />
 
-                {/* ────────────────────────────────────────────────────────── */}
-                {/* CLIENTES - Requiere permiso clientes.ver */}
-                {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/clientes" element={<PermissionRoute module="clientes" action="ver"><ClientesList /></PermissionRoute>} />
-                <Route path="/clientes/:id" element={<PermissionRoute module="clientes" action="ver"><ClienteDetail /></PermissionRoute>} />
-                <Route path="/mi-empresa" element={<PermissionRoute module="clientes" action="ver"><MiEmpresaRedirect /></PermissionRoute>} />
+                    {/* ────────────────────────────────────────────────────────── */}
+                    {/* CLIENTES - Requiere permiso clientes.ver */}
+                    {/* ────────────────────────────────────────────────────────── */}
+                    <Route
+                      path="/clientes"
+                      element={
+                        <PermissionRoute module="clientes" action="ver">
+                          <ClientesList />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/clientes/:id"
+                      element={
+                        <PermissionRoute module="clientes" action="ver">
+                          <ClienteDetail />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/mi-empresa"
+                      element={
+                        <PermissionRoute module="clientes" action="ver">
+                          <MiEmpresaRedirect />
+                        </PermissionRoute>
+                      }
+                    />
 
-                {/* ────────────────────────────────────────────────────────── */}
-                {/* INVENTARIO - Requiere inventario.ver (todos los roles) */}
-                {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/inventario" element={<PermissionRoute module="inventario" action="ver"><InventarioList /></PermissionRoute>} />
-                <Route path="/inventario/productos/:id" element={<PermissionRoute module="inventario" action="ver"><ProductoDetail /></PermissionRoute>} />
-                <Route path="/inventario/alertas" element={<PermissionRoute module="inventario" action="alertas"><AlertasInventario /></PermissionRoute>} />
+                    {/* ────────────────────────────────────────────────────────── */}
+                    {/* INVENTARIO - Requiere inventario.ver (todos los roles) */}
+                    {/* ────────────────────────────────────────────────────────── */}
+                    <Route
+                      path="/inventario"
+                      element={
+                        <PermissionRoute module="inventario" action="ver">
+                          <InventarioList />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/inventario/productos/:id"
+                      element={
+                        <PermissionRoute module="inventario" action="ver">
+                          <ProductoDetail />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/inventario/alertas"
+                      element={
+                        <PermissionRoute module="inventario" action="alertas">
+                          <AlertasInventario />
+                        </PermissionRoute>
+                      }
+                    />
 
-                {/* ────────────────────────────────────────────────────────── */}
-                {/* OPERACIONES - Entradas, Salidas y Kardex desde WMS */}
-                {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/operaciones/entradas" element={<PermissionRoute module="operaciones" action="ver"><EntradasList /></PermissionRoute>} />
-                <Route path="/operaciones/entradas/:id" element={<PermissionRoute module="operaciones" action="ver"><EntradaAuditoria /></PermissionRoute>} />
-                <Route path="/operaciones/salidas" element={<PermissionRoute module="operaciones" action="ver"><SalidasList /></PermissionRoute>} />
-                <Route path="/operaciones/salidas/:id" element={<PermissionRoute module="operaciones" action="ver"><SalidaAuditoria /></PermissionRoute>} />
-                <Route path="/operaciones/kardex" element={<PermissionRoute module="operaciones" action="ver"><KardexList /></PermissionRoute>} />
-                <Route path="/operaciones/kardex/:id" element={<PermissionRoute module="operaciones" action="ver"><KardexAuditoria /></PermissionRoute>} />
+                    {/* ────────────────────────────────────────────────────────── */}
+                    {/* OPERACIONES - Entradas, Salidas y Kardex desde WMS */}
+                    {/* ────────────────────────────────────────────────────────── */}
+                    <Route
+                      path="/operaciones/entradas"
+                      element={
+                        <PermissionRoute module="operaciones" action="ver">
+                          <EntradasList />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/operaciones/entradas/:id"
+                      element={
+                        <PermissionRoute module="operaciones" action="ver">
+                          <EntradaAuditoria />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/operaciones/salidas"
+                      element={
+                        <PermissionRoute module="operaciones" action="ver">
+                          <SalidasList />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/operaciones/salidas/:id"
+                      element={
+                        <PermissionRoute module="operaciones" action="ver">
+                          <SalidaAuditoria />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/operaciones/kardex"
+                      element={
+                        <PermissionRoute module="operaciones" action="ver">
+                          <KardexList />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/operaciones/kardex/:id"
+                      element={
+                        <PermissionRoute module="operaciones" action="ver">
+                          <KardexAuditoria />
+                        </PermissionRoute>
+                      }
+                    />
 
-                {/* ────────────────────────────────────────────────────────── */}
-                {/* REPORTES - Requiere reportes.ver (todos los roles) */}
-                {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/reportes" element={<PermissionRoute module="reportes" action="ver"><ReportesList /></PermissionRoute>} />
-                <Route path="/reportes/operaciones" element={<PermissionRoute module="reportes" action="ver"><ReporteOperaciones /></PermissionRoute>} />
-                <Route path="/reportes/inventario" element={<PermissionRoute module="reportes" action="ver"><ReporteInventario /></PermissionRoute>} />
-                <Route path="/reportes/inventario-ubicacion" element={<PermissionRoute module="reportes" action="ver"><ReporteInventarioUbicacion /></PermissionRoute>} />
-                <Route path="/reportes/clientes" element={<PermissionRoute module="reportes" action="ver"><ReporteClientes /></PermissionRoute>} />
-                <Route path="/reportes/viajes" element={<PermissionRoute module="reportes" action="ver"><ReporteViajes /></PermissionRoute>} />
-                <Route path="/reportes/cajas-menores" element={<PermissionRoute module="reportes" action="ver"><ReporteCajasMenores /></PermissionRoute>} />
-                <Route path="/reportes/gastos" element={<PermissionRoute module="reportes" action="ver"><ReporteGastos /></PermissionRoute>} />
-                <Route path="/reportes/programados" element={<PermissionRoute module="reportes" action="crear"><ReportesProgramados /></PermissionRoute>} />
-                <Route path="/reportes/operativo" element={<PermissionRoute module="reportes" action="ver"><ReporteOperaciones /></PermissionRoute>} />
-                <Route path="/reportes/kpis" element={<PermissionRoute module="reportes" action="ver"><ReporteOperaciones /></PermissionRoute>} />
-                <Route path="/reportes/financiero" element={<PermissionRoute module="reportes" action="ver"><ReporteClientes /></PermissionRoute>} />
-                <Route path="/reportes/averias" element={<PermissionRoute module="reportes" action="ver"><ReporteAverias /></PermissionRoute>} />
-                <Route path="/reportes/crear" element={<PermissionRoute module="reportes" action="crear"><ReportesList /></PermissionRoute>} />
+                    {/* ────────────────────────────────────────────────────────── */}
+                    {/* REPORTES - Requiere reportes.ver (todos los roles) */}
+                    {/* ────────────────────────────────────────────────────────── */}
+                    <Route
+                      path="/reportes"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReportesList />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/operaciones"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReporteOperaciones />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/inventario"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReporteInventario />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/inventario-ubicacion"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReporteInventarioUbicacion />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/clientes"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReporteClientes />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/viajes"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReporteViajes />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/cajas-menores"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReporteCajasMenores />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/gastos"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReporteGastos />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/programados"
+                      element={
+                        <PermissionRoute module="reportes" action="crear">
+                          <ReportesProgramados />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/operativo"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReporteOperaciones />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/kpis"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReporteOperaciones />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/financiero"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReporteClientes />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/averias"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReporteAverias />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/crear"
+                      element={
+                        <PermissionRoute module="reportes" action="crear">
+                          <ReportesList />
+                        </PermissionRoute>
+                      }
+                    />
 
-                {/* ────────────────────────────────────────────────────────── */}
-                {/* PLANTILLAS DE EMAIL */}
-                {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/plantillas-email" element={<PermissionRoute module="plantillas_email" action="ver"><PlantillasEmailList /></PermissionRoute>} />
-                <Route path="/plantillas-email/nueva" element={<PermissionRoute module="plantillas_email" action="crear"><PlantillaEmailEditor /></PermissionRoute>} />
-                <Route path="/plantillas-email/:id" element={<PermissionRoute module="plantillas_email" action="editar"><PlantillaEmailEditor /></PermissionRoute>} />
+                    {/* ────────────────────────────────────────────────────────── */}
+                    {/* PLANTILLAS DE EMAIL */}
+                    {/* ────────────────────────────────────────────────────────── */}
+                    <Route
+                      path="/plantillas-email"
+                      element={
+                        <PermissionRoute module="plantillas_email" action="ver">
+                          <PlantillasEmailList />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/plantillas-email/nueva"
+                      element={
+                        <PermissionRoute module="plantillas_email" action="crear">
+                          <PlantillaEmailEditor />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/plantillas-email/:id"
+                      element={
+                        <PermissionRoute module="plantillas_email" action="editar">
+                          <PlantillaEmailEditor />
+                        </PermissionRoute>
+                      }
+                    />
 
-                {/* ────────────────────────────────────────────────────────── */}
-                {/* ADMINISTRACIÓN - Solo admin */}
-                {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/administracion" element={<AdminRoute><Administracion /></AdminRoute>} />
-                <Route path="/auditoria-acciones" element={<AdminRoute><AuditoriaAcciones /></AdminRoute>} />
+                    {/* ────────────────────────────────────────────────────────── */}
+                    {/* ADMINISTRACIÓN - Solo admin */}
+                    {/* ────────────────────────────────────────────────────────── */}
+                    <Route
+                      path="/administracion"
+                      element={
+                        <AdminRoute>
+                          <Administracion />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/auditoria-acciones"
+                      element={
+                        <AdminRoute>
+                          <AuditoriaAcciones />
+                        </AdminRoute>
+                      }
+                    />
 
-                {/* ────────────────────────────────────────────────────────── */}
-                {/* MÓDULO DE VIAJES */}
-                {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/viajes/vehiculos" element={<PermissionRoute module="vehiculos" action="ver"><VehiculosList /></PermissionRoute>} />
-                <Route path="/viajes/cajas-menores" element={<PermissionRoute module="caja_menor" action="ver"><CajaMenorList /></PermissionRoute>} />
-                <Route path="/viajes/cajas-menores/:id" element={<PermissionRoute module="caja_menor" action="ver"><CajaMenorDetail /></PermissionRoute>} />
-                <Route path="/viajes/viajes" element={<PermissionRoute module="viajes" action="ver"><ViajesList /></PermissionRoute>} />
-                <Route path="/viajes/viajes/nuevo" element={<PermissionRoute module="viajes" action="crear"><ViajeForm /></PermissionRoute>} />
-                <Route path="/viajes/viajes/:id" element={<PermissionRoute module="viajes" action="ver"><ViajeDetail /></PermissionRoute>} />
-                <Route path="/viajes/viajes/:id/editar" element={<PermissionRoute module="viajes" action="editar"><ViajeForm /></PermissionRoute>} />
-                <Route path="/viajes/movimientos" element={<PermissionRoute module="movimientos" action="ver"><MovimientosList /></PermissionRoute>} />
+                    {/* ────────────────────────────────────────────────────────── */}
+                    {/* MÓDULO DE VIAJES */}
+                    {/* ────────────────────────────────────────────────────────── */}
+                    <Route
+                      path="/viajes/vehiculos"
+                      element={
+                        <PermissionRoute module="vehiculos" action="ver">
+                          <VehiculosList />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/viajes/cajas-menores"
+                      element={
+                        <PermissionRoute module="caja_menor" action="ver">
+                          <CajaMenorList />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/viajes/cajas-menores/:id"
+                      element={
+                        <PermissionRoute module="caja_menor" action="ver">
+                          <CajaMenorDetail />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/viajes/viajes"
+                      element={
+                        <PermissionRoute module="viajes" action="ver">
+                          <ViajesList />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/viajes/viajes/nuevo"
+                      element={
+                        <PermissionRoute module="viajes" action="crear">
+                          <ViajeForm />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/viajes/viajes/:id"
+                      element={
+                        <PermissionRoute module="viajes" action="ver">
+                          <ViajeDetail />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/viajes/viajes/:id/editar"
+                      element={
+                        <PermissionRoute module="viajes" action="editar">
+                          <ViajeForm />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/viajes/movimientos"
+                      element={
+                        <PermissionRoute module="movimientos" action="ver">
+                          <MovimientosList />
+                        </PermissionRoute>
+                      }
+                    />
 
-                {/* ────────────────────────────────────────────────────────── */}
-                {/* PERFIL Y CONFIGURACIÓN */}
-                {/* ────────────────────────────────────────────────────────── */}
-                <Route path="/perfil" element={<PerfilUsuario />} />
-                <Route path="/configuracion" element={<PermissionRoute module="perfil" action="ver"><Configuracion /></PermissionRoute>} />
-                <Route path="/configuracion-wms" element={<AdminRoute><ConfiguracionWms /></AdminRoute>} />
-                <Route path="/wms-dashboard" element={<AdminRoute><WmsDashboard /></AdminRoute>} />
-                <Route path="/notificaciones" element={<PermissionRoute module="notificaciones" action="ver"><Notificaciones /></PermissionRoute>} />
-                <Route path="/notificaciones/preferencias" element={<PermissionRoute module="notificaciones" action="ver"><PreferenciasNotificaciones /></PermissionRoute>} />
-                <Route path="/alertas" element={<PermissionRoute module="notificaciones" action="ver"><Notificaciones /></PermissionRoute>} />
-              </Route>
+                    {/* ────────────────────────────────────────────────────────── */}
+                    {/* PERFIL Y CONFIGURACIÓN */}
+                    {/* ────────────────────────────────────────────────────────── */}
+                    <Route path="/perfil" element={<PerfilUsuario />} />
+                    <Route
+                      path="/configuracion"
+                      element={
+                        <PermissionRoute module="perfil" action="ver">
+                          <Configuracion />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/configuracion-wms"
+                      element={
+                        <AdminRoute>
+                          <ConfiguracionWms />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/wms-dashboard"
+                      element={
+                        <AdminRoute>
+                          <WmsDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/notificaciones"
+                      element={
+                        <PermissionRoute module="notificaciones" action="ver">
+                          <Notificaciones />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/notificaciones/preferencias"
+                      element={
+                        <PermissionRoute module="notificaciones" action="ver">
+                          <PreferenciasNotificaciones />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/alertas"
+                      element={
+                        <PermissionRoute module="notificaciones" action="ver">
+                          <Notificaciones />
+                        </PermissionRoute>
+                      }
+                    />
+                  </Route>
 
-              {/* ══════════════════════════════════════════════════════════ */}
-              {/* REDIRECCIONES */}
-              {/* ══════════════════════════════════════════════════════════ */}
+                  {/* ══════════════════════════════════════════════════════════ */}
+                  {/* REDIRECCIONES */}
+                  {/* ══════════════════════════════════════════════════════════ */}
 
-              {/* Raíz redirige a login */}
-              <Route path="/" element={<Navigate to="/login" replace />} />
+                  {/* Raíz redirige a login */}
+                  <Route path="/" element={<Navigate to="/login" replace />} />
 
-              {/* Acceso no autorizado */}
-              <Route path="/unauthorized" element={<Unauthorized />} />
+                  {/* Acceso no autorizado */}
+                  <Route path="/unauthorized" element={<Unauthorized />} />
 
-              {/* 404 - Página no encontrada */}
-              <Route path="*" element={<ComingSoon title="Página no encontrada" />} />
-            </Routes>
-          </Suspense>
+                  {/* 404 - Página no encontrada */}
+                  <Route path="*" element={<ComingSoon title="Página no encontrada" />} />
+                </Routes>
+              </Suspense>
             </ErrorBoundary>
-        </AuthProvider>
-      </AlertProvider>
-    </SnackbarProvider>
-  </BrowserRouter>
+          </AuthProvider>
+        </AlertProvider>
+      </SnackbarProvider>
+    </BrowserRouter>
   );
 }
 

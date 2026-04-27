@@ -13,11 +13,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Chip,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
+import { Chip, IconButton, Tooltip } from '@mui/material';
 import {
   ArrowLeft,
   Pencil,
@@ -102,11 +98,20 @@ const CONCEPTO_LABELS = {
 const getEstadoChipProps = (estado) => {
   switch (estado) {
     case 'activo':
-      return { label: 'Activo', sx: { backgroundColor: '#dcfce7', color: '#16a34a', fontWeight: 600 } };
+      return {
+        label: 'Activo',
+        sx: { backgroundColor: '#dcfce7', color: '#16a34a', fontWeight: 600 },
+      };
     case 'completado':
-      return { label: 'Completado', sx: { backgroundColor: '#dbeafe', color: '#2563eb', fontWeight: 600 } };
+      return {
+        label: 'Completado',
+        sx: { backgroundColor: '#dbeafe', color: '#2563eb', fontWeight: 600 },
+      };
     case 'anulado':
-      return { label: 'Anulado', sx: { backgroundColor: '#fee2e2', color: '#dc2626', fontWeight: 600 } };
+      return {
+        label: 'Anulado',
+        sx: { backgroundColor: '#fee2e2', color: '#dc2626', fontWeight: 600 },
+      };
     default:
       return { label: estado || '-', sx: { fontWeight: 600 } };
   }
@@ -121,9 +126,7 @@ const SummaryCard = ({ title, value, icon: Icon, iconColor }) => (
     <div className="flex items-start justify-between">
       <div>
         <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{title}</p>
-        <p className="font-bold text-slate-800 dark:text-slate-100 text-lg">
-          {value}
-        </p>
+        <p className="font-bold text-slate-800 dark:text-slate-100 text-lg">{value}</p>
       </div>
       {Icon && (
         <div className={`p-3 rounded-xl ${iconColor}`}>
@@ -258,8 +261,12 @@ const ViajeDetail = () => {
             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Truck className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Viaje no encontrado</h2>
-            <p className="text-slate-500 dark:text-slate-400 mb-4">{error || 'El viaje solicitado no existe'}</p>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+              Viaje no encontrado
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-4">
+              {error || 'El viaje solicitado no existe'}
+            </p>
             <Button variant="primary" onClick={() => navigate('/viajes/viajes')}>
               Volver a Viajes
             </Button>
@@ -336,11 +343,7 @@ const ViajeDetail = () => {
                   </Button>
                 </ProtectedAction>
                 <ProtectedAction module="viajes" action="editar">
-                  <Button
-                    variant="danger"
-                    icon={Ban}
-                    onClick={() => setAnularModal(true)}
-                  >
+                  <Button variant="danger" icon={Ban} onClick={() => setAnularModal(true)}>
                     Anular
                   </Button>
                 </ProtectedAction>
@@ -362,7 +365,11 @@ const ViajeDetail = () => {
           />
           <SummaryCard
             title="Ruta"
-            value={viaje.origen && viaje.destino ? `${viaje.origen} → ${viaje.destino}` : viaje.destino || '-'}
+            value={
+              viaje.origen && viaje.destino
+                ? `${viaje.origen} → ${viaje.destino}`
+                : viaje.destino || '-'
+            }
             icon={MapPin}
             iconColor="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
           />
@@ -425,13 +432,20 @@ const ViajeDetail = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
             <InfoRow label="Descripcion" value={viaje.descripcion || 'Sin descripcion'} />
             <InfoRow label="Numero de Personas" value={viaje.num_personas} />
-            <InfoRow label="Valor Descargue" value={viaje.valor_descargue ? formatCOP(viaje.valor_descargue) : '-'} />
+            <InfoRow
+              label="Valor Descargue"
+              value={viaje.valor_descargue ? formatCOP(viaje.valor_descargue) : '-'}
+            />
             <InfoRow
               label="Caja Menor"
               value={
                 viaje.caja_menor ? (
                   <button
-                    onClick={() => navigate(`/viajes/cajas-menores/${viaje.caja_menor.id || viaje.caja_menor_id}`)}
+                    onClick={() =>
+                      navigate(
+                        `/viajes/cajas-menores/${viaje.caja_menor.id || viaje.caja_menor_id}`
+                      )
+                    }
                     className="text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 underline font-medium"
                   >
                     {viaje.caja_menor.numero || `#${viaje.caja_menor.id}`}
@@ -562,7 +576,8 @@ const ViajeDetail = () => {
                           label={gasto.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso'}
                           size="small"
                           sx={{
-                            backgroundColor: gasto.tipo_movimiento === 'ingreso' ? '#dcfce7' : '#fee2e2',
+                            backgroundColor:
+                              gasto.tipo_movimiento === 'ingreso' ? '#dcfce7' : '#fee2e2',
                             color: gasto.tipo_movimiento === 'ingreso' ? '#16a34a' : '#dc2626',
                             fontWeight: 600,
                             fontSize: '0.75rem',
@@ -629,8 +644,15 @@ const ViajeDetail = () => {
         size="sm"
         footer={
           <>
-            <Button variant="outline" onClick={() => setCompletarModal(false)}>Cancelar</Button>
-            <Button variant="primary" icon={CheckCircle2} onClick={handleCompletar} loading={actionLoading}>
+            <Button variant="outline" onClick={() => setCompletarModal(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="primary"
+              icon={CheckCircle2}
+              onClick={handleCompletar}
+              loading={actionLoading}
+            >
               Completar Viaje
             </Button>
           </>
@@ -645,11 +667,15 @@ const ViajeDetail = () => {
           <div className="p-4 bg-slate-50 dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-slate-500 dark:text-slate-400">Ruta</span>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{viaje?.origen} → {viaje?.destino}</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                {viaje?.origen} → {viaje?.destino}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-slate-500 dark:text-slate-400">Valor</span>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">$ {Number(viaje?.valor_viaje || 0).toLocaleString('es-CO')}</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                $ {Number(viaje?.valor_viaje || 0).toLocaleString('es-CO')}
+              </span>
             </div>
           </div>
         </div>
@@ -658,14 +684,31 @@ const ViajeDetail = () => {
       {/* Modal Anular Viaje */}
       <Modal
         isOpen={anularModal}
-        onClose={() => { setAnularModal(false); setMotivoAnulacion(''); }}
+        onClose={() => {
+          setAnularModal(false);
+          setMotivoAnulacion('');
+        }}
         title="Anular Viaje"
         subtitle={`Viaje #${viaje?.numero || ''}`}
         size="sm"
         footer={
           <>
-            <Button variant="outline" onClick={() => { setAnularModal(false); setMotivoAnulacion(''); }}>Cancelar</Button>
-            <Button variant="danger" icon={Ban} onClick={handleAnular} loading={actionLoading} disabled={!motivoAnulacion.trim()}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAnularModal(false);
+                setMotivoAnulacion('');
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="danger"
+              icon={Ban}
+              onClick={handleAnular}
+              loading={actionLoading}
+              disabled={!motivoAnulacion.trim()}
+            >
               Anular Viaje
             </Button>
           </>
@@ -674,7 +717,8 @@ const ViajeDetail = () => {
         <div className="space-y-4">
           <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
             <p className="text-sm text-red-700 dark:text-red-400">
-              <strong>Advertencia:</strong> Al anular el viaje no se podrá reactivar. Los gastos asociados permanecerán registrados.
+              <strong>Advertencia:</strong> Al anular el viaje no se podrá reactivar. Los gastos
+              asociados permanecerán registrados.
             </p>
           </div>
           <div className="space-y-1">

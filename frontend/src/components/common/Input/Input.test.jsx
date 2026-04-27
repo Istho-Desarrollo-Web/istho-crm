@@ -24,7 +24,6 @@ describe('Input', () => {
   it('muestra asterisco en label cuando required=true', () => {
     const { container } = render(<Input label="Contraseña" id="test-input" required />);
 
-    const label = screen.getByText('Contraseña');
     const asterisk = container.querySelector('span[aria-hidden="true"]');
 
     expect(asterisk).toBeInTheDocument();
@@ -68,13 +67,7 @@ describe('Input', () => {
   });
 
   it('encadena hintId y errorId en aria-describedby cuando hay hint y error', () => {
-    render(
-      <Input
-        hint="Ej: juan@example.com"
-        error="Campo inválido"
-        id="test-input"
-      />
-    );
+    render(<Input hint="Ej: juan@example.com" error="Campo inválido" id="test-input" />);
 
     const input = screen.getByRole('textbox');
 

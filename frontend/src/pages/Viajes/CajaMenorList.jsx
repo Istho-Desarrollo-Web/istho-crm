@@ -95,7 +95,9 @@ const StatusBadge = ({ estado }) => {
   const Icon = config.icon;
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text} ${config.darkBg} ${config.darkText}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text} ${config.darkBg} ${config.darkText}`}
+    >
       <Icon className="w-3.5 h-3.5" />
       {config.label}
     </span>
@@ -135,7 +137,9 @@ const RowActions = ({ caja, onView, onEdit, onClose, onDelete }) => {
           elevation: 0,
           sx: {
             overflow: 'visible',
-            filter: isDark ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))' : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+            filter: isDark
+              ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))'
+              : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
             mt: 0.5,
             borderRadius: '0.75rem',
             border: isDark ? '1px solid #334155' : '1px solid #f3f4f6',
@@ -151,14 +155,24 @@ const RowActions = ({ caja, onView, onEdit, onClose, onDelete }) => {
           },
         }}
       >
-        <MenuItem onClick={() => { onView(caja); setAnchorEl(null); }}>
+        <MenuItem
+          onClick={() => {
+            onView(caja);
+            setAnchorEl(null);
+          }}
+        >
           <Eye className="w-4 h-4" />
           Ver detalle
         </MenuItem>
 
         {caja.estado !== 'cerrada' && (
           <ProtectedAction module="caja_menor" action="editar">
-            <MenuItem onClick={() => { onEdit(caja); setAnchorEl(null); }}>
+            <MenuItem
+              onClick={() => {
+                onEdit(caja);
+                setAnchorEl(null);
+              }}
+            >
               <Pencil className="w-4 h-4" />
               Editar
             </MenuItem>
@@ -168,8 +182,16 @@ const RowActions = ({ caja, onView, onEdit, onClose, onDelete }) => {
         {caja.estado === 'abierta' && (
           <ProtectedAction module="caja_menor" action="cerrar">
             <MenuItem
-              onClick={() => { onClose(caja); setAnchorEl(null); }}
-              sx={{ color: isDark ? '#fbbf24 !important' : '#d97706 !important', '&:hover': { backgroundColor: isDark ? '#422006 !important' : '#fffbeb !important' } }}
+              onClick={() => {
+                onClose(caja);
+                setAnchorEl(null);
+              }}
+              sx={{
+                color: isDark ? '#fbbf24 !important' : '#d97706 !important',
+                '&:hover': {
+                  backgroundColor: isDark ? '#422006 !important' : '#fffbeb !important',
+                },
+              }}
             >
               <Lock className="w-4 h-4" />
               Cerrar Caja
@@ -180,8 +202,16 @@ const RowActions = ({ caja, onView, onEdit, onClose, onDelete }) => {
         {caja.estado !== 'cerrada' && (
           <ProtectedAction module="caja_menor" action="eliminar">
             <MenuItem
-              onClick={() => { onDelete(caja); setAnchorEl(null); }}
-              sx={{ color: isDark ? '#f87171 !important' : '#dc2626 !important', '&:hover': { backgroundColor: isDark ? '#450a0a !important' : '#fef2f2 !important' } }}
+              onClick={() => {
+                onDelete(caja);
+                setAnchorEl(null);
+              }}
+              sx={{
+                color: isDark ? '#f87171 !important' : '#dc2626 !important',
+                '&:hover': {
+                  backgroundColor: isDark ? '#450a0a !important' : '#fef2f2 !important',
+                },
+              }}
             >
               <Trash2 className="w-4 h-4" />
               Eliminar
@@ -198,7 +228,9 @@ const RowActions = ({ caja, onView, onEdit, onClose, onDelete }) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 const KpiMini = ({ icon: Icon, label, value, color }) => (
-  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}>
+  <div
+    className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}
+  >
     <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
       <Icon className="w-5 h-5" />
     </div>
@@ -228,7 +260,12 @@ const CajaMenorList = () => {
   const [cajas, setCajas] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [error, setError] = useState(null);
-  const [stats, setStats] = useState({ abiertas: 0, en_revision: 0, cerradas: 0, total_egresos: 0 });
+  const [stats, setStats] = useState({
+    abiertas: 0,
+    en_revision: 0,
+    cerradas: 0,
+    total_egresos: 0,
+  });
 
   // Modales
   const [formModal, setFormModal] = useState({ isOpen: false, caja: null });
@@ -243,28 +280,33 @@ const CajaMenorList = () => {
   // FETCH DATA
   // ──────────────────────────────────────────────────────────────────────────
 
-  const fetchCajas = useCallback(async (page = 1, silencioso = false) => {
-    if (!silencioso) setLoading(true);
-    setError(null);
-    try {
-      const params = { page, limit: PAGE_SIZE, sort: sortField, order: sortDir };
-      if (estadoFilter !== 'todos') params.estado = estadoFilter;
-      if (searchTerm) params.search = searchTerm;
+  const fetchCajas = useCallback(
+    async (page = 1, silencioso = false) => {
+      if (!silencioso) setLoading(true);
+      setError(null);
+      try {
+        const params = { page, limit: PAGE_SIZE, sort: sortField, order: sortDir };
+        if (estadoFilter !== 'todos') params.estado = estadoFilter;
+        if (searchTerm) params.search = searchTerm;
 
-      const response = await cajasMenoresService.getAll(params);
-      setCajas(response.data || []);
-      if (response.pagination) {
-        setPagination(response.pagination);
+        const response = await cajasMenoresService.getAll(params);
+        setCajas(response.data || []);
+        if (response.pagination) {
+          setPagination(response.pagination);
+        }
+      } catch {
+        if (!silencioso) {
+          setCajas([]);
+          setError(
+            'No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.'
+          );
+        }
+      } finally {
+        if (!silencioso) setLoading(false);
       }
-    } catch {
-      if (!silencioso) {
-        setCajas([]);
-        setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
-      }
-    } finally {
-      if (!silencioso) setLoading(false);
-    }
-  }, [estadoFilter, searchTerm, sortField, sortDir]);
+    },
+    [estadoFilter, searchTerm, sortField, sortDir]
+  );
 
   const fetchStats = useCallback(async () => {
     try {
@@ -290,12 +332,12 @@ const CajaMenorList = () => {
     };
 
     const handleActualizada = (data) => {
-      setCajas(prev => prev.map(c => c.id === data.id ? { ...c, ...data } : c));
+      setCajas((prev) => prev.map((c) => (c.id === data.id ? { ...c, ...data } : c)));
       fetchStats();
     };
 
     const handleEliminada = (data) => {
-      setCajas(prev => prev.filter(c => c.id !== data.id));
+      setCajas((prev) => prev.filter((c) => c.id !== data.id));
       fetchStats();
     };
 
@@ -398,7 +440,7 @@ const CajaMenorList = () => {
       const query = params.toString() ? `?${params.toString()}` : '';
       await descargarArchivo(
         `${baseUrl}/reportes/cajas-menores/excel${query}`,
-        `cajas-menores-${fechaDescarga()}.xlsx`,
+        `cajas-menores-${fechaDescarga()}.xlsx`
       );
     } catch {
       notifyError('Error al exportar el reporte de cajas menores');
@@ -413,7 +455,7 @@ const CajaMenorList = () => {
       const query = params.toString() ? `?${params.toString()}` : '';
       await descargarArchivo(
         `${baseUrl}/reportes/cajas-menores/pdf${query}`,
-        `cajas-menores-${fechaDescarga()}.pdf`,
+        `cajas-menores-${fechaDescarga()}.pdf`
       );
     } catch {
       notifyError('Error al exportar el reporte de cajas menores en PDF');
@@ -427,7 +469,6 @@ const CajaMenorList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
-
         {/* PAGE HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -435,22 +476,30 @@ const CajaMenorList = () => {
               <Wallet className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Cajas Menores</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestión de cajas menores y saldos</p>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+                Cajas Menores
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-0.5">
+                Gestión de cajas menores y saldos
+              </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {/* Botón Refrescar */}
             <button
-              onClick={() => { fetchCajas(pagination.page); fetchStats(); success('Datos actualizados'); }}
+              onClick={() => {
+                fetchCajas(pagination.page);
+                fetchStats();
+                success('Datos actualizados');
+              }}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
               title="Refrescar datos"
             >
               <RefreshCw className="w-4 h-4" />
               <span className="hidden sm:inline">Actualizar</span>
             </button>
-            
+
             {/* Botón exportar Excel */}
             {/* Botones de exportación */}
             {cajas.length > 0 && (
@@ -506,7 +555,12 @@ const CajaMenorList = () => {
         {error && (
           <div className="mb-4 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center justify-between">
             <p className="text-sm text-amber-700 dark:text-amber-300">{error}</p>
-            <button onClick={() => fetchCajas(1)} className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline">Reintentar</button>
+            <button
+              onClick={() => fetchCajas(1)}
+              className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              Reintentar
+            </button>
           </div>
         )}
 
@@ -547,8 +601,6 @@ const CajaMenorList = () => {
               ))}
             </div>
 
-          
-
             {/* Botón crear */}
             <ProtectedAction module="caja_menor" action="crear">
               <button
@@ -565,7 +617,8 @@ const CajaMenorList = () => {
         {/* RESULTS COUNT + VIEW TOGGLE */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            {cajas.length} caja{cajas.length !== 1 && 's'} menor{cajas.length !== 1 && 'es'} encontrada{cajas.length !== 1 && 's'}
+            {cajas.length} caja{cajas.length !== 1 && 's'} menor{cajas.length !== 1 && 'es'}{' '}
+            encontrada{cajas.length !== 1 && 's'}
           </p>
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card p-1 rounded-lg">
             <button
@@ -601,7 +654,9 @@ const CajaMenorList = () => {
                 No se encontraron cajas menores
               </h3>
               <p className="text-slate-500 dark:text-slate-400">
-                {searchTerm ? 'Intenta ajustar el término de búsqueda' : 'Comienza creando tu primera caja menor'}
+                {searchTerm
+                  ? 'Intenta ajustar el término de búsqueda'
+                  : 'Comienza creando tu primera caja menor'}
               </p>
             </div>
           ) : viewMode === 'table' ? (
@@ -625,7 +680,8 @@ const CajaMenorList = () => {
                       className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center justify-end gap-1">
-                        Saldo Inicial <SortIcon field="saldo_inicial" sortField={sortField} sortDir={sortDir} />
+                        Saldo Inicial{' '}
+                        <SortIcon field="saldo_inicial" sortField={sortField} sortDir={sortDir} />
                       </span>
                     </th>
                     <th
@@ -633,7 +689,8 @@ const CajaMenorList = () => {
                       className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center justify-end gap-1">
-                        Saldo Actual <SortIcon field="saldo_actual" sortField={sortField} sortDir={sortDir} />
+                        Saldo Actual{' '}
+                        <SortIcon field="saldo_actual" sortField={sortField} sortDir={sortDir} />
                       </span>
                     </th>
                     <th
@@ -692,7 +749,9 @@ const CajaMenorList = () => {
 
                       {/* Saldo Actual */}
                       <td className="py-4 px-4 text-right">
-                        <span className={`text-sm font-mono font-bold ${Number(caja.saldo_actual) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                        <span
+                          className={`text-sm font-mono font-bold ${Number(caja.saldo_actual) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}
+                        >
                           {formatMoney(caja.saldo_actual)}
                         </span>
                       </td>
@@ -731,14 +790,22 @@ const CajaMenorList = () => {
                         <Wallet className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{caja.numero || `CM-${caja.id}`}</p>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                          {caja.numero || `CM-${caja.id}`}
+                        </p>
                         <p className="text-xs text-slate-400">
                           {formatDateShort(caja.fecha_apertura)}
                         </p>
                       </div>
                     </div>
                     <div onClick={(e) => e.stopPropagation()}>
-                      <RowActions caja={caja} onView={handleView} onEdit={handleEdit} onClose={handleCloseCaja} onDelete={handleDelete} />
+                      <RowActions
+                        caja={caja}
+                        onView={handleView}
+                        onEdit={handleEdit}
+                        onClose={handleCloseCaja}
+                        onDelete={handleDelete}
+                      />
                     </div>
                   </div>
                   <div className="space-y-2 text-sm">
@@ -750,11 +817,15 @@ const CajaMenorList = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 dark:text-slate-400">Saldo Inicial</span>
-                      <span className="text-slate-700 dark:text-slate-200 font-mono">{formatMoney(caja.saldo_inicial)}</span>
+                      <span className="text-slate-700 dark:text-slate-200 font-mono">
+                        {formatMoney(caja.saldo_inicial)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 dark:text-slate-400">Saldo Actual</span>
-                      <span className={`font-mono font-bold ${Number(caja.saldo_actual) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                      <span
+                        className={`font-mono font-bold ${Number(caja.saldo_actual) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}
+                      >
                         {formatMoney(caja.saldo_actual)}
                       </span>
                     </div>
@@ -803,13 +874,24 @@ const CajaMenorList = () => {
 
       <Modal
         isOpen={closeModal.isOpen}
-        onClose={() => { setCloseModal({ isOpen: false, caja: null }); setObservacionesCierre(''); setAccionSobrante('transferir'); }}
+        onClose={() => {
+          setCloseModal({ isOpen: false, caja: null });
+          setObservacionesCierre('');
+          setAccionSobrante('transferir');
+        }}
         title="Cerrar Caja Menor"
         subtitle={`Caja ${closeModal.caja?.numero || ''}`}
         size="md"
         footer={
           <>
-            <Button variant="outline" onClick={() => { setCloseModal({ isOpen: false, caja: null }); setObservacionesCierre(''); setAccionSobrante('transferir'); }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCloseModal({ isOpen: false, caja: null });
+                setObservacionesCierre('');
+                setAccionSobrante('transferir');
+              }}
+            >
               Cancelar
             </Button>
             <Button variant="danger" icon={Lock} onClick={handleConfirmClose} loading={formLoading}>
@@ -825,7 +907,8 @@ const CajaMenorList = () => {
             <div className="space-y-4">
               <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
                 <p className="text-sm text-amber-700 dark:text-amber-400">
-                  <strong>Importante:</strong> Al cerrar la caja menor no se podrán registrar más movimientos ni viajes asociados.
+                  <strong>Importante:</strong> Al cerrar la caja menor no se podrán registrar más
+                  movimientos ni viajes asociados.
                 </p>
               </div>
 
@@ -837,19 +920,29 @@ const CajaMenorList = () => {
                       <span className="text-xs text-amber-500 ml-1">(incluye heredado)</span>
                     )}
                   </span>
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{formatMoney(closeModal.caja?.saldo_inicial)}</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    {formatMoney(closeModal.caja?.saldo_inicial)}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-500 dark:text-slate-400">Total Ingresos</span>
-                  <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">+{formatMoney(closeModal.caja?.total_ingresos)}</span>
+                  <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    +{formatMoney(closeModal.caja?.total_ingresos)}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-500 dark:text-slate-400">Total Egresos</span>
-                  <span className="text-sm font-medium text-red-600 dark:text-red-400">-{formatMoney(closeModal.caja?.total_egresos)}</span>
+                  <span className="text-sm font-medium text-red-600 dark:text-red-400">
+                    -{formatMoney(closeModal.caja?.total_egresos)}
+                  </span>
                 </div>
                 <div className="border-t border-slate-200 dark:border-slate-600 pt-2 flex justify-between items-center">
-                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Saldo Final</span>
-                  <span className={`text-xl font-bold ${saldo >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    Saldo Final
+                  </span>
+                  <span
+                    className={`text-xl font-bold ${saldo >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}
+                  >
                     {formatMoney(saldo)}
                   </span>
                 </div>
@@ -861,26 +954,53 @@ const CajaMenorList = () => {
                     ¿Qué hacer con el saldo restante?
                   </label>
                   <div className="space-y-2">
-                    <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                      accionSobrante === 'transferir'
-                        ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-700'
-                        : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
-                    }`}>
-                      <input type="radio" name="accion_sobrante_list" value="transferir" checked={accionSobrante === 'transferir'} onChange={() => setAccionSobrante('transferir')} className="mt-0.5 text-emerald-600 focus:ring-emerald-500" />
+                    <label
+                      className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        accionSobrante === 'transferir'
+                          ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-700'
+                          : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="accion_sobrante_list"
+                        value="transferir"
+                        checked={accionSobrante === 'transferir'}
+                        onChange={() => setAccionSobrante('transferir')}
+                        className="mt-0.5 text-emerald-600 focus:ring-emerald-500"
+                      />
                       <div>
-                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Transferir saldo para siguiente caja</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">El saldo de {formatMoney(saldo)} quedará disponible para trasladar</p>
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                          Transferir saldo para siguiente caja
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          El saldo de {formatMoney(saldo)} quedará disponible para trasladar
+                        </p>
                       </div>
                     </label>
-                    <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                      accionSobrante === 'liquidar'
-                        ? 'border-red-400 bg-red-50 dark:bg-red-900/20 dark:border-red-700'
-                        : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
-                    }`}>
-                      <input type="radio" name="accion_sobrante_list" value="liquidar" checked={accionSobrante === 'liquidar'} onChange={() => setAccionSobrante('liquidar')} className="mt-0.5 text-red-600 focus:ring-red-500" />
+                    <label
+                      className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        accionSobrante === 'liquidar'
+                          ? 'border-red-400 bg-red-50 dark:bg-red-900/20 dark:border-red-700'
+                          : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="accion_sobrante_list"
+                        value="liquidar"
+                        checked={accionSobrante === 'liquidar'}
+                        onChange={() => setAccionSobrante('liquidar')}
+                        className="mt-0.5 text-red-600 focus:ring-red-500"
+                      />
                       <div>
-                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Liquidar saldo al usuario asignado</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Se registrará un egreso de liquidación por {formatMoney(saldo)} y cerrará en $0</p>
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                          Liquidar saldo al usuario asignado
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          Se registrará un egreso de liquidación por {formatMoney(saldo)} y cerrará
+                          en $0
+                        </p>
                       </div>
                     </label>
                   </div>
@@ -888,7 +1008,9 @@ const CajaMenorList = () => {
               )}
 
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Observaciones de cierre</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Observaciones de cierre
+                </label>
                 <textarea
                   placeholder="Agregar notas sobre el cierre..."
                   rows={3}

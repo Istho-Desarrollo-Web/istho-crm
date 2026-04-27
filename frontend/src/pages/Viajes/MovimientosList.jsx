@@ -82,7 +82,6 @@ const formatMoney = (value) => {
   return `$${Number(value).toLocaleString('es-CO')}`;
 };
 
-
 const PAGE_SIZE = 20;
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -119,7 +118,9 @@ const StatusBadge = ({ aprobado, rechazado }) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 const KpiMini = ({ icon: Icon, label, value, color }) => (
-  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}>
+  <div
+    className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}
+  >
     <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
       <Icon className="w-5 h-5" />
     </div>
@@ -156,7 +157,9 @@ const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar, onRechaza
           elevation: 0,
           sx: {
             overflow: 'visible',
-            filter: isDark ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))' : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+            filter: isDark
+              ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))'
+              : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
             mt: 0.5,
             borderRadius: '0.75rem',
             border: isDark ? '1px solid #334155' : '1px solid #f3f4f6',
@@ -172,14 +175,24 @@ const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar, onRechaza
           },
         }}
       >
-        <MenuItem onClick={() => { onView(movimiento); setAnchorEl(null); }}>
+        <MenuItem
+          onClick={() => {
+            onView(movimiento);
+            setAnchorEl(null);
+          }}
+        >
           <Eye className="w-4 h-4" />
           Ver detalle
         </MenuItem>
 
         {isPendiente && (
           <ProtectedAction module="movimientos" action="editar">
-            <MenuItem onClick={() => { onEdit(movimiento); setAnchorEl(null); }}>
+            <MenuItem
+              onClick={() => {
+                onEdit(movimiento);
+                setAnchorEl(null);
+              }}
+            >
               <Pencil className="w-4 h-4" />
               Editar
             </MenuItem>
@@ -189,8 +202,16 @@ const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar, onRechaza
         {isPendiente && (
           <ProtectedAction module="movimientos" action="aprobar">
             <MenuItem
-              onClick={() => { onAprobar(movimiento); setAnchorEl(null); }}
-              sx={{ color: isDark ? '#86efac !important' : '#16a34a !important', '&:hover': { backgroundColor: isDark ? '#052e16 !important' : '#f0fdf4 !important' } }}
+              onClick={() => {
+                onAprobar(movimiento);
+                setAnchorEl(null);
+              }}
+              sx={{
+                color: isDark ? '#86efac !important' : '#16a34a !important',
+                '&:hover': {
+                  backgroundColor: isDark ? '#052e16 !important' : '#f0fdf4 !important',
+                },
+              }}
             >
               <CheckCircle2 className="w-4 h-4" />
               Aprobar
@@ -201,8 +222,16 @@ const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar, onRechaza
         {isPendiente && (
           <ProtectedAction module="movimientos" action="aprobar">
             <MenuItem
-              onClick={() => { onRechazar(movimiento); setAnchorEl(null); }}
-              sx={{ color: isDark ? '#fca5a5 !important' : '#ea580c !important', '&:hover': { backgroundColor: isDark ? '#431407 !important' : '#fff7ed !important' } }}
+              onClick={() => {
+                onRechazar(movimiento);
+                setAnchorEl(null);
+              }}
+              sx={{
+                color: isDark ? '#fca5a5 !important' : '#ea580c !important',
+                '&:hover': {
+                  backgroundColor: isDark ? '#431407 !important' : '#fff7ed !important',
+                },
+              }}
             >
               <XCircle className="w-4 h-4" />
               Rechazar
@@ -212,8 +241,14 @@ const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar, onRechaza
 
         <ProtectedAction module="movimientos" action="eliminar">
           <MenuItem
-            onClick={() => { onDelete(movimiento); setAnchorEl(null); }}
-            sx={{ color: isDark ? '#fca5a5 !important' : '#dc2626 !important', '&:hover': { backgroundColor: isDark ? '#450a0a !important' : '#fef2f2 !important' } }}
+            onClick={() => {
+              onDelete(movimiento);
+              setAnchorEl(null);
+            }}
+            sx={{
+              color: isDark ? '#fca5a5 !important' : '#dc2626 !important',
+              '&:hover': { backgroundColor: isDark ? '#450a0a !important' : '#fef2f2 !important' },
+            }}
           >
             <Trash2 className="w-4 h-4" />
             Eliminar
@@ -228,7 +263,14 @@ const RowActions = ({ movimiento, onView, onEdit, onDelete, onAprobar, onRechaza
 // APROBAR MOVIMIENTO DIALOG
 // ════════════════════════════════════════════════════════════════════════════
 
-const AprobarMovimientoDialog = ({ isOpen, onClose, movimiento, onAprobar, onRechazar, loading }) => {
+const AprobarMovimientoDialog = ({
+  isOpen,
+  onClose,
+  movimiento,
+  onAprobar,
+  onRechazar,
+  loading,
+}) => {
   const [valorRaw, setValorRaw] = useState('');
   const [observaciones, setObservaciones] = useState('');
 
@@ -297,7 +339,9 @@ const AprobarMovimientoDialog = ({ isOpen, onClose, movimiento, onAprobar, onRec
 
       <div className="flex items-center gap-3 mt-6">
         <button
-          onClick={() => onAprobar({ valor_aprobado: valorNumerico, observaciones_aprobacion: observaciones })}
+          onClick={() =>
+            onAprobar({ valor_aprobado: valorNumerico, observaciones_aprobacion: observaciones })
+          }
           disabled={loading || valorNumerico <= 0}
           className="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
         >
@@ -367,29 +411,34 @@ const MovimientosList = () => {
   // FETCH DATA
   // ──────────────────────────────────────────────────────────────────────────
 
-  const fetchMovimientos = useCallback(async (page = 1, silencioso = false) => {
-    if (!silencioso) setLoading(true);
-    setError(null);
-    try {
-      const params = { page, limit: PAGE_SIZE, sort: sortField, order: sortDir };
-      if (tipoFilter !== 'todos') params.tipo_movimiento = tipoFilter;
-      if (aprobadoFilter !== 'todos') params.aprobado = aprobadoFilter;
-      if (searchTerm) params.search = searchTerm;
+  const fetchMovimientos = useCallback(
+    async (page = 1, silencioso = false) => {
+      if (!silencioso) setLoading(true);
+      setError(null);
+      try {
+        const params = { page, limit: PAGE_SIZE, sort: sortField, order: sortDir };
+        if (tipoFilter !== 'todos') params.tipo_movimiento = tipoFilter;
+        if (aprobadoFilter !== 'todos') params.aprobado = aprobadoFilter;
+        if (searchTerm) params.search = searchTerm;
 
-      const response = await movimientosService.getAll(params);
-      setMovimientos(response.data || []);
-      if (response.pagination) {
-        setPagination(response.pagination);
+        const response = await movimientosService.getAll(params);
+        setMovimientos(response.data || []);
+        if (response.pagination) {
+          setPagination(response.pagination);
+        }
+      } catch (_err) {
+        if (!silencioso) {
+          setMovimientos([]);
+          setError(
+            'No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.'
+          );
+        }
+      } finally {
+        if (!silencioso) setLoading(false);
       }
-    } catch (_err) {
-      if (!silencioso) {
-        setMovimientos([]);
-        setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
-      }
-    } finally {
-      if (!silencioso) setLoading(false);
-    }
-  }, [tipoFilter, aprobadoFilter, searchTerm, sortField, sortDir]);
+    },
+    [tipoFilter, aprobadoFilter, searchTerm, sortField, sortDir]
+  );
 
   useEffect(() => {
     fetchMovimientos(1);
@@ -404,19 +453,28 @@ const MovimientosList = () => {
     };
 
     const handleActualizado = (data) => {
-      setMovimientos(prev => prev.map(m => m.id === data.id ? { ...m, ...data } : m));
+      setMovimientos((prev) => prev.map((m) => (m.id === data.id ? { ...m, ...data } : m)));
     };
 
     const handleEliminado = (data) => {
-      setMovimientos(prev => prev.filter(m => m.id !== data.id));
+      setMovimientos((prev) => prev.filter((m) => m.id !== data.id));
     };
 
     const handleAprobacionMasiva = (data) => {
-      setMovimientos(prev => prev.map(m =>
-        data.ids.includes(m.id)
-          ? { ...m, aprobado: true, rechazado: false, valor_aprobado: m.valor, aprobado_por: data.aprobado_por, fecha_aprobacion: data.fecha_aprobacion }
-          : m
-      ));
+      setMovimientos((prev) =>
+        prev.map((m) =>
+          data.ids.includes(m.id)
+            ? {
+                ...m,
+                aprobado: true,
+                rechazado: false,
+                valor_aprobado: m.valor,
+                aprobado_por: data.aprobado_por,
+                fecha_aprobacion: data.fecha_aprobacion,
+              }
+            : m
+        )
+      );
     };
 
     socket.on('movimiento:creado', handleCreado);
@@ -447,7 +505,7 @@ const MovimientosList = () => {
 
   const handleSort = (field) => {
     if (sortField === field) {
-      setSortDir(d => d === 'ASC' ? 'DESC' : 'ASC');
+      setSortDir((d) => (d === 'ASC' ? 'DESC' : 'ASC'));
     } else {
       setSortField(field);
       setSortDir('ASC');
@@ -456,9 +514,11 @@ const MovimientosList = () => {
 
   const SortIcon = ({ field }) => {
     if (sortField !== field) return <ChevronsUpDown className="w-3 h-3 opacity-40" />;
-    return sortDir === 'ASC'
-      ? <ChevronUp className="w-3 h-3 text-purple-500" />
-      : <ChevronDown className="w-3 h-3 text-purple-500" />;
+    return sortDir === 'ASC' ? (
+      <ChevronUp className="w-3 h-3 text-purple-500" />
+    ) : (
+      <ChevronDown className="w-3 h-3 text-purple-500" />
+    );
   };
 
   const totalPendientes = movimientos.filter((m) => !m.aprobado && !m.rechazado).length;
@@ -470,12 +530,9 @@ const MovimientosList = () => {
   // SELECCIÓN MASIVA
   // ──────────────────────────────────────────────────────────────────────────
 
-  const pendientes = movimientos.filter(
-    (m) => !m.aprobado && !m.rechazado
-  );
+  const pendientes = movimientos.filter((m) => !m.aprobado && !m.rechazado);
 
-  const isPendiente = (m) =>
-    !m.aprobado && !m.rechazado;
+  const isPendiente = (m) => !m.aprobado && !m.rechazado;
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -486,9 +543,7 @@ const MovimientosList = () => {
   };
 
   const handleSelectOne = (id) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
+    setSelected((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
   };
 
   const handleMassApproval = async () => {
@@ -604,7 +659,7 @@ const MovimientosList = () => {
       const query = params.toString() ? `?${params.toString()}` : '';
       await descargarArchivo(
         `${baseUrl}/reportes/movimientos/excel${query}`,
-        `movimientos-caja-menor-${fechaDescarga()}.xlsx`,
+        `movimientos-caja-menor-${fechaDescarga()}.xlsx`
       );
     } catch {
       showError('Error al exportar el reporte de movimientos');
@@ -618,7 +673,6 @@ const MovimientosList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
-
         {/* PAGE HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -626,21 +680,28 @@ const MovimientosList = () => {
               <Receipt className="w-7 h-7 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Movimientos de Caja Menor</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestiona los ingresos y egresos de caja menor</p>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+                Movimientos de Caja Menor
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-0.5">
+                Gestiona los ingresos y egresos de caja menor
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {/* Botón Refrescar */}
             <button
-              onClick={() => { refresh(); success('Datos actualizados'); }}
+              onClick={() => {
+                refresh();
+                success('Datos actualizados');
+              }}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
               title="Refrescar datos"
             >
               <RefreshCw className="w-4 h-4" />
               <span className="hidden sm:inline">Actualizar</span>
             </button>
-            
+
             {movimientos.length > 0 && (
               <button
                 onClick={handleExportExcel}
@@ -685,7 +746,12 @@ const MovimientosList = () => {
         {error && (
           <div className="mb-4 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center justify-between">
             <p className="text-sm text-amber-700 dark:text-amber-300">{error}</p>
-            <button onClick={() => fetchMovimientos(1)} className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline">Reintentar</button>
+            <button
+              onClick={() => fetchMovimientos(1)}
+              className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              Reintentar
+            </button>
           </div>
         )}
 
@@ -763,7 +829,8 @@ const MovimientosList = () => {
         {/* RESULTS COUNT + VIEW TOGGLE */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            {pagination.total} movimiento{pagination.total !== 1 && 's'} encontrado{pagination.total !== 1 && 's'}
+            {pagination.total} movimiento{pagination.total !== 1 && 's'} encontrado
+            {pagination.total !== 1 && 's'}
           </p>
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card p-1 rounded-lg">
             <button
@@ -898,7 +965,7 @@ const MovimientosList = () => {
                               #{mov.consecutivo || mov.id}
                             </p>
                             <p className="text-xs text-slate-400 dark:text-slate-500">
-                              {(mov.createdAt || mov.created_at || mov.fecha)
+                              {mov.createdAt || mov.created_at || mov.fecha
                                 ? formatDate(mov.createdAt || mov.created_at || mov.fecha)
                                 : '-'}
                             </p>
@@ -912,17 +979,21 @@ const MovimientosList = () => {
                           {CONCEPTO_LABELS[mov.concepto] || mov.concepto || '-'}
                         </span>
                         {mov.concepto === 'otros' && mov.concepto_otro && (
-                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{mov.concepto_otro}</p>
+                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                            {mov.concepto_otro}
+                          </p>
                         )}
                       </td>
 
                       {/* Tipo */}
                       <td className="py-4 px-4 text-center">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          mov.tipo_movimiento === 'ingreso'
-                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
-                            : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
-                        }`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            mov.tipo_movimiento === 'ingreso'
+                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                              : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                          }`}
+                        >
                           {mov.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso'}
                         </span>
                       </td>
@@ -944,11 +1015,13 @@ const MovimientosList = () => {
 
                       {/* Caja Menor */}
                       <td className="py-4 px-4">
-                        {(mov.cajaMenor?.id || mov.caja_menor_id) ? (
+                        {mov.cajaMenor?.id || mov.caja_menor_id ? (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(`/viajes/cajas-menores/${mov.cajaMenor?.id || mov.caja_menor_id}`);
+                              navigate(
+                                `/viajes/cajas-menores/${mov.cajaMenor?.id || mov.caja_menor_id}`
+                              );
                             }}
                             className="text-sm text-purple-600 dark:text-purple-400 font-medium cursor-pointer hover:underline"
                           >
@@ -994,9 +1067,11 @@ const MovimientosList = () => {
                         <Receipt className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">#{mov.consecutivo || mov.id}</p>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                          #{mov.consecutivo || mov.id}
+                        </p>
                         <p className="text-xs text-slate-400">
-                          {(mov.createdAt || mov.created_at || mov.fecha)
+                          {mov.createdAt || mov.created_at || mov.fecha
                             ? formatDate(mov.createdAt || mov.created_at || mov.fecha)
                             : '-'}
                         </p>
@@ -1022,17 +1097,21 @@ const MovimientosList = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 dark:text-slate-400">Tipo</span>
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                        mov.tipo_movimiento === 'ingreso'
-                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
-                          : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                          mov.tipo_movimiento === 'ingreso'
+                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                            : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                        }`}
+                      >
                         {mov.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 dark:text-slate-400">Valor</span>
-                      <span className="text-slate-800 dark:text-slate-100 font-semibold font-mono">{formatMoney(mov.valor)}</span>
+                      <span className="text-slate-800 dark:text-slate-100 font-semibold font-mono">
+                        {formatMoney(mov.valor)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 dark:text-slate-400">Usuario</span>

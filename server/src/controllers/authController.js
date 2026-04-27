@@ -2,11 +2,11 @@
  * ============================================================================
  * ISTHO CRM - Controlador de Autenticación
  * ============================================================================
- * 
+ *
  * Maneja login, registro, logout y gestión de tokens.
- * 
+ *
  * OPTIMIZADO: Usa toPublicJSON() del modelo para evitar duplicación.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.1.0
  */
@@ -15,7 +15,11 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { Op } = require('sequelize');
-const { generateSecret: totpGenerateSecret, verifySync: totpVerify, generateURI: totpURI } = require('otplib');
+const {
+  generateSecret: totpGenerateSecret,
+  verifySync: totpVerify,
+  generateURI: totpURI,
+} = require('otplib');
 const QRCode = require('qrcode');
 const jwtConfig = require('../config/jwt');
 const { Usuario, Cliente, Auditoria, PasswordHistorico, TokenBlacklist } = require('../models');
@@ -27,7 +31,7 @@ const {
   unauthorized,
   notFound,
   conflict,
-  serverError
+  serverError,
 } = require('../utils/responses');
 const logger = require('../utils/logger');
 const emailService = require('../services/emailService');
@@ -55,7 +59,7 @@ const esPasswordReutilizada = async (usuarioId, passwordNueva) => {
     where: { usuario_id: usuarioId },
     order: [['created_at', 'DESC']],
     limit: MAX_HISTORICO,
-    attributes: ['password_hash']
+    attributes: ['password_hash'],
   });
   for (const registro of historial) {
     if (await bcrypt.compare(passwordNueva, registro.password_hash)) return true;
@@ -71,10 +75,10 @@ const guardarEnHistorial = async (usuarioId, passwordHashActual) => {
   const registros = await PasswordHistorico.findAll({
     where: { usuario_id: usuarioId },
     order: [['created_at', 'DESC']],
-    attributes: ['id']
+    attributes: ['id'],
   });
   if (registros.length > MAX_HISTORICO) {
-    const idsAEliminar = registros.slice(MAX_HISTORICO).map(r => r.id);
+    const idsAEliminar = registros.slice(MAX_HISTORICO).map((r) => r.id);
     await PasswordHistorico.destroy({ where: { id: idsAEliminar } });
   }
 };
@@ -88,14 +92,14 @@ const generarToken = (usuario) => {
       id: usuario.id,
       username: usuario.username,
       email: usuario.email,
-      rol: usuario.rol
+      rol: usuario.rol,
     },
     jwtConfig.secret,
     {
       expiresIn: jwtConfig.expiresIn,
       issuer: jwtConfig.issuer,
       audience: jwtConfig.audience,
-      algorithm: jwtConfig.algorithm
+      algorithm: jwtConfig.algorithm,
     }
   );
 };
@@ -107,14 +111,14 @@ const generarRefreshToken = (usuario) => {
   return jwt.sign(
     {
       id: usuario.id,
-      tipo: 'refresh'
+      tipo: 'refresh',
     },
     jwtConfig.secret,
     {
       expiresIn: jwtConfig.refreshExpiresIn,
       issuer: jwtConfig.issuer,
       audience: jwtConfig.audience,
-      algorithm: jwtConfig.algorithm
+      algorithm: jwtConfig.algorithm,
     }
   );
 };
@@ -148,11 +152,12 @@ const generarBackupCodes = () => {
  * scope: 'trusted_device', jti: identificador único para revocación
  */
 const generarTokenDispositivoConfiable = (usuarioId, jti) => {
-  return jwt.sign(
-    { id: usuarioId, scope: 'trusted_device', jti },
-    jwtConfig.secret,
-    { expiresIn: '30d', issuer: jwtConfig.issuer, audience: jwtConfig.audience, algorithm: jwtConfig.algorithm }
-  );
+  return jwt.sign({ id: usuarioId, scope: 'trusted_device', jti }, jwtConfig.secret, {
+    expiresIn: '30d',
+    issuer: jwtConfig.issuer,
+    audience: jwtConfig.audience,
+    algorithm: jwtConfig.algorithm,
+  });
 };
 
 /**
@@ -185,7 +190,12 @@ const parsearNombreDispositivo = (ua = '') => {
  * Finalizar login exitoso: actualizar usuario, registrar auditoría, devolver tokens.
  * Usado por login normal y por validarTotp.
  */
-const completarLogin = async (usuario, req, res, { message = 'Login exitoso', extra = {} } = {}) => {
+const completarLogin = async (
+  usuario,
+  req,
+  res,
+  { message = 'Login exitoso', extra = {} } = {}
+) => {
   usuario.intentos_fallidos = 0;
   usuario.bloqueado_hasta = null;
   usuario.ultimo_acceso = new Date();
@@ -206,7 +216,7 @@ const completarLogin = async (usuario, req, res, { message = 'Login exitoso', ex
     usuario_nombre: usuario.getNombreDisplay(),
     ip_address: getClientIP(req),
     user_agent: req.get('user-agent'),
-    descripcion: `Login exitoso: ${usuario.email}`
+    descripcion: `Login exitoso: ${usuario.email}`,
   });
 
   logger.info('Login exitoso:', { userId: usuario.id, email: usuario.email });
@@ -232,9 +242,11 @@ const completarLogin = async (usuario, req, res, { message = 'Login exitoso', ex
   const refreshTokenJwt = generarRefreshToken(usuario);
 
   const CAMPOS_PROTEGIDOS = ['user', 'token', 'refreshToken', 'expiresIn', 'refreshExpiresIn'];
-  const colision = CAMPOS_PROTEGIDOS.find(k => k in extra);
+  const colision = CAMPOS_PROTEGIDOS.find((k) => k in extra);
   if (colision) {
-    logger.error('completarLogin: extra intenta sobreescribir campo protegido:', { campo: colision });
+    logger.error('completarLogin: extra intenta sobreescribir campo protegido:', {
+      campo: colision,
+    });
     return errorResponse(res, 'Error interno de autenticación', 500);
   }
 
@@ -261,9 +273,10 @@ const login = async (req, res) => {
     const { email, password, trusted_device_token } = req.body;
 
     // Buscar usuario por email o username
-    const usuario = email && email.includes('@')
-      ? await Usuario.findByEmail(email)
-      : await Usuario.findByEmailOrUsername(email);
+    const usuario =
+      email && email.includes('@')
+        ? await Usuario.findByEmail(email)
+        : await Usuario.findByEmailOrUsername(email);
 
     if (!usuario) {
       logger.warn('Login fallido - usuario no encontrado:', { identificador: email });
@@ -272,9 +285,7 @@ const login = async (req, res) => {
 
     // Verificar bloqueo
     if (usuario.estaBloqueado()) {
-      const tiempoRestante = Math.ceil(
-        (new Date(usuario.bloqueado_hasta) - new Date()) / 60000
-      );
+      const tiempoRestante = Math.ceil((new Date(usuario.bloqueado_hasta) - new Date()) / 60000);
       return errorResponse(
         res,
         `Cuenta bloqueada. Intente en ${tiempoRestante} minutos`,
@@ -303,7 +314,10 @@ const login = async (req, res) => {
 
       if (usuario.intentos_fallidos >= MAX_INTENTOS_LOGIN) {
         usuario.bloqueado_hasta = new Date(Date.now() + TIEMPO_BLOQUEO_MINUTOS * 60000);
-        logger.warn('Cuenta bloqueada por intentos:', { email, intentos: usuario.intentos_fallidos });
+        logger.warn('Cuenta bloqueada por intentos:', {
+          email,
+          intentos: usuario.intentos_fallidos,
+        });
       }
 
       await usuario.save();
@@ -317,8 +331,10 @@ const login = async (req, res) => {
         const payloadDevice = validarTokenDispositivoConfiable(trusted_device_token, usuario.id);
         if (payloadDevice) {
           const ahora = new Date();
-          const dispositivos = (usuario.dispositivos_confiables || []);
-          const vigente = dispositivos.some(d => d.jti === payloadDevice.jti && new Date(d.expira_en) > ahora);
+          const dispositivos = usuario.dispositivos_confiables || [];
+          const vigente = dispositivos.some(
+            (d) => d.jti === payloadDevice.jti && new Date(d.expira_en) > ahora
+          );
           if (vigente) {
             logger.info('Login con dispositivo confiable (2FA omitido):', { userId: usuario.id });
             return await completarLogin(usuario, req, res);
@@ -327,18 +343,18 @@ const login = async (req, res) => {
       }
 
       // Emitir token temporal de 5 minutos para el paso de TOTP
-      const tempToken = jwt.sign(
-        { id: usuario.id, scope: 'totp_pending' },
-        jwtConfig.secret,
-        { expiresIn: '5m', issuer: jwtConfig.issuer, audience: jwtConfig.audience }
-      );
+      const tempToken = jwt.sign({ id: usuario.id, scope: 'totp_pending' }, jwtConfig.secret, {
+        expiresIn: '5m',
+        issuer: jwtConfig.issuer,
+        audience: jwtConfig.audience,
+      });
 
       logger.info('Login paso 1 (2FA requerido):', { userId: usuario.id });
 
       return successMessage(res, 'Se requiere verificación de dos factores', {
         requiere_2fa: true,
         temp_token: tempToken,
-        usuario_nombre: usuario.getNombreDisplay()
+        usuario_nombre: usuario.getNombreDisplay(),
       });
     }
 
@@ -352,17 +368,19 @@ const login = async (req, res) => {
         { expiresIn: '15m', issuer: jwtConfig.issuer, audience: jwtConfig.audience }
       );
 
-      logger.info('Login paso 1 (Configuración de 2FA obligatoria):', { userId: usuario.id, rol: usuario.rol });
+      logger.info('Login paso 1 (Configuración de 2FA obligatoria):', {
+        userId: usuario.id,
+        rol: usuario.rol,
+      });
 
       return successMessage(res, 'Configuración de 2FA obligatoria para su rol', {
         requiere_setup_2fa: true,
         temp_token: setupToken,
-        usuario_nombre: usuario.getNombreDisplay()
+        usuario_nombre: usuario.getNombreDisplay(),
       });
     }
 
     await completarLogin(usuario, req, res);
-
   } catch (error) {
     logger.error('Error en login:', { message: error.message });
     return serverError(res, 'Error al procesar el login', error);
@@ -376,7 +394,7 @@ const login = async (req, res) => {
 const me = async (req, res) => {
   try {
     const usuario = await Usuario.findByPk(req.user.id, {
-      attributes: { exclude: ['password_hash', 'reset_token', 'reset_token_expires'] }
+      attributes: { exclude: ['password_hash', 'reset_token', 'reset_token_expires'] },
     });
 
     if (!usuario) {
@@ -404,7 +422,6 @@ const me = async (req, res) => {
     }
 
     return success(res, userData);
-
   } catch (error) {
     logger.error('Error en me:', { message: error.message });
     return serverError(res, 'Error al obtener usuario', error);
@@ -446,7 +463,7 @@ const actualizarPerfil = async (req, res) => {
 
     // Obtener actualizado
     const usuarioActualizado = await Usuario.findByPk(userId, {
-      attributes: { exclude: ['password_hash', 'reset_token', 'reset_token_expires'] }
+      attributes: { exclude: ['password_hash', 'reset_token', 'reset_token_expires'] },
     });
 
     logger.info('Perfil actualizado:', { userId, campos: Object.keys(camposActualizables) });
@@ -459,13 +476,18 @@ const actualizarPerfil = async (req, res) => {
       usuario_nombre: req.user.nombre_completo || req.user.username,
       datos_nuevos: camposActualizables,
       ip_address: getClientIP(req),
-      descripcion: `Perfil actualizado: ${Object.keys(camposActualizables).join(', ')}`
+      descripcion: `Perfil actualizado: ${Object.keys(camposActualizables).join(', ')}`,
     });
 
     await cargarCachePermisos();
-    const permisosDB = usuarioActualizado.rol_id ? getPermisosForRol(usuarioActualizado.rol_id) : null;
-    return successMessage(res, 'Perfil actualizado correctamente', usuarioActualizado.toPublicJSON(permisosDB));
-
+    const permisosDB = usuarioActualizado.rol_id
+      ? getPermisosForRol(usuarioActualizado.rol_id)
+      : null;
+    return successMessage(
+      res,
+      'Perfil actualizado correctamente',
+      usuarioActualizado.toPublicJSON(permisosDB)
+    );
   } catch (error) {
     logger.error('Error actualizando perfil:', { message: error.message });
     return serverError(res, 'Error al actualizar perfil', error);
@@ -497,7 +519,7 @@ const registro = async (req, res) => {
       nombre: nombre || null,
       apellido: apellido || null,
       nombre_completo: nombre_completo || `${nombre || ''} ${apellido || ''}`.trim(),
-      rol: rol || 'operador'
+      rol: rol || 'operador',
     });
 
     // Auditoría
@@ -509,13 +531,12 @@ const registro = async (req, res) => {
       usuario_nombre: req.user.nombre_completo,
       datos_nuevos: { username, email, nombre, apellido, rol },
       ip_address: getClientIP(req),
-      descripcion: `Usuario creado: ${username}`
+      descripcion: `Usuario creado: ${username}`,
     });
 
     logger.info('Usuario creado:', { userId: nuevoUsuario.id, createdBy: req.user.id });
 
     return created(res, 'Usuario creado exitosamente', nuevoUsuario.toPublicJSON());
-
   } catch (error) {
     logger.error('Error en registro:', { message: error.message });
     return serverError(res, 'Error al crear usuario', error);
@@ -534,10 +555,18 @@ const logout = async (req, res) => {
       try {
         const decoded = jwt.decode(rawToken);
         const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-        const expiresAt = decoded?.exp ? new Date(decoded.exp * 1000) : new Date(Date.now() + 60 * 60 * 1000);
-        await TokenBlacklist.create({ token_hash: tokenHash, usuario_id: req.user.id, expires_at: expiresAt });
+        const expiresAt = decoded?.exp
+          ? new Date(decoded.exp * 1000)
+          : new Date(Date.now() + 60 * 60 * 1000);
+        await TokenBlacklist.create({
+          token_hash: tokenHash,
+          usuario_id: req.user.id,
+          expires_at: expiresAt,
+        });
       } catch (blacklistError) {
-        logger.warn('No se pudo invalidar el token en blacklist:', { error: blacklistError.message });
+        logger.warn('No se pudo invalidar el token en blacklist:', {
+          error: blacklistError.message,
+        });
       }
     }
 
@@ -548,13 +577,12 @@ const logout = async (req, res) => {
       usuario_id: req.user.id,
       usuario_nombre: req.user.nombre_completo,
       ip_address: getClientIP(req),
-      descripcion: `Logout: ${req.user.email}`
+      descripcion: `Logout: ${req.user.email}`,
     });
 
     logger.info('Logout exitoso:', { userId: req.user.id });
 
     return successMessage(res, 'Sesión cerrada exitosamente');
-
   } catch (error) {
     logger.error('Error en logout:', { message: error.message });
     return serverError(res, 'Error al cerrar sesión', error);
@@ -596,7 +624,13 @@ const cambiarPassword = async (req, res) => {
     }
 
     if (await esPasswordReutilizada(usuario.id, password_nuevo)) {
-      return errorResponse(res, `No puedes reutilizar ninguna de tus últimas ${MAX_HISTORICO} contraseñas`, 400, null, 'PASSWORD_REUSED');
+      return errorResponse(
+        res,
+        `No puedes reutilizar ninguna de tus últimas ${MAX_HISTORICO} contraseñas`,
+        400,
+        null,
+        'PASSWORD_REUSED'
+      );
     }
 
     // Guardar contraseña actual en historial antes de reemplazarla
@@ -615,13 +649,12 @@ const cambiarPassword = async (req, res) => {
       usuario_id: usuario.id,
       usuario_nombre: usuario.getNombreDisplay(),
       ip_address: getClientIP(req),
-      descripcion: 'Cambio de contraseña'
+      descripcion: 'Cambio de contraseña',
     });
 
     logger.info('Contraseña cambiada:', { userId: usuario.id });
 
     return successMessage(res, 'Contraseña actualizada exitosamente');
-
   } catch (error) {
     logger.error('Error en cambiarPassword:', { message: error.message });
     return serverError(res, 'Error al cambiar la contraseña', error);
@@ -638,7 +671,8 @@ const forgotPassword = async (req, res) => {
     const usuario = await Usuario.findByEmail(email);
 
     // Respuesta genérica por seguridad
-    const mensajeExito = 'Si el email existe, recibirás instrucciones para restablecer tu contraseña';
+    const mensajeExito =
+      'Si el email existe, recibirás instrucciones para restablecer tu contraseña';
 
     if (!usuario) {
       return successMessage(res, mensajeExito);
@@ -657,13 +691,12 @@ const forgotPassword = async (req, res) => {
       email: usuario.email,
       nombre: usuario.nombre_completo || usuario.username,
       username: usuario.username,
-      passwordTemporal: resetToken // Usamos este campo para pasar el token en la plantilla actual
+      passwordTemporal: resetToken, // Usamos este campo para pasar el token en la plantilla actual
     });
 
     logger.info('Token de recuperación generado:', { email });
 
     return successMessage(res, mensajeExito);
-
   } catch (error) {
     logger.error('Error en forgotPassword:', { message: error.message });
     return serverError(res, 'Error al procesar la solicitud', error);
@@ -683,8 +716,8 @@ const resetPassword = async (req, res) => {
     const usuario = await Usuario.findOne({
       where: {
         reset_token: resetTokenHash,
-        reset_token_expires: { [Op.gt]: new Date() }
-      }
+        reset_token_expires: { [Op.gt]: new Date() },
+      },
     });
 
     if (!usuario) {
@@ -706,7 +739,13 @@ const resetPassword = async (req, res) => {
     }
 
     if (await esPasswordReutilizada(usuario.id, password)) {
-      return errorResponse(res, `No puedes reutilizar ninguna de tus últimas ${MAX_HISTORICO} contraseñas`, 400, null, 'PASSWORD_REUSED');
+      return errorResponse(
+        res,
+        `No puedes reutilizar ninguna de tus últimas ${MAX_HISTORICO} contraseñas`,
+        400,
+        null,
+        'PASSWORD_REUSED'
+      );
     }
 
     await guardarEnHistorial(usuario.id, usuario.password_hash);
@@ -727,13 +766,12 @@ const resetPassword = async (req, res) => {
       usuario_id: usuario.id,
       usuario_nombre: usuario.getNombreDisplay(),
       ip_address: getClientIP(req),
-      descripcion: 'Contraseña restablecida mediante token'
+      descripcion: 'Contraseña restablecida mediante token',
     });
 
     logger.info('Contraseña restablecida:', { userId: usuario.id });
 
     return successMessage(res, 'Contraseña restablecida exitosamente');
-
   } catch (error) {
     logger.error('Error en resetPassword:', { message: error.message });
     return serverError(res, 'Error al restablecer la contraseña', error);
@@ -748,8 +786,9 @@ const resetPassword = async (req, res) => {
 const refreshToken = async (req, res) => {
   try {
     // Obtener refresh token del body o del header
-    const token = req.body.refreshToken
-      || (req.headers.authorization && req.headers.authorization.replace('Bearer ', ''));
+    const token =
+      req.body.refreshToken ||
+      (req.headers.authorization && req.headers.authorization.replace('Bearer ', ''));
 
     if (!token) {
       return unauthorized(res, 'Refresh token no proporcionado');
@@ -761,7 +800,7 @@ const refreshToken = async (req, res) => {
       decoded = jwt.verify(token, jwtConfig.secret, {
         issuer: jwtConfig.issuer,
         audience: jwtConfig.audience,
-        algorithms: [jwtConfig.algorithm]
+        algorithms: [jwtConfig.algorithm],
       });
     } catch (jwtError) {
       if (jwtError.name === 'TokenExpiredError') {
@@ -791,9 +830,8 @@ const refreshToken = async (req, res) => {
       token: nuevoToken,
       refreshToken: nuevoRefreshToken,
       expiresIn: jwtConfig.expiresIn,
-      refreshExpiresIn: jwtConfig.refreshExpiresIn
+      refreshExpiresIn: jwtConfig.refreshExpiresIn,
     });
-
   } catch (error) {
     logger.error('Error en refreshToken:', { message: error.message });
     return serverError(res, 'Error al refrescar token', error);
@@ -818,7 +856,12 @@ const actualizarPreferencias = async (req, res) => {
     const validos = {
       tema: ['light', 'dark'],
       idioma: ['es', 'en'],
-      zona_horaria: ['America/Bogota', 'America/Mexico_City', 'America/Lima', 'America/Argentina/Buenos_Aires'],
+      zona_horaria: [
+        'America/Bogota',
+        'America/Mexico_City',
+        'America/Lima',
+        'America/Argentina/Buenos_Aires',
+      ],
       formato_fecha: ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'],
       tiempo_sesion: [15, 30, 60, 120, 0],
     };
@@ -867,7 +910,11 @@ const subirAvatar = async (req, res) => {
       });
       avatar_url = resultado.url;
       // Limpiar temp
-      try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch {
+        /* ignore */
+      }
       logger.info('Avatar subido a Cloudinary:', { userId: usuario.id, url: avatar_url });
     } else {
       // Fallback: base64 en BD
@@ -875,7 +922,11 @@ const subirAvatar = async (req, res) => {
       const base64 = fileBuffer.toString('base64');
       const mimeType = req.file.mimetype || 'image/png';
       avatar_url = `data:${mimeType};base64,${base64}`;
-      try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch {
+        /* ignore */
+      }
       logger.info('Avatar actualizado (base64 fallback):', { userId: usuario.id });
     }
 
@@ -889,11 +940,10 @@ const subirAvatar = async (req, res) => {
       usuario_id: usuario.id,
       usuario_nombre: usuario.getNombreDisplay(),
       ip_address: getClientIP(req),
-      descripcion: 'Foto de perfil actualizada'
+      descripcion: 'Foto de perfil actualizada',
     });
 
     return successMessage(res, 'Foto de perfil actualizada', { avatar_url });
-
   } catch (error) {
     logger.error('Error al subir avatar:', { message: error.message });
     return serverError(res, 'Error al subir la foto de perfil', error);
@@ -923,7 +973,6 @@ const eliminarAvatar = async (req, res) => {
     logger.info('Avatar eliminado:', { userId: usuario.id });
 
     return successMessage(res, 'Foto de perfil eliminada');
-
   } catch (error) {
     logger.error('Error al eliminar avatar:', { message: error.message });
     return serverError(res, 'Error al eliminar la foto de perfil', error);
@@ -959,7 +1008,7 @@ const setup2FA = async (req, res) => {
     return success(res, {
       secret,
       qr_code: qrDataUrl,
-      otpauth_url: otpAuthUrl
+      otpauth_url: otpAuthUrl,
     });
   } catch (error) {
     logger.error('Error en setup2FA:', { message: error.message });
@@ -989,10 +1038,20 @@ const activar2FA = async (req, res) => {
 
     let esValido = false;
     try {
-      esValido = totpVerify({ token: codigo.replace(/\s/g, ''), secret: usuario.totp_secret, type: 'totp' })?.valid === true;
-    } catch { /* ignorar errores de formato — otplib lanza TokenLengthError */ }
+      esValido =
+        totpVerify({ token: codigo.replace(/\s/g, ''), secret: usuario.totp_secret, type: 'totp' })
+          ?.valid === true;
+    } catch {
+      /* ignorar errores de formato — otplib lanza TokenLengthError */
+    }
     if (!esValido) {
-      return errorResponse(res, 'Código incorrecto. Verifica la hora de tu dispositivo', 400, null, 'TOTP_INVALID');
+      return errorResponse(
+        res,
+        'Código incorrecto. Verifica la hora de tu dispositivo',
+        400,
+        null,
+        'TOTP_INVALID'
+      );
     }
 
     const backupCodes = generarBackupCodes();
@@ -1007,12 +1066,12 @@ const activar2FA = async (req, res) => {
       usuario_id: usuario.id,
       usuario_nombre: usuario.getNombreDisplay(),
       ip_address: getClientIP(req),
-      descripcion: '2FA activado por el usuario'
+      descripcion: '2FA activado por el usuario',
     });
 
-    return await completarLogin(usuario, req, res, { 
+    return await completarLogin(usuario, req, res, {
       message: '2FA activado correctamente. Bienvenido.',
-      extra: { backup_codes: backupCodes }
+      extra: { backup_codes: backupCodes },
     });
   } catch (error) {
     logger.error('Error en activar2FA:', { message: error.message });
@@ -1027,7 +1086,8 @@ const activar2FA = async (req, res) => {
 const deshabilitar2FA = async (req, res) => {
   try {
     const { password } = req.body;
-    if (!password) return errorResponse(res, 'La contraseña es requerida para desactivar el 2FA', 400);
+    if (!password)
+      return errorResponse(res, 'La contraseña es requerida para desactivar el 2FA', 400);
 
     const usuario = await Usuario.findByPk(req.user.id);
     if (!usuario) return notFound(res, 'Usuario no encontrado');
@@ -1053,7 +1113,7 @@ const deshabilitar2FA = async (req, res) => {
       usuario_id: usuario.id,
       usuario_nombre: usuario.getNombreDisplay(),
       ip_address: getClientIP(req),
-      descripcion: '2FA desactivado por el usuario'
+      descripcion: '2FA desactivado por el usuario',
     });
 
     return successMessage(res, '2FA desactivado correctamente');
@@ -1081,11 +1141,17 @@ const validarTotp = async (req, res) => {
     try {
       decoded = jwt.verify(temp_token, jwtConfig.secret, {
         issuer: jwtConfig.issuer,
-        audience: jwtConfig.audience
+        audience: jwtConfig.audience,
       });
     } catch (jwtError) {
       if (jwtError.name === 'TokenExpiredError') {
-        return errorResponse(res, 'El código de verificación ha expirado. Inicia sesión nuevamente', 401, null, 'TEMP_TOKEN_EXPIRED');
+        return errorResponse(
+          res,
+          'El código de verificación ha expirado. Inicia sesión nuevamente',
+          401,
+          null,
+          'TEMP_TOKEN_EXPIRED'
+        );
       }
       return errorResponse(res, 'Token temporal inválido', 401, null, 'TEMP_TOKEN_INVALID');
     }
@@ -1108,8 +1174,12 @@ const validarTotp = async (req, res) => {
     // Verificar código TOTP (otplib lanza TokenLengthError para tokens != 6 dígitos — tratar como inválido)
     let esValido = false;
     try {
-      esValido = totpVerify({ token: codigoLimpio, secret: usuario.totp_secret, type: 'totp' })?.valid === true;
-    } catch { /* token con formato inválido, no es TOTP — intentar backup codes abajo */ }
+      esValido =
+        totpVerify({ token: codigoLimpio, secret: usuario.totp_secret, type: 'totp' })?.valid ===
+        true;
+    } catch {
+      /* token con formato inválido, no es TOTP — intentar backup codes abajo */
+    }
 
     if (!esValido) {
       // Intentar con códigos de respaldo
@@ -1139,8 +1209,15 @@ const validarTotp = async (req, res) => {
 
       // Limpiar dispositivos expirados y agregar el nuevo
       const ahora = new Date();
-      const dispositivos = (usuario.dispositivos_confiables || []).filter(d => new Date(d.expira_en) > ahora);
-      dispositivos.push({ jti, nombre, creado_en: new Date().toISOString(), expira_en: expira_en.toISOString() });
+      const dispositivos = (usuario.dispositivos_confiables || []).filter(
+        (d) => new Date(d.expira_en) > ahora
+      );
+      dispositivos.push({
+        jti,
+        nombre,
+        creado_en: new Date().toISOString(),
+        expira_en: expira_en.toISOString(),
+      });
       usuario.dispositivos_confiables = dispositivos;
       usuario.changed('dispositivos_confiables', true);
       await usuario.save();
@@ -1167,8 +1244,8 @@ const listarDispositivosConfiables = async (req, res) => {
 
     const ahora = new Date();
     const dispositivos = (usuario.dispositivos_confiables || [])
-      .filter(d => new Date(d.expira_en) > ahora)
-      .map(d => ({
+      .filter((d) => new Date(d.expira_en) > ahora)
+      .map((d) => ({
         jti: d.jti,
         nombre: d.nombre,
         creado_en: d.creado_en,
@@ -1193,7 +1270,7 @@ const revocarDispositivoConfiable = async (req, res) => {
     if (!usuario) return notFound(res, 'Usuario no encontrado');
 
     const antes = (usuario.dispositivos_confiables || []).length;
-    const dispositivos = (usuario.dispositivos_confiables || []).filter(d => d.jti !== jti);
+    const dispositivos = (usuario.dispositivos_confiables || []).filter((d) => d.jti !== jti);
 
     if (dispositivos.length === antes) {
       return notFound(res, 'Dispositivo no encontrado');

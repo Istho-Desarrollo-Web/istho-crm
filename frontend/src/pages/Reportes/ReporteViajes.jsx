@@ -1,6 +1,20 @@
 ﻿import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Truck, CheckCircle, DollarSign, FileSpreadsheet, FileText, Calendar, ArrowLeft, RefreshCw, Mail, Filter, X, Search, Loader2 } from 'lucide-react';
+import {
+  Truck,
+  CheckCircle,
+  DollarSign,
+  FileSpreadsheet,
+  FileText,
+  Calendar,
+  ArrowLeft,
+  RefreshCw,
+  Mail,
+  Filter,
+  X,
+  Search,
+  Loader2,
+} from 'lucide-react';
 import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 import { KpiCard, AccionesDropdown } from '../../components/common';
 import { BarChart, PieChart } from '../../components/charts';
@@ -64,7 +78,8 @@ const ReporteViajes = () => {
     }
   };
 
-  const hasPendingChanges = inputDesde !== filtrosAplicados.desde || inputHasta !== filtrosAplicados.hasta;
+  const hasPendingChanges =
+    inputDesde !== filtrosAplicados.desde || inputHasta !== filtrosAplicados.hasta;
   const hasActiveFilters = filtrosAplicados.desde || filtrosAplicados.hasta;
 
   const kpis = data?.kpis || {};
@@ -87,26 +102,37 @@ const ReporteViajes = () => {
                 <Truck className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Reporte de Viajes</h1>
-                <p className="text-slate-500 dark:text-slate-400 text-sm">Análisis de viajes, rutas y conductores</p>
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                  Reporte de Viajes
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">
+                  Análisis de viajes, rutas y conductores
+                </p>
               </div>
             </div>
           </div>
-          <AccionesDropdown acciones={[
-            { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
-            { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel') },
-            { label: 'PDF', icon: FileText, onClick: () => handleExport('pdf') },
-            { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true) },
-          ]} />
+          <AccionesDropdown
+            acciones={[
+              { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+              { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel') },
+              { label: 'PDF', icon: FileText, onClick: () => handleExport('pdf') },
+              { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true) },
+            ]}
+          />
         </div>
 
         {/* Filters */}
         <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex items-center gap-2 mb-3">
             <Filter className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Filtros</span>
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Filtros
+            </span>
             {hasActiveFilters && (
-              <button onClick={handleLimpiar} className="ml-auto flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 transition-colors">
+              <button
+                onClick={handleLimpiar}
+                className="ml-auto flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
+              >
                 <X className="w-3 h-3" />
                 Limpiar
               </button>
@@ -119,14 +145,24 @@ const ReporteViajes = () => {
                   <Calendar className="w-3 h-3 inline mr-1" />
                   Desde
                 </label>
-                <input type="date" value={inputDesde} onChange={e => setInputDesde(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400" />
+                <input
+                  type="date"
+                  value={inputDesde}
+                  onChange={(e) => setInputDesde(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400"
+                />
               </div>
               <div className="flex-1">
                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
                   <Calendar className="w-3 h-3 inline mr-1" />
                   Hasta
                 </label>
-                <input type="date" value={inputHasta} onChange={e => setInputHasta(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400" />
+                <input
+                  type="date"
+                  value={inputHasta}
+                  onChange={(e) => setInputHasta(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400"
+                />
               </div>
             </div>
             <div className="flex items-end">
@@ -139,7 +175,11 @@ const ReporteViajes = () => {
                     : 'bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-centhrix-card'
                 }`}
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Search className="w-4 h-4" />
+                )}
                 {loading ? 'Cargando...' : 'Aplicar'}
               </button>
             </div>
@@ -148,60 +188,142 @@ const ReporteViajes = () => {
 
         {/* KPIs - 4 cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <KpiCard title="Total Viajes" value={kpis.total ?? '-'} icon={Truck} iconBg="bg-blue-100 dark:bg-blue-900/30" iconColor="text-blue-600 dark:text-blue-400" loading={loading} />
-          <KpiCard title="Completados" value={kpis.completados ?? '-'} icon={CheckCircle} iconBg="bg-emerald-100 dark:bg-emerald-900/30" iconColor="text-emerald-600 dark:text-emerald-400" loading={loading} />
-          <KpiCard title="Facturados" value={kpis.facturados ?? '-'} icon={DollarSign} iconBg="bg-violet-100 dark:bg-violet-900/30" iconColor="text-violet-600 dark:text-violet-400" loading={loading} />
-          <KpiCard title="Valor Total" value={formatCOP(kpis.valorTotal)} icon={DollarSign} iconBg="bg-amber-100 dark:bg-amber-900/30" iconColor="text-amber-600 dark:text-amber-400" loading={loading} />
+          <KpiCard
+            title="Total Viajes"
+            value={kpis.total ?? '-'}
+            icon={Truck}
+            iconBg="bg-blue-100 dark:bg-blue-900/30"
+            iconColor="text-blue-600 dark:text-blue-400"
+            loading={loading}
+          />
+          <KpiCard
+            title="Completados"
+            value={kpis.completados ?? '-'}
+            icon={CheckCircle}
+            iconBg="bg-emerald-100 dark:bg-emerald-900/30"
+            iconColor="text-emerald-600 dark:text-emerald-400"
+            loading={loading}
+          />
+          <KpiCard
+            title="Facturados"
+            value={kpis.facturados ?? '-'}
+            icon={DollarSign}
+            iconBg="bg-violet-100 dark:bg-violet-900/30"
+            iconColor="text-violet-600 dark:text-violet-400"
+            loading={loading}
+          />
+          <KpiCard
+            title="Valor Total"
+            value={formatCOP(kpis.valorTotal)}
+            icon={DollarSign}
+            iconBg="bg-amber-100 dark:bg-amber-900/30"
+            iconColor="text-amber-600 dark:text-amber-400"
+            loading={loading}
+          />
         </div>
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <PieChart title="Viajes por Estado" subtitle="Distribución actual" data={data?.porEstado || []} size={180} loading={loading} />
-          <BarChart title="Viajes por Mes" subtitle="Últimos 6 meses" data={data?.porMes || []} legend={[{ label: 'Viajes', color: '#3B82F6' }]} height={300} loading={loading} />
+          <PieChart
+            title="Viajes por Estado"
+            subtitle="Distribución actual"
+            data={data?.porEstado || []}
+            size={180}
+            loading={loading}
+          />
+          <BarChart
+            title="Viajes por Mes"
+            subtitle="Últimos 6 meses"
+            data={data?.porMes || []}
+            legend={[{ label: 'Viajes', color: '#3B82F6' }]}
+            height={300}
+            loading={loading}
+          />
         </div>
 
         {/* Top conductores */}
         <div className="mb-8">
-          <BarChart title="Top Conductores" subtitle="Conductores con más viajes" data={data?.topConductores || []} legend={[{ label: 'Viajes', color: '#F59E0B' }]} height={260} loading={loading} />
+          <BarChart
+            title="Top Conductores"
+            subtitle="Conductores con más viajes"
+            data={data?.topConductores || []}
+            legend={[{ label: 'Viajes', color: '#F59E0B' }]}
+            height={260}
+            loading={loading}
+          />
         </div>
 
         {/* Últimos viajes table */}
         <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
           <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Últimos Viajes</h3>
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
+              Últimos Viajes
+            </h3>
             <p className="text-xs text-slate-400">10 viajes más recientes</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50/50 dark:bg-centhrix-bg/30">
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Número</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Ruta</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Conductor</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Vehículo</th>
-                  <th className="text-right py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Valor</th>
-                  <th className="text-center py-3 px-4 text-xs font-semibold text-slate-400 uppercase">Estado</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">
+                    Número
+                  </th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">
+                    Ruta
+                  </th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">
+                    Conductor
+                  </th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-400 uppercase">
+                    Vehículo
+                  </th>
+                  <th className="text-right py-3 px-4 text-xs font-semibold text-slate-400 uppercase">
+                    Valor
+                  </th>
+                  <th className="text-center py-3 px-4 text-xs font-semibold text-slate-400 uppercase">
+                    Estado
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {(data?.ultimos || []).map((v) => (
-                  <tr key={v.id} onClick={() => navigate(`/viajes/viajes/${v.id}`)} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 cursor-pointer transition-colors">
-                    <td className="py-3 px-4 font-medium text-blue-600 dark:text-blue-400">{v.numero}</td>
-                    <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{v.origen} → {v.destino}</td>
+                  <tr
+                    key={v.id}
+                    onClick={() => navigate(`/viajes/viajes/${v.id}`)}
+                    className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 cursor-pointer transition-colors"
+                  >
+                    <td className="py-3 px-4 font-medium text-blue-600 dark:text-blue-400">
+                      {v.numero}
+                    </td>
+                    <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                      {v.origen} → {v.destino}
+                    </td>
                     <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{v.conductor}</td>
                     <td className="py-3 px-4 text-slate-600 dark:text-slate-300">{v.vehiculo}</td>
-                    <td className="py-3 px-4 text-right font-medium text-slate-800 dark:text-white">{formatCOP(v.valor_viaje)}</td>
+                    <td className="py-3 px-4 text-right font-medium text-slate-800 dark:text-white">
+                      {formatCOP(v.valor_viaje)}
+                    </td>
                     <td className="py-3 px-4 text-center">
-                      <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
-                        v.estado === 'completado' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                        : v.estado === 'anulado' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                      }`}>{v.estado}</span>
+                      <span
+                        className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
+                          v.estado === 'completado'
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                            : v.estado === 'anulado'
+                              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                              : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        }`}
+                      >
+                        {v.estado}
+                      </span>
                     </td>
                   </tr>
                 ))}
                 {(!data?.ultimos || data.ultimos.length === 0) && !loading && (
-                  <tr><td colSpan={6} className="py-8 text-center text-slate-400">No hay viajes registrados</td></tr>
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-slate-400">
+                      No hay viajes registrados
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>

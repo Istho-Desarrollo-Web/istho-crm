@@ -3,7 +3,7 @@
  * ISTHO CRM - Reportes Service
  * ============================================================================
  * Servicio para consumir endpoints de reportes y dashboard.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 2.0.0
  * @date Enero 2026
@@ -17,17 +17,16 @@ import { REPORTES_ENDPOINTS } from './endpoints';
 // ════════════════════════════════════════════════════════════════════════════
 
 const reportesService = {
-  
   // ──────────────────────────────────────────────────────────────────────────
   // DASHBOARD CONSOLIDADO
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener datos consolidados del dashboard
    * Incluye: operaciones, inventario, clientes, últimas operaciones
-   * 
+   *
    * @returns {Promise<Object>} Datos del dashboard
-   * 
+   *
    * @example
    * const response = await reportesService.getDashboard();
    * // response.data = {
@@ -72,11 +71,11 @@ const reportesService = {
       };
     }
   },
-  
+
   // ──────────────────────────────────────────────────────────────────────────
   // REPORTES ESPECÍFICOS
   // ──────────────────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtener reporte de despachos
    * @param {Object} params - Parámetros de filtro
@@ -90,7 +89,7 @@ const reportesService = {
       throw error;
     }
   },
-  
+
   /**
    * Obtener reporte de inventario
    * @param {Object} params - Parámetros de filtro
@@ -113,7 +112,7 @@ const reportesService = {
       throw error;
     }
   },
-  
+
   /**
    * Obtener reporte de clientes
    * @param {Object} params - Parámetros de filtro
@@ -127,7 +126,7 @@ const reportesService = {
       throw error;
     }
   },
-  
+
   /**
    * Obtener reporte de operaciones
    * @param {Object} params - Parámetros de filtro
@@ -161,16 +160,28 @@ const reportesService = {
   // ──────────────────────────────────────────────────────────────────────────
 
   getViajes: async (params) => {
-    try { return await apiClient.get('/reportes/viajes-reporte', { params }); }
-    catch (error) { console.error('Error reporte viajes:', error); throw error; }
+    try {
+      return await apiClient.get('/reportes/viajes-reporte', { params });
+    } catch (error) {
+      console.error('Error reporte viajes:', error);
+      throw error;
+    }
   },
   getCajasMenores: async (params) => {
-    try { return await apiClient.get('/reportes/cajas-menores-reporte', { params }); }
-    catch (error) { console.error('Error reporte cajas menores:', error); throw error; }
+    try {
+      return await apiClient.get('/reportes/cajas-menores-reporte', { params });
+    } catch (error) {
+      console.error('Error reporte cajas menores:', error);
+      throw error;
+    }
   },
   getGastos: async (params) => {
-    try { return await apiClient.get('/reportes/gastos-reporte', { params }); }
-    catch (error) { console.error('Error reporte gastos:', error); throw error; }
+    try {
+      return await apiClient.get('/reportes/gastos-reporte', { params });
+    } catch (error) {
+      console.error('Error reporte gastos:', error);
+      throw error;
+    }
   },
 
   // Enviar reporte por email

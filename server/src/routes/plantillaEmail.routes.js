@@ -18,7 +18,12 @@ router.use(verificarToken);
 
 // Logo de firma (debe ir ANTES de /:id para no confundir rutas)
 router.get('/logo-firma', plantillaEmailController.obtenerLogoFirma);
-router.post('/logo-firma', requiereRolMinimo('supervisor'), uploadLogo.single('logo'), plantillaEmailController.subirLogoFirma);
+router.post(
+  '/logo-firma',
+  requiereRolMinimo('supervisor'),
+  uploadLogo.single('logo'),
+  plantillaEmailController.subirLogoFirma
+);
 
 // Solo admin y supervisor pueden gestionar plantillas
 router.get('/', plantillaEmailController.listar);

@@ -75,7 +75,9 @@ const StatusBadge = ({ estado }) => {
   const config = ESTADO_CONFIG[estado] || ESTADO_CONFIG.pendiente;
   const Icon = config.icon;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text} ${config.darkBg} ${config.darkText}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text} ${config.darkBg} ${config.darkText}`}
+    >
       <Icon className={`w-3.5 h-3.5 ${estado === 'en_proceso' ? 'animate-spin' : ''}`} />
       {config.label}
     </span>
@@ -84,13 +86,23 @@ const StatusBadge = ({ estado }) => {
 
 const ProgressBar = ({ verified, total }) => {
   const pct = total > 0 ? Math.round((verified / total) * 100) : 0;
-  const color = pct === 100 ? 'bg-emerald-500' : pct > 0 ? 'bg-blue-500' : 'bg-slate-300 dark:bg-centhrix-surface';
+  const color =
+    pct === 100
+      ? 'bg-emerald-500'
+      : pct > 0
+        ? 'bg-blue-500'
+        : 'bg-slate-300 dark:bg-centhrix-surface';
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-2 bg-slate-100 dark:bg-centhrix-surface rounded-full overflow-hidden">
-        <div className={`h-full w-full rounded-full transition-transform duration-500 origin-left ${color}`} style={{ transform: `scaleX(${pct / 100})` }} />
+        <div
+          className={`h-full w-full rounded-full transition-transform duration-500 origin-left ${color}`}
+          style={{ transform: `scaleX(${pct / 100})` }}
+        />
       </div>
-      <span className="text-xs font-mono text-slate-500 dark:text-slate-400 whitespace-nowrap">{verified}/{total}</span>
+      <span className="text-xs font-mono text-slate-500 dark:text-slate-400 whitespace-nowrap">
+        {verified}/{total}
+      </span>
     </div>
   );
 };
@@ -117,7 +129,9 @@ const RowActions = ({ item, onView }) => {
           elevation: 0,
           sx: {
             overflow: 'visible',
-            filter: isDark ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))' : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+            filter: isDark
+              ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))'
+              : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
             mt: 0.5,
             borderRadius: '0.75rem',
             border: isDark ? '1px solid #334155' : '1px solid #f3f4f6',
@@ -133,7 +147,12 @@ const RowActions = ({ item, onView }) => {
           },
         }}
       >
-        <MenuItem onClick={() => { onView(item); setAnchorEl(null); }}>
+        <MenuItem
+          onClick={() => {
+            onView(item);
+            setAnchorEl(null);
+          }}
+        >
           <Eye className="w-4 h-4" />
           {item.estado === 'pendiente' && !esPortal ? 'Iniciar Operación' : 'Ver Operación'}
         </MenuItem>
@@ -143,7 +162,9 @@ const RowActions = ({ item, onView }) => {
 };
 
 const KpiMini = ({ icon: Icon, label, value, color }) => (
-  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}>
+  <div
+    className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}
+  >
     <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
       <Icon className="w-5 h-5" />
     </div>
@@ -170,28 +191,33 @@ const KardexList = () => {
   const [error, setError] = useState(null);
   const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
 
-  const fetchKardex = useCallback(async (page = 1) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = { page, limit: 20, sort: sortField, order: sortDir };
-      if (estadoFilter !== 'todos') params.estado = estadoFilter;
-      if (searchTerm) params.search = searchTerm;
+  const fetchKardex = useCallback(
+    async (page = 1) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = { page, limit: 20, sort: sortField, order: sortDir };
+        if (estadoFilter !== 'todos') params.estado = estadoFilter;
+        if (searchTerm) params.search = searchTerm;
 
-      const response = await auditoriasService.getKardex(params);
-      if (response.success && response.data) {
-        setItems(Array.isArray(response.data) ? response.data : response.data.kardex || []);
-        if (response.pagination) setPagination(response.pagination);
-      } else {
+        const response = await auditoriasService.getKardex(params);
+        if (response.success && response.data) {
+          setItems(Array.isArray(response.data) ? response.data : response.data.kardex || []);
+          if (response.pagination) setPagination(response.pagination);
+        } else {
+          setItems([]);
+        }
+      } catch {
         setItems([]);
+        setError(
+          'No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.'
+        );
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      setItems([]);
-      setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
-    } finally {
-      setLoading(false);
-    }
-  }, [estadoFilter, searchTerm, sortField, sortDir]);
+    },
+    [estadoFilter, searchTerm, sortField, sortDir]
+  );
 
   useEffect(() => {
     fetchKardex(1);
@@ -229,7 +255,6 @@ const KardexList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
-
         {/* PAGE HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -237,8 +262,12 @@ const KardexList = () => {
               <RefreshCw className="w-7 h-7 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Kardex</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestión de ajustes de unidades desde el WMS</p>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+                Kardex
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-0.5">
+                Gestión de ajustes de unidades desde el WMS
+              </p>
             </div>
           </div>
           {filtered.length > 0 && (
@@ -256,16 +285,36 @@ const KardexList = () => {
 
         {/* KPI CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <KpiMini icon={Clock} label="Pendientes" value={totalPendientes} color="bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300" />
-          <KpiMini icon={Loader2} label="En Proceso" value={totalEnProceso} color="bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300" />
-          <KpiMini icon={CheckCircle2} label="Cerradas" value={totalCerradas} color="bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-300" />
+          <KpiMini
+            icon={Clock}
+            label="Pendientes"
+            value={totalPendientes}
+            color="bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300"
+          />
+          <KpiMini
+            icon={Loader2}
+            label="En Proceso"
+            value={totalEnProceso}
+            color="bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300"
+          />
+          <KpiMini
+            icon={CheckCircle2}
+            label="Cerradas"
+            value={totalCerradas}
+            color="bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-300"
+          />
         </div>
 
         {/* ERROR BANNER */}
         {error && (
           <div className="mb-4 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center justify-between">
             <p className="text-sm text-amber-700 dark:text-amber-300">{error}</p>
-            <button onClick={fetchKardex} className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline">Reintentar</button>
+            <button
+              onClick={fetchKardex}
+              className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              Reintentar
+            </button>
           </div>
         )}
 
@@ -337,9 +386,13 @@ const KardexList = () => {
             <div className="w-16 h-16 bg-slate-100 dark:bg-centhrix-surface rounded-full flex items-center justify-center mx-auto mb-4">
               <ClipboardList className="w-8 h-8 text-slate-400" />
             </div>
-            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">No se encontraron kardex</h3>
+            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
+              No se encontraron kardex
+            </h3>
             <p className="text-slate-500 dark:text-slate-400">
-              {searchTerm ? 'Intenta ajustar el término de búsqueda' : 'No hay kardex pendientes de auditoría'}
+              {searchTerm
+                ? 'Intenta ajustar el término de búsqueda'
+                : 'No hay kardex pendientes de auditoría'}
             </p>
           </div>
         ) : viewMode === 'table' ? (
@@ -348,20 +401,52 @@ const KardexList = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50" onClick={() => handleSort('numero_operacion')}>
-                      <span className="inline-flex items-center gap-1">Documento <SortIcon field="numero_operacion" sortField={sortField} sortDir={sortDir} /></span>
+                    <th
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
+                      onClick={() => handleSort('numero_operacion')}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Documento{' '}
+                        <SortIcon
+                          field="numero_operacion"
+                          sortField={sortField}
+                          sortDir={sortDir}
+                        />
+                      </span>
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cliente</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">Doc. Externo</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50" onClick={() => handleSort('tipo')}>
-                      <span className="inline-flex items-center gap-1">Tipo Doc. <SortIcon field="tipo" sortField={sortField} sortDir={sortDir} /></span>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Cliente
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50" onClick={() => handleSort('fecha_operacion')}>
-                      <span className="inline-flex items-center gap-1">Fecha <SortIcon field="fecha_operacion" sortField={sortField} sortDir={sortDir} /></span>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">
+                      Doc. Externo
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Líneas</th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50" onClick={() => handleSort('estado')}>
-                      <span className="inline-flex items-center gap-1">Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} /></span>
+                    <th
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
+                      onClick={() => handleSort('tipo')}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Tipo Doc. <SortIcon field="tipo" sortField={sortField} sortDir={sortDir} />
+                      </span>
+                    </th>
+                    <th
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
+                      onClick={() => handleSort('fecha_operacion')}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Fecha{' '}
+                        <SortIcon field="fecha_operacion" sortField={sortField} sortDir={sortDir} />
+                      </span>
+                    </th>
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Líneas
+                    </th>
+                    <th
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
+                      onClick={() => handleSort('estado')}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16"></th>
                   </tr>
@@ -379,13 +464,18 @@ const KardexList = () => {
                             <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors truncate max-w-[220px]" title={item.motivo || item.documento_wms}>
+                            <p
+                              className="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors truncate max-w-[220px]"
+                              title={item.motivo || item.documento_wms}
+                            >
                               {item.motivo || item.documento_wms || item.documento}
                             </p>
                             <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
                               {item.documento}
                               {item.documento_wms && item.documento_wms !== item.motivo && (
-                                <span className="ml-1.5 text-purple-400">• {item.documento_wms}</span>
+                                <span className="ml-1.5 text-purple-400">
+                                  • {item.documento_wms}
+                                </span>
                               )}
                             </p>
                           </div>
@@ -394,14 +484,20 @@ const KardexList = () => {
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
                           <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                          <span className="text-sm text-slate-700 dark:text-slate-200 truncate max-w-[200px]">{item.cliente}</span>
+                          <span className="text-sm text-slate-700 dark:text-slate-200 truncate max-w-[200px]">
+                            {item.cliente}
+                          </span>
                         </div>
                       </td>
                       <td className="py-4 px-4 hidden md:table-cell">
                         {item.documento_wms && item.documento_wms !== item.motivo ? (
-                          <span className="text-sm text-slate-600 dark:text-slate-300 font-mono truncate max-w-[180px] block">{item.documento_wms}</span>
+                          <span className="text-sm text-slate-600 dark:text-slate-300 font-mono truncate max-w-[180px] block">
+                            {item.documento_wms}
+                          </span>
                         ) : (
-                          <span className="text-xs text-slate-400 dark:text-slate-500 italic">Solo motivo</span>
+                          <span className="text-xs text-slate-400 dark:text-slate-500 italic">
+                            Solo motivo
+                          </span>
                         )}
                       </td>
                       <td className="py-4 px-4 hidden md:table-cell">
@@ -457,7 +553,10 @@ const KardexList = () => {
                         <FileText className="w-4.5 h-4.5 text-purple-600 dark:text-purple-400" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors truncate max-w-[180px]" title={item.motivo || item.documento_wms}>
+                        <p
+                          className="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors truncate max-w-[180px]"
+                          title={item.motivo || item.documento_wms}
+                        >
                           {item.motivo || item.documento_wms || item.documento}
                         </p>
                         <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
@@ -477,7 +576,9 @@ const KardexList = () => {
                   <div className="px-4 py-3 space-y-2.5">
                     <div className="flex items-center gap-2">
                       <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                      <span className="text-sm text-slate-700 dark:text-slate-200 truncate">{item.cliente}</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-200 truncate">
+                        {item.cliente}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">

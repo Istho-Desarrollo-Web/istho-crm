@@ -15,11 +15,11 @@ export async function comprimirImagen(file, opciones = {}) {
   if (!file || !file.type.startsWith('image/')) return file;
 
   const config = {
-    maxSizeMB:        opciones.maxSizeMB        ?? 1,
-    maxWidthOrHeight: opciones.maxWidthOrHeight  ?? 1920,
-    initialQuality:   opciones.quality           ?? 0.8,
-    useWebWorker:     true,
-    fileType:         file.type,
+    maxSizeMB: opciones.maxSizeMB ?? 1,
+    maxWidthOrHeight: opciones.maxWidthOrHeight ?? 1920,
+    initialQuality: opciones.quality ?? 0.8,
+    useWebWorker: true,
+    fileType: file.type,
     // Preservar nombre original
     onProgress: opciones.onProgress,
   };

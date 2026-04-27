@@ -10,8 +10,22 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
-  ArrowLeft, Save, MapPin, Truck, User, FileText, DollarSign, Calendar,
-  Building2, Weight, Users, Hash, ChevronDown, ChevronUp, Wallet, Loader2
+  ArrowLeft,
+  Save,
+  MapPin,
+  Truck,
+  User,
+  FileText,
+  DollarSign,
+  Calendar,
+  Building2,
+  Weight,
+  Users,
+  Hash,
+  ChevronDown,
+  ChevronUp,
+  Wallet,
+  Loader2,
 } from 'lucide-react';
 import { viajesService, vehiculosService, cajasMenoresService } from '../../api/viajes.service';
 import clientesService from '../../api/clientes.service';
@@ -40,7 +54,16 @@ const parseThousands = (formatted) => {
 // SECTION COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
 
-const Section = ({ icon: Icon, title, color = 'blue', badge, collapsible, open, onToggle, children }) => {
+const Section = ({
+  icon: Icon,
+  title,
+  color = 'blue',
+  badge,
+  collapsible,
+  open,
+  onToggle,
+  children,
+}) => {
   const colors = {
     blue: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
     green: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400',
@@ -64,7 +87,11 @@ const Section = ({ icon: Icon, title, color = 'blue', badge, collapsible, open, 
           </div>
           <div className="flex items-center gap-2">
             {badge}
-            {open ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+            {open ? (
+              <ChevronUp className="w-5 h-5 text-slate-400" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-slate-400" />
+            )}
           </div>
         </button>
       ) : (
@@ -108,7 +135,8 @@ const FormField = ({ label, icon: Icon, required, error, children, className = '
 const inputCls = (hasIcon = false, hasError = false) =>
   `w-full bg-slate-50 dark:bg-centhrix-bg border rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 ${hasIcon ? 'pl-10' : ''} ${hasError ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'}`;
 
-const selectCls = (hasIcon = false, hasError = false) => `${inputCls(hasIcon, hasError)} appearance-none cursor-pointer`;
+const selectCls = (hasIcon = false, hasError = false) =>
+  `${inputCls(hasIcon, hasError)} appearance-none cursor-pointer`;
 
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
@@ -178,7 +206,10 @@ const ViajeForm = () => {
         if (vehRes.success) setVehiculos(vehRes.data || []);
         if (condRes.success) setConductores(condRes.data || []);
         if (cajasRes.success) setCajasMenores(Array.isArray(cajasRes.data) ? cajasRes.data : []);
-        if (clientesRes.success) setClientes(Array.isArray(clientesRes.data) ? clientesRes.data : clientesRes.data?.rows || []);
+        if (clientesRes.success)
+          setClientes(
+            Array.isArray(clientesRes.data) ? clientesRes.data : clientesRes.data?.rows || []
+          );
       } catch {
         showError('Error al cargar datos iniciales');
       }
@@ -204,7 +235,8 @@ const ViajeForm = () => {
               caja_menor_id: v.caja_menor_id || '',
               descripcion: v.descripcion || '',
               peso: v.peso ?? '',
-              valor_descargue: v.valor_descargue != null ? Math.round(parseFloat(v.valor_descargue)) : '',
+              valor_descargue:
+                v.valor_descargue != null ? Math.round(parseFloat(v.valor_descargue)) : '',
               num_personas: v.num_personas ?? '',
               no_factura: v.no_factura || '',
               facturado: v.facturado || false,
@@ -213,7 +245,10 @@ const ViajeForm = () => {
             if (v.peso || v.valor_descargue || v.num_personas) setShowAdicional(true);
             if (v.no_factura || v.facturado || v.valor_viaje) setShowFacturacion(true);
           }
-        } catch { showError('Error al cargar viaje'); navigate('/viajes/viajes'); }
+        } catch {
+          showError('Error al cargar viaje');
+          navigate('/viajes/viajes');
+        }
       }
       setLoading(false);
     };
@@ -227,7 +262,7 @@ const ViajeForm = () => {
   const handleVehiculoChange = (vehiculoId) => {
     setValue('vehiculo_id', vehiculoId);
     if (vehiculoId) {
-      const vehiculo = vehiculos.find(v => String(v.id) === String(vehiculoId));
+      const vehiculo = vehiculos.find((v) => String(v.id) === String(vehiculoId));
       if (vehiculo?.conductor_id) {
         setValue('conductor_id', vehiculo.conductor_id);
       }
@@ -235,7 +270,7 @@ const ViajeForm = () => {
   };
 
   const handleClienteChange = (clienteId) => {
-    const cliente = clientes.find(c => String(c.id) === String(clienteId));
+    const cliente = clientes.find((c) => String(c.id) === String(clienteId));
     if (cliente) {
       setValue('cliente_nombre', cliente.nombre || cliente.razon_social || '');
       setValue('documento_cliente', '');
@@ -289,7 +324,6 @@ const ViajeForm = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 pt-28 px-4 pb-32">
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="max-w-5xl mx-auto space-y-6">
-
           {/* ── BACK NAV ── */}
           <button
             type="button"
@@ -312,7 +346,9 @@ const ViajeForm = () => {
                     {isEditing ? `Editar Viaje #${id}` : 'Nuevo Viaje'}
                   </h1>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
-                    {isEditing ? 'Modifique los datos del viaje' : 'Complete la información para registrar un nuevo viaje'}
+                    {isEditing
+                      ? 'Modifique los datos del viaje'
+                      : 'Complete la información para registrar un nuevo viaje'}
                   </p>
                 </div>
               </div>
@@ -330,7 +366,11 @@ const ViajeForm = () => {
                   disabled={isSubmitting}
                   className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
-                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
                   {isEditing ? 'Guardar Cambios' : 'Crear Viaje'}
                 </button>
               </div>
@@ -355,11 +395,11 @@ const ViajeForm = () => {
                   render={({ field }) => (
                     <select
                       value={field.value}
-                      onChange={e => handleVehiculoChange(e.target.value)}
+                      onChange={(e) => handleVehiculoChange(e.target.value)}
                       className={selectCls(true, !!errors.vehiculo_id)}
                     >
                       <option value="">Seleccionar vehículo...</option>
-                      {vehiculos.map(v => (
+                      {vehiculos.map((v) => (
                         <option key={v.id} value={v.id}>
                           {v.placa} - {v.tipo_vehiculo}
                           {v.conductor?.nombre_completo ? ` (${v.conductor.nombre_completo})` : ''}
@@ -370,15 +410,22 @@ const ViajeForm = () => {
                 />
               </FormField>
 
-              <FormField label="Conductor" icon={User} required error={errors.conductor_id?.message}>
+              <FormField
+                label="Conductor"
+                icon={User}
+                required
+                error={errors.conductor_id?.message}
+              >
                 <select
                   {...register('conductor_id')}
                   disabled={esConductor}
                   className={`${selectCls(true, !!errors.conductor_id)} ${esConductor ? 'opacity-60' : ''}`}
                 >
                   <option value="">Seleccionar conductor...</option>
-                  {conductores.map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre_completo || c.username}</option>
+                  {conductores.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nombre_completo || c.username}
+                    </option>
                   ))}
                 </select>
               </FormField>
@@ -391,13 +438,17 @@ const ViajeForm = () => {
                   render={({ field }) => (
                     <select
                       value={field.value}
-                      onChange={e => { field.onChange(e.target.value); handleClienteChange(e.target.value); }}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                        handleClienteChange(e.target.value);
+                      }}
                       className={selectCls(true)}
                     >
                       <option value="">Seleccionar cliente...</option>
-                      {clientes.map(c => (
+                      {clientes.map((c) => (
                         <option key={c.id} value={c.id}>
-                          {c.nombre || c.razon_social} {c.documento || c.nit ? `- ${c.documento || c.nit}` : ''}
+                          {c.nombre || c.razon_social}{' '}
+                          {c.documento || c.nit ? `- ${c.documento || c.nit}` : ''}
                         </option>
                       ))}
                     </select>
@@ -405,13 +456,22 @@ const ViajeForm = () => {
                 />
               </FormField>
 
-              <FormField label="Documento del Cliente" icon={FileText} error={errors.documento_cliente?.message}>
+              <FormField
+                label="Documento del Cliente"
+                icon={FileText}
+                error={errors.documento_cliente?.message}
+              >
                 <input
                   {...register('documento_cliente')}
                   type="text"
                   placeholder="Remisión o documento"
                   maxLength={50}
-                  onChange={makeSanitizeHandler(setValue, 'documento_cliente', SANITIZE.ALFANUM_UPPER, 50)}
+                  onChange={makeSanitizeHandler(
+                    setValue,
+                    'documento_cliente',
+                    SANITIZE.ALFANUM_UPPER,
+                    50
+                  )}
                   className={inputCls(true, !!errors.documento_cliente)}
                 />
               </FormField>
@@ -443,7 +503,7 @@ const ViajeForm = () => {
                   className={selectCls(true, !!errors.caja_menor_id)}
                 >
                   <option value="">Sin caja menor</option>
-                  {cajasMenores.map(c => (
+                  {cajasMenores.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.numero} - {c.asignado?.nombre_completo || c.asignado?.username || ''}
                     </option>
@@ -451,7 +511,11 @@ const ViajeForm = () => {
                 </select>
               </FormField>
 
-              <FormField label="Descripción" className="md:col-span-2" error={errors.descripcion?.message}>
+              <FormField
+                label="Descripción"
+                className="md:col-span-2"
+                error={errors.descripcion?.message}
+              >
                 <textarea
                   {...register('descripcion')}
                   rows={3}
@@ -483,7 +547,11 @@ const ViajeForm = () => {
                 />
               </FormField>
 
-              <FormField label="Valor Descargue ($)" icon={DollarSign} error={errors.valor_descargue?.message}>
+              <FormField
+                label="Valor Descargue ($)"
+                icon={DollarSign}
+                error={errors.valor_descargue?.message}
+              >
                 <Controller
                   name="valor_descargue"
                   control={control}
@@ -491,7 +559,7 @@ const ViajeForm = () => {
                     <input
                       type="text"
                       value={formatThousands(field.value)}
-                      onChange={e => field.onChange(parseThousands(e.target.value))}
+                      onChange={(e) => field.onChange(parseThousands(e.target.value))}
                       placeholder="0"
                       className={inputCls(true, !!errors.valor_descargue)}
                     />
@@ -533,7 +601,11 @@ const ViajeForm = () => {
                 />
               </FormField>
 
-              <FormField label="Valor del Viaje ($)" icon={DollarSign} error={errors.valor_viaje?.message}>
+              <FormField
+                label="Valor del Viaje ($)"
+                icon={DollarSign}
+                error={errors.valor_viaje?.message}
+              >
                 <Controller
                   name="valor_viaje"
                   control={control}
@@ -541,7 +613,7 @@ const ViajeForm = () => {
                     <input
                       type="text"
                       value={formatThousands(field.value)}
-                      onChange={e => field.onChange(parseThousands(e.target.value))}
+                      onChange={(e) => field.onChange(parseThousands(e.target.value))}
                       placeholder="0"
                       className={inputCls(true, !!errors.valor_viaje)}
                     />
@@ -563,7 +635,6 @@ const ViajeForm = () => {
               </FormField>
             </div>
           </Section>
-
         </div>
       </form>
     </div>

@@ -44,7 +44,8 @@ const ReporteClientes = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { hasPermission } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
-  const canDownload = hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
+  const canDownload =
+    hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
   const [loading, setLoading] = useState(true);
   const [firstLoad, setFirstLoad] = useState(true);
   const [stats, setStats] = useState(null);
@@ -62,7 +63,9 @@ const ReporteClientes = () => {
   const handleFiltersChange = (newFilters) => {
     setFilters(newFilters);
     const params = new URLSearchParams();
-    Object.entries(newFilters).forEach(([k, v]) => { if (v) params.set(k, v); });
+    Object.entries(newFilters).forEach(([k, v]) => {
+      if (v) params.set(k, v);
+    });
     setSearchParams(params, { replace: true });
   };
 
@@ -126,8 +129,8 @@ const ReporteClientes = () => {
 
   // Datos para gráficos
   const estadoData = (() => {
-    const activos = clientes.filter(c => c.estado === 'activo').length;
-    const inactivos = clientes.filter(c => c.estado !== 'activo').length;
+    const activos = clientes.filter((c) => c.estado === 'activo').length;
+    const inactivos = clientes.filter((c) => c.estado !== 'activo').length;
     if (!activos && !inactivos) return [];
     return [
       { name: 'Activos', value: activos },
@@ -137,7 +140,7 @@ const ReporteClientes = () => {
 
   const tipoData = (() => {
     const counts = {};
-    clientes.forEach(c => {
+    clientes.forEach((c) => {
       const tipo = c.tipo_cliente || 'Sin tipo';
       counts[tipo] = (counts[tipo] || 0) + 1;
     });
@@ -181,18 +184,38 @@ const ReporteClientes = () => {
                 <Users className="w-6 h-6 text-violet-600 dark:text-violet-400" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Reporte de Clientes</h1>
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                  Reporte de Clientes
+                </h1>
                 <p className="text-slate-500 dark:text-slate-400">Estado y gestión de clientes</p>
               </div>
             </div>
           </div>
 
-          <AccionesDropdown acciones={[
-            { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
-            { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true), hidden: !canDownload },
-            { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel'), hidden: !canDownload },
-            { label: 'PDF', icon: Download, onClick: () => handleExport('pdf'), variant: 'primary', hidden: !canDownload },
-          ]} />
+          <AccionesDropdown
+            acciones={[
+              { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+              {
+                label: 'Enviar',
+                icon: Mail,
+                onClick: () => setEmailModal(true),
+                hidden: !canDownload,
+              },
+              {
+                label: 'Excel',
+                icon: FileSpreadsheet,
+                onClick: () => handleExport('excel'),
+                hidden: !canDownload,
+              },
+              {
+                label: 'PDF',
+                icon: Download,
+                onClick: () => handleExport('pdf'),
+                variant: 'primary',
+                hidden: !canDownload,
+              },
+            ]}
+          />
         </div>
 
         {error && (
@@ -202,7 +225,12 @@ const ReporteClientes = () => {
         )}
 
         {/* Filtros */}
-        <ReportFilters filters={filters} onChange={handleFiltersChange} loading={loading} showCliente={false} />
+        <ReportFilters
+          filters={filters}
+          onChange={handleFiltersChange}
+          loading={loading}
+          showCliente={false}
+        />
 
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -255,23 +283,38 @@ const ReporteClientes = () => {
         {/* Tabla de Clientes */}
         <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-6">
           <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700">
-            <h3 className="font-semibold text-slate-800 dark:text-slate-100">Últimos Clientes Registrados</h3>
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+              Últimos Clientes Registrados
+            </h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-slate-50 dark:bg-centhrix-bg/30">
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Cliente</th>
-                  <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">NIT/ID</th>
-                  <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Productos</th>
-                  <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Estado</th>
-                  <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Fecha Registro</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+                    Cliente
+                  </th>
+                  <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+                    NIT/ID
+                  </th>
+                  <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+                    Productos
+                  </th>
+                  <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+                    Estado
+                  </th>
+                  <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+                    Fecha Registro
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {clientesRecientes.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-sm text-slate-400 dark:text-slate-500">
+                    <td
+                      colSpan={5}
+                      className="py-8 text-center text-sm text-slate-400 dark:text-slate-500"
+                    >
                       No hay clientes registrados
                     </td>
                   </tr>
@@ -292,7 +335,9 @@ const ReporteClientes = () => {
                               {cliente.razon_social || cliente.nombre}
                             </p>
                             {cliente.codigo_cliente && (
-                              <p className="text-xs text-slate-400 dark:text-slate-500">{cliente.codigo_cliente}</p>
+                              <p className="text-xs text-slate-400 dark:text-slate-500">
+                                {cliente.codigo_cliente}
+                              </p>
                             )}
                           </div>
                         </div>
@@ -309,15 +354,18 @@ const ReporteClientes = () => {
                         </span>
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          cliente.estado === 'activo'
-                            ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'
-                            : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                        }`}>
-                          {cliente.estado === 'activo'
-                            ? <CheckCircle className="w-3 h-3" />
-                            : <XCircle className="w-3 h-3" />
-                          }
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            cliente.estado === 'activo'
+                              ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'
+                              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                          }`}
+                        >
+                          {cliente.estado === 'activo' ? (
+                            <CheckCircle className="w-3 h-3" />
+                          ) : (
+                            <XCircle className="w-3 h-3" />
+                          )}
                           {cliente.estado || 'activo'}
                         </span>
                       </td>
@@ -336,20 +384,27 @@ const ReporteClientes = () => {
 
         {/* Export Info */}
         {canDownload && (
-        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-3">Exportar Listado Completo</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-            Descarga el listado completo de clientes con sus contactos, estado y datos comerciales.
-          </p>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" icon={FileSpreadsheet} onClick={() => handleExport('excel')}>
-              Descargar Excel
-            </Button>
-            <Button variant="outline" icon={Download} onClick={() => handleExport('pdf')}>
-              Descargar PDF
-            </Button>
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-3">
+              Exportar Listado Completo
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+              Descarga el listado completo de clientes con sus contactos, estado y datos
+              comerciales.
+            </p>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                icon={FileSpreadsheet}
+                onClick={() => handleExport('excel')}
+              >
+                Descargar Excel
+              </Button>
+              <Button variant="outline" icon={Download} onClick={() => handleExport('pdf')}>
+                Descargar PDF
+              </Button>
+            </div>
           </div>
-        </div>
         )}
       </main>
 

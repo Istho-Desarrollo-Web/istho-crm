@@ -62,10 +62,15 @@ const crearLibro = () => {
   return wb;
 };
 
-const fechaHoy = () => new Date().toLocaleDateString('es-CO', {
-  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-  hour: '2-digit', minute: '2-digit',
-});
+const fechaHoy = () =>
+  new Date().toLocaleDateString('es-CO', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
 /**
  * Encabezado corporativo con logo
@@ -81,8 +86,14 @@ const agregarEncabezado = (ws, titulo, subtitulo, totalCols, wb) => {
   // Logo en columna A (tamaño fijo para no distorsionar)
   try {
     const logoId = wb.addImage({ filename: LOGO_PATH, extension: 'png' });
-    ws.addImage(logoId, { tl: { col: 0, row: 0 }, ext: { width: 120, height: 95 }, editAs: 'oneCell' });
-  } catch (_) { /* si el logo no está disponible, continúa sin él */ }
+    ws.addImage(logoId, {
+      tl: { col: 0, row: 0 },
+      ext: { width: 120, height: 95 },
+      editAs: 'oneCell',
+    });
+  } catch (_) {
+    /* si el logo no está disponible, continúa sin él */
+  }
 
   // Fila 1: Nombre empresa (desde col C)
   ws.mergeCells(`C1:${lastCol}1`);
@@ -174,7 +185,7 @@ const crearTablaExcel = (ws, filaInicio, nombre, cols, filas) => {
       showFirstColumn: false,
       showLastColumn: false,
     },
-    columns: cols.map(c => ({ name: c.header, filterButton: true })),
+    columns: cols.map((c) => ({ name: c.header, filterButton: true })),
     rows: filas,
   });
 
@@ -260,7 +271,7 @@ const exportarOperaciones = async (operaciones, filtros = {}) => {
     ];
 
     // Anchos
-    ws.columns = COLS.map(c => ({ width: c.width }));
+    ws.columns = COLS.map((c) => ({ width: c.width }));
 
     // Subtítulo con filtros
     let sub = null;
@@ -274,29 +285,34 @@ const exportarOperaciones = async (operaciones, filtros = {}) => {
 
     // Calcular estadísticas
     const totalOps = operaciones.length;
-    const ingresos = operaciones.filter(o => o.tipo === 'ingreso').length;
-    const salidas = operaciones.filter(o => o.tipo === 'salida').length;
-    const kardex = operaciones.filter(o => o.tipo === 'kardex').length;
-    const cerradas = operaciones.filter(o => o.estado === 'cerrado').length;
-    const pendientes = operaciones.filter(o => o.estado === 'pendiente').length;
+    const ingresos = operaciones.filter((o) => o.tipo === 'ingreso').length;
+    const salidas = operaciones.filter((o) => o.tipo === 'salida').length;
+    const kardex = operaciones.filter((o) => o.tipo === 'kardex').length;
+    const cerradas = operaciones.filter((o) => o.estado === 'cerrado').length;
+    const pendientes = operaciones.filter((o) => o.estado === 'pendiente').length;
     const totalUds = operaciones.reduce((s, o) => s + (parseFloat(o.total_unidades) || 0), 0);
     const totalRefs = operaciones.reduce((s, o) => s + (o.total_referencias || 0), 0);
     const totalAvg = operaciones.reduce((s, o) => s + (o.total_averias || 0), 0);
 
-    fila = agregarResumen(ws, fila, [
-      { label: 'Total Operaciones:', value: totalOps },
-      { label: 'Ingresos:', value: ingresos },
-      { label: 'Salidas:', value: salidas },
-      { label: 'Kardex:', value: kardex },
-      { label: 'Cerradas:', value: cerradas },
-      { label: 'Pendientes:', value: pendientes },
-      { label: 'Total Unidades:', value: totalUds, numFmt: '0' },
-      { label: 'Total Referencias:', value: totalRefs },
-      { label: 'Total Averías:', value: totalAvg },
-    ], COLS.length);
+    fila = agregarResumen(
+      ws,
+      fila,
+      [
+        { label: 'Total Operaciones:', value: totalOps },
+        { label: 'Ingresos:', value: ingresos },
+        { label: 'Salidas:', value: salidas },
+        { label: 'Kardex:', value: kardex },
+        { label: 'Cerradas:', value: cerradas },
+        { label: 'Pendientes:', value: pendientes },
+        { label: 'Total Unidades:', value: totalUds, numFmt: '0' },
+        { label: 'Total Referencias:', value: totalRefs },
+        { label: 'Total Averías:', value: totalAvg },
+      ],
+      COLS.length
+    );
 
     // Tabla Excel estructurada
-    const filasOp = operaciones.map(op => [
+    const filasOp = operaciones.map((op) => [
       op.numero_operacion,
       (op.tipo || '').toUpperCase(),
       op.documento_wms || '',
@@ -321,25 +337,43 @@ const exportarOperaciones = async (operaciones, filtros = {}) => {
         if (ci === 7) cell.numFmt = '0';
         if (ci === 1) {
           const tipo = (op.tipo || '').toLowerCase();
-          cell.font = { bold: true, color: { argb: tipo === 'ingreso' ? C.verde : tipo === 'kardex' ? C.naranja : C.azulMedio } };
+          cell.font = {
+            bold: true,
+            color: {
+              argb: tipo === 'ingreso' ? C.verde : tipo === 'kardex' ? C.naranja : C.azulMedio,
+            },
+          };
         }
         if (ci === 5) {
           const estado = (op.estado || '').toLowerCase();
-          if (estado === 'cerrado') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
-          else if (estado === 'anulado') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
-          else if (estado === 'en_proceso') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } }; cell.font = { bold: true, color: { argb: C.naranja } }; }
-          else if (estado === 'pendiente') { cell.font = { color: { argb: C.naranja } }; }
+          if (estado === 'cerrado') {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } };
+            cell.font = { bold: true, color: { argb: C.verde } };
+          } else if (estado === 'anulado') {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
+            cell.font = { bold: true, color: { argb: C.rojo } };
+          } else if (estado === 'en_proceso') {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } };
+            cell.font = { bold: true, color: { argb: C.naranja } };
+          } else if (estado === 'pendiente') {
+            cell.font = { color: { argb: C.naranja } };
+          }
         }
         if (ci === 8 && val > 0) cell.font = { bold: true, color: { argb: C.rojo } };
       });
     });
 
-    agregarFilaTotales(ws, dataFila + operaciones.length + 1, [
-      { col: 1, value: 'TOTALES' },
-      { col: 7, value: totalRefs },
-      { col: 8, value: totalUds, numFmt: '0' },
-      { col: 9, value: totalAvg },
-    ], COLS.length);
+    agregarFilaTotales(
+      ws,
+      dataFila + operaciones.length + 1,
+      [
+        { col: 1, value: 'TOTALES' },
+        { col: 7, value: totalRefs },
+        { col: 8, value: totalUds, numFmt: '0' },
+        { col: 9, value: totalAvg },
+      ],
+      COLS.length
+    );
 
     ws.views = [{ state: 'frozen', ySplit: fila }];
 
@@ -376,7 +410,7 @@ const exportarInventario = async (inventario, filtros = {}) => {
       { header: 'Estado', key: 'est', width: 13, align: 'center' },
     ];
 
-    ws.columns = COLS.map(c => ({ width: c.width }));
+    ws.columns = COLS.map((c) => ({ width: c.width }));
 
     // Subtítulo
     let sub = null;
@@ -394,10 +428,13 @@ const exportarInventario = async (inventario, filtros = {}) => {
 
     // Estadísticas
     const totalItems = inventario.length;
-    let totalUds = 0, totalValor = 0, stockBajo = 0, vencidos = 0;
+    let totalUds = 0,
+      totalValor = 0,
+      stockBajo = 0,
+      vencidos = 0;
     const hoy = new Date();
 
-    inventario.forEach(item => {
+    inventario.forEach((item) => {
       const cant = parseFloat(item.cantidad) || 0;
       const costo = parseFloat(item.costo_unitario) || 0;
       totalUds += cant;
@@ -413,19 +450,26 @@ const exportarInventario = async (inventario, filtros = {}) => {
     });
 
     // Clientes únicos
-    const clientesUnicos = [...new Set(inventario.map(i => i.cliente?.razon_social).filter(Boolean))];
+    const clientesUnicos = [
+      ...new Set(inventario.map((i) => i.cliente?.razon_social).filter(Boolean)),
+    ];
 
-    fila = agregarResumen(ws, fila, [
-      { label: 'Total Referencias (SKUs):', value: totalItems },
-      { label: 'Total Unidades:', value: totalUds, numFmt: '#,##0.000' },
-      { label: 'Valor Total Inventario:', value: totalValor, numFmt: '"$"#,##0.00' },
-      { label: 'Clientes:', value: clientesUnicos.length },
-      { label: 'Productos con Stock Bajo:', value: stockBajo },
-      { label: 'Productos Vencidos:', value: vencidos },
-    ], COLS.length);
+    fila = agregarResumen(
+      ws,
+      fila,
+      [
+        { label: 'Total Referencias (SKUs):', value: totalItems },
+        { label: 'Total Unidades:', value: totalUds, numFmt: '#,##0.000' },
+        { label: 'Valor Total Inventario:', value: totalValor, numFmt: '"$"#,##0.00' },
+        { label: 'Clientes:', value: clientesUnicos.length },
+        { label: 'Productos con Stock Bajo:', value: stockBajo },
+        { label: 'Productos Vencidos:', value: vencidos },
+      ],
+      COLS.length
+    );
 
     // Tabla Excel estructurada
-    const filasInv = inventario.map(item => {
+    const filasInv = inventario.map((item) => {
       const cant = parseFloat(item.cantidad) || 0;
       const costoUnit = parseFloat(item.costo_unitario) || 0;
       return [
@@ -455,26 +499,44 @@ const exportarInventario = async (inventario, filtros = {}) => {
         if (ci === 6 && val) cell.numFmt = 'DD/MM/YYYY';
         if (ci === 3) {
           const minimo = parseFloat(item.stock_minimo) || 0;
-          if (minimo > 0 && cant <= minimo) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
+          if (minimo > 0 && cant <= minimo) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
+            cell.font = { bold: true, color: { argb: C.rojo } };
+          }
         }
         if (ci === 6 && val) {
           const dias = Math.ceil((new Date(val) - hoy) / (1000 * 60 * 60 * 24));
-          if (dias < 0) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
-          else if (dias <= 30) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } }; cell.font = { color: { argb: C.naranja } }; }
+          if (dias < 0) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
+            cell.font = { bold: true, color: { argb: C.rojo } };
+          } else if (dias <= 30) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } };
+            cell.font = { color: { argb: C.naranja } };
+          }
         }
         if (ci === 9) {
           const est = (item.estado || '').toLowerCase();
-          if (est === 'agotado') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
-          else if (est === 'bajo_stock') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } }; cell.font = { color: { argb: C.naranja } }; }
+          if (est === 'agotado') {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
+            cell.font = { bold: true, color: { argb: C.rojo } };
+          } else if (est === 'bajo_stock') {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } };
+            cell.font = { color: { argb: C.naranja } };
+          }
         }
       });
     });
 
-    agregarFilaTotales(ws, dataFila + inventario.length + 1, [
-      { col: 1, value: 'TOTALES' },
-      { col: 4, value: totalUds, numFmt: '#,##0.000' },
-      { col: 9, value: totalValor, numFmt: '"$"#,##0.00' },
-    ], COLS.length);
+    agregarFilaTotales(
+      ws,
+      dataFila + inventario.length + 1,
+      [
+        { col: 1, value: 'TOTALES' },
+        { col: 4, value: totalUds, numFmt: '#,##0.000' },
+        { col: 9, value: totalValor, numFmt: '"$"#,##0.00' },
+      ],
+      COLS.length
+    );
 
     ws.views = [{ state: 'frozen', ySplit: fila }];
 
@@ -514,18 +576,18 @@ const exportarClientes = async (clientes) => {
       { header: 'Email Contacto', key: 'email_contacto', width: 26, align: 'left' },
     ];
 
-    ws.columns = COLS.map(c => ({ width: c.width }));
+    ws.columns = COLS.map((c) => ({ width: c.width }));
 
     let fila = agregarEncabezado(ws, 'DIRECTORIO DE CLIENTES', null, COLS.length, wb);
 
     // Estadísticas
     const total = clientes.length;
-    const activos = clientes.filter(c => c.estado === 'activo').length;
+    const activos = clientes.filter((c) => c.estado === 'activo').length;
     const inactivos = total - activos;
 
     // Contar por tipo
     const porTipo = {};
-    clientes.forEach(c => {
+    clientes.forEach((c) => {
       const tipo = c.tipo_cliente || 'Sin tipo';
       porTipo[tipo] = (porTipo[tipo] || 0) + 1;
     });
@@ -546,9 +608,11 @@ const exportarClientes = async (clientes) => {
     fila = agregarResumen(ws, fila, resumenItems, COLS.length);
 
     // Tabla Excel estructurada
-    const filasCli = clientes.map(cliente => {
-      const cp = cliente.contactos?.find(c => c.es_principal) || cliente.contactos?.[0];
-      const totalProductos = parseInt(cliente.getDataValue?.('total_productos') || cliente.total_productos || 0);
+    const filasCli = clientes.map((cliente) => {
+      const cp = cliente.contactos?.find((c) => c.es_principal) || cliente.contactos?.[0];
+      const totalProductos = parseInt(
+        cliente.getDataValue?.('total_productos') || cliente.total_productos || 0
+      );
       return [
         cliente.codigo_cliente || '',
         cliente.razon_social || '',
@@ -575,8 +639,13 @@ const exportarClientes = async (clientes) => {
         estiloCelda(cell, ci, idx, { align: COLS[ci].align });
         if (ci === 9) {
           const est = (cliente.estado || '').toLowerCase();
-          if (est === 'activo') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
-          else { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
+          if (est === 'activo') {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } };
+            cell.font = { bold: true, color: { argb: C.verde } };
+          } else {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
+            cell.font = { bold: true, color: { argb: C.rojo } };
+          }
         }
       });
     });
@@ -604,8 +673,14 @@ const exportarDetalleOperacion = async (operacion) => {
     });
 
     ws.columns = [
-      { width: 16 }, { width: 18 }, { width: 36 },
-      { width: 13 }, { width: 10 }, { width: 14 }, { width: 14 }, { width: 12 },
+      { width: 16 },
+      { width: 18 },
+      { width: 36 },
+      { width: 13 },
+      { width: 10 },
+      { width: 14 },
+      { width: 14 },
+      { width: 12 },
     ];
 
     // Encabezado con logo
@@ -641,13 +716,28 @@ const exportarDetalleOperacion = async (operacion) => {
     fila++;
 
     const info = [
-      ['N° Operación:', operacion.numero_operacion, 'Documento WMS:', operacion.documento_wms || 'N/A'],
-      ['Tipo:', (operacion.tipo || '').toUpperCase(), 'Estado:', (operacion.estado || '').toUpperCase()],
-      ['Cliente:', operacion.cliente?.razon_social || 'N/A', 'Fecha:', operacion.fecha_operacion || 'N/A'],
+      [
+        'N° Operación:',
+        operacion.numero_operacion,
+        'Documento WMS:',
+        operacion.documento_wms || 'N/A',
+      ],
+      [
+        'Tipo:',
+        (operacion.tipo || '').toUpperCase(),
+        'Estado:',
+        (operacion.estado || '').toUpperCase(),
+      ],
+      [
+        'Cliente:',
+        operacion.cliente?.razon_social || 'N/A',
+        'Fecha:',
+        operacion.fecha_operacion || 'N/A',
+      ],
       ['Origen:', operacion.origen || 'N/A', 'Destino:', operacion.destino || 'N/A'],
     ];
 
-    info.forEach(row => {
+    info.forEach((row) => {
       ws.getCell(`A${fila}`).value = row[0];
       ws.getCell(`A${fila}`).font = { bold: true, size: 9, color: { argb: C.textoGris } };
       ws.getCell(`B${fila}`).value = row[1];
@@ -670,11 +760,21 @@ const exportarDetalleOperacion = async (operacion) => {
     fila++;
 
     const transporte = [
-      ['Placa:', operacion.vehiculo_placa || 'N/A', 'Conductor:', operacion.conductor_nombre || 'N/A'],
-      ['Cédula:', operacion.conductor_cedula || 'N/A', 'Teléfono:', operacion.conductor_telefono || 'N/A'],
+      [
+        'Placa:',
+        operacion.vehiculo_placa || 'N/A',
+        'Conductor:',
+        operacion.conductor_nombre || 'N/A',
+      ],
+      [
+        'Cédula:',
+        operacion.conductor_cedula || 'N/A',
+        'Teléfono:',
+        operacion.conductor_telefono || 'N/A',
+      ],
     ];
 
-    transporte.forEach(row => {
+    transporte.forEach((row) => {
       ws.getCell(`A${fila}`).value = row[0];
       ws.getCell(`A${fila}`).font = { bold: true, size: 9, color: { argb: C.textoGris } };
       ws.getCell(`B${fila}`).value = row[1];
@@ -700,7 +800,8 @@ const exportarDetalleOperacion = async (operacion) => {
     ];
 
     const detalles = operacion.detalles || [];
-    let sumCant = 0, sumAvg = 0;
+    let sumCant = 0,
+      sumAvg = 0;
 
     // Tabla Excel estructurada
     const filasDetalle = detalles.map((det, idx) => {
@@ -708,7 +809,16 @@ const exportarDetalleOperacion = async (operacion) => {
       const avg = parseFloat(det.cantidad_averia) || 0;
       sumCant += cant;
       sumAvg += avg;
-      return [idx + 1, det.sku || '', det.producto || '', cant, det.unidad_medida || 'UND', det.lote || '', det.fecha_vencimiento || '', avg];
+      return [
+        idx + 1,
+        det.sku || '',
+        det.producto || '',
+        cant,
+        det.unidad_medida || 'UND',
+        det.lote || '',
+        det.fecha_vencimiento || '',
+        avg,
+      ];
     });
 
     const dataFila = crearTablaExcel(ws, fila, 'DetalleOperacion', detCols, filasDetalle);
@@ -724,12 +834,17 @@ const exportarDetalleOperacion = async (operacion) => {
       });
     });
 
-    agregarFilaTotales(ws, dataFila + detalles.length + 1, [
-      { col: 1, value: 'TOTALES' },
-      { col: 3, value: `${detalles.length} referencias` },
-      { col: 4, value: sumCant, numFmt: '#,##0.000' },
-      { col: 8, value: sumAvg },
-    ], 8);
+    agregarFilaTotales(
+      ws,
+      dataFila + detalles.length + 1,
+      [
+        { col: 1, value: 'TOTALES' },
+        { col: 3, value: `${detalles.length} referencias` },
+        { col: 4, value: sumCant, numFmt: '#,##0.000' },
+        { col: 8, value: sumAvg },
+      ],
+      8
+    );
 
     const buffer = await wb.xlsx.writeBuffer();
     logger.info('Excel detalle operación generado:', { operacion: operacion.numero_operacion });
@@ -767,7 +882,7 @@ const exportarViajes = async (viajes, filtros = {}) => {
     { header: 'Estado', key: 'estado', width: 12, align: 'center' },
   ];
 
-  ws.columns = COLS.map(c => ({ width: c.width }));
+  ws.columns = COLS.map((c) => ({ width: c.width }));
 
   let sub = null;
   if (filtros.fecha_desde || filtros.fecha_hasta) {
@@ -777,29 +892,42 @@ const exportarViajes = async (viajes, filtros = {}) => {
   let fila = agregarEncabezado(ws, 'REPORTE DE VIAJES', sub, COLS.length, wb);
 
   const total = viajes.length;
-  const activos = viajes.filter(v => v.estado === 'activo').length;
-  const completados = viajes.filter(v => v.estado === 'completado').length;
+  const activos = viajes.filter((v) => v.estado === 'activo').length;
+  const completados = viajes.filter((v) => v.estado === 'completado').length;
   const totalValor = viajes.reduce((s, v) => s + (parseFloat(v.valor_viaje) || 0), 0);
   const totalPeso = viajes.reduce((s, v) => s + (parseFloat(v.peso) || 0), 0);
-  const facturados = viajes.filter(v => v.facturado).length;
+  const facturados = viajes.filter((v) => v.facturado).length;
 
-  fila = agregarResumen(ws, fila, [
-    { label: 'Total Viajes:', value: total },
-    { label: 'Activos:', value: activos },
-    { label: 'Completados:', value: completados },
-    { label: 'Facturados:', value: facturados },
-    { label: 'Valor Total:', value: totalValor, numFmt: '$#,##0' },
-    { label: 'Peso Total:', value: totalPeso, numFmt: '#,##0' },
-  ], COLS.length);
+  fila = agregarResumen(
+    ws,
+    fila,
+    [
+      { label: 'Total Viajes:', value: total },
+      { label: 'Activos:', value: activos },
+      { label: 'Completados:', value: completados },
+      { label: 'Facturados:', value: facturados },
+      { label: 'Valor Total:', value: totalValor, numFmt: '$#,##0' },
+      { label: 'Peso Total:', value: totalPeso, numFmt: '#,##0' },
+    ],
+    COLS.length
+  );
 
   // Tabla Excel estructurada
-  const filasViajes = viajes.map(v => [
-    v.numero, v.fecha ? new Date(v.fecha) : null, v.origen, v.destino,
-    v.cliente_nombre || '', v.documento_cliente || '',
-    v.vehiculo?.placa || '', v.conductor?.nombre_completo || '',
-    parseFloat(v.peso) || 0, parseFloat(v.valor_viaje) || 0,
-    v.facturado ? 'Sí' : 'No', v.no_factura || '',
-    v.cajaMenor?.numero || '', (v.estado || '').toUpperCase(),
+  const filasViajes = viajes.map((v) => [
+    v.numero,
+    v.fecha ? new Date(v.fecha) : null,
+    v.origen,
+    v.destino,
+    v.cliente_nombre || '',
+    v.documento_cliente || '',
+    v.vehiculo?.placa || '',
+    v.conductor?.nombre_completo || '',
+    parseFloat(v.peso) || 0,
+    parseFloat(v.valor_viaje) || 0,
+    v.facturado ? 'Sí' : 'No',
+    v.no_factura || '',
+    v.cajaMenor?.numero || '',
+    (v.estado || '').toUpperCase(),
   ]);
 
   const dataFila = crearTablaExcel(ws, fila, 'Viajes', COLS, filasViajes);
@@ -814,18 +942,29 @@ const exportarViajes = async (viajes, filtros = {}) => {
       if (ci === 8) cell.numFmt = '#,##0';
       if (ci === 13) {
         const est = (v.estado || '').toLowerCase();
-        if (est === 'completado') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
-        else if (est === 'anulado') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
-        else if (est === 'activo') { cell.font = { color: { argb: C.naranja } }; }
+        if (est === 'completado') {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } };
+          cell.font = { bold: true, color: { argb: C.verde } };
+        } else if (est === 'anulado') {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
+          cell.font = { bold: true, color: { argb: C.rojo } };
+        } else if (est === 'activo') {
+          cell.font = { color: { argb: C.naranja } };
+        }
       }
     });
   });
 
-  agregarFilaTotales(ws, dataFila + viajes.length + 1, [
-    { col: 1, value: 'TOTALES' },
-    { col: 9, value: totalPeso, numFmt: '#,##0' },
-    { col: 10, value: totalValor, numFmt: '$#,##0' },
-  ], COLS.length);
+  agregarFilaTotales(
+    ws,
+    dataFila + viajes.length + 1,
+    [
+      { col: 1, value: 'TOTALES' },
+      { col: 9, value: totalPeso, numFmt: '#,##0' },
+      { col: 10, value: totalValor, numFmt: '$#,##0' },
+    ],
+    COLS.length
+  );
 
   ws.views = [{ state: 'frozen', ySplit: fila }];
   return wb.xlsx.writeBuffer();
@@ -855,32 +994,41 @@ const exportarCajasMenores = async (cajas) => {
     { header: 'Creado Por', key: 'creador', width: 22, align: 'left' },
   ];
 
-  ws.columns = COLS.map(c => ({ width: c.width }));
+  ws.columns = COLS.map((c) => ({ width: c.width }));
 
   let fila = agregarEncabezado(ws, 'REPORTE DE CAJAS MENORES', null, COLS.length, wb);
 
-  const abiertas = cajas.filter(c => c.estado === 'abierta').length;
-  const cerradas = cajas.filter(c => c.estado === 'cerrada').length;
+  const abiertas = cajas.filter((c) => c.estado === 'abierta').length;
+  const cerradas = cajas.filter((c) => c.estado === 'cerrada').length;
   const totalSaldoInicial = cajas.reduce((s, c) => s + (parseFloat(c.saldo_inicial) || 0), 0);
   const totalEgresos = cajas.reduce((s, c) => s + (parseFloat(c.total_egresos) || 0), 0);
   const totalIngresos = cajas.reduce((s, c) => s + (parseFloat(c.total_ingresos) || 0), 0);
   const totalSaldoActual = cajas.reduce((s, c) => s + (parseFloat(c.saldo_actual) || 0), 0);
 
-  fila = agregarResumen(ws, fila, [
-    { label: 'Total Cajas:', value: cajas.length },
-    { label: 'Abiertas:', value: abiertas },
-    { label: 'Cerradas:', value: cerradas },
-    { label: 'Saldo Inicial Total:', value: totalSaldoInicial, numFmt: '$#,##0' },
-    { label: 'Total Ingresos:', value: totalIngresos, numFmt: '$#,##0' },
-    { label: 'Total Egresos:', value: totalEgresos, numFmt: '$#,##0' },
-    { label: 'Saldo Actual Total:', value: totalSaldoActual, numFmt: '$#,##0' },
-  ], COLS.length);
+  fila = agregarResumen(
+    ws,
+    fila,
+    [
+      { label: 'Total Cajas:', value: cajas.length },
+      { label: 'Abiertas:', value: abiertas },
+      { label: 'Cerradas:', value: cerradas },
+      { label: 'Saldo Inicial Total:', value: totalSaldoInicial, numFmt: '$#,##0' },
+      { label: 'Total Ingresos:', value: totalIngresos, numFmt: '$#,##0' },
+      { label: 'Total Egresos:', value: totalEgresos, numFmt: '$#,##0' },
+      { label: 'Saldo Actual Total:', value: totalSaldoActual, numFmt: '$#,##0' },
+    ],
+    COLS.length
+  );
 
   // Tabla Excel estructurada
-  const filasCajas = cajas.map(c => [
-    c.numero, c.asignado?.nombre_completo || c.asignado_nombre || '', (c.estado || '').toUpperCase(),
-    parseFloat(c.saldo_inicial) || 0, parseFloat(c.saldo_trasladado) || 0,
-    parseFloat(c.total_ingresos) || 0, parseFloat(c.total_egresos) || 0,
+  const filasCajas = cajas.map((c) => [
+    c.numero,
+    c.asignado?.nombre_completo || c.asignado_nombre || '',
+    (c.estado || '').toUpperCase(),
+    parseFloat(c.saldo_inicial) || 0,
+    parseFloat(c.saldo_trasladado) || 0,
+    parseFloat(c.total_ingresos) || 0,
+    parseFloat(c.total_egresos) || 0,
     parseFloat(c.saldo_actual) || 0,
     c.fecha_apertura ? new Date(c.fecha_apertura) : null,
     c.fecha_cierre ? new Date(c.fecha_cierre) : null,
@@ -898,20 +1046,31 @@ const exportarCajasMenores = async (cajas) => {
       if ((ci === 8 || ci === 9) && val) cell.numFmt = 'DD/MM/YYYY';
       if (ci === 2) {
         const est = (c.estado || '').toLowerCase();
-        if (est === 'abierta') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
-        else if (est === 'cerrada') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.grisClaro } }; cell.font = { color: { argb: C.textoGris } }; }
+        if (est === 'abierta') {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } };
+          cell.font = { bold: true, color: { argb: C.verde } };
+        } else if (est === 'cerrada') {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.grisClaro } };
+          cell.font = { color: { argb: C.textoGris } };
+        }
       }
-      if (ci === 7 && (parseFloat(c.saldo_actual) || 0) < 0) cell.font = { bold: true, color: { argb: C.rojo } };
+      if (ci === 7 && (parseFloat(c.saldo_actual) || 0) < 0)
+        cell.font = { bold: true, color: { argb: C.rojo } };
     });
   });
 
-  agregarFilaTotales(ws, dataFila + cajas.length + 1, [
-    { col: 1, value: 'TOTALES' },
-    { col: 4, value: totalSaldoInicial, numFmt: '$#,##0' },
-    { col: 6, value: totalIngresos, numFmt: '$#,##0' },
-    { col: 7, value: totalEgresos, numFmt: '$#,##0' },
-    { col: 8, value: totalSaldoActual, numFmt: '$#,##0' },
-  ], COLS.length);
+  agregarFilaTotales(
+    ws,
+    dataFila + cajas.length + 1,
+    [
+      { col: 1, value: 'TOTALES' },
+      { col: 4, value: totalSaldoInicial, numFmt: '$#,##0' },
+      { col: 6, value: totalIngresos, numFmt: '$#,##0' },
+      { col: 7, value: totalEgresos, numFmt: '$#,##0' },
+      { col: 8, value: totalSaldoActual, numFmt: '$#,##0' },
+    ],
+    COLS.length
+  );
 
   ws.views = [{ state: 'frozen', ySplit: fila }];
   return wb.xlsx.writeBuffer();
@@ -943,36 +1102,45 @@ const exportarMovimientos = async (movimientos) => {
     { header: 'Fecha Creación', key: 'fecha', width: 14, align: 'center' },
   ];
 
-  ws.columns = COLS.map(c => ({ width: c.width }));
+  ws.columns = COLS.map((c) => ({ width: c.width }));
 
   let fila = agregarEncabezado(ws, 'REPORTE DE MOVIMIENTOS DE CAJA MENOR', null, COLS.length, wb);
 
   const totalMov = movimientos.length;
-  const ingresos = movimientos.filter(m => m.tipo_movimiento === 'ingreso');
-  const egresos = movimientos.filter(m => m.tipo_movimiento === 'egreso');
-  const aprobados = movimientos.filter(m => m.aprobado);
-  const pendientes = movimientos.filter(m => !m.aprobado && !m.rechazado);
+  const ingresos = movimientos.filter((m) => m.tipo_movimiento === 'ingreso');
+  const egresos = movimientos.filter((m) => m.tipo_movimiento === 'egreso');
+  const aprobados = movimientos.filter((m) => m.aprobado);
+  const pendientes = movimientos.filter((m) => !m.aprobado && !m.rechazado);
   const totalValor = movimientos.reduce((s, m) => s + (parseFloat(m.valor) || 0), 0);
   const totalAprobado = aprobados.reduce((s, m) => s + (parseFloat(m.valor_aprobado) || 0), 0);
 
-  fila = agregarResumen(ws, fila, [
-    { label: 'Total Movimientos:', value: totalMov },
-    { label: 'Ingresos:', value: ingresos.length },
-    { label: 'Egresos:', value: egresos.length },
-    { label: 'Aprobados:', value: aprobados.length },
-    { label: 'Pendientes:', value: pendientes.length },
-    { label: 'Valor Total:', value: totalValor, numFmt: '$#,##0' },
-    { label: 'Total Aprobado:', value: totalAprobado, numFmt: '$#,##0' },
-  ], COLS.length);
+  fila = agregarResumen(
+    ws,
+    fila,
+    [
+      { label: 'Total Movimientos:', value: totalMov },
+      { label: 'Ingresos:', value: ingresos.length },
+      { label: 'Egresos:', value: egresos.length },
+      { label: 'Aprobados:', value: aprobados.length },
+      { label: 'Pendientes:', value: pendientes.length },
+      { label: 'Valor Total:', value: totalValor, numFmt: '$#,##0' },
+      { label: 'Total Aprobado:', value: totalAprobado, numFmt: '$#,##0' },
+    ],
+    COLS.length
+  );
 
   // Tabla Excel estructurada
-  const filasMov = movimientos.map(m => [
-    m.consecutivo, m.cajaMenor?.numero || '', m.usuario?.nombre_completo || '',
-    (m.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso'),
-    m.concepto, m.descripcion || '',
+  const filasMov = movimientos.map((m) => [
+    m.consecutivo,
+    m.cajaMenor?.numero || '',
+    m.usuario?.nombre_completo || '',
+    m.tipo_movimiento === 'ingreso' ? 'Ingreso' : 'Egreso',
+    m.concepto,
+    m.descripcion || '',
     parseFloat(m.valor) || 0,
     m.aprobado ? 'APROBADO' : m.rechazado ? 'RECHAZADO' : 'PENDIENTE',
-    parseFloat(m.valor_aprobado) || 0, m.aprobador?.nombre_completo || '',
+    parseFloat(m.valor_aprobado) || 0,
+    m.aprobador?.nombre_completo || '',
     m.fecha_aprobacion ? new Date(m.fecha_aprobacion) : null,
     m.viaje ? `#${m.viaje.numero} - ${m.viaje.destino}` : 'Directo',
     m.created_at ? new Date(m.created_at) : null,
@@ -987,20 +1155,35 @@ const exportarMovimientos = async (movimientos) => {
       estiloCelda(cell, ci, idx, { align: COLS[ci].align });
       if (ci === 6 || ci === 8) cell.numFmt = '$#,##0';
       if ((ci === 10 || ci === 12) && val) cell.numFmt = 'DD/MM/YYYY';
-      if (ci === 3) cell.font = { bold: true, color: { argb: m.tipo_movimiento === 'ingreso' ? C.verde : C.rojo } };
+      if (ci === 3)
+        cell.font = {
+          bold: true,
+          color: { argb: m.tipo_movimiento === 'ingreso' ? C.verde : C.rojo },
+        };
       if (ci === 7) {
-        if (m.aprobado) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
-        else if (m.rechazado) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
-        else { cell.font = { color: { argb: C.naranja } }; }
+        if (m.aprobado) {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } };
+          cell.font = { bold: true, color: { argb: C.verde } };
+        } else if (m.rechazado) {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
+          cell.font = { bold: true, color: { argb: C.rojo } };
+        } else {
+          cell.font = { color: { argb: C.naranja } };
+        }
       }
     });
   });
 
-  agregarFilaTotales(ws, dataFila + movimientos.length + 1, [
-    { col: 1, value: 'TOTALES' },
-    { col: 7, value: totalValor, numFmt: '$#,##0' },
-    { col: 9, value: totalAprobado, numFmt: '$#,##0' },
-  ], COLS.length);
+  agregarFilaTotales(
+    ws,
+    dataFila + movimientos.length + 1,
+    [
+      { col: 1, value: 'TOTALES' },
+      { col: 7, value: totalValor, numFmt: '$#,##0' },
+      { col: 9, value: totalAprobado, numFmt: '$#,##0' },
+    ],
+    COLS.length
+  );
 
   ws.views = [{ state: 'frozen', ySplit: fila }];
   return wb.xlsx.writeBuffer();
@@ -1031,33 +1214,49 @@ const exportarVehiculos = async (vehiculos) => {
     { header: 'Estado', key: 'estado', width: 14, align: 'center' },
   ];
 
-  ws.columns = COLS.map(c => ({ width: c.width }));
+  ws.columns = COLS.map((c) => ({ width: c.width }));
 
   let fila = agregarEncabezado(ws, 'REPORTE DE VEHÍCULOS', null, COLS.length, wb);
 
-  const activos = vehiculos.filter(v => v.estado === 'activo').length;
-  const mantenimiento = vehiculos.filter(v => v.estado === 'mantenimiento').length;
-  const inactivos = vehiculos.filter(v => v.estado === 'inactivo').length;
+  const activos = vehiculos.filter((v) => v.estado === 'activo').length;
+  const mantenimiento = vehiculos.filter((v) => v.estado === 'mantenimiento').length;
+  const inactivos = vehiculos.filter((v) => v.estado === 'inactivo').length;
   const hoy = new Date();
-  const soatVencidos = vehiculos.filter(v => v.vencimiento_soat && new Date(v.vencimiento_soat) < hoy).length;
-  const tecnoVencidos = vehiculos.filter(v => v.vencimiento_tecnicomecanica && new Date(v.vencimiento_tecnicomecanica) < hoy).length;
+  const soatVencidos = vehiculos.filter(
+    (v) => v.vencimiento_soat && new Date(v.vencimiento_soat) < hoy
+  ).length;
+  const tecnoVencidos = vehiculos.filter(
+    (v) => v.vencimiento_tecnicomecanica && new Date(v.vencimiento_tecnicomecanica) < hoy
+  ).length;
 
-  fila = agregarResumen(ws, fila, [
-    { label: 'Total Vehículos:', value: vehiculos.length },
-    { label: 'Activos:', value: activos },
-    { label: 'En Mantenimiento:', value: mantenimiento },
-    { label: 'Inactivos:', value: inactivos },
-    { label: 'SOAT Vencidos:', value: soatVencidos },
-    { label: 'Tecnomecánica Vencidos:', value: tecnoVencidos },
-  ], COLS.length);
+  fila = agregarResumen(
+    ws,
+    fila,
+    [
+      { label: 'Total Vehículos:', value: vehiculos.length },
+      { label: 'Activos:', value: activos },
+      { label: 'En Mantenimiento:', value: mantenimiento },
+      { label: 'Inactivos:', value: inactivos },
+      { label: 'SOAT Vencidos:', value: soatVencidos },
+      { label: 'Tecnomecánica Vencidos:', value: tecnoVencidos },
+    ],
+    COLS.length
+  );
 
   // Tabla Excel estructurada
-  const filasVehiculos = vehiculos.map(v => [
-    v.placa, v.tipo_vehiculo, v.marca || '', v.modelo || '', v.color || '',
-    parseFloat(v.capacidad_ton) || 0, v.conductor?.nombre_completo || '',
+  const filasVehiculos = vehiculos.map((v) => [
+    v.placa,
+    v.tipo_vehiculo,
+    v.marca || '',
+    v.modelo || '',
+    v.color || '',
+    parseFloat(v.capacidad_ton) || 0,
+    v.conductor?.nombre_completo || '',
     v.vencimiento_soat ? new Date(v.vencimiento_soat) : null,
     v.vencimiento_tecnicomecanica ? new Date(v.vencimiento_tecnicomecanica) : null,
-    v.numero_motor || '', v.numero_chasis || '', (v.estado || '').toUpperCase(),
+    v.numero_motor || '',
+    v.numero_chasis || '',
+    (v.estado || '').toUpperCase(),
   ]);
 
   const dataFila = crearTablaExcel(ws, fila, 'Vehiculos', COLS, filasVehiculos);
@@ -1070,13 +1269,23 @@ const exportarVehiculos = async (vehiculos) => {
       if (ci === 5) cell.numFmt = '#,##0.00';
       if ((ci === 7 || ci === 8) && val) {
         cell.numFmt = 'DD/MM/YYYY';
-        if (val < hoy) { cell.font = { bold: true, color: { argb: C.rojo } }; cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; }
+        if (val < hoy) {
+          cell.font = { bold: true, color: { argb: C.rojo } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
+        }
       }
       if (ci === 11) {
         const est = (v.estado || '').toLowerCase();
-        if (est === 'activo') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } }; cell.font = { bold: true, color: { argb: C.verde } }; }
-        else if (est === 'mantenimiento') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } }; cell.font = { bold: true, color: { argb: C.naranja } }; }
-        else if (est === 'inactivo') { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
+        if (est === 'activo') {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.verdeClaro } };
+          cell.font = { bold: true, color: { argb: C.verde } };
+        } else if (est === 'mantenimiento') {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } };
+          cell.font = { bold: true, color: { argb: C.naranja } };
+        } else if (est === 'inactivo') {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
+          cell.font = { bold: true, color: { argb: C.rojo } };
+        }
       }
     });
   });
@@ -1111,7 +1320,7 @@ const exportarInventarioUbicacion = async (cajas, filtros = {}) => {
       { header: 'Ubicación', key: 'ubic', width: 14, align: 'center' },
     ];
 
-    ws.columns = COLS.map(c => ({ width: c.width }));
+    ws.columns = COLS.map((c) => ({ width: c.width }));
 
     // Subtítulo
     const subParts = [];
@@ -1131,18 +1340,23 @@ const exportarInventarioUbicacion = async (cajas, filtros = {}) => {
     const ubicacionesSet = new Set();
     const productosSet = new Set();
 
-    cajas.forEach(c => {
+    cajas.forEach((c) => {
       totalUnidades += parseFloat(c.cantidad) || 0;
       if (c.ubicacion) ubicacionesSet.add(c.ubicacion);
       if (c.inventario_id) productosSet.add(c.inventario_id);
     });
 
-    fila = agregarResumen(ws, fila, [
-      { label: 'Total Cajas:', value: totalCajas },
-      { label: 'Total Unidades:', value: totalUnidades, numFmt: '#,##0.000' },
-      { label: 'Ubicaciones Únicas:', value: ubicacionesSet.size },
-      { label: 'Productos Únicos:', value: productosSet.size },
-    ], COLS.length);
+    fila = agregarResumen(
+      ws,
+      fila,
+      [
+        { label: 'Total Cajas:', value: totalCajas },
+        { label: 'Total Unidades:', value: totalUnidades, numFmt: '#,##0.000' },
+        { label: 'Ubicaciones Únicas:', value: ubicacionesSet.size },
+        { label: 'Productos Únicos:', value: productosSet.size },
+      ],
+      COLS.length
+    );
 
     // Filas de datos
     const filasDatos = cajas.map((c, idx) => {
@@ -1176,16 +1390,26 @@ const exportarInventarioUbicacion = async (cajas, filtros = {}) => {
         if (ci === 10 && val) cell.numFmt = 'DD/MM/YYYY';
         // Resaltar vencimiento cercano
         if (ci === 8 && val !== null) {
-          if (val < 0) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } }; cell.font = { bold: true, color: { argb: C.rojo } }; }
-          else if (val <= 30) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } }; cell.font = { color: { argb: C.naranja } }; }
+          if (val < 0) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
+            cell.font = { bold: true, color: { argb: C.rojo } };
+          } else if (val <= 30) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } };
+            cell.font = { color: { argb: C.naranja } };
+          }
         }
       });
     });
 
-    agregarFilaTotales(ws, dataFila + cajas.length + 1, [
-      { col: 1, value: 'TOTALES' },
-      { col: 4, value: totalUnidades, numFmt: '#,##0.000' },
-    ], COLS.length);
+    agregarFilaTotales(
+      ws,
+      dataFila + cajas.length + 1,
+      [
+        { col: 1, value: 'TOTALES' },
+        { col: 4, value: totalUnidades, numFmt: '#,##0.000' },
+      ],
+      COLS.length
+    );
 
     ws.views = [{ state: 'frozen', ySplit: fila }];
 
@@ -1210,22 +1434,22 @@ const exportarAverias = async (averias, filtros = {}) => {
     });
 
     const COLS = [
-      { header: '#',               key: 'idx',    width: 5,  align: 'center' },
-      { header: 'Fecha',          key: 'fecha',  width: 14, align: 'center' },
-      { header: 'N° Registro',    key: 'num',    width: 18, align: 'left'   },
-      { header: 'Tipo',           key: 'tipo',   width: 10, align: 'center' },
-      { header: 'Cliente',        key: 'cli',    width: 30, align: 'left'   },
-      { header: 'Origen',         key: 'origen', width: 16, align: 'left'   },
-      { header: 'Referencia',     key: 'sku',    width: 16, align: 'left'   },
-      { header: 'Producto',       key: 'prod',   width: 32, align: 'left'   },
-      { header: 'Tipo Avería',    key: 'tavg',   width: 18, align: 'center' },
-      { header: 'Cant. Averiada', key: 'cant',   width: 14, align: 'right'  },
-      { header: 'Descripción',    key: 'desc',   width: 36, align: 'left'   },
-      { header: 'Registrado por', key: 'reg',    width: 24, align: 'left'   },
-      { header: 'Tiene Foto',     key: 'foto',   width: 10, align: 'center' },
+      { header: '#', key: 'idx', width: 5, align: 'center' },
+      { header: 'Fecha', key: 'fecha', width: 14, align: 'center' },
+      { header: 'N° Registro', key: 'num', width: 18, align: 'left' },
+      { header: 'Tipo', key: 'tipo', width: 10, align: 'center' },
+      { header: 'Cliente', key: 'cli', width: 30, align: 'left' },
+      { header: 'Origen', key: 'origen', width: 16, align: 'left' },
+      { header: 'Referencia', key: 'sku', width: 16, align: 'left' },
+      { header: 'Producto', key: 'prod', width: 32, align: 'left' },
+      { header: 'Tipo Avería', key: 'tavg', width: 18, align: 'center' },
+      { header: 'Cant. Averiada', key: 'cant', width: 14, align: 'right' },
+      { header: 'Descripción', key: 'desc', width: 36, align: 'left' },
+      { header: 'Registrado por', key: 'reg', width: 24, align: 'left' },
+      { header: 'Tiene Foto', key: 'foto', width: 10, align: 'center' },
     ];
 
-    ws.columns = COLS.map(c => ({ width: c.width }));
+    ws.columns = COLS.map((c) => ({ width: c.width }));
 
     let sub = null;
     if (filtros.fecha_desde || filtros.fecha_hasta) {
@@ -1238,10 +1462,15 @@ const exportarAverias = async (averias, filtros = {}) => {
 
     const totalUnidades = averias.reduce((s, a) => s + (parseFloat(a.cantidad) || 0), 0);
 
-    fila = agregarResumen(ws, fila, [
-      { label: 'Total registros:',          value: averias.length },
-      { label: 'Total unidades averiadas:', value: totalUnidades, numFmt: '0.###' },
-    ], COLS.length);
+    fila = agregarResumen(
+      ws,
+      fila,
+      [
+        { label: 'Total registros:', value: averias.length },
+        { label: 'Total unidades averiadas:', value: totalUnidades, numFmt: '0.###' },
+      ],
+      COLS.length
+    );
 
     const filas = averias.map((a, i) => [
       i + 1,
@@ -1267,7 +1496,7 @@ const exportarAverias = async (averias, filtros = {}) => {
         const cell = ws.getCell(dataFila + idx, ci + 1);
         estiloCelda(cell, ci, idx, { align: COLS[ci].align });
         if (ci === 1 && val) cell.numFmt = 'DD/MM/YYYY';
-        if (ci === 9)        cell.numFmt = '0.###';
+        if (ci === 9) cell.numFmt = '0.###';
         if (ci === 3) {
           const tipo = (val || '').toLowerCase();
           cell.font = { bold: true, color: { argb: tipo === 'ingreso' ? C.verde : C.naranja } };
@@ -1277,10 +1506,15 @@ const exportarAverias = async (averias, filtros = {}) => {
       });
     });
 
-    agregarFilaTotales(ws, dataFila + filas.length + 1, [
-      { col: 1, value: 'TOTALES' },
-      { col: 10, value: totalUnidades, numFmt: '0.###' },
-    ], COLS.length);
+    agregarFilaTotales(
+      ws,
+      dataFila + filas.length + 1,
+      [
+        { col: 1, value: 'TOTALES' },
+        { col: 10, value: totalUnidades, numFmt: '0.###' },
+      ],
+      COLS.length
+    );
 
     ws.views = [{ state: 'frozen', ySplit: fila }];
 
@@ -1316,7 +1550,7 @@ const exportarAuditoriaAcciones = async (registros, filtros = {}) => {
       { header: 'IP', key: 'ip', width: 16, align: 'center' },
     ];
 
-    ws.columns = COLS.map(c => ({ width: c.width }));
+    ws.columns = COLS.map((c) => ({ width: c.width }));
 
     let sub = `Generado el ${fechaHoy()}`;
     if (filtros.fecha_desde || filtros.fecha_hasta) {
@@ -1332,16 +1566,21 @@ const exportarAuditoriaAcciones = async (registros, filtros = {}) => {
       return acc;
     }, {});
 
-    fila = agregarResumen(ws, fila, [
-      { label: 'Total registros:', value: registros.length },
-      { label: 'Crear:', value: conteos.crear || 0 },
-      { label: 'Actualizar:', value: conteos.actualizar || 0 },
-      { label: 'Eliminar:', value: conteos.eliminar || 0 },
-      { label: 'Login:', value: conteos.login || 0 },
-      { label: 'Logout:', value: conteos.logout || 0 },
-    ], COLS.length);
+    fila = agregarResumen(
+      ws,
+      fila,
+      [
+        { label: 'Total registros:', value: registros.length },
+        { label: 'Crear:', value: conteos.crear || 0 },
+        { label: 'Actualizar:', value: conteos.actualizar || 0 },
+        { label: 'Eliminar:', value: conteos.eliminar || 0 },
+        { label: 'Login:', value: conteos.login || 0 },
+        { label: 'Logout:', value: conteos.logout || 0 },
+      ],
+      COLS.length
+    );
 
-    const filas = registros.map(r => {
+    const filas = registros.map((r) => {
       const fecha = r.created_at || r.createdAt;
       return [
         fecha ? new Date(fecha) : null,

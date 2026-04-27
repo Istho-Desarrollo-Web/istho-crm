@@ -44,7 +44,9 @@ const unlockAudio = () => {
   try {
     const ctx = getAudioContext();
     if (ctx.state === 'suspended') ctx.resume();
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 };
 if (typeof window !== 'undefined') {
   window.addEventListener('click', unlockAudio, { once: false, capture: true });
@@ -74,12 +76,15 @@ const playNotificationSound = () => {
         osc.stop(startTime + duration);
       };
       const now = ctx.currentTime;
-      playTone(880, now, 0.12);            // A5 — primer ding
+      playTone(880, now, 0.12); // A5 — primer ding
       playTone(1174.66, now + 0.15, 0.15); // D6 — segundo ding
     };
 
     if (ctx.state === 'suspended') {
-      ctx.resume().then(play).catch(() => {});
+      ctx
+        .resume()
+        .then(play)
+        .catch(() => {});
     } else {
       play();
     }
@@ -135,8 +140,8 @@ export const NotificacionesProvider = ({ children }) => {
 
         // Si el count falló, intentar derivarlo de la lista
         if (countResult.status !== 'fulfilled' && data.length > 0) {
-          const unread = data.filter(n => !n.leida).length;
-          setUnreadCount(prev => Math.max(prev, unread));
+          const unread = data.filter((n) => !n.leida).length;
+          setUnreadCount((prev) => Math.max(prev, unread));
         }
       }
     } catch (err) {
@@ -197,10 +202,10 @@ export const NotificacionesProvider = ({ children }) => {
   const marcarLeida = useCallback(async (id) => {
     try {
       await notificacionesService.marcarLeida(id);
-      setNotificaciones(prev =>
-        prev.map(n => n.id === id ? { ...n, leida: true, fecha_lectura: new Date() } : n)
+      setNotificaciones((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, leida: true, fecha_lectura: new Date() } : n))
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
       console.error('Error al marcar leída:', err);
     }
@@ -210,8 +215,8 @@ export const NotificacionesProvider = ({ children }) => {
   const marcarTodasLeidas = useCallback(async () => {
     try {
       await notificacionesService.marcarTodasLeidas();
-      setNotificaciones(prev =>
-        prev.map(n => ({ ...n, leida: true, fecha_lectura: new Date() }))
+      setNotificaciones((prev) =>
+        prev.map((n) => ({ ...n, leida: true, fecha_lectura: new Date() }))
       );
       setUnreadCount(0);
     } catch (err) {
@@ -273,10 +278,10 @@ export const NotificacionesProvider = ({ children }) => {
       if (!mountedRef.current) return;
 
       // Actualizar contador (siempre, aunque esté silenciado el módulo)
-      setUnreadCount(prev => prev + 1);
+      setUnreadCount((prev) => prev + 1);
 
       // Agregar al inicio de la lista
-      setNotificaciones(prev => [
+      setNotificaciones((prev) => [
         { ...data, leida: false, id: data.id || Date.now() },
         ...prev.slice(0, 4), // Mantener máximo 5
       ]);
@@ -284,10 +289,10 @@ export const NotificacionesProvider = ({ children }) => {
       // Verificar si el módulo está silenciado en preferencias del usuario
       const prefs = user?.preferencias || {};
       const MAPA_ALERTAS = {
-        despacho:   prefs.alertas_despachos  !== false,
+        despacho: prefs.alertas_despachos !== false,
         inventario: prefs.alertas_inventario !== false,
-        cliente:    prefs.alertas_clientes   !== false,
-        sistema:    prefs.alertas_viajes     !== false,
+        cliente: prefs.alertas_clientes !== false,
+        sistema: prefs.alertas_viajes !== false,
       };
       const moduloHabilitado = MAPA_ALERTAS[data.tipo] !== false;
 

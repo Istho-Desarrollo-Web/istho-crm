@@ -12,152 +12,175 @@ const { DataTypes } = require('sequelize');
 
 // Conceptos de egreso
 const CONCEPTOS_EGRESO = [
-  'cuadre_de_caja', 'descargues', 'acpm', 'administracion', 'alimentacion',
-  'comisiones', 'desencarpe', 'encarpe', 'hospedaje', 'otros',
-  'seguros', 'repuestos', 'tecnicomecanica', 'peajes', 'ligas',
-  'parqueadero', 'urea', 'liquidacion'
+  'cuadre_de_caja',
+  'descargues',
+  'acpm',
+  'administracion',
+  'alimentacion',
+  'comisiones',
+  'desencarpe',
+  'encarpe',
+  'hospedaje',
+  'otros',
+  'seguros',
+  'repuestos',
+  'tecnicomecanica',
+  'peajes',
+  'ligas',
+  'parqueadero',
+  'urea',
+  'liquidacion',
 ];
 
 // Conceptos de ingreso
 const CONCEPTOS_INGRESO = [
-  'ingreso_adicional', 'recarga', 'cuadre_de_caja', 'peajes_ingreso',
-  'ligas_ingresos', 'parqueadero_ingresos', 'urea_ingresos'
+  'ingreso_adicional',
+  'recarga',
+  'cuadre_de_caja',
+  'peajes_ingreso',
+  'ligas_ingresos',
+  'parqueadero_ingresos',
+  'urea_ingresos',
 ];
 
 const TODOS_CONCEPTOS = [...new Set([...CONCEPTOS_EGRESO, ...CONCEPTOS_INGRESO])];
 
 module.exports = (sequelize) => {
-  const MovimientoCajaMenor = sequelize.define('MovimientoCajaMenor', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
+  const MovimientoCajaMenor = sequelize.define(
+    'MovimientoCajaMenor',
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
 
-    consecutivo: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      comment: 'Consecutivo global de movimientos'
-    },
+      consecutivo: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        comment: 'Consecutivo global de movimientos',
+      },
 
-    caja_menor_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
+      caja_menor_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
 
-    viaje_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      comment: 'Viaje asociado (null si es movimiento directo)'
-    },
+      viaje_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        comment: 'Viaje asociado (null si es movimiento directo)',
+      },
 
-    tipo_movimiento: {
-      type: DataTypes.ENUM('ingreso', 'egreso'),
-      allowNull: false
-    },
+      tipo_movimiento: {
+        type: DataTypes.ENUM('ingreso', 'egreso'),
+        allowNull: false,
+      },
 
-    concepto: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-      validate: {
-        notEmpty: { msg: 'El concepto es requerido' }
-      }
-    },
+      concepto: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        validate: {
+          notEmpty: { msg: 'El concepto es requerido' },
+        },
+      },
 
-    concepto_otro: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: 'Descripción cuando concepto = otros'
-    },
+      concepto_otro: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        comment: 'Descripción cuando concepto = otros',
+      },
 
-    valor: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: false,
-      validate: {
-        min: { args: [0], msg: 'El valor no puede ser negativo' }
-      }
-    },
+      valor: {
+        type: DataTypes.DECIMAL(12, 2),
+        allowNull: false,
+        validate: {
+          min: { args: [0], msg: 'El valor no puede ser negativo' },
+        },
+      },
 
-    aprobado: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
-    },
+      aprobado: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
 
-    valor_aprobado: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: true,
-      comment: 'Valor aprobado por financiera (puede diferir del valor original)'
-    },
+      valor_aprobado: {
+        type: DataTypes.DECIMAL(12, 2),
+        allowNull: true,
+        comment: 'Valor aprobado por financiera (puede diferir del valor original)',
+      },
 
-    aprobado_por: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      comment: 'Usuario que aprobó/rechazó el movimiento'
-    },
+      aprobado_por: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        comment: 'Usuario que aprobó/rechazó el movimiento',
+      },
 
-    fecha_aprobacion: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
+      fecha_aprobacion: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
 
-    rechazado: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
-    },
+      rechazado: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
 
-    observaciones_aprobacion: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
+      observaciones_aprobacion: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
 
-    descripcion: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
+      descripcion: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
 
-    soporte_url: {
-      type: DataTypes.TEXT('medium'),
-      allowNull: true,
-      comment: 'Soporte como data URI base64 o ruta de archivo'
-    },
+      soporte_url: {
+        type: DataTypes.TEXT('medium'),
+        allowNull: true,
+        comment: 'Soporte como data URI base64 o ruta de archivo',
+      },
 
-    soporte_nombre: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-      comment: 'Nombre original del archivo de soporte'
-    },
+      soporte_nombre: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        comment: 'Nombre original del archivo de soporte',
+      },
 
-    usuario_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      comment: 'Usuario asociado al movimiento'
+      usuario_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        comment: 'Usuario asociado al movimiento',
+      },
+    },
+    {
+      tableName: 'movimientos_caja_menor',
+      timestamps: true,
+      underscored: true,
+      paranoid: true,
+      indexes: [
+        { fields: ['consecutivo'], unique: true },
+        { fields: ['caja_menor_id'] },
+        { fields: ['viaje_id'] },
+        { fields: ['tipo_movimiento'] },
+        { fields: ['concepto'] },
+        { fields: ['aprobado'] },
+        { fields: ['usuario_id'] },
+        { fields: ['caja_menor_id', 'tipo_movimiento'] },
+        { fields: ['aprobado', 'rechazado'] },
+        { fields: ['caja_menor_id', 'aprobado'] },
+      ],
     }
-  }, {
-    tableName: 'movimientos_caja_menor',
-    timestamps: true,
-    underscored: true,
-    paranoid: true,
-    indexes: [
-      { fields: ['consecutivo'], unique: true },
-      { fields: ['caja_menor_id'] },
-      { fields: ['viaje_id'] },
-      { fields: ['tipo_movimiento'] },
-      { fields: ['concepto'] },
-      { fields: ['aprobado'] },
-      { fields: ['usuario_id'] },
-      { fields: ['caja_menor_id', 'tipo_movimiento'] },
-      { fields: ['aprobado', 'rechazado'] },
-      { fields: ['caja_menor_id', 'aprobado'] }
-    ]
-  });
+  );
 
   /**
    * Generar siguiente consecutivo
    */
-  MovimientoCajaMenor.generarConsecutivo = async function() {
+  MovimientoCajaMenor.generarConsecutivo = async function () {
     const ultimo = await this.findOne({
       order: [['consecutivo', 'DESC']],
-      paranoid: false
+      paranoid: false,
     });
     return ultimo ? ultimo.consecutivo + 1 : 1;
   };
@@ -165,7 +188,7 @@ module.exports = (sequelize) => {
   /**
    * Obtener label legible del concepto
    */
-  MovimientoCajaMenor.prototype.getConceptoLabel = function() {
+  MovimientoCajaMenor.prototype.getConceptoLabel = function () {
     const labels = {
       cuadre_de_caja: 'Cuadre de Caja',
       descargues: 'Descargues',
@@ -188,7 +211,7 @@ module.exports = (sequelize) => {
       peajes_ingreso: 'Peajes Ingreso',
       ligas_ingresos: 'Ligas Ingresos',
       parqueadero_ingresos: 'Parqueadero Ingresos',
-      urea_ingresos: 'UREA Ingresos'
+      urea_ingresos: 'UREA Ingresos',
     };
     return labels[this.concepto] || this.concepto;
   };

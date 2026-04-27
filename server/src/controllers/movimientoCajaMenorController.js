@@ -8,14 +8,44 @@
  */
 
 const { Op } = require('sequelize');
-const { MovimientoCajaMenor, CajaMenor, Viaje, Usuario, Auditoria, sequelize } = require('../models');
+const {
+  MovimientoCajaMenor,
+  CajaMenor,
+  Viaje,
+  Usuario,
+  Auditoria,
+  sequelize,
+} = require('../models');
 const notificacionService = require('../services/notificacionService');
 const socketService = require('../services/socketService');
-const { success, created, paginated, notFound, conflict, serverError, error: errorResponse } = require('../utils/responses');
-const { parsePaginacion, buildPaginacion, parseOrdenamiento, limpiarObjeto, getClientIP, sanitizarBusqueda } = require('../utils/helpers');
+const {
+  success,
+  created,
+  paginated,
+  notFound,
+  conflict,
+  serverError,
+  error: errorResponse,
+} = require('../utils/responses');
+const {
+  parsePaginacion,
+  buildPaginacion,
+  parseOrdenamiento,
+  limpiarObjeto,
+  getClientIP,
+  sanitizarBusqueda,
+} = require('../utils/helpers');
 const logger = require('../utils/logger');
 
-const CAMPOS_ORDENAMIENTO = ['consecutivo', 'concepto', 'tipo_movimiento', 'valor', 'valor_aprobado', 'aprobado', 'created_at'];
+const CAMPOS_ORDENAMIENTO = [
+  'consecutivo',
+  'concepto',
+  'tipo_movimiento',
+  'valor',
+  'valor_aprobado',
+  'aprobado',
+  'created_at',
+];
 
 /**
  * GET /movimientos-caja-menor
@@ -84,14 +114,14 @@ const listar = async (req, res) => {
       offset,
       subQuery: false,
       attributes: {
-        exclude: ['soporte_url'] // Se carga solo en detalle individual (GET /:id)
+        exclude: ['soporte_url'], // Se carga solo en detalle individual (GET /:id)
       },
       include: [
         { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero', 'estado'] },
         { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
         { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'], required: false },
-        { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'], required: false }
-      ]
+        { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'], required: false },
+      ],
     });
 
     return paginated(res, rows, buildPaginacion(count, page, limit));
@@ -110,9 +140,13 @@ const obtenerPorId = async (req, res) => {
       include: [
         { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero', 'estado', 'asignado_a'] },
         { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino', 'fecha'] },
-        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
-        { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] }
-      ]
+        {
+          model: Usuario,
+          as: 'usuario',
+          attributes: ['id', 'nombre', 'apellido', 'nombre_completo'],
+        },
+        { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
+      ],
     });
 
     if (!movimiento) return notFound(res, 'Movimiento no encontrado');
@@ -139,13 +173,21 @@ const crear = async (req, res) => {
     // Verificar caja menor
     const caja = await CajaMenor.findByPk(datos.caja_menor_id, { transaction });
     if (!caja) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Caja menor no encontrada');
     }
 
     if (caja.estado === 'cerrada') {
-      try { await transaction.rollback(); } catch (_) {}
-      return errorResponse(res, 'La caja menor está cerrada, no se pueden agregar movimientos', 400);
+      try {
+        await transaction.rollback();
+      } catch (_) {}
+      return errorResponse(
+        res,
+        'La caja menor está cerrada, no se pueden agregar movimientos',
+        400
+      );
     }
 
     // Asignar usuario: si es conductor se asigna a sí mismo, sino usar el de la caja
@@ -159,7 +201,9 @@ const crear = async (req, res) => {
     if (datos.viaje_id) {
       const viaje = await Viaje.findByPk(datos.viaje_id, { transaction });
       if (!viaje) {
-        try { await transaction.rollback(); } catch (_) {}
+        try {
+          await transaction.rollback();
+        } catch (_) {}
         return notFound(res, 'Viaje no encontrado');
       }
     }
@@ -173,7 +217,11 @@ const crear = async (req, res) => {
         const resultado = await cloudinaryService.subir(req.file, 'istho-crm/soportes');
         datos.soporte_url = resultado.url;
         datos.soporte_nombre = req.file.originalname;
-        try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch {
+          /* ignore */
+        }
       } else {
         // Fallback: base64 en BD
         const fileBuffer = fs.readFileSync(req.file.path);
@@ -181,7 +229,11 @@ const crear = async (req, res) => {
         const mimeType = req.file.mimetype || 'application/octet-stream';
         datos.soporte_url = `data:${mimeType};base64,${base64}`;
         datos.soporte_nombre = req.file.originalname;
-        try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch {
+          /* ignore */
+        }
       }
     }
 
@@ -207,7 +259,7 @@ const crear = async (req, res) => {
       datos_nuevos: datos,
       ip_address: getClientIP(req),
       user_agent: req.get('user-agent'),
-      descripcion: `Gasto #${movimiento.consecutivo} (${movimiento.concepto}) $${Number(movimiento.valor).toLocaleString('es-CO')} en ${caja.numero}`
+      descripcion: `Gasto #${movimiento.consecutivo} (${movimiento.concepto}) $${Number(movimiento.valor).toLocaleString('es-CO')} en ${caja.numero}`,
     });
 
     await transaction.commit();
@@ -215,22 +267,24 @@ const crear = async (req, res) => {
 
     // Notificar a financieros si es un gasto pendiente de aprobación
     if (!datos.aprobado) {
-      notificacionService.notificarGastoPendiente({
-        id: movimiento.id,
-        consecutivo: movimiento.consecutivo,
-        concepto: movimiento.concepto,
-        valor: movimiento.valor,
-        caja_menor_id: movimiento.caja_menor_id,
-        usuario_nombre: req.user.nombre_completo,
-      }).catch(() => {});
+      notificacionService
+        .notificarGastoPendiente({
+          id: movimiento.id,
+          consecutivo: movimiento.consecutivo,
+          concepto: movimiento.concepto,
+          valor: movimiento.valor,
+          caja_menor_id: movimiento.caja_menor_id,
+          usuario_nombre: req.user.nombre_completo,
+        })
+        .catch(() => {});
     }
 
     const resultado = await MovimientoCajaMenor.findByPk(movimiento.id, {
       include: [
         { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
         { model: Viaje, as: 'viaje', attributes: ['id', 'numero', 'destino'] },
-        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] }
-      ]
+        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
+      ],
     });
 
     socketService.emitToAll('movimiento:creado', {
@@ -250,7 +304,9 @@ const crear = async (req, res) => {
 
     return created(res, resultado, 'Movimiento registrado exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al crear movimiento:', { message: error.message });
     return serverError(res, 'Error al crear movimiento', error);
   }
@@ -267,22 +323,28 @@ const actualizar = async (req, res) => {
 
     const movimiento = await MovimientoCajaMenor.findByPk(id, {
       include: [{ model: CajaMenor, as: 'cajaMenor' }],
-      transaction
+      transaction,
     });
 
     if (!movimiento) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Movimiento no encontrado');
     }
 
     if (req.user.esConductor && movimiento.usuario_id !== req.user.id) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Movimiento no encontrado');
     }
 
     // Usuario asignado no puede editar movimientos ya aprobados
     if (req.user.esConductor && movimiento.aprobado) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return errorResponse(res, 'No puedes modificar un movimiento ya aprobado', 400);
     }
 
@@ -294,14 +356,22 @@ const actualizar = async (req, res) => {
         const resultado = await cloudinaryService.subir(req.file, 'istho-crm/soportes');
         datos.soporte_url = resultado.url;
         datos.soporte_nombre = req.file.originalname;
-        try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch {
+          /* ignore */
+        }
       } else {
         const fileBuffer = fs.readFileSync(req.file.path);
         const base64 = fileBuffer.toString('base64');
         const mimeType = req.file.mimetype || 'application/octet-stream';
         datos.soporte_url = `data:${mimeType};base64,${base64}`;
         datos.soporte_nombre = req.file.originalname;
-        try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch {
+          /* ignore */
+        }
       }
     }
 
@@ -317,7 +387,7 @@ const actualizar = async (req, res) => {
       datos_anteriores: datosAnteriores,
       datos_nuevos: datos,
       ip_address: getClientIP(req),
-      descripcion: `Gasto #${movimiento.consecutivo} actualizado`
+      descripcion: `Gasto #${movimiento.consecutivo} actualizado`,
     });
 
     await transaction.commit();
@@ -330,7 +400,9 @@ const actualizar = async (req, res) => {
     });
     return success(res, movimiento, 'Movimiento actualizado exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al actualizar movimiento:', { message: error.message });
     return serverError(res, 'Error al actualizar movimiento', error);
   }
@@ -348,34 +420,42 @@ const aprobar = async (req, res) => {
 
     const movimiento = await MovimientoCajaMenor.findByPk(id, {
       include: [{ model: CajaMenor, as: 'cajaMenor' }],
-      transaction
+      transaction,
     });
 
     if (!movimiento) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Movimiento no encontrado');
     }
 
     const datosAnteriores = movimiento.toJSON();
 
     if (aprobado) {
-      await movimiento.update({
-        aprobado: true,
-        rechazado: false,
-        valor_aprobado: valor_aprobado || movimiento.valor,
-        aprobado_por: req.user.id,
-        fecha_aprobacion: new Date(),
-        observaciones_aprobacion: observaciones_aprobacion || null
-      }, { transaction });
+      await movimiento.update(
+        {
+          aprobado: true,
+          rechazado: false,
+          valor_aprobado: valor_aprobado || movimiento.valor,
+          aprobado_por: req.user.id,
+          fecha_aprobacion: new Date(),
+          observaciones_aprobacion: observaciones_aprobacion || null,
+        },
+        { transaction }
+      );
     } else {
-      await movimiento.update({
-        aprobado: false,
-        rechazado: true,
-        valor_aprobado: 0,
-        aprobado_por: req.user.id,
-        fecha_aprobacion: new Date(),
-        observaciones_aprobacion: observaciones_aprobacion || null
-      }, { transaction });
+      await movimiento.update(
+        {
+          aprobado: false,
+          rechazado: true,
+          valor_aprobado: 0,
+          aprobado_por: req.user.id,
+          fecha_aprobacion: new Date(),
+          observaciones_aprobacion: observaciones_aprobacion || null,
+        },
+        { transaction }
+      );
     }
 
     // Recalcular saldo de la caja
@@ -390,7 +470,7 @@ const aprobar = async (req, res) => {
       datos_anteriores: datosAnteriores,
       datos_nuevos: { aprobado, valor_aprobado, observaciones_aprobacion },
       ip_address: getClientIP(req),
-      descripcion: `Gasto #${movimiento.consecutivo} ${aprobado ? 'aprobado' : 'rechazado'} por $${Number(valor_aprobado || movimiento.valor).toLocaleString('es-CO')}`
+      descripcion: `Gasto #${movimiento.consecutivo} ${aprobado ? 'aprobado' : 'rechazado'} por $${Number(valor_aprobado || movimiento.valor).toLocaleString('es-CO')}`,
     });
 
     await transaction.commit();
@@ -412,21 +492,29 @@ const aprobar = async (req, res) => {
     });
 
     // Notificar al usuario que registró el gasto
-    notificacionService.notificar({
-      usuario_id: movimiento.usuario_id,
-      tipo: 'sistema',
-      titulo: aprobado ? 'Gasto aprobado' : 'Gasto rechazado',
-      mensaje: aprobado
-        ? `Tu gasto #${movimiento.consecutivo} (${movimiento.concepto}) fue aprobado por $${Number(valor_aprobado || movimiento.valor).toLocaleString('es-CO')}`
-        : `Tu gasto #${movimiento.consecutivo} (${movimiento.concepto}) fue rechazado. ${observaciones_aprobacion || ''}`,
-      prioridad: aprobado ? 'normal' : 'alta',
-      accion_url: `/viajes/cajas-menores/${movimiento.cajaMenor?.id}`,
-    }).catch(() => {});
+    notificacionService
+      .notificar({
+        usuario_id: movimiento.usuario_id,
+        tipo: 'sistema',
+        titulo: aprobado ? 'Gasto aprobado' : 'Gasto rechazado',
+        mensaje: aprobado
+          ? `Tu gasto #${movimiento.consecutivo} (${movimiento.concepto}) fue aprobado por $${Number(valor_aprobado || movimiento.valor).toLocaleString('es-CO')}`
+          : `Tu gasto #${movimiento.consecutivo} (${movimiento.concepto}) fue rechazado. ${observaciones_aprobacion || ''}`,
+        prioridad: aprobado ? 'normal' : 'alta',
+        accion_url: `/viajes/cajas-menores/${movimiento.cajaMenor?.id}`,
+      })
+      .catch(() => {});
 
     logger.info(`Movimiento ${aprobado ? 'aprobado' : 'rechazado'}:`, { id: movimiento.id });
-    return success(res, movimiento, `Movimiento ${aprobado ? 'aprobado' : 'rechazado'} exitosamente`);
+    return success(
+      res,
+      movimiento,
+      `Movimiento ${aprobado ? 'aprobado' : 'rechazado'} exitosamente`
+    );
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al aprobar movimiento:', { message: error.message });
     return serverError(res, 'Error al procesar aprobación', error);
   }
@@ -442,36 +530,44 @@ const aprobarMasivo = async (req, res) => {
     const { ids, observaciones_aprobacion } = req.body;
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return errorResponse(res, 'Debe seleccionar al menos un movimiento', 400);
     }
 
     const movimientos = await MovimientoCajaMenor.findAll({
       where: { id: { [Op.in]: ids }, aprobado: false, rechazado: false },
       include: [{ model: CajaMenor, as: 'cajaMenor' }],
-      transaction
+      transaction,
     });
 
     let aprobados = 0;
     const cajasAfectadas = new Set();
 
     for (const mov of movimientos) {
-      await mov.update({
-        aprobado: true,
-        rechazado: false,
-        valor_aprobado: mov.valor,
-        aprobado_por: req.user.id,
-        fecha_aprobacion: new Date(),
-        observaciones_aprobacion: observaciones_aprobacion || 'Aprobación masiva'
-      }, { transaction });
+      await mov.update(
+        {
+          aprobado: true,
+          rechazado: false,
+          valor_aprobado: mov.valor,
+          aprobado_por: req.user.id,
+          fecha_aprobacion: new Date(),
+          observaciones_aprobacion: observaciones_aprobacion || 'Aprobación masiva',
+        },
+        { transaction }
+      );
       cajasAfectadas.add(mov.caja_menor_id);
       aprobados++;
     }
 
     // Pre-cargar todas las cajas afectadas en una sola consulta
     const cajaIds = [...cajasAfectadas];
-    const cajasPreloaded = await CajaMenor.findAll({ where: { id: { [Op.in]: cajaIds } }, transaction });
-    const cajasMap = new Map(cajasPreloaded.map(c => [c.id, c]));
+    const cajasPreloaded = await CajaMenor.findAll({
+      where: { id: { [Op.in]: cajaIds } },
+      transaction,
+    });
+    const cajasMap = new Map(cajasPreloaded.map((c) => [c.id, c]));
 
     // Recalcular saldo de todas las cajas afectadas
     for (const cajaId of cajasAfectadas) {
@@ -487,7 +583,7 @@ const aprobarMasivo = async (req, res) => {
       usuario_nombre: req.user.nombre_completo,
       datos_nuevos: { ids, accion: 'aprobacion_masiva' },
       ip_address: getClientIP(req),
-      descripcion: `Aprobación masiva: ${aprobados} movimientos aprobados`
+      descripcion: `Aprobación masiva: ${aprobados} movimientos aprobados`,
     });
 
     await transaction.commit();
@@ -507,21 +603,26 @@ const aprobarMasivo = async (req, res) => {
     }, {});
     for (const [usuario_id, movs] of Object.entries(porUsuario)) {
       const cantidad = movs.length;
-      notificacionService.notificar({
-        usuario_id: Number(usuario_id),
-        tipo: 'sistema',
-        titulo: cantidad === 1 ? 'Gasto aprobado' : `${cantidad} gastos aprobados`,
-        mensaje: cantidad === 1
-          ? `Tu gasto #${movs[0].consecutivo} (${movs[0].concepto}) fue aprobado`
-          : `${cantidad} de tus gastos fueron aprobados`,
-        prioridad: 'normal',
-        accion_url: `/viajes/cajas-menores/${movs[0].caja_menor_id}`,
-      }).catch(() => {});
+      notificacionService
+        .notificar({
+          usuario_id: Number(usuario_id),
+          tipo: 'sistema',
+          titulo: cantidad === 1 ? 'Gasto aprobado' : `${cantidad} gastos aprobados`,
+          mensaje:
+            cantidad === 1
+              ? `Tu gasto #${movs[0].consecutivo} (${movs[0].concepto}) fue aprobado`
+              : `${cantidad} de tus gastos fueron aprobados`,
+          prioridad: 'normal',
+          accion_url: `/viajes/cajas-menores/${movs[0].caja_menor_id}`,
+        })
+        .catch(() => {});
     }
 
     return success(res, { aprobados }, `${aprobados} movimiento(s) aprobado(s) exitosamente`);
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error en aprobación masiva:', { message: error.message });
     return serverError(res, 'Error en aprobación masiva', error);
   }
@@ -536,16 +637,20 @@ const eliminar = async (req, res) => {
     const { id } = req.params;
     const movimiento = await MovimientoCajaMenor.findByPk(id, {
       include: [{ model: CajaMenor, as: 'cajaMenor' }],
-      transaction
+      transaction,
     });
 
     if (!movimiento) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Movimiento no encontrado');
     }
 
     if (movimiento.aprobado) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return conflict(res, 'No se puede eliminar un movimiento aprobado');
     }
 
@@ -560,7 +665,7 @@ const eliminar = async (req, res) => {
       usuario_nombre: req.user.nombre_completo,
       datos_anteriores: datosAnteriores,
       ip_address: getClientIP(req),
-      descripcion: `Gasto #${movimiento.consecutivo} eliminado`
+      descripcion: `Gasto #${movimiento.consecutivo} eliminado`,
     });
 
     await transaction.commit();
@@ -570,7 +675,9 @@ const eliminar = async (req, res) => {
     });
     return success(res, { id }, 'Movimiento eliminado exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al eliminar movimiento:', { message: error.message });
     return serverError(res, 'Error al eliminar movimiento', error);
   }
@@ -584,11 +691,20 @@ const listarConceptos = async (req, res) => {
   try {
     return success(res, {
       egreso: MovimientoCajaMenor.CONCEPTOS_EGRESO,
-      ingreso: MovimientoCajaMenor.CONCEPTOS_INGRESO
+      ingreso: MovimientoCajaMenor.CONCEPTOS_INGRESO,
     });
   } catch (error) {
     return serverError(res, 'Error al obtener conceptos', error);
   }
 };
 
-module.exports = { listar, obtenerPorId, crear, actualizar, aprobar, aprobarMasivo, eliminar, listarConceptos };
+module.exports = {
+  listar,
+  obtenerPorId,
+  crear,
+  actualizar,
+  aprobar,
+  aprobarMasivo,
+  eliminar,
+  listarConceptos,
+};

@@ -9,9 +9,20 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Plus, Search, RefreshCw, UserCheck, UserX, KeyRound,
-  MoreVertical, Pencil, ChevronLeft, ChevronRight, Shield, Mail,
-  List, LayoutGrid,
+  Plus,
+  Search,
+  RefreshCw,
+  UserCheck,
+  UserX,
+  KeyRound,
+  MoreVertical,
+  Pencil,
+  ChevronLeft,
+  ChevronRight,
+  Shield,
+  Mail,
+  List,
+  LayoutGrid,
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import adminService from '../../api/admin.service';
@@ -56,7 +67,7 @@ const UsuariosList = () => {
 
       const res = await adminService.getUsuarios(params);
       setUsuarios(res.data?.usuarios || []);
-      setPagination(prev => ({ ...prev, ...res.data?.pagination }));
+      setPagination((prev) => ({ ...prev, ...res.data?.pagination }));
     } catch (error) {
       console.error('Error cargando usuarios:', error);
     }
@@ -72,12 +83,16 @@ const UsuariosList = () => {
     }
   }, []);
 
-  useEffect(() => { fetchRoles(); }, [fetchRoles]);
-  useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]);
+  useEffect(() => {
+    fetchRoles();
+  }, [fetchRoles]);
+  useEffect(() => {
+    fetchUsuarios();
+  }, [fetchUsuarios]);
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const handleToggleActivo = async (usuario) => {
@@ -99,7 +114,7 @@ const UsuariosList = () => {
     try {
       const response = await adminService.resetearPassword(showResetPassword.id, {
         password: newPassword,
-        enviar_correo: enviarCorreoReset
+        enviar_correo: enviarCorreoReset,
       });
       const msg = response?.message || 'Contraseña reseteada exitosamente';
       enqueueSnackbar(msg, { variant: 'success' });
@@ -107,7 +122,8 @@ const UsuariosList = () => {
       setNewPassword('');
       setEnviarCorreoReset(false);
     } catch (error) {
-      const msg = error?.response?.data?.message || error?.message || 'Error al resetear la contraseña';
+      const msg =
+        error?.response?.data?.message || error?.message || 'Error al resetear la contraseña';
       enqueueSnackbar(msg, { variant: 'error' });
     }
   };
@@ -119,7 +135,10 @@ const UsuariosList = () => {
       await adminService.reenviarCredenciales(user.id);
       setCredentialsMsg({ type: 'success', text: `Credenciales enviadas a ${user.email}` });
     } catch (error) {
-      setCredentialsMsg({ type: 'error', text: error.response?.data?.message || 'Error al enviar credenciales' });
+      setCredentialsMsg({
+        type: 'error',
+        text: error.response?.data?.message || 'Error al enviar credenciales',
+      });
     }
     setSendingCredentials(null);
     setTimeout(() => setCredentialsMsg(null), 4000);
@@ -135,11 +154,13 @@ const UsuariosList = () => {
     <div className="space-y-4">
       {/* Toast de credenciales */}
       {credentialsMsg && (
-        <div className={`px-4 py-3 rounded-xl text-sm flex items-center gap-2 ${
-          credentialsMsg.type === 'success'
-            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-            : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
-        }`}>
+        <div
+          className={`px-4 py-3 rounded-xl text-sm flex items-center gap-2 ${
+            credentialsMsg.type === 'success'
+              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+          }`}
+        >
           <Mail className="w-4 h-4 shrink-0" />
           {credentialsMsg.text}
         </div>
@@ -162,19 +183,27 @@ const UsuariosList = () => {
         {/* Filtro Rol */}
         <select
           value={filtroRol}
-          onChange={(e) => { setFiltroRol(e.target.value); setPagination(prev => ({ ...prev, page: 1 })); }}
+          onChange={(e) => {
+            setFiltroRol(e.target.value);
+            setPagination((prev) => ({ ...prev, page: 1 }));
+          }}
           className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-card text-slate-700 dark:text-slate-200"
         >
           <option value="">Todos los roles</option>
-          {roles.map(r => (
-            <option key={r.id} value={r.id}>{r.nombre}</option>
+          {roles.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.nombre}
+            </option>
           ))}
         </select>
 
         {/* Filtro Estado */}
         <select
           value={filtroActivo}
-          onChange={(e) => { setFiltroActivo(e.target.value); setPagination(prev => ({ ...prev, page: 1 })); }}
+          onChange={(e) => {
+            setFiltroActivo(e.target.value);
+            setPagination((prev) => ({ ...prev, page: 1 }));
+          }}
           className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-card text-slate-700 dark:text-slate-200"
         >
           <option value="">Todos</option>
@@ -191,7 +220,10 @@ const UsuariosList = () => {
 
         {hasPermission('usuarios', 'crear') && (
           <button
-            onClick={() => { setEditingUser(null); setShowForm(true); }}
+            onClick={() => {
+              setEditingUser(null);
+              setShowForm(true);
+            }}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-xl transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -203,13 +235,22 @@ const UsuariosList = () => {
       {/* Results count + View toggle */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          {pagination.total} usuario{pagination.total !== 1 ? 's' : ''} encontrado{pagination.total !== 1 ? 's' : ''}
+          {pagination.total} usuario{pagination.total !== 1 ? 's' : ''} encontrado
+          {pagination.total !== 1 ? 's' : ''}
         </p>
         <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-lg p-1">
-          <button onClick={() => setViewMode('table')} aria-label="Ver como tabla" className={`p-2 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+          <button
+            onClick={() => setViewMode('table')}
+            aria-label="Ver como tabla"
+            className={`p-2 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+          >
             <List className="w-4 h-4" />
           </button>
-          <button onClick={() => setViewMode('cards')} aria-label="Ver como tarjetas" className={`p-2 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+          <button
+            onClick={() => setViewMode('cards')}
+            aria-label="Ver como tarjetas"
+            className={`p-2 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+          >
             <LayoutGrid className="w-4 h-4" />
           </button>
         </div>
@@ -217,148 +258,170 @@ const UsuariosList = () => {
 
       {/* Table / Cards */}
       {viewMode === 'table' ? (
-      <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700">
-        <div className="overflow-x-auto rounded-t-2xl">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-slate-50 dark:bg-centhrix-bg/50 border-b border-gray-200 dark:border-slate-700">
-                <th
-                  onClick={() => handleSort('nombre_completo')}
-                  className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
-                >
-                  <span className="inline-flex items-center gap-1">
-                    Usuario <SortIcon field="nombre_completo" sortField={sortField} sortDir={sortDir} />
-                  </span>
-                </th>
-                <th
-                  onClick={() => handleSort('email')}
-                  className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
-                >
-                  <span className="inline-flex items-center gap-1">
-                    Email <SortIcon field="email" sortField={sortField} sortDir={sortDir} />
-                  </span>
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rol</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cliente</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Estado</th>
-                <th
-                  onClick={() => handleSort('ultimo_acceso')}
-                  className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
-                >
-                  <span className="inline-flex items-center gap-1">
-                    Último acceso <SortIcon field="ultimo_acceso" sortField={sortField} sortDir={sortDir} />
-                  </span>
-                </th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50">
-              {loading ? (
-                <tr>
-                  <td colSpan={7} className="text-center py-12">
-                    <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">Cargando usuarios...</p>
-                  </td>
+        <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700">
+          <div className="overflow-x-auto rounded-t-2xl">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 dark:bg-centhrix-bg/50 border-b border-gray-200 dark:border-slate-700">
+                  <th
+                    onClick={() => handleSort('nombre_completo')}
+                    className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      Usuario{' '}
+                      <SortIcon field="nombre_completo" sortField={sortField} sortDir={sortDir} />
+                    </span>
+                  </th>
+                  <th
+                    onClick={() => handleSort('email')}
+                    className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      Email <SortIcon field="email" sortField={sortField} sortDir={sortDir} />
+                    </span>
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Rol
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Cliente
+                  </th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Estado
+                  </th>
+                  <th
+                    onClick={() => handleSort('ultimo_acceso')}
+                    className="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      Último acceso{' '}
+                      <SortIcon field="ultimo_acceso" sortField={sortField} sortDir={sortDir} />
+                    </span>
+                  </th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Acciones
+                  </th>
                 </tr>
-              ) : usuarios.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="text-center py-12 text-slate-400">
-                    No se encontraron usuarios
-                  </td>
-                </tr>
-              ) : (
-                usuarios.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors">
-                    <td className="px-4 py-3">
-                      <div>
-                        <div className="font-medium text-slate-800 dark:text-slate-200">
-                          {user.nombre_completo || user.username}
-                        </div>
-                        <div className="text-xs text-slate-400">@{user.username}</div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{user.email}</td>
-                    <td className="px-4 py-3">
-                      {user.rolInfo ? (
-                        <span
-                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full text-white"
-                          style={{ backgroundColor: user.rolInfo.color || '#6B7280' }}
-                        >
-                          {user.rolInfo.nombre}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-slate-400">{user.rol}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">
-                      {user.cliente?.razon_social || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full ${
-                        user.activo
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                      }`}>
-                        {user.activo ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">
-                      {user.ultimo_acceso
-                        ? new Date(user.ultimo_acceso).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
-                        : 'Nunca'
-                      }
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={(e) => {
-                          if (menuOpen === user.id) {
-                            setMenuOpen(null);
-                          } else {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
-                            setMenuOpen(user.id);
-                          }
-                        }}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface text-slate-500"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50">
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-12">
+                      <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                      <p className="text-slate-500 dark:text-slate-400 text-sm">
+                        Cargando usuarios...
+                      </p>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-slate-700">
-            <span className="text-sm text-slate-500 dark:text-slate-400">
-              {pagination.total} usuario(s) en total
-            </span>
-            <div className="flex items-center gap-1">
-              <button
-                disabled={pagination.page <= 1}
-                onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
-                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="px-3 py-1 text-sm text-slate-600 dark:text-slate-300">
-                {pagination.page} / {pagination.totalPages}
-              </span>
-              <button
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
-                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+                ) : usuarios.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-12 text-slate-400">
+                      No se encontraron usuarios
+                    </td>
+                  </tr>
+                ) : (
+                  usuarios.map((user) => (
+                    <tr
+                      key={user.id}
+                      className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <div>
+                          <div className="font-medium text-slate-800 dark:text-slate-200">
+                            {user.nombre_completo || user.username}
+                          </div>
+                          <div className="text-xs text-slate-400">@{user.username}</div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{user.email}</td>
+                      <td className="px-4 py-3">
+                        {user.rolInfo ? (
+                          <span
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full text-white"
+                            style={{ backgroundColor: user.rolInfo.color || '#6B7280' }}
+                          >
+                            {user.rolInfo.nombre}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-400">{user.rol}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">
+                        {user.cliente?.razon_social || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full ${
+                            user.activo
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          }`}
+                        >
+                          {user.activo ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">
+                        {user.ultimo_acceso
+                          ? new Date(user.ultimo_acceso).toLocaleString('es-CO', {
+                              dateStyle: 'short',
+                              timeStyle: 'short',
+                            })
+                          : 'Nunca'}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={(e) => {
+                            if (menuOpen === user.id) {
+                              setMenuOpen(null);
+                            } else {
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              setMenuPos({
+                                top: rect.bottom + 4,
+                                right: window.innerWidth - rect.right,
+                              });
+                              setMenuOpen(user.id);
+                            }
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface text-slate-500"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-slate-700">
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                {pagination.total} usuario(s) en total
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  disabled={pagination.page <= 1}
+                  onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="px-3 py-1 text-sm text-slate-600 dark:text-slate-300">
+                  {pagination.page} / {pagination.totalPages}
+                </span>
+                <button
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       ) : (
         /* CARD VIEW */
         <>
@@ -376,7 +439,7 @@ const UsuariosList = () => {
               {usuarios.map((user) => {
                 const initials = (user.nombre_completo || user.username || '')
                   .split(' ')
-                  .map(w => w[0])
+                  .map((w) => w[0])
                   .join('')
                   .toUpperCase()
                   .slice(0, 2);
@@ -394,7 +457,10 @@ const UsuariosList = () => {
                             setMenuOpen(null);
                           } else {
                             const rect = e.currentTarget.getBoundingClientRect();
-                            setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                            setMenuPos({
+                              top: rect.bottom + 4,
+                              right: window.innerWidth - rect.right,
+                            });
                             setMenuOpen(user.id);
                           }
                         }}
@@ -408,9 +474,15 @@ const UsuariosList = () => {
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center shrink-0">
                         {user.avatar ? (
-                          <img src={user.avatar} alt={user.nombre_completo || user.username || 'Avatar de usuario'} className="w-12 h-12 rounded-full object-cover" />
+                          <img
+                            src={user.avatar}
+                            alt={user.nombre_completo || user.username || 'Avatar de usuario'}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
                         ) : (
-                          <span className="text-sm font-bold text-orange-600 dark:text-orange-400">{initials}</span>
+                          <span className="text-sm font-bold text-orange-600 dark:text-orange-400">
+                            {initials}
+                          </span>
                         )}
                       </div>
                       <div className="min-w-0">
@@ -427,7 +499,9 @@ const UsuariosList = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500 dark:text-slate-400">Email</span>
-                        <span className="text-slate-700 dark:text-slate-200 truncate ml-2 text-xs">{user.email}</span>
+                        <span className="text-slate-700 dark:text-slate-200 truncate ml-2 text-xs">
+                          {user.email}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500 dark:text-slate-400">Rol</span>
@@ -446,18 +520,22 @@ const UsuariosList = () => {
 
                     {/* Footer: Estado */}
                     <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full ${
-                        user.activo
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full ${
+                          user.activo
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        }`}
+                      >
                         {user.activo ? 'Activo' : 'Inactivo'}
                       </span>
                       <span className="text-xs text-slate-400">
                         {user.ultimo_acceso
-                          ? new Date(user.ultimo_acceso).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
-                          : 'Sin acceso'
-                        }
+                          ? new Date(user.ultimo_acceso).toLocaleString('es-CO', {
+                              dateStyle: 'short',
+                              timeStyle: 'short',
+                            })
+                          : 'Sin acceso'}
                       </span>
                     </div>
                   </div>
@@ -475,7 +553,7 @@ const UsuariosList = () => {
               <div className="flex items-center gap-1">
                 <button
                   disabled={pagination.page <= 1}
-                  onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
+                  onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
                   className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -485,7 +563,7 @@ const UsuariosList = () => {
                 </span>
                 <button
                   disabled={pagination.page >= pagination.totalPages}
-                  onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
+                  onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
                   className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -502,7 +580,10 @@ const UsuariosList = () => {
           usuario={editingUser}
           roles={roles}
           onSave={handleFormSave}
-          onClose={() => { setShowForm(false); setEditingUser(null); }}
+          onClose={() => {
+            setShowForm(false);
+            setEditingUser(null);
+          }}
         />
       )}
 
@@ -514,7 +595,8 @@ const UsuariosList = () => {
               Resetear Contraseña
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-              Usuario: <strong>{showResetPassword.nombre_completo || showResetPassword.username}</strong>
+              Usuario:{' '}
+              <strong>{showResetPassword.nombre_completo || showResetPassword.username}</strong>
             </p>
             <input
               type="text"
@@ -544,7 +626,11 @@ const UsuariosList = () => {
             )}
             <div className="flex gap-2 justify-end">
               <button
-                onClick={() => { setShowResetPassword(null); setNewPassword(''); setEnviarCorreoReset(false);  }}
+                onClick={() => {
+                  setShowResetPassword(null);
+                  setNewPassword('');
+                  setEnviarCorreoReset(false);
+                }}
                 className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-xl"
               >
                 Cancelar
@@ -571,72 +657,88 @@ const UsuariosList = () => {
       )}
 
       {/* Dropdown menu (fixed, fuera del overflow de la tabla) */}
-      {menuOpen && (() => {
-        const user = usuarios.find(u => u.id === menuOpen);
-        if (!user) return null;
-        return (
-          <>
-            <div className="fixed inset-0 z-50" onClick={() => setMenuOpen(null)} />
-            <div
-              className="fixed z-50 bg-white dark:bg-centhrix-card border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg py-1 min-w-[180px]"
-              style={{ top: menuPos.top, right: menuPos.right }}
-            >
-              {hasPermission('usuarios', 'editar') && (
-                <button
-                  onClick={() => { setEditingUser(user); setShowForm(true); setMenuOpen(null); }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
-                >
-                  <Pencil className="w-3.5 h-3.5" /> Editar
-                </button>
-              )}
-              {hasPermission('usuarios', 'editar') && (
-                <button
-                  onClick={() => { setShowResetPassword(user); setMenuOpen(null); }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
-                >
-                  <KeyRound className="w-3.5 h-3.5" /> Resetear contraseña
-                </button>
-              )}
-              {hasPermission('usuarios', 'editar') && user.rol !== 'admin' && (
-                <button
-                  onClick={() => { setShowPermisos(user); setMenuOpen(null); }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
-                >
-                  <Shield className="w-3.5 h-3.5" /> Permisos
-                </button>
-              )}
-              {hasPermission('usuarios', 'editar') && (
-                <button
-                  onClick={() => handleReenviarCredenciales(user)}
-                  disabled={sendingCredentials === user.id}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface disabled:opacity-50"
-                >
-                  <Mail className="w-3.5 h-3.5" />
-                  {sendingCredentials === user.id ? 'Enviando...' : 'Reenviar credenciales'}
-                </button>
-              )}
-              {hasPermission('usuarios', 'eliminar') && (
-                <>
-                  <div className="border-t border-gray-100 dark:border-slate-700 my-1" />
+      {menuOpen &&
+        (() => {
+          const user = usuarios.find((u) => u.id === menuOpen);
+          if (!user) return null;
+          return (
+            <>
+              <div className="fixed inset-0 z-50" onClick={() => setMenuOpen(null)} />
+              <div
+                className="fixed z-50 bg-white dark:bg-centhrix-card border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg py-1 min-w-[180px]"
+                style={{ top: menuPos.top, right: menuPos.right }}
+              >
+                {hasPermission('usuarios', 'editar') && (
                   <button
-                    onClick={() => handleToggleActivo(user)}
-                    className={`w-full flex items-center gap-2 px-4 py-2 text-sm ${
-                      user.activo
-                        ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20'
-                        : 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
-                    }`}
+                    onClick={() => {
+                      setEditingUser(user);
+                      setShowForm(true);
+                      setMenuOpen(null);
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
                   >
-                    {user.activo
-                      ? <><UserX className="w-3.5 h-3.5" /> Desactivar</>
-                      : <><UserCheck className="w-3.5 h-3.5" /> Reactivar</>
-                    }
+                    <Pencil className="w-3.5 h-3.5" /> Editar
                   </button>
-                </>
-              )}
-            </div>
-          </>
-        );
-      })()}
+                )}
+                {hasPermission('usuarios', 'editar') && (
+                  <button
+                    onClick={() => {
+                      setShowResetPassword(user);
+                      setMenuOpen(null);
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
+                  >
+                    <KeyRound className="w-3.5 h-3.5" /> Resetear contraseña
+                  </button>
+                )}
+                {hasPermission('usuarios', 'editar') && user.rol !== 'admin' && (
+                  <button
+                    onClick={() => {
+                      setShowPermisos(user);
+                      setMenuOpen(null);
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
+                  >
+                    <Shield className="w-3.5 h-3.5" /> Permisos
+                  </button>
+                )}
+                {hasPermission('usuarios', 'editar') && (
+                  <button
+                    onClick={() => handleReenviarCredenciales(user)}
+                    disabled={sendingCredentials === user.id}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface disabled:opacity-50"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    {sendingCredentials === user.id ? 'Enviando...' : 'Reenviar credenciales'}
+                  </button>
+                )}
+                {hasPermission('usuarios', 'eliminar') && (
+                  <>
+                    <div className="border-t border-gray-100 dark:border-slate-700 my-1" />
+                    <button
+                      onClick={() => handleToggleActivo(user)}
+                      className={`w-full flex items-center gap-2 px-4 py-2 text-sm ${
+                        user.activo
+                          ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20'
+                          : 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
+                      }`}
+                    >
+                      {user.activo ? (
+                        <>
+                          <UserX className="w-3.5 h-3.5" /> Desactivar
+                        </>
+                      ) : (
+                        <>
+                          <UserCheck className="w-3.5 h-3.5" /> Reactivar
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
+          );
+        })()}
     </div>
   );
 };

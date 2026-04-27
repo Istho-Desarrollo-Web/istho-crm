@@ -1,8 +1,8 @@
 /**
  * ISTHO CRM - Sistema de Logging
- * 
+ *
  * Logger personalizado con niveles y formato consistente.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  */
 
@@ -18,7 +18,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   magenta: '\x1b[35m',
-  cyan: '\x1b[36m'
+  cyan: '\x1b[36m',
 };
 
 // Niveles de log
@@ -27,7 +27,7 @@ const levels = {
   warn: { priority: 1, color: colors.yellow, label: 'WARN' },
   info: { priority: 2, color: colors.green, label: 'INFO' },
   http: { priority: 3, color: colors.magenta, label: 'HTTP' },
-  debug: { priority: 4, color: colors.cyan, label: 'DEBUG' }
+  debug: { priority: 4, color: colors.cyan, label: 'DEBUG' },
 };
 
 // Nivel actual basado en entorno
@@ -47,12 +47,12 @@ const writeToFile = (message) => {
   if (process.env.LOG_FILE) {
     const logPath = path.resolve(process.env.LOG_FILE);
     const logDir = path.dirname(logPath);
-    
+
     // Crear directorio si no existe
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir, { recursive: true });
     }
-    
+
     fs.appendFileSync(logPath, message + '\n');
   }
 };
@@ -62,21 +62,21 @@ const writeToFile = (message) => {
  */
 const log = (level, message, meta = {}) => {
   const levelConfig = levels[level];
-  
+
   // Verificar si el nivel está habilitado
   if (levelConfig.priority > levels[currentLevel].priority) {
     return;
   }
-  
+
   const timestamp = getTimestamp();
   const metaString = Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : '';
-  
+
   // Formato consola con colores
   const consoleMessage = `${colors.bright}[${timestamp}]${colors.reset} ${levelConfig.color}[${levelConfig.label}]${colors.reset} ${message}${metaString}`;
-  
+
   // Formato archivo sin colores
   const fileMessage = `[${timestamp}] [${levelConfig.label}] ${message}${metaString}`;
-  
+
   console.log(consoleMessage);
   writeToFile(fileMessage);
 };
@@ -87,5 +87,5 @@ module.exports = {
   warn: (message, meta) => log('warn', message, meta),
   info: (message, meta) => log('info', message, meta),
   http: (message, meta) => log('http', message, meta),
-  debug: (message, meta) => log('debug', message, meta)
+  debug: (message, meta) => log('debug', message, meta),
 };

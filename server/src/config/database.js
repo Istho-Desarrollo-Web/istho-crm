@@ -16,17 +16,15 @@ const commonOptions = {
   dialect: 'mysql',
 
   // Logging: true en desarrollo, false en producción
-  logging: process.env.DB_LOGGING === 'true'
-    ? (msg) => console.log(`[DB] ${msg}`)
-    : false,
+  logging: process.env.DB_LOGGING === 'true' ? (msg) => console.log(`[DB] ${msg}`) : false,
 
   // Pool de conexiones (optimizado para Railway proxy que cierra conexiones idle)
   pool: {
     max: parseInt(process.env.DB_POOL_MAX) || 5,
-    min: 0,              // No mantener conexiones idle (Railway las mata)
-    acquire: 30000,      // 30s para adquirir conexión
-    idle: 1000,          // Liberar conexiones idle después de 1s
-    evict: 1000,         // Verificar conexiones muertas cada 1s
+    min: 0, // No mantener conexiones idle (Railway las mata)
+    acquire: 30000, // 30s para adquirir conexión
+    idle: 1000, // Liberar conexiones idle después de 1s
+    evict: 1000, // Verificar conexiones muertas cada 1s
   },
 
   // Reintentar queries fallidas automáticamente
@@ -52,8 +50,8 @@ const commonOptions = {
     ...(process.env.DB_SSL === 'true' && {
       ssl: {
         require: true,
-        rejectUnauthorized: false
-      }
+        rejectUnauthorized: false,
+      },
     }),
     // Formato de fechas
     dateStrings: true,
@@ -62,15 +60,15 @@ const commonOptions = {
     connectTimeout: 10000,
     // Keepalive para mantener la conexión viva a través del proxy de Railway
     enableKeepAlive: true,
-    keepAliveInitialDelay: 10000,  // Ping cada 10s
+    keepAliveInitialDelay: 10000, // Ping cada 10s
   },
 
   // Definiciones globales de modelos
   define: {
     timestamps: true,
-    underscored: true,  // camelCase → snake_case en BD
-    freezeTableName: true
-  }
+    underscored: true, // camelCase → snake_case en BD
+    freezeTableName: true,
+  },
 };
 
 // Railway provee MYSQL_URL automáticamente al vincular un servicio MySQL

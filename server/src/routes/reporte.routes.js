@@ -1,6 +1,6 @@
 /**
  * ISTHO CRM - Rutas de Reportes
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  */
@@ -58,7 +58,11 @@ router.get('/inventario-ubicacion/pdf', reporteController.exportarInventarioUbic
 // REPORTES DE CLIENTES
 // =============================================
 
-router.get('/clientes/excel', requiereRolMinimo('operador'), reporteController.exportarClientesExcel);
+router.get(
+  '/clientes/excel',
+  requiereRolMinimo('operador'),
+  reporteController.exportarClientesExcel
+);
 router.get('/clientes/pdf', requiereRolMinimo('operador'), reporteController.exportarClientesPDF);
 
 // =============================================
@@ -108,14 +112,26 @@ router.get('/viajes/csv', reporteController.exportarViajesCsv);
 
 // Averías
 router.get('/averias', requierePermiso('reportes', 'ver'), reporteController.getReporteAverias);
-router.get('/averias/excel', requierePermiso('reportes', 'ver'), reporteController.exportarAveriasExcel);
-router.get('/averias/pdf',   requierePermiso('reportes', 'ver'), reporteController.exportarAveriasPDF);
+router.get(
+  '/averias/excel',
+  requierePermiso('reportes', 'ver'),
+  reporteController.exportarAveriasExcel
+);
+router.get(
+  '/averias/pdf',
+  requierePermiso('reportes', 'ver'),
+  reporteController.exportarAveriasPDF
+);
 
 // =============================================
 // ENVIAR REPORTE POR EMAIL
 // =============================================
 
-router.post('/enviar-email', requierePermiso('reportes', 'crear'), reporteController.enviarReportePorEmail);
+router.post(
+  '/enviar-email',
+  requierePermiso('reportes', 'crear'),
+  reporteController.enviarReportePorEmail
+);
 
 // =============================================
 // REPORTES COMPARATIVOS
@@ -127,10 +143,30 @@ router.get('/comparativo', reporteController.getComparativo);
 // REPORTES PROGRAMADOS (CRUD)
 // =============================================
 
-router.get('/programados', requierePermiso('reportes', 'crear'), reporteController.listarProgramados);
-router.post('/programados', requierePermiso('reportes', 'crear'), reporteController.crearProgramado);
-router.put('/programados/:id', requierePermiso('reportes', 'crear'), reporteController.actualizarProgramado);
-router.delete('/programados/:id', requierePermiso('reportes', 'crear'), reporteController.eliminarProgramado);
-router.post('/programados/:id/ejecutar', requierePermiso('reportes', 'crear'), reporteController.ejecutarProgramadoManual);
+router.get(
+  '/programados',
+  requierePermiso('reportes', 'crear'),
+  reporteController.listarProgramados
+);
+router.post(
+  '/programados',
+  requierePermiso('reportes', 'crear'),
+  reporteController.crearProgramado
+);
+router.put(
+  '/programados/:id',
+  requierePermiso('reportes', 'crear'),
+  reporteController.actualizarProgramado
+);
+router.delete(
+  '/programados/:id',
+  requierePermiso('reportes', 'crear'),
+  reporteController.eliminarProgramado
+);
+router.post(
+  '/programados/:id/ejecutar',
+  requierePermiso('reportes', 'crear'),
+  reporteController.ejecutarProgramadoManual
+);
 
 module.exports = router;

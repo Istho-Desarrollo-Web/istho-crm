@@ -3,13 +3,13 @@
  * ISTHO CRM - InventarioList (Versión Corregida)
  * ============================================================================
  * Listado de productos conectado al backend real.
- * 
+ *
  * CORRECCIONES:
  * - Usa nombres correctos del hook useInventario
  * - snake_case para campos del backend
  * - Integración completa con API
  * - Corregidos errores de sintaxis en template literals
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 2.1.0
  * @date Enero 2026
@@ -43,7 +43,6 @@ import {
 } from 'lucide-react';
 
 // Layout
-
 
 // Components
 import {
@@ -93,11 +92,20 @@ const FILTER_OPTIONS = {
 /**
  * Menú de acciones por fila
  */
-const RowActions = ({ producto, onView, onEdit, onDelete, onEntrada, onSalida, canEdit, canDelete }) => {
+const RowActions = ({
+  producto,
+  onView,
+  onEdit,
+  onDelete,
+  onEntrada,
+  onSalida,
+  canEdit,
+  canDelete,
+}) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const stockActual = producto.stock_actual || producto.cantidad || 0;
-  const esWMS = !!(producto.codigo_wms);
+  const esWMS = !!producto.codigo_wms;
 
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -134,34 +142,48 @@ const RowActions = ({ producto, onView, onEdit, onDelete, onEntrada, onSalida, c
               gap: '8px',
               '&:hover': {
                 backgroundColor: '#f8fafc',
-              }
+              },
             },
             '& .MuiDivider-root': {
               margin: '4px 0',
-            }
+            },
           },
         }}
       >
-        <MenuItem onClick={() => { onView(producto); handleClose(); }}>
+        <MenuItem
+          onClick={() => {
+            onView(producto);
+            handleClose();
+          }}
+        >
           <Eye className="w-4 h-4" />
           Ver detalle
         </MenuItem>
 
         {canEdit && !esWMS && (
-          <MenuItem onClick={() => { onEdit(producto); handleClose(); }}>
+          <MenuItem
+            onClick={() => {
+              onEdit(producto);
+              handleClose();
+            }}
+          >
             <Pencil className="w-4 h-4" />
             Editar
           </MenuItem>
         )}
 
-        {canEdit && !esWMS && (
-          <div className="border-t border-gray-100 my-1" />
-        )}
+        {canEdit && !esWMS && <div className="border-t border-gray-100 my-1" />}
 
         {canEdit && !esWMS && (
           <MenuItem
-            onClick={() => { onEntrada(producto); handleClose(); }}
-            sx={{ color: '#059669 !important', '&:hover': { backgroundColor: '#ecfdf5 !important' } }}
+            onClick={() => {
+              onEntrada(producto);
+              handleClose();
+            }}
+            sx={{
+              color: '#059669 !important',
+              '&:hover': { backgroundColor: '#ecfdf5 !important' },
+            }}
           >
             <PackagePlus className="w-4 h-4" />
             Registrar Entrada
@@ -170,11 +192,16 @@ const RowActions = ({ producto, onView, onEdit, onDelete, onEntrada, onSalida, c
 
         {canEdit && !esWMS && (
           <MenuItem
-            onClick={() => { onSalida(producto); handleClose(); }}
+            onClick={() => {
+              onSalida(producto);
+              handleClose();
+            }}
             disabled={stockActual === 0}
             sx={{
               color: stockActual === 0 ? '#cbd5e1 !important' : '#2563eb !important',
-              '&:hover': { backgroundColor: stockActual === 0 ? 'transparent' : '#eff6ff !important' }
+              '&:hover': {
+                backgroundColor: stockActual === 0 ? 'transparent' : '#eff6ff !important',
+              },
             }}
           >
             <PackageMinus className="w-4 h-4" />
@@ -188,14 +215,18 @@ const RowActions = ({ producto, onView, onEdit, onDelete, onEntrada, onSalida, c
           </MenuItem>
         )}
 
-        {canDelete && !esWMS && (
-          <div className="border-t border-gray-100 my-1" />
-        )}
+        {canDelete && !esWMS && <div className="border-t border-gray-100 my-1" />}
 
         {canDelete && !esWMS && (
           <MenuItem
-            onClick={() => { onDelete(producto); handleClose(); }}
-            sx={{ color: '#dc2626 !important', '&:hover': { backgroundColor: '#fef2f2 !important' } }}
+            onClick={() => {
+              onDelete(producto);
+              handleClose();
+            }}
+            sx={{
+              color: '#dc2626 !important',
+              '&:hover': { backgroundColor: '#fef2f2 !important' },
+            }}
           >
             <Trash2 className="w-4 h-4" />
             Eliminar
@@ -238,7 +269,6 @@ const StockIndicator = ({ actual, minimo }) => {
     </div>
   );
 };
-
 
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
@@ -290,7 +320,11 @@ const InventarioList = () => {
 
   // Modals
   const [formModal, setFormModal] = useState({ isOpen: false, producto: null });
-  const [movimientoModal, setMovimientoModal] = useState({ isOpen: false, tipo: 'entrada', producto: null });
+  const [movimientoModal, setMovimientoModal] = useState({
+    isOpen: false,
+    tipo: 'entrada',
+    producto: null,
+  });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, producto: null });
   const [formLoading, setFormLoading] = useState(false);
 
@@ -313,7 +347,7 @@ const InventarioList = () => {
         if (todos.length >= total || clientes.length < porPagina) break;
         pagina++;
       }
-      setClienteOptions(todos.map(c => ({ value: String(c.id), label: c.razon_social })));
+      setClienteOptions(todos.map((c) => ({ value: String(c.id), label: c.razon_social })));
     };
     cargarTodosLosClientes().catch(() => {});
   }, [user?.rol]);
@@ -365,7 +399,7 @@ const InventarioList = () => {
   // NOTIFICAR ALERTAS AL CARGAR
   // ──────────────────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (kpis && (kpis.bajoStock + kpis.agotados) > 0 && !loading) {
+    if (kpis && kpis.bajoStock + kpis.agotados > 0 && !loading) {
       stockAlert(kpis.bajoStock + kpis.agotados);
     }
   }, [kpis?.bajoStock, kpis?.agotados]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -505,7 +539,9 @@ const InventarioList = () => {
       const rawRows = await readXlsxFile(file);
       if (rawRows.length >= 2) {
         const [headers, ...dataRows] = rawRows;
-        const rows = dataRows.map(row => Object.fromEntries(headers.map((h, i) => [String(h ?? ''), row[i] ?? ''])));
+        const rows = dataRows.map((row) =>
+          Object.fromEntries(headers.map((h, i) => [String(h ?? ''), row[i] ?? '']))
+        );
         setImportPreview(rows.slice(0, 20));
       }
     } catch (_) {
@@ -531,7 +567,9 @@ const InventarioList = () => {
       setImportPreview(null);
       setImportResultados(resultados);
       if (resultados.errores?.length === 0) {
-        success(`Importación completada: ${resultados.creados} creados, ${resultados.actualizados} actualizados`);
+        success(
+          `Importación completada: ${resultados.creados} creados, ${resultados.actualizados} actualizados`
+        );
       } else {
         notifyError(`Importación con ${resultados.errores.length} error(es). Revisa los detalles.`);
       }
@@ -565,18 +603,17 @@ const InventarioList = () => {
     }).format(value);
   };
 
-
   // ──────────────────────────────────────────────────────────────────────────
   // KPIs PARA DISPLAY
   // ──────────────────────────────────────────────────────────────────────────
 
   const displayKpis = kpis || {
     total: productos.length,
-    disponibles: productos.filter(p => p.estado === 'disponible').length,
-    bajoStock: productos.filter(p => p.estado === 'bajo_stock' || p.stock_bajo).length,
-    agotados: productos.filter(p => p.cantidad === 0 || p.estado === 'agotado').length,
+    disponibles: productos.filter((p) => p.estado === 'disponible').length,
+    bajoStock: productos.filter((p) => p.estado === 'bajo_stock' || p.stock_bajo).length,
+    agotados: productos.filter((p) => p.cantidad === 0 || p.estado === 'agotado').length,
     valorTotal: productos.reduce((sum, p) => {
-      return sum + ((p.stock_actual || p.cantidad || 0) * (p.costo_unitario || 0));
+      return sum + (p.stock_actual || p.cantidad || 0) * (p.costo_unitario || 0);
     }, 0),
   };
 
@@ -586,15 +623,15 @@ const InventarioList = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-
-
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* PAGE HEADER */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Inventario</h1>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+              Inventario
+            </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">
               Gestiona el inventario de productos
             </p>
@@ -615,7 +652,6 @@ const InventarioList = () => {
                 <span className="sm:hidden">Imp.</span>
               </Button>
             )}
-
           </div>
         </div>
 
@@ -633,7 +669,11 @@ const InventarioList = () => {
           <KpiCard
             title="Disponibles"
             value={displayKpis.disponibles}
-            change={displayKpis.total > 0 ? `${Math.round((displayKpis.disponibles / displayKpis.total) * 100)}% del total` : '0%'}
+            change={
+              displayKpis.total > 0
+                ? `${Math.round((displayKpis.disponibles / displayKpis.total) * 100)}% del total`
+                : '0%'
+            }
             positive={true}
             icon={Warehouse}
             iconBg="bg-emerald-100"
@@ -697,8 +737,6 @@ const InventarioList = () => {
               )}
             </Button>
 
-           
-
             {canCreate && (
               <Button variant="primary" icon={Plus} onClick={handleCreate}>
                 <span className="hidden sm:inline">Nuevo Producto</span>
@@ -742,13 +780,21 @@ const InventarioList = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            {pagination?.total || productos.length} producto{(pagination?.total || productos.length) !== 1 ? 's' : ''} encontrado{(pagination?.total || productos.length) !== 1 ? 's' : ''}
+            {pagination?.total || productos.length} producto
+            {(pagination?.total || productos.length) !== 1 ? 's' : ''} encontrado
+            {(pagination?.total || productos.length) !== 1 ? 's' : ''}
           </p>
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-lg p-1">
-            <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+            >
               <List className="w-4 h-4" />
             </button>
-            <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+            >
               <LayoutGrid className="w-4 h-4" />
             </button>
           </div>
@@ -760,14 +806,22 @@ const InventarioList = () => {
             {Object.entries(filters).map(([key, value]) => {
               let label = value;
               if (key === 'cliente_id') {
-                label = clienteOptions.find(c => c.value === value)?.label || value;
+                label = clienteOptions.find((c) => c.value === value)?.label || value;
               } else if (key === 'estado') {
-                label = FILTER_OPTIONS.estado.find(c => c.value === value)?.label || value;
+                label = FILTER_OPTIONS.estado.find((c) => c.value === value)?.label || value;
               }
               return (
-                <span key={key} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                <span
+                  key={key}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+                >
                   {label}
-                  <button onClick={() => handleFilterChange(key, null)} className="hover:text-orange-900 dark:hover:text-orange-100">×</button>
+                  <button
+                    onClick={() => handleFilterChange(key, null)}
+                    className="hover:text-orange-900 dark:hover:text-orange-100"
+                  >
+                    ×
+                  </button>
                 </span>
               );
             })}
@@ -780,7 +834,10 @@ const InventarioList = () => {
         {loading ? (
           <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
             {[0, 1, 2, 3, 4].map((i) => (
-              <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 animate-pulse">
+              <div
+                key={i}
+                className="flex items-center gap-4 py-4 border-b border-gray-50 animate-pulse"
+              >
                 <div className="w-10 h-10 bg-gray-200 rounded-lg" />
                 <div className="flex-1 space-y-2">
                   <div className="h-4 bg-gray-200 rounded w-1/3" />
@@ -795,9 +852,7 @@ const InventarioList = () => {
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Package className="w-8 h-8 text-slate-400" />
             </div>
-            <h3 className="text-lg font-medium text-slate-800 mb-1">
-              No se encontraron productos
-            </h3>
+            <h3 className="text-lg font-medium text-slate-800 mb-1">No se encontraron productos</h3>
             <p className="text-slate-500 mb-4">
               {searchTerm || Object.keys(filters).length > 0
                 ? 'Intenta ajustar los filtros de búsqueda'
@@ -820,7 +875,8 @@ const InventarioList = () => {
                       className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center gap-1">
-                        Producto <SortIcon field="producto" sortField={sortField} sortDir={sortDir} />
+                        Producto{' '}
+                        <SortIcon field="producto" sortField={sortField} sortDir={sortDir} />
                       </span>
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -873,7 +929,9 @@ const InventarioList = () => {
                               >
                                 {producto.nombre || producto.producto}
                               </p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">{producto.codigo || producto.sku}</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                {producto.codigo || producto.sku}
+                              </p>
                             </div>
                           </div>
                         </td>
@@ -881,10 +939,7 @@ const InventarioList = () => {
                           {producto.cliente_nombre || '-'}
                         </td>
                         <td className="py-4 px-4">
-                          <StockIndicator
-                            actual={stockActual}
-                            minimo={stockMinimo}
-                          />
+                          <StockIndicator actual={stockActual} minimo={stockMinimo} />
                         </td>
                         <td className="py-4 px-4 text-center">
                           <StatusChip status={producto.estado} />
@@ -931,9 +986,22 @@ const InventarioList = () => {
                 const costoUnitario = producto.costo_unitario || 0;
 
                 const getStockBadge = () => {
-                  if (stockActual <= 0) return { label: 'Agotado', classes: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' };
-                  if (stockMinimo > 0 && stockActual <= stockMinimo) return { label: 'Bajo stock', classes: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' };
-                  return { label: 'Disponible', classes: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' };
+                  if (stockActual <= 0)
+                    return {
+                      label: 'Agotado',
+                      classes: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                    };
+                  if (stockMinimo > 0 && stockActual <= stockMinimo)
+                    return {
+                      label: 'Bajo stock',
+                      classes:
+                        'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                    };
+                  return {
+                    label: 'Disponible',
+                    classes:
+                      'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                  };
                 };
                 const stockBadge = getStockBadge();
 
@@ -976,20 +1044,28 @@ const InventarioList = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500 dark:text-slate-400">Cliente</span>
-                        <span className="text-slate-700 dark:text-slate-200 truncate ml-2">{producto.cliente_nombre || '-'}</span>
+                        <span className="text-slate-700 dark:text-slate-200 truncate ml-2">
+                          {producto.cliente_nombre || '-'}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500 dark:text-slate-400">Stock</span>
-                        <span className="text-slate-800 dark:text-slate-100 font-semibold">{stockActual.toLocaleString()}</span>
+                        <span className="text-slate-800 dark:text-slate-100 font-semibold">
+                          {stockActual.toLocaleString()}
+                        </span>
                       </div>
                     </div>
 
                     {/* Footer: Estado badge */}
                     <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
-                      <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${stockBadge.classes}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${stockBadge.classes}`}
+                      >
                         {stockBadge.label}
                       </span>
-                      <span className="text-xs text-slate-400 font-medium">{formatCurrency(stockActual * costoUnitario)}</span>
+                      <span className="text-xs text-slate-400 font-medium">
+                        {formatCurrency(stockActual * costoUnitario)}
+                      </span>
                     </div>
                   </div>
                 );
@@ -1057,7 +1133,6 @@ const InventarioList = () => {
         size="lg"
       >
         <div className="space-y-5">
-
           {/* Paso 1 — Descargar plantilla */}
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-centhrix-card/60 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-3">
@@ -1065,8 +1140,12 @@ const InventarioList = () => {
                 <FileDown className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Plantilla de importación</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Descarga el formato correcto con columnas y ejemplos</p>
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                  Plantilla de importación
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Descarga el formato correcto con columnas y ejemplos
+                </p>
               </div>
             </div>
             <Button variant="outline" size="sm" icon={FileDown} onClick={handleDescargarPlantilla}>
@@ -1082,14 +1161,18 @@ const InventarioList = () => {
               </p>
               <div
                 className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer
-                  ${isDragOver
-                    ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/10'
-                    : importFile
-                      ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/10'
-                      : 'border-slate-300 dark:border-slate-600 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/10'
+                  ${
+                    isDragOver
+                      ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/10'
+                      : importFile
+                        ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/10'
+                        : 'border-slate-300 dark:border-slate-600 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/10'
                   }`}
                 onClick={() => fileInputRef.current?.click()}
-                onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragOver(true);
+                }}
                 onDragLeave={() => setIsDragOver(false)}
                 onDrop={handleImportDrop}
               >
@@ -1103,7 +1186,9 @@ const InventarioList = () => {
                 {importFile ? (
                   <div className="flex flex-col items-center gap-2">
                     <CheckCircle className="w-10 h-10 text-emerald-500" />
-                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{importFile.name}</p>
+                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                      {importFile.name}
+                    </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {(importFile.size / 1024).toFixed(1)} KB · Haz clic para cambiar el archivo
                     </p>
@@ -1114,7 +1199,9 @@ const InventarioList = () => {
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
                       Arrastra y suelta el archivo aquí
                     </p>
-                    <p className="text-xs text-slate-400">o haz clic para seleccionarlo · Solo .xlsx</p>
+                    <p className="text-xs text-slate-400">
+                      o haz clic para seleccionarlo · Solo .xlsx
+                    </p>
                   </div>
                 )}
               </div>
@@ -1126,12 +1213,20 @@ const InventarioList = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Vista previa — {importPreview.length >= 20 ? 'primeros 20 registros' : `${importPreview.length} registros`}
-                  <span className="ml-2 text-xs font-normal text-slate-400">({importFile?.name})</span>
+                  Vista previa —{' '}
+                  {importPreview.length >= 20
+                    ? 'primeros 20 registros'
+                    : `${importPreview.length} registros`}
+                  <span className="ml-2 text-xs font-normal text-slate-400">
+                    ({importFile?.name})
+                  </span>
                 </p>
                 <button
                   type="button"
-                  onClick={() => { setImportPreview(null); setImportFile(null); }}
+                  onClick={() => {
+                    setImportPreview(null);
+                    setImportFile(null);
+                  }}
                   className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline underline-offset-2"
                 >
                   Cambiar archivo
@@ -1141,23 +1236,42 @@ const InventarioList = () => {
                 <table className="w-full text-sm">
                   <thead className="sticky top-0">
                     <tr className="bg-slate-50 dark:bg-centhrix-card">
-                      <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">#</th>
-                      {Object.keys(importPreview[0] || {}).slice(0, 8).map((key) => (
-                        <th key={key} className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase whitespace-nowrap">
-                          {key}
-                        </th>
-                      ))}
+                      <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">
+                        #
+                      </th>
+                      {Object.keys(importPreview[0] || {})
+                        .slice(0, 8)
+                        .map((key) => (
+                          <th
+                            key={key}
+                            className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase whitespace-nowrap"
+                          >
+                            {key}
+                          </th>
+                        ))}
                     </tr>
                   </thead>
                   <tbody>
                     {importPreview.map((row, idx) => (
-                      <tr key={idx} className="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-card/30">
+                      <tr
+                        key={idx}
+                        className="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-card/30"
+                      >
                         <td className="py-2 px-3 text-slate-400 text-xs">{idx + 1}</td>
-                        {Object.values(row).slice(0, 8).map((val, i) => (
-                          <td key={i} className="py-2 px-3 text-slate-700 dark:text-slate-300 whitespace-nowrap max-w-[180px] truncate text-xs">
-                            {val != null && val !== '' ? String(val) : <span className="text-slate-300 dark:text-slate-600">—</span>}
-                          </td>
-                        ))}
+                        {Object.values(row)
+                          .slice(0, 8)
+                          .map((val, i) => (
+                            <td
+                              key={i}
+                              className="py-2 px-3 text-slate-700 dark:text-slate-300 whitespace-nowrap max-w-[180px] truncate text-xs"
+                            >
+                              {val != null && val !== '' ? (
+                                String(val)
+                              ) : (
+                                <span className="text-slate-300 dark:text-slate-600">—</span>
+                              )}
+                            </td>
+                          ))}
                       </tr>
                     ))}
                   </tbody>
@@ -1169,23 +1283,35 @@ const InventarioList = () => {
           {/* Paso 3 — Resultados */}
           {importResultados && (
             <div className="space-y-3">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Resultado de la importación</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Resultado de la importación
+              </p>
 
               {/* Resumen KPIs */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-xl p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 text-center">
-                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{importResultados.creados}</p>
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                    {importResultados.creados}
+                  </p>
                   <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">Creados</p>
                 </div>
                 <div className="rounded-xl p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 text-center">
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{importResultados.actualizados}</p>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {importResultados.actualizados}
+                  </p>
                   <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">Actualizados</p>
                 </div>
-                <div className={`rounded-xl p-3 border text-center ${importResultados.errores?.length > 0 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : 'bg-slate-50 dark:bg-centhrix-card border-slate-200 dark:border-slate-700'}`}>
-                  <p className={`text-2xl font-bold ${importResultados.errores?.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}`}>
+                <div
+                  className={`rounded-xl p-3 border text-center ${importResultados.errores?.length > 0 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : 'bg-slate-50 dark:bg-centhrix-card border-slate-200 dark:border-slate-700'}`}
+                >
+                  <p
+                    className={`text-2xl font-bold ${importResultados.errores?.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}`}
+                  >
                     {importResultados.errores?.length || 0}
                   </p>
-                  <p className={`text-xs mt-0.5 ${importResultados.errores?.length > 0 ? 'text-red-700 dark:text-red-300' : 'text-slate-500'}`}>
+                  <p
+                    className={`text-xs mt-0.5 ${importResultados.errores?.length > 0 ? 'text-red-700 dark:text-red-300' : 'text-slate-500'}`}
+                  >
                     Errores
                   </p>
                 </div>
@@ -1203,17 +1329,30 @@ const InventarioList = () => {
                       <XCircle className="w-4 h-4" />
                       Ver {importResultados.errores.length} error(es)
                     </span>
-                    {importErroresExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    {importErroresExpanded ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
                   </button>
                   {importErroresExpanded && (
                     <div className="max-h-48 overflow-y-auto divide-y divide-red-100 dark:divide-red-900/30">
                       {importResultados.errores.map((err, idx) => (
-                        <div key={idx} className="px-4 py-2 flex items-start gap-3 bg-white dark:bg-centhrix-card">
-                          <span className="text-xs text-slate-400 shrink-0 mt-0.5">Fila {err.fila}</span>
+                        <div
+                          key={idx}
+                          className="px-4 py-2 flex items-start gap-3 bg-white dark:bg-centhrix-card"
+                        >
+                          <span className="text-xs text-slate-400 shrink-0 mt-0.5">
+                            Fila {err.fila}
+                          </span>
                           {err.sku && (
-                            <span className="text-xs font-mono text-slate-500 dark:text-slate-400 shrink-0 mt-0.5">{err.sku}</span>
+                            <span className="text-xs font-mono text-slate-500 dark:text-slate-400 shrink-0 mt-0.5">
+                              {err.sku}
+                            </span>
                           )}
-                          <span className="text-xs text-red-600 dark:text-red-400">{err.mensaje}</span>
+                          <span className="text-xs text-red-600 dark:text-red-400">
+                            {err.mensaje}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -1224,7 +1363,10 @@ const InventarioList = () => {
               {/* Opción de reimportar */}
               <button
                 type="button"
-                onClick={() => { setImportResultados(null); setImportFile(null); }}
+                onClick={() => {
+                  setImportResultados(null);
+                  setImportFile(null);
+                }}
                 className="text-xs text-slate-500 hover:text-orange-600 dark:text-slate-400 dark:hover:text-orange-400 underline underline-offset-2"
               >
                 Importar otro archivo

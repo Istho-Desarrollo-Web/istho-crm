@@ -9,9 +9,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, Plus, Clock, Play, Trash2, Pencil, Mail,
-  FileSpreadsheet, FileText, Loader2, CheckCircle, XCircle,
-  Calendar, RefreshCw, X,
+  ArrowLeft,
+  Plus,
+  Clock,
+  Play,
+  Trash2,
+  Pencil,
+  Mail,
+  FileSpreadsheet,
+  FileText,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  Calendar,
+  RefreshCw,
+  X,
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import reportesService from '../../api/reportes.service';
@@ -54,7 +66,7 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
 
   useEffect(() => {
     if (reporte) {
-      const freqIdx = FRECUENCIAS.findIndex(f => f.cron === reporte.cron_expresion);
+      const freqIdx = FRECUENCIAS.findIndex((f) => f.cron === reporte.cron_expresion);
       setForm({
         nombre: reporte.nombre || '',
         tipo_reporte: reporte.tipo_reporte || 'operaciones',
@@ -66,9 +78,13 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
       });
     } else {
       setForm({
-        nombre: '', tipo_reporte: 'operaciones', formato: 'excel',
-        frecuencia_idx: 0, cron_expresion: FRECUENCIAS[0].cron,
-        frecuencia_label: FRECUENCIAS[0].label, destinatarios: '',
+        nombre: '',
+        tipo_reporte: 'operaciones',
+        formato: 'excel',
+        frecuencia_idx: 0,
+        cron_expresion: FRECUENCIAS[0].cron,
+        frecuencia_label: FRECUENCIAS[0].label,
+        destinatarios: '',
       });
     }
   }, [reporte, isOpen]);
@@ -76,7 +92,7 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
   if (!isOpen) return null;
 
   const handleFreqChange = (idx) => {
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       frecuencia_idx: idx,
       cron_expresion: FRECUENCIAS[idx].cron,
@@ -96,7 +112,8 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
     });
   };
 
-  const inputCls = 'w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
+  const inputCls =
+    'w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
@@ -112,21 +129,45 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nombre</label>
-            <input type="text" value={form.nombre} onChange={(e) => setForm(p => ({ ...p, nombre: e.target.value }))}
-              placeholder="Ej: Reporte semanal de inventario" className={inputCls} required />
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Nombre
+            </label>
+            <input
+              type="text"
+              value={form.nombre}
+              onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
+              placeholder="Ej: Reporte semanal de inventario"
+              className={inputCls}
+              required
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tipo de Reporte</label>
-              <select value={form.tipo_reporte} onChange={(e) => setForm(p => ({ ...p, tipo_reporte: e.target.value }))} className={inputCls}>
-                {TIPOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Tipo de Reporte
+              </label>
+              <select
+                value={form.tipo_reporte}
+                onChange={(e) => setForm((p) => ({ ...p, tipo_reporte: e.target.value }))}
+                className={inputCls}
+              >
+                {TIPOS.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Formato</label>
-              <select value={form.formato} onChange={(e) => setForm(p => ({ ...p, formato: e.target.value }))} className={inputCls}>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Formato
+              </label>
+              <select
+                value={form.formato}
+                onChange={(e) => setForm((p) => ({ ...p, formato: e.target.value }))}
+                className={inputCls}
+              >
                 <option value="excel">Excel</option>
                 <option value="pdf">PDF</option>
                 <option value="ambos">Excel + PDF</option>
@@ -135,17 +176,31 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Frecuencia</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Frecuencia
+            </label>
             <div className="space-y-2">
               {FRECUENCIAS.map((f, idx) => (
-                <label key={idx} className={`flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer transition-all ${
-                  form.frecuencia_idx === idx
-                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
-                    : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
-                }`}>
-                  <input type="radio" checked={form.frecuencia_idx === idx} onChange={() => handleFreqChange(idx)} className="hidden" />
-                  <Clock className={`w-4 h-4 ${form.frecuencia_idx === idx ? 'text-orange-500' : 'text-slate-400'}`} />
-                  <span className={`text-sm ${form.frecuencia_idx === idx ? 'text-orange-700 dark:text-orange-300 font-medium' : 'text-slate-600 dark:text-slate-300'}`}>
+                <label
+                  key={idx}
+                  className={`flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer transition-all ${
+                    form.frecuencia_idx === idx
+                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
+                      : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    checked={form.frecuencia_idx === idx}
+                    onChange={() => handleFreqChange(idx)}
+                    className="hidden"
+                  />
+                  <Clock
+                    className={`w-4 h-4 ${form.frecuencia_idx === idx ? 'text-orange-500' : 'text-slate-400'}`}
+                  />
+                  <span
+                    className={`text-sm ${form.frecuencia_idx === idx ? 'text-orange-700 dark:text-orange-300 font-medium' : 'text-slate-600 dark:text-slate-300'}`}
+                  >
                     {f.label}
                   </span>
                 </label>
@@ -154,19 +209,33 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Destinatarios</label>
-            <input type="text" value={form.destinatarios} onChange={(e) => setForm(p => ({ ...p, destinatarios: e.target.value }))}
-              placeholder="correo@ejemplo.com, otro@ejemplo.com" className={inputCls} required />
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Destinatarios
+            </label>
+            <input
+              type="text"
+              value={form.destinatarios}
+              onChange={(e) => setForm((p) => ({ ...p, destinatarios: e.target.value }))}
+              placeholder="correo@ejemplo.com, otro@ejemplo.com"
+              className={inputCls}
+              required
+            />
             <p className="text-xs text-slate-400 mt-1">Separa varios emails con coma</p>
           </div>
 
           <div className="flex gap-2 justify-end pt-2">
-            <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-xl">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-xl"
+            >
               Cancelar
             </button>
-            <button type="submit" disabled={loading || !form.nombre || !form.destinatarios}
-              className="px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-xl disabled:opacity-50 flex items-center gap-2">
+            <button
+              type="submit"
+              disabled={loading || !form.nombre || !form.destinatarios}
+              className="px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-xl disabled:opacity-50 flex items-center gap-2"
+            >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {reporte ? 'Guardar Cambios' : 'Crear Reporte'}
             </button>
@@ -194,11 +263,16 @@ const ReportesProgramados = () => {
     try {
       const res = await reportesService.getProgramados();
       setReportes(res?.data || []);
-    } catch { setReportes([]); }
-    finally { setLoading(false); }
+    } catch {
+      setReportes([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSave = async (data) => {
     setFormLoading(true);
@@ -214,7 +288,9 @@ const ReportesProgramados = () => {
       fetchData();
     } catch (err) {
       enqueueSnackbar(err?.message || 'Error al guardar', { variant: 'error' });
-    } finally { setFormLoading(false); }
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -231,7 +307,9 @@ const ReportesProgramados = () => {
   const handleToggle = async (reporte) => {
     try {
       await reportesService.actualizarProgramado(reporte.id, { activo: !reporte.activo });
-      enqueueSnackbar(reporte.activo ? 'Reporte pausado' : 'Reporte activado', { variant: 'success' });
+      enqueueSnackbar(reporte.activo ? 'Reporte pausado' : 'Reporte activado', {
+        variant: 'success',
+      });
       fetchData();
     } catch (err) {
       enqueueSnackbar(err?.message || 'Error', { variant: 'error' });
@@ -246,10 +324,20 @@ const ReportesProgramados = () => {
       fetchData();
     } catch (err) {
       enqueueSnackbar(err?.message || 'Error al ejecutar', { variant: 'error' });
-    } finally { setExecuting(null); }
+    } finally {
+      setExecuting(null);
+    }
   };
 
-  const tipoLabel = { operaciones: 'Operaciones', inventario: 'Inventario', inventario_ubicacion: 'Inv. Ubicación', clientes: 'Clientes', viajes: 'Viajes', cajas_menores: 'Cajas Menores', gastos: 'Gastos' };
+  const tipoLabel = {
+    operaciones: 'Operaciones',
+    inventario: 'Inventario',
+    inventario_ubicacion: 'Inv. Ubicación',
+    clientes: 'Clientes',
+    viajes: 'Viajes',
+    cajas_menores: 'Cajas Menores',
+    gastos: 'Gastos',
+  };
   const tipoColor = {
     operaciones: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
     inventario: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
@@ -266,8 +354,10 @@ const ReportesProgramados = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/reportes')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors">
+            <button
+              onClick={() => navigate('/reportes')}
+              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-centhrix-card rounded-xl transition-colors"
+            >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-3">
@@ -275,8 +365,12 @@ const ReportesProgramados = () => {
                 <Calendar className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Reportes Programados</h1>
-                <p className="text-slate-500 dark:text-slate-400">Envío automático de reportes por email</p>
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                  Reportes Programados
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400">
+                  Envío automático de reportes por email
+                </p>
               </div>
             </div>
           </div>
@@ -300,8 +394,12 @@ const ReportesProgramados = () => {
           ) : reportes.length === 0 ? (
             <div className="py-16 text-center">
               <Calendar className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">Sin reportes programados</h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-4">Crea tu primer reporte automático</p>
+              <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
+                Sin reportes programados
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-4">
+                Crea tu primer reporte automático
+              </p>
               <button
                 onClick={() => setFormModal({ open: true, reporte: null })}
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-xl"
@@ -312,24 +410,40 @@ const ReportesProgramados = () => {
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-slate-700">
               {reportes.map((r) => (
-                <div key={r.id} className="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors">
+                <div
+                  key={r.id}
+                  className="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors"
+                >
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium text-slate-800 dark:text-slate-100 truncate">{r.nombre}</h4>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${tipoColor[r.tipo_reporte] || ''}`}>
+                      <h4 className="font-medium text-slate-800 dark:text-slate-100 truncate">
+                        {r.nombre}
+                      </h4>
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${tipoColor[r.tipo_reporte] || ''}`}
+                      >
                         {tipoLabel[r.tipo_reporte] || r.tipo_reporte}
                       </span>
-                      {(r.formato === 'ambos' ? ['excel', 'pdf'] : [r.formato || 'excel']).map(fmt => (
-                        <span key={fmt} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${
-                          fmt === 'excel'
-                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                            : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                        }`}>
-                          {fmt === 'excel' ? <FileSpreadsheet className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
-                          {fmt.toUpperCase()}
-                        </span>
-                      ))}
+                      {(r.formato === 'ambos' ? ['excel', 'pdf'] : [r.formato || 'excel']).map(
+                        (fmt) => (
+                          <span
+                            key={fmt}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                              fmt === 'excel'
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                            }`}
+                          >
+                            {fmt === 'excel' ? (
+                              <FileSpreadsheet className="w-3 h-3" />
+                            ) : (
+                              <FileText className="w-3 h-3" />
+                            )}
+                            {fmt.toUpperCase()}
+                          </span>
+                        )
+                      )}
                       {/* Badge de estado de última ejecución */}
                       {r.estado_ultima_ejecucion === 'exitoso' && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
@@ -362,7 +476,10 @@ const ReportesProgramados = () => {
                     </div>
                     {/* Mensaje de error de última ejecución */}
                     {r.estado_ultima_ejecucion === 'fallido' && r.ultimo_error && (
-                      <p className="mt-1 text-xs text-red-500 dark:text-red-400 truncate" title={r.ultimo_error}>
+                      <p
+                        className="mt-1 text-xs text-red-500 dark:text-red-400 truncate"
+                        title={r.ultimo_error}
+                      >
                         ⚠ {r.ultimo_error}
                       </p>
                     )}
@@ -377,7 +494,11 @@ const ReportesProgramados = () => {
                         : 'bg-slate-100 dark:bg-centhrix-surface text-slate-500 dark:text-slate-400 hover:bg-slate-200'
                     }`}
                   >
-                    {r.activo ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                    {r.activo ? (
+                      <CheckCircle className="w-3 h-3" />
+                    ) : (
+                      <XCircle className="w-3 h-3" />
+                    )}
                     {r.activo ? 'Activo' : 'Pausado'}
                   </button>
 
@@ -389,7 +510,11 @@ const ReportesProgramados = () => {
                       className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
                       title="Ejecutar ahora"
                     >
-                      {executing === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                      {executing === r.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4" />
+                      )}
                     </button>
                     <button
                       onClick={() => setFormModal({ open: true, reporte: r })}

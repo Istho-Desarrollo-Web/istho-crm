@@ -4,13 +4,16 @@
  */
 
 /* Reset y configuración base */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -45,7 +48,7 @@ html, body {
 
 /* Tema oscuro - Scrollbar */
 .dark-theme ::-webkit-scrollbar-track {
-  background: #2D2D2D;
+  background: #2d2d2d;
 }
 
 .dark-theme ::-webkit-scrollbar-thumb {
@@ -109,7 +112,8 @@ a {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

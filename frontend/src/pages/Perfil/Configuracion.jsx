@@ -70,7 +70,9 @@ const SelectField = ({ value, onChange, options }) => (
     className="px-3 py-2 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all min-w-[180px]"
   >
     {options.map((opt) => (
-      <option key={opt.value} value={opt.value}>{opt.label}</option>
+      <option key={opt.value} value={opt.value}>
+        {opt.label}
+      </option>
     ))}
   </select>
 );
@@ -89,12 +91,12 @@ const SettingRow = ({ icon: Icon, title, description, children }) => (
       )}
       <div className="min-w-0">
         <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{title}</p>
-        {description && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{description}</p>}
+        {description && (
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{description}</p>
+        )}
       </div>
     </div>
-    <div className="flex-shrink-0 ml-4">
-      {children}
-    </div>
+    <div className="flex-shrink-0 ml-4">{children}</div>
   </div>
 );
 
@@ -110,9 +112,7 @@ const SectionCard = ({ icon: Icon, title, children }) => (
       </div>
       <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">{title}</h2>
     </div>
-    <div className="px-5 py-2">
-      {children}
-    </div>
+    <div className="px-5 py-2">{children}</div>
   </div>
 );
 
@@ -129,8 +129,11 @@ const formatBytes = (bytes) => {
 const formatFecha = (fecha) => {
   if (!fecha) return '—';
   return new Intl.DateTimeFormat('es-CO', {
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
     timeZone: 'America/Bogota',
   }).format(new Date(fecha));
 };
@@ -157,7 +160,9 @@ const SeccionBackup = () => {
     }
   }, []); // eslint-disable-line
 
-  useEffect(() => { cargarHistorial(); }, [cargarHistorial]);
+  useEffect(() => {
+    cargarHistorial();
+  }, [cargarHistorial]);
 
   const handleEjecutar = async () => {
     setEjecutando(true);
@@ -184,7 +189,9 @@ const SeccionBackup = () => {
           <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
             <Database className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
-          <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">Backups de Base de Datos</h2>
+          <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">
+            Backups de Base de Datos
+          </h2>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -208,26 +215,34 @@ const SeccionBackup = () => {
       </div>
 
       <div className="p-5 space-y-5">
-
         {/* KPI Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             {
               label: 'Último estado',
               value: ultimoBackup
-                ? ultimoBackup.estado === 'exitoso' ? 'Exitoso' : 'Fallido'
+                ? ultimoBackup.estado === 'exitoso'
+                  ? 'Exitoso'
+                  : 'Fallido'
                 : 'Sin datos',
-              icon: ultimoBackup?.estado === 'exitoso' ? CheckCircle2 : ultimoBackup?.estado === 'fallido' ? XCircle : AlertTriangle,
-              color: ultimoBackup?.estado === 'exitoso'
-                ? 'text-emerald-600 dark:text-emerald-400'
-                : ultimoBackup?.estado === 'fallido'
-                  ? 'text-red-500 dark:text-red-400'
-                  : 'text-slate-400',
-              bg: ultimoBackup?.estado === 'exitoso'
-                ? 'bg-emerald-50 dark:bg-emerald-900/20'
-                : ultimoBackup?.estado === 'fallido'
-                  ? 'bg-red-50 dark:bg-red-900/20'
-                  : 'bg-slate-50 dark:bg-centhrix-surface/40',
+              icon:
+                ultimoBackup?.estado === 'exitoso'
+                  ? CheckCircle2
+                  : ultimoBackup?.estado === 'fallido'
+                    ? XCircle
+                    : AlertTriangle,
+              color:
+                ultimoBackup?.estado === 'exitoso'
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : ultimoBackup?.estado === 'fallido'
+                    ? 'text-red-500 dark:text-red-400'
+                    : 'text-slate-400',
+              bg:
+                ultimoBackup?.estado === 'exitoso'
+                  ? 'bg-emerald-50 dark:bg-emerald-900/20'
+                  : ultimoBackup?.estado === 'fallido'
+                    ? 'bg-red-50 dark:bg-red-900/20'
+                    : 'bg-slate-50 dark:bg-centhrix-surface/40',
             },
             {
               label: 'Tasa de éxito',
@@ -265,7 +280,13 @@ const SeccionBackup = () => {
         {proximoBackup && (
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-centhrix-surface/40 rounded-xl px-4 py-2.5">
             <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>Próximo backup automático: <strong className="text-slate-700 dark:text-slate-200">{formatFecha(proximoBackup)}</strong> · Diario a las 2:00 AM</span>
+            <span>
+              Próximo backup automático:{' '}
+              <strong className="text-slate-700 dark:text-slate-200">
+                {formatFecha(proximoBackup)}
+              </strong>{' '}
+              · Diario a las 2:00 AM
+            </span>
           </div>
         )}
 
@@ -279,38 +300,60 @@ const SeccionBackup = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 dark:bg-centhrix-surface/50">
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Fecha</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Estado</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tamaño</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Duración</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Origen</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Fecha
+                  </th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Estado
+                  </th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Tamaño
+                  </th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Duración
+                  </th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Origen
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {data.registros.map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors">
-                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">{formatFecha(r.fecha)}</td>
+                  <tr
+                    key={r.id}
+                    className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors"
+                  >
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                      {formatFecha(r.fecha)}
+                    </td>
                     <td className="px-4 py-3">
                       {r.estado === 'exitoso' ? (
                         <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Exitoso
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-red-500 dark:text-red-400 font-medium" title={r.error_mensaje ?? ''}>
+                        <span
+                          className="inline-flex items-center gap-1 text-red-500 dark:text-red-400 font-medium"
+                          title={r.error_mensaje ?? ''}
+                        >
                           <XCircle className="w-3.5 h-3.5" /> Fallido
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{formatBytes(r.tamano_bytes)}</td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                      {formatBytes(r.tamano_bytes)}
+                    </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
                       {r.duracion_segundos ? `${r.duracion_segundos}s` : '—'}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        r.origen === 'manual'
-                          ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                          : 'bg-slate-100 text-slate-600 dark:bg-centhrix-surface dark:text-slate-400'
-                      }`}>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          r.origen === 'manual'
+                            ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                            : 'bg-slate-100 text-slate-600 dark:bg-centhrix-surface dark:text-slate-400'
+                        }`}
+                      >
                         {r.origen === 'manual' ? 'Manual' : 'Automático'}
                       </span>
                     </td>
@@ -323,7 +366,9 @@ const SeccionBackup = () => {
           <div className="text-center py-8 text-slate-400 dark:text-slate-500">
             <Database className="w-8 h-8 mx-auto mb-2 opacity-40" />
             <p className="text-sm">No hay backups registrados aún</p>
-            <p className="text-xs mt-1">El primer backup automático se ejecutará esta noche a las 2:00 AM</p>
+            <p className="text-xs mt-1">
+              El primer backup automático se ejecutará esta noche a las 2:00 AM
+            </p>
           </div>
         )}
       </div>
@@ -372,12 +417,12 @@ const Configuracion = () => {
   useEffect(() => {
     const temaActual = isDark ? 'dark' : 'light';
     if (prefs.tema !== temaActual) {
-      setPrefs(prev => ({ ...prev, tema: temaActual }));
+      setPrefs((prev) => ({ ...prev, tema: temaActual }));
     }
   }, [isDark]); // eslint-disable-line
 
   const handleChange = (key, value) => {
-    setPrefs(prev => ({ ...prev, [key]: value }));
+    setPrefs((prev) => ({ ...prev, [key]: value }));
     setHasChanges(true);
 
     // Tema se aplica inmediatamente
@@ -406,12 +451,15 @@ const Configuracion = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-8 max-w-3xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Configuración</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Personaliza tu experiencia en el CRM</p>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+              Configuración
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">
+              Personaliza tu experiencia en el CRM
+            </p>
           </div>
           {hasChanges && (
             <Button variant="primary" icon={Save} onClick={handleSave} loading={loading}>
@@ -421,7 +469,6 @@ const Configuracion = () => {
         </div>
 
         <div className="space-y-6">
-
           {/* ═══ APARIENCIA ═══ */}
           <SectionCard icon={Moon} title="Apariencia">
             <SettingRow
@@ -450,7 +497,9 @@ const Configuracion = () => {
             </SettingRow>
 
             <div className="pt-2 pb-1">
-              <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Alertas por Módulo</p>
+              <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                Alertas por Módulo
+              </p>
             </div>
 
             <SettingRow title="Despachos" description="Entradas y salidas WMS">
@@ -547,23 +596,32 @@ const Configuracion = () => {
                 <span className="text-sm font-mono text-slate-600 dark:text-slate-300">v1.0.0</span>
               </SettingRow>
               <SettingRow title="Entorno" description="Ambiente de ejecución">
-                <span className="text-sm font-mono text-emerald-600 dark:text-emerald-400">Producción</span>
+                <span className="text-sm font-mono text-emerald-600 dark:text-emerald-400">
+                  Producción
+                </span>
               </SettingRow>
               <SettingRow title="Base de Datos" description="Motor de base de datos">
-                <span className="text-sm font-mono text-slate-600 dark:text-slate-300">MySQL 8.0</span>
+                <span className="text-sm font-mono text-slate-600 dark:text-slate-300">
+                  MySQL 8.0
+                </span>
               </SettingRow>
             </SectionCard>
           )}
 
           {/* ═══ BACKUPS (solo admin) ═══ */}
           {user?.rol === 'admin' && <SeccionBackup />}
-
         </div>
 
         {/* Floating save button (mobile) */}
         {hasChanges && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 sm:hidden">
-            <Button variant="primary" icon={Save} onClick={handleSave} loading={loading} className="shadow-2xl">
+            <Button
+              variant="primary"
+              icon={Save}
+              onClick={handleSave}
+              loading={loading}
+              className="shadow-2xl"
+            >
               Guardar Cambios
             </Button>
           </div>

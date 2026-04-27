@@ -3,7 +3,7 @@
  * ISTHO CRM - FloatingHeader (Ultimate Edition)
  * ============================================================================
  * Header con modo oscuro, atajos de teclado y optimizaciones avanzadas.
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 4.0.0
  * @date Enero 2026
@@ -107,7 +107,12 @@ const allMenuConfig = [
     shortcut: 'I',
     items: [
       { icon: Package, label: 'Maestro de Productos', href: '/inventario', shortcut: 'G I' },
-      { icon: AlertCircle, label: 'Alertas de Productos', href: '/inventario/alertas', shortcut: 'G L' },
+      {
+        icon: AlertCircle,
+        label: 'Alertas de Productos',
+        href: '/inventario/alertas',
+        shortcut: 'G L',
+      },
     ],
   },
   {
@@ -145,7 +150,12 @@ const allMenuConfig = [
     soloAdmin: true,
     items: [
       { icon: Settings, label: 'Usuarios y Roles', href: '/administracion', shortcut: 'G U' },
-      { icon: Activity, label: 'Auditoría de Acciones', href: '/auditoria-acciones', shortcut: 'G X' },
+      {
+        icon: Activity,
+        label: 'Auditoría de Acciones',
+        href: '/auditoria-acciones',
+        shortcut: 'G X',
+      },
       { icon: Truck, label: 'Configuración WMS', href: '/configuracion-wms' },
       { icon: Activity, label: 'Dashboard WMS', href: '/wms-dashboard' },
     ],
@@ -175,7 +185,7 @@ const getMenuForRole = (rol, hasPermission) => {
   if (rol === 'admin') return allMenuConfig;
 
   return allMenuConfig
-    .filter(menu => {
+    .filter((menu) => {
       // Ocultar menús soloAdmin para no-admins
       if (menu.soloAdmin) return false;
       // Ocultar menús soloInternos para clientes
@@ -184,16 +194,16 @@ const getMenuForRole = (rol, hasPermission) => {
       // Verificar si el usuario tiene al menos UN permiso del menú
       const permisos = MENU_PERMISSION_MAP[menu.id];
       if (permisos) {
-        return permisos.some(p => {
+        return permisos.some((p) => {
           const [modulo, accion] = p.split('.');
           return hasPermission(modulo, accion);
         });
       }
       return true;
     })
-    .map(menu => {
+    .map((menu) => {
       // Filtrar sub-items según permisos específicos
-      const filteredItems = menu.items.filter(item => {
+      const filteredItems = menu.items.filter((item) => {
         // Mi Empresa solo visible para portal cliente
         if (item.soloPortal) return rol === 'cliente' && hasPermission('clientes', 'ver');
         // Alertas de inventario requiere permiso especial
@@ -259,13 +269,14 @@ const useKeyboardShortcuts = (shortcuts, enabled = true) => {
       const current = shortcutsRef.current;
 
       // Ignorar si está escribiendo en un input (excepto Ctrl/Cmd)
-      if (!e.ctrlKey && !e.metaKey && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+      if (!e.ctrlKey && !e.metaKey && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName))
+        return;
 
       // Atajos especiales con modificadores (Ctrl en Windows, Cmd en Mac)
       if (e.ctrlKey || e.metaKey) {
         // Ignorar en inputs solo si NO hay un shortcut registrado para esa combinación
         const key = e.key.toUpperCase();
-        const shortcut = current.find(s => {
+        const shortcut = current.find((s) => {
           const sKey = s.key.toUpperCase();
           return sKey === `CMD+${key}` || sKey === `CTRL+${key}`;
         });
@@ -291,7 +302,7 @@ const useKeyboardShortcuts = (shortcuts, enabled = true) => {
 
       // Verificar secuencia
       const sequence = sequenceRef.current.join(' ');
-      const shortcut = current.find(s => s.key === sequence);
+      const shortcut = current.find((s) => s.key === sequence);
       if (shortcut) {
         e.preventDefault();
         shortcut.action();
@@ -416,47 +427,53 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
 
   const shortcuts = [
     {
-      category: 'Navegación General', items: [
+      category: 'Navegación General',
+      items: [
         { keys: ['G', 'D'], description: 'Ir a Dashboard' },
         { keys: ['G', 'R'], description: 'Ir a Reportes' },
         { keys: ['G', 'C'], description: 'Ir a Clientes' },
         { keys: ['G', 'P'], description: 'Ir a Plantillas Email' },
-      ]
+      ],
     },
     {
-      category: 'Inventario', items: [
+      category: 'Inventario',
+      items: [
         { keys: ['G', 'I'], description: 'Maestro de Productos' },
         { keys: ['G', 'L'], description: 'Alertas de Productos' },
-      ]
+      ],
     },
     {
-      category: 'Operaciones', items: [
+      category: 'Operaciones',
+      items: [
         { keys: ['G', 'E'], description: 'Entradas' },
         { keys: ['G', 'S'], description: 'Salidas' },
         { keys: ['G', 'K'], description: 'Kardex' },
-      ]
+      ],
     },
     {
-      category: 'Viajes y Cajas', items: [
+      category: 'Viajes y Cajas',
+      items: [
         { keys: ['G', 'V'], description: 'Vehículos' },
         { keys: ['G', 'T'], description: 'Viajes' },
         { keys: ['G', 'M'], description: 'Cajas Menores' },
         { keys: ['G', 'O'], description: 'Movimientos' },
-      ]
+      ],
     },
     {
-      category: 'Administración', items: [
+      category: 'Administración',
+      items: [
         { keys: ['G', 'U'], description: 'Usuarios y Roles' },
         { keys: ['G', 'X'], description: 'Auditoría de Acciones' },
-      ]
+      ],
     },
     {
-      category: 'Acciones Rápidas', items: [
+      category: 'Acciones Rápidas',
+      items: [
         { keys: ['Ctrl', 'K'], description: 'Abrir búsqueda' },
         { keys: ['Ctrl', 'B'], description: 'Toggle modo oscuro' },
         { keys: ['Ctrl', '/'], description: 'Ver atajos de teclado' },
         { keys: ['ESC'], description: 'Cerrar modal/menú' },
-      ]
+      ],
     },
   ];
 
@@ -475,8 +492,12 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
                 <Keyboard className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Atajos de Teclado</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Aumenta tu productividad</p>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">
+                  Atajos de Teclado
+                </h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Aumenta tu productividad
+                </p>
               </div>
             </div>
             <button
@@ -496,8 +517,13 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
                 </h3>
                 <div className="space-y-2">
                   {section.items.map((item, itemIdx) => (
-                    <div key={itemIdx} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors">
-                      <span className="text-sm text-slate-700 dark:text-slate-200">{item.description}</span>
+                    <div
+                      key={itemIdx}
+                      className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors"
+                    >
+                      <span className="text-sm text-slate-700 dark:text-slate-200">
+                        {item.description}
+                      </span>
                       <div className="flex items-center gap-1">
                         {item.keys.map((key, keyIdx) => (
                           <kbd
@@ -534,9 +560,10 @@ const DropdownMenuItem = ({ icon: Icon, label, href, isActive, onClick, badge, s
     onClick={() => onClick(href)}
     className={`
       flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors
-      ${isActive
-        ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 font-medium'
-        : 'text-slate-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-centhrix-surface'
+      ${
+        isActive
+          ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 font-medium'
+          : 'text-slate-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-centhrix-surface'
       }
     `}
   >
@@ -568,21 +595,26 @@ DropdownMenuItem.propTypes = {
 /**
  * Menú dropdown de navegación (Desktop)
  */
-const DropdownMenu = ({ menu, isActive, isCurrentSection, onMouseEnter, onMouseLeave, onNavigate, currentPath }) => {
+const DropdownMenu = ({
+  menu,
+  isActive,
+  isCurrentSection,
+  onMouseEnter,
+  onMouseLeave,
+  onNavigate,
+  currentPath,
+}) => {
   const Icon = menu.icon;
   const menuId = useId();
   return (
-    <div
-      className="relative"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
+    <div className="relative" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <button
         className={`
           group relative flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200
-          ${isCurrentSection
-            ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/20'
-            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-centhrix-surface'
+          ${
+            isCurrentSection
+              ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/20'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-centhrix-surface'
           }
         `}
         aria-expanded={isActive}
@@ -604,7 +636,11 @@ const DropdownMenu = ({ menu, isActive, isCurrentSection, onMouseEnter, onMouseL
 
       {isActive && (
         <div className="absolute top-full left-0 pt-2 w-56 z-50">
-          <div id={menuId} role="menu" className="bg-white dark:bg-centhrix-card rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 animate-fadeIn">
+          <div
+            id={menuId}
+            role="menu"
+            className="bg-white dark:bg-centhrix-card rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 animate-fadeIn"
+          >
             {menu.items.map((item, idx) => (
               <DropdownMenuItem
                 key={idx}
@@ -667,9 +703,10 @@ const MobileMenuSection = ({ menu, isExpanded, onToggle, onNavigate, currentPath
               onClick={() => onNavigate(item.href)}
               className={`
                 flex items-center justify-between w-full px-4 py-2.5 text-sm transition-colors
-                ${isActive
-                  ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 font-medium'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-centhrix-surface'
+                ${
+                  isActive
+                    ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 font-medium'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-centhrix-surface'
                 }
               `}
             >
@@ -701,7 +738,18 @@ MobileMenuSection.propTypes = {
 /**
  * Menú lateral móvil
  */
-const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, isDark, onToggleDark, _onShowShortcuts, menuItems }) => {
+const MobileMenu = ({
+  isOpen,
+  onClose,
+  user,
+  onNavigate,
+  onLogout,
+  currentPath,
+  isDark,
+  onToggleDark,
+  _onShowShortcuts,
+  menuItems,
+}) => {
   const [expandedSection, setExpandedSection] = useState(null);
   const menuRef = useRef(null);
 
@@ -728,12 +776,36 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
   };
 
   const roleConfig = {
-    admin: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300', label: 'Administrador' },
-    supervisor: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', label: 'Supervisor' },
-    financiera: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300', label: 'Financiera' },
-    operador: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300', label: 'Operador' },
-    conductor: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300', label: 'Conductor' },
-    cliente: { bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-700 dark:text-violet-300', label: 'Cliente' },
+    admin: {
+      bg: 'bg-red-100 dark:bg-red-900/30',
+      text: 'text-red-700 dark:text-red-300',
+      label: 'Administrador',
+    },
+    supervisor: {
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      text: 'text-blue-700 dark:text-blue-300',
+      label: 'Supervisor',
+    },
+    financiera: {
+      bg: 'bg-amber-100 dark:bg-amber-900/30',
+      text: 'text-amber-700 dark:text-amber-300',
+      label: 'Financiera',
+    },
+    operador: {
+      bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+      text: 'text-emerald-700 dark:text-emerald-300',
+      label: 'Operador',
+    },
+    conductor: {
+      bg: 'bg-orange-100 dark:bg-orange-900/30',
+      text: 'text-orange-700 dark:text-orange-300',
+      label: 'Conductor',
+    },
+    cliente: {
+      bg: 'bg-violet-100 dark:bg-violet-900/30',
+      text: 'text-violet-700 dark:text-violet-300',
+      label: 'Cliente',
+    },
   };
 
   const roleStyle = roleConfig[user?.rol] || roleConfig.operador;
@@ -776,12 +848,14 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
           {/* User Info */}
           <div className="flex items-center gap-3 p-3 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
             {user?.avatar_url ? (
-              <img src={getServerFileUrl(user.avatar_url)} alt={user?.nombre_completo || user?.username || 'Avatar'} className="w-12 h-12 rounded-full object-cover flex-shrink-0 shadow-md" />
+              <img
+                src={getServerFileUrl(user.avatar_url)}
+                alt={user?.nombre_completo || user?.username || 'Avatar'}
+                className="w-12 h-12 rounded-full object-cover flex-shrink-0 shadow-md"
+              />
             ) : (
               <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-                <span className="text-white font-bold">
-                  {getInitials(user?.nombre_completo)}
-                </span>
+                <span className="text-white font-bold">{getInitials(user?.nombre_completo)}</span>
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -791,7 +865,9 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
               <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                 {user?.email || 'email@istho.com'}
               </p>
-              <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${roleStyle.bg} ${roleStyle.text}`}>
+              <span
+                className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${roleStyle.bg} ${roleStyle.text}`}
+              >
                 <Shield className="w-3 h-3" />
                 {roleStyle.label}
               </span>
@@ -801,7 +877,10 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
           {/* Portal Cliente Badge (móvil) - clickeable */}
           {user?.rol === 'cliente' && user?.cliente_info && (
             <button
-              onClick={() => { onNavigate(`/clientes/${user.cliente_id}`); onClose(); }}
+              onClick={() => {
+                onNavigate(`/clientes/${user.cliente_id}`);
+                onClose();
+              }}
               className="flex items-center gap-3 mt-3 p-3 bg-violet-50 dark:bg-violet-900/20 rounded-xl border border-violet-200 dark:border-violet-800 w-full text-left hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
             >
               {user.cliente_info.logo_url ? (
@@ -816,8 +895,12 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-violet-600 dark:text-violet-400">Portal Cliente</p>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{user.cliente_info.razon_social}</p>
+                <p className="text-xs font-semibold text-violet-600 dark:text-violet-400">
+                  Portal Cliente
+                </p>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
+                  {user.cliente_info.razon_social}
+                </p>
               </div>
             </button>
           )}
@@ -890,9 +973,7 @@ const MobileMenu = ({ isOpen, onClose, user, onNavigate, onLogout, currentPath, 
 
         {/* Footer */}
         <div className="p-4 text-center border-t border-gray-100 dark:border-slate-700">
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            © 2026 ISTHO CRM v2.0.0
-          </p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">© 2026 ISTHO CRM v2.0.0</p>
         </div>
       </div>
     </>
@@ -926,7 +1007,9 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
     if (u?.nombre && u?.apellido) return `${u.nombre[0]}${u.apellido[0]}`.toUpperCase();
     if (u?.nombre_completo) {
       const parts = u.nombre_completo.trim().split(/\s+/);
-      return parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}`.toUpperCase() : parts[0][0].toUpperCase();
+      return parts.length >= 2
+        ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+        : parts[0][0].toUpperCase();
     }
     return (u?.username || 'U')[0].toUpperCase();
   };
@@ -956,7 +1039,11 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
         className="flex items-center gap-3 p-1 pr-3 hover:bg-slate-50 dark:hover:bg-centhrix-card rounded-full border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all"
       >
         {user?.avatar_url ? (
-          <img src={getServerFileUrl(user.avatar_url)} alt={user?.nombre_completo || user?.username || 'Avatar'} className="w-8 h-8 rounded-full object-cover shadow-md" />
+          <img
+            src={getServerFileUrl(user.avatar_url)}
+            alt={user?.nombre_completo || user?.username || 'Avatar'}
+            className="w-8 h-8 rounded-full object-cover shadow-md"
+          />
         ) : (
           <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-medium shadow-md text-sm">
             {getInitials(user)}
@@ -965,12 +1052,20 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
       </button>
 
       {isOpen && (
-        <div id={avatarMenuId} role="menu" className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-centhrix-card rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50 animate-fadeIn">
+        <div
+          id={avatarMenuId}
+          role="menu"
+          className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-centhrix-card rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50 animate-fadeIn"
+        >
           {/* User Info */}
           <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               {user?.avatar_url ? (
-                <img src={getServerFileUrl(user.avatar_url)} alt={user?.nombre_completo || user?.username || 'Avatar'} className="w-10 h-10 rounded-full object-cover shadow-md" />
+                <img
+                  src={getServerFileUrl(user.avatar_url)}
+                  alt={user?.nombre_completo || user?.username || 'Avatar'}
+                  className="w-10 h-10 rounded-full object-cover shadow-md"
+                />
               ) : (
                 <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold shadow-md">
                   {getInitials(user)}
@@ -995,7 +1090,10 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
               onClick={() => handleNavigate('/perfil')}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-centhrix-card transition-colors"
             >
-              <UserCircle className="w-4 h-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
+              <UserCircle
+                className="w-4 h-4 text-slate-500 dark:text-slate-400"
+                aria-hidden="true"
+              />
               Ver Perfil
             </button>
 
@@ -1022,7 +1120,10 @@ const AvatarDropdown = ({ user, onNavigate, onLogout }) => {
           <div className="border-t border-gray-100 dark:border-slate-700 py-1">
             <button
               role="menuitem"
-              onClick={() => { setIsOpen(false); onLogout(); }}
+              onClick={() => {
+                setIsOpen(false);
+                onLogout();
+              }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors"
             >
               <LogOut className="w-4 h-4" aria-hidden="true" />
@@ -1045,9 +1146,11 @@ AvatarDropdown.propTypes = {
 const normalizarUrlNotificacion = (url) => {
   if (!url) return url;
   // /inventario/entradas/:id → /operaciones/entradas/:id
-  if (/^\/inventario\/entradas\/\d+/.test(url)) return url.replace('/inventario/entradas/', '/operaciones/entradas/');
+  if (/^\/inventario\/entradas\/\d+/.test(url))
+    return url.replace('/inventario/entradas/', '/operaciones/entradas/');
   // /inventario/salidas/:id → /operaciones/salidas/:id
-  if (/^\/inventario\/salidas\/\d+/.test(url)) return url.replace('/inventario/salidas/', '/operaciones/salidas/');
+  if (/^\/inventario\/salidas\/\d+/.test(url))
+    return url.replace('/inventario/salidas/', '/operaciones/salidas/');
   // /inventario/:id (solo número) → /inventario/productos/:id
   if (/^\/inventario\/\d+$/.test(url)) return url.replace('/inventario/', '/inventario/productos/');
   return url;
@@ -1072,7 +1175,15 @@ const FloatingHeader = () => {
   const [activeMenu, setActiveMenu] = useState(null);
 
   // Notificaciones reales
-  const { unreadCount: notificationCount, notificaciones, ultimaNotificacion, fetchRecientes, marcarLeida, marcarTodasLeidas, loading: loadingNotifs } = useNotificaciones();
+  const {
+    unreadCount: notificationCount,
+    notificaciones,
+    ultimaNotificacion,
+    fetchRecientes,
+    marcarLeida,
+    marcarTodasLeidas,
+    loading: loadingNotifs,
+  } = useNotificaciones();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const notifRef = useRef(null);
   const lastNotifRef = useRef(null);
@@ -1083,9 +1194,12 @@ const FloatingHeader = () => {
     if (ultimaNotificacion && ultimaNotificacion !== lastNotifRef.current) {
       lastNotifRef.current = ultimaNotificacion;
       enqueueSnackbar(ultimaNotificacion.titulo || 'Nueva notificación', {
-        variant: ultimaNotificacion.prioridad === 'urgente' ? 'error'
-          : ultimaNotificacion.prioridad === 'alta' ? 'warning'
-          : 'info',
+        variant:
+          ultimaNotificacion.prioridad === 'urgente'
+            ? 'error'
+            : ultimaNotificacion.prioridad === 'alta'
+              ? 'warning'
+              : 'info',
         autoHideDuration: 5000,
       });
       // Anunciar la notificación a lectores de pantalla
@@ -1114,7 +1228,7 @@ const FloatingHeader = () => {
 
   const handleBellClick = () => {
     if (!isNotifOpen) fetchRecientes();
-    setIsNotifOpen(prev => !prev);
+    setIsNotifOpen((prev) => !prev);
   };
 
   // Configurar atajos
@@ -1122,14 +1236,14 @@ const FloatingHeader = () => {
     { key: 'CMD+B', action: toggleDark },
     { key: 'CMD+/', action: () => setIsShortcutsOpen(true) },
     // Navegación
-    ...menuConfig.flatMap(menu =>
+    ...menuConfig.flatMap((menu) =>
       menu.items
-        .filter(item => item.shortcut)
-        .map(item => ({
+        .filter((item) => item.shortcut)
+        .map((item) => ({
           key: item.shortcut,
-          action: () => navigate(item.href)
+          action: () => navigate(item.href),
         }))
-    )
+    ),
   ];
 
   useKeyboardShortcuts(shortcuts);
@@ -1147,15 +1261,15 @@ const FloatingHeader = () => {
           left-4 right-4 md:left-8 md:right-8 lg:left-1/2 lg:w-full lg:max-w-7xl lg:-translate-x-1/2
           ${isVisible ? 'top-4 translate-y-0' : '-top-24 -translate-y-full'}
           bg-white dark:bg-centhrix-bg rounded-2xl border border-gray-100 dark:border-slate-700
-          ${isAtTop
-            ? 'shadow-lg shadow-gray-200/50 dark:shadow-black/20'
-            : 'shadow-xl shadow-gray-200/50 dark:shadow-black/40 ring-1 ring-black/5'
+          ${
+            isAtTop
+              ? 'shadow-lg shadow-gray-200/50 dark:shadow-black/20'
+              : 'shadow-xl shadow-gray-200/50 dark:shadow-black/40 ring-1 ring-black/5'
           }
         `}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 gap-4">
-
             {/* Logo & Mobile Toggle */}
             <div className="flex items-center gap-4">
               <button
@@ -1216,24 +1330,48 @@ const FloatingHeader = () => {
               )}
 
               {/* Badge de Rol (no-cliente) */}
-              {user?.rol && user.rol !== 'cliente' && (() => {
-                const rolBadges = {
-                  admin: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400', label: 'Admin' },
-                  supervisor: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', label: 'Supervisor' },
-                  financiera: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-600 dark:text-amber-400', label: 'Financiera' },
-                  operador: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400', label: 'Operador' },
-                  conductor: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400', label: 'Conductor' },
-                };
-                const badge = rolBadges[user.rol];
-                if (!badge) return null;
-                return (
-                  <div className="flex items-center ml-2 pl-3 border-l border-slate-200 dark:border-slate-700">
-                    <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${badge.bg} ${badge.text}`}>
-                      {badge.label}
-                    </span>
-                  </div>
-                );
-              })()}
+              {user?.rol &&
+                user.rol !== 'cliente' &&
+                (() => {
+                  const rolBadges = {
+                    admin: {
+                      bg: 'bg-red-100 dark:bg-red-900/30',
+                      text: 'text-red-600 dark:text-red-400',
+                      label: 'Admin',
+                    },
+                    supervisor: {
+                      bg: 'bg-blue-100 dark:bg-blue-900/30',
+                      text: 'text-blue-600 dark:text-blue-400',
+                      label: 'Supervisor',
+                    },
+                    financiera: {
+                      bg: 'bg-amber-100 dark:bg-amber-900/30',
+                      text: 'text-amber-600 dark:text-amber-400',
+                      label: 'Financiera',
+                    },
+                    operador: {
+                      bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+                      text: 'text-emerald-600 dark:text-emerald-400',
+                      label: 'Operador',
+                    },
+                    conductor: {
+                      bg: 'bg-orange-100 dark:bg-orange-900/30',
+                      text: 'text-orange-600 dark:text-orange-400',
+                      label: 'Conductor',
+                    },
+                  };
+                  const badge = rolBadges[user.rol];
+                  if (!badge) return null;
+                  return (
+                    <div className="flex items-center ml-2 pl-3 border-l border-slate-200 dark:border-slate-700">
+                      <span
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${badge.bg} ${badge.text}`}
+                      >
+                        {badge.label}
+                      </span>
+                    </div>
+                  );
+                })()}
             </div>
 
             {/* Desktop Navigation */}
@@ -1259,7 +1397,9 @@ const FloatingHeader = () => {
             <div className="flex items-center gap-2 sm:gap-4">
               {/* Search - abre GlobalSearch modal */}
               <button
-                onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+                onClick={() =>
+                  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))
+                }
                 className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-card rounded-lg transition-colors"
                 title="Buscar (Ctrl+K)"
                 aria-label="Buscar (Ctrl+K)"
@@ -1274,7 +1414,11 @@ const FloatingHeader = () => {
                   title={`Modo ${isDark ? 'Claro' : 'Oscuro'} (⌘B)`}
                   aria-label={`Cambiar a modo ${isDark ? 'claro' : 'oscuro'}`}
                 >
-                  {isDark ? <Sun className="w-5 h-5" aria-hidden="true" /> : <Moon className="w-5 h-5" aria-hidden="true" />}
+                  {isDark ? (
+                    <Sun className="w-5 h-5" aria-hidden="true" />
+                  ) : (
+                    <Moon className="w-5 h-5" aria-hidden="true" />
+                  )}
                 </button>
 
                 <div ref={notifRef} className="relative">
@@ -1292,7 +1436,9 @@ const FloatingHeader = () => {
                     <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-[384px] bg-white dark:bg-centhrix-card rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50 -mr-2 sm:mr-0">
                       {/* Header */}
                       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-700">
-                        <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">Notificaciones</h3>
+                        <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">
+                          Notificaciones
+                        </h3>
                         <div className="flex items-center gap-2">
                           {notificationCount > 0 && (
                             <button
@@ -1310,63 +1456,102 @@ const FloatingHeader = () => {
                       <div className="max-h-80 overflow-y-auto">
                         {loadingNotifs ? (
                           <div className="p-4 space-y-3">
-                            {[0, 1, 2].map(i => (
-                              <div key={i} className="h-14 bg-gray-100 dark:bg-centhrix-surface rounded-lg animate-pulse" />
+                            {[0, 1, 2].map((i) => (
+                              <div
+                                key={i}
+                                className="h-14 bg-gray-100 dark:bg-centhrix-surface rounded-lg animate-pulse"
+                              />
                             ))}
                           </div>
                         ) : notificaciones.length === 0 ? (
                           <div className="py-10 text-center">
                             <Bell className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                            <p className="text-sm text-slate-500 dark:text-slate-400">No hay notificaciones</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                              No hay notificaciones
+                            </p>
                           </div>
                         ) : (
-                          [...notificaciones].sort((a, b) => (a.leida === b.leida ? 0 : a.leida ? 1 : -1)).map((notif) => {
-                            const typeConfig = {
-                              despacho: { icon: Truck, bg: 'bg-blue-100 dark:bg-blue-900/30', color: 'text-blue-600' },
-                              alerta: { icon: AlertTriangle, bg: 'bg-amber-100 dark:bg-amber-900/30', color: 'text-amber-600' },
-                              cliente: { icon: Users, bg: 'bg-violet-100 dark:bg-violet-900/30', color: 'text-violet-600' },
-                              reporte: { icon: FileText, bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-600' },
-                              sistema: { icon: Info, bg: 'bg-slate-100 dark:bg-centhrix-surface', color: 'text-slate-600 dark:text-slate-300' },
-                              inventario: { icon: Package, bg: 'bg-orange-100 dark:bg-orange-900/30', color: 'text-orange-600' },
-                            };
-                            const cfg = typeConfig[notif.tipo] || typeConfig.sistema;
-                            const Icon = cfg.icon;
-                            const timeAgo = getTimeAgo(notif.created_at);
+                          [...notificaciones]
+                            .sort((a, b) => (a.leida === b.leida ? 0 : a.leida ? 1 : -1))
+                            .map((notif) => {
+                              const typeConfig = {
+                                despacho: {
+                                  icon: Truck,
+                                  bg: 'bg-blue-100 dark:bg-blue-900/30',
+                                  color: 'text-blue-600',
+                                },
+                                alerta: {
+                                  icon: AlertTriangle,
+                                  bg: 'bg-amber-100 dark:bg-amber-900/30',
+                                  color: 'text-amber-600',
+                                },
+                                cliente: {
+                                  icon: Users,
+                                  bg: 'bg-violet-100 dark:bg-violet-900/30',
+                                  color: 'text-violet-600',
+                                },
+                                reporte: {
+                                  icon: FileText,
+                                  bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+                                  color: 'text-emerald-600',
+                                },
+                                sistema: {
+                                  icon: Info,
+                                  bg: 'bg-slate-100 dark:bg-centhrix-surface',
+                                  color: 'text-slate-600 dark:text-slate-300',
+                                },
+                                inventario: {
+                                  icon: Package,
+                                  bg: 'bg-orange-100 dark:bg-orange-900/30',
+                                  color: 'text-orange-600',
+                                },
+                              };
+                              const cfg = typeConfig[notif.tipo] || typeConfig.sistema;
+                              const Icon = cfg.icon;
+                              const timeAgo = getTimeAgo(notif.created_at);
 
-                            return (
-                              <button
-                                key={notif.id}
-                                onClick={() => {
-                                  if (!notif.leida) marcarLeida(notif.id);
-                                  if (notif.accion_url) {
-                                    const url = normalizarUrlNotificacion(notif.accion_url);
-                                    navigate(url);
-                                    setIsNotifOpen(false);
-                                  }
-                                }}
-                                className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors border-b border-gray-50 dark:border-slate-700/50 last:border-0 ${!notif.leida ? 'bg-orange-50/50 dark:bg-orange-900/10' : ''}`}
-                              >
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${cfg.bg}`}>
-                                  <Icon className={`w-4 h-4 ${cfg.color}`} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <p className={`text-sm truncate ${!notif.leida ? 'font-semibold text-slate-800 dark:text-slate-100' : 'font-medium text-slate-600 dark:text-slate-300'}`}>
-                                      {notif.titulo}
-                                    </p>
-                                    {!notif.leida && (
-                                      <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
-                                    )}
+                              return (
+                                <button
+                                  key={notif.id}
+                                  onClick={() => {
+                                    if (!notif.leida) marcarLeida(notif.id);
+                                    if (notif.accion_url) {
+                                      const url = normalizarUrlNotificacion(notif.accion_url);
+                                      navigate(url);
+                                      setIsNotifOpen(false);
+                                    }
+                                  }}
+                                  className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors border-b border-gray-50 dark:border-slate-700/50 last:border-0 ${!notif.leida ? 'bg-orange-50/50 dark:bg-orange-900/10' : ''}`}
+                                >
+                                  <div
+                                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${cfg.bg}`}
+                                  >
+                                    <Icon className={`w-4 h-4 ${cfg.color}`} />
                                   </div>
-                                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{notif.mensaje}</p>
-                                  <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">{timeAgo}</p>
-                                </div>
-                                {notif.accion_url && (
-                                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-1" />
-                                )}
-                              </button>
-                            );
-                          })
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <p
+                                        className={`text-sm truncate ${!notif.leida ? 'font-semibold text-slate-800 dark:text-slate-100' : 'font-medium text-slate-600 dark:text-slate-300'}`}
+                                      >
+                                        {notif.titulo}
+                                      </p>
+                                      {!notif.leida && (
+                                        <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                      {notif.mensaje}
+                                    </p>
+                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
+                                      {timeAgo}
+                                    </p>
+                                  </div>
+                                  {notif.accion_url && (
+                                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-1" />
+                                  )}
+                                </button>
+                              );
+                            })
                         )}
                       </div>
 
@@ -1420,21 +1605,12 @@ const FloatingHeader = () => {
       />
 
       {/* Shortcuts Modal */}
-      <KeyboardShortcutsModal
-        isOpen={isShortcutsOpen}
-        onClose={() => setIsShortcutsOpen(false)}
-      />
+      <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
 
       {/* Live region para screen readers */}
-      <div
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-        id="centhrix-live-region"
-      />
+      <div aria-live="polite" aria-atomic="true" className="sr-only" id="centhrix-live-region" />
     </>
   );
 };
 
 export default FloatingHeader;
-

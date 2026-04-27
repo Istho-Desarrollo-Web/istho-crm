@@ -24,7 +24,6 @@ import { AUDITORIAS_ENDPOINTS } from './endpoints';
 // ============================================================================
 
 const auditoriasService = {
-
   // ══════════════════════════════════════════════════════════════════════════
   // ENTRADAS
   // ══════════════════════════════════════════════════════════════════════════
@@ -276,13 +275,17 @@ const auditoriasService = {
   subirEvidencias: async (auditoriaId, files) => {
     try {
       const formData = new FormData();
-      
+
       // Solo subir archivos que sean instancias de File (archivos nuevos)
       // Los archivos ya subidos vienen como objetos planos de la BD
-      const filesToUpload = files.filter(f => f instanceof File || (f.isUploaded === false));
-      
+      const filesToUpload = files.filter((f) => f instanceof File || f.isUploaded === false);
+
       if (filesToUpload.length === 0) {
-        return { success: true, message: 'No hay archivos nuevos para subir', data: { archivos: [] } };
+        return {
+          success: true,
+          message: 'No hay archivos nuevos para subir',
+          data: { archivos: [] },
+        };
       }
 
       filesToUpload.forEach((file) => {
@@ -354,10 +357,7 @@ const auditoriasService = {
       if (data.foto) formData.append('foto', data.foto);
 
       const uploadClient = createUploadClient();
-      const response = await uploadClient.post(
-        `/operaciones/${operacionId}/averias`,
-        formData
-      );
+      const response = await uploadClient.post(`/operaciones/${operacionId}/averias`, formData);
       return response;
     } catch (error) {
       throw {
@@ -419,10 +419,7 @@ const auditoriasService = {
    */
   cerrar: async (auditoriaId, data = {}) => {
     try {
-      const response = await apiClient.post(
-        AUDITORIAS_ENDPOINTS.CERRAR(auditoriaId),
-        data
-      );
+      const response = await apiClient.post(AUDITORIAS_ENDPOINTS.CERRAR(auditoriaId), data);
       return response;
     } catch (error) {
       throw {
@@ -460,10 +457,7 @@ const auditoriasService = {
    */
   reenviarCorreo: async (operacionId, data = {}) => {
     try {
-      const response = await apiClient.post(
-        `/operaciones/${operacionId}/reenviar-correo`,
-        data
-      );
+      const response = await apiClient.post(`/operaciones/${operacionId}/reenviar-correo`, data);
       return response;
     } catch (error) {
       throw {

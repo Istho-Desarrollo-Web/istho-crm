@@ -1,7 +1,7 @@
 ﻿/**
  * ISTHO CRM - Button Component
  * Botón reutilizable con variantes
- * 
+ *
  * @author Coordinación TI ISTHO
  * @date Enero 2026
  */

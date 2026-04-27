@@ -13,16 +13,7 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  User,
-  Mail,
-  Phone,
-  Briefcase,
-  Eye,
-  EyeOff,
-  Key,
-  Shield,
-} from 'lucide-react';
+import { User, Mail, Phone, Briefcase, Eye, EyeOff, Key, Shield } from 'lucide-react';
 import { Modal, Button } from '../../../components/common';
 import { usuarioClienteSchema } from '../../../utils/validationSchemas';
 
@@ -30,13 +21,7 @@ import { usuarioClienteSchema } from '../../../utils/validationSchemas';
 // COMPONENTE
 // ════════════════════════════════════════════════════════════════════════════
 
-const UsuarioClienteForm = ({
-  isOpen,
-  onClose,
-  onSubmit,
-  usuario = null,
-  clienteNombre = '',
-}) => {
+const UsuarioClienteForm = ({ isOpen, onClose, onSubmit, usuario = null, clienteNombre = '' }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [generarPassword, setGenerarPassword] = useState(true);
 
@@ -71,7 +56,14 @@ const UsuarioClienteForm = ({
         enviar_email: true,
       });
     } else {
-      reset({ nombre_completo: '', email: '', telefono: '', cargo: '', password: '', enviar_email: true });
+      reset({
+        nombre_completo: '',
+        email: '',
+        telefono: '',
+        cargo: '',
+        password: '',
+        enviar_email: true,
+      });
     }
   }, [isOpen, usuario]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -111,7 +103,8 @@ const UsuarioClienteForm = ({
   // RENDER
   // ──────────────────────────────────────────────────────────────────────────
 
-  const inputCls = (hasError) => `
+  const inputCls = (hasError) =>
+    `
     w-full px-4 py-2.5 pl-10 border rounded-xl text-sm
     focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
     dark:bg-centhrix-card/50 dark:text-slate-100
@@ -126,7 +119,6 @@ const UsuarioClienteForm = ({
       size="md"
     >
       <form onSubmit={handleSubmit(submitForm)} className="space-y-5" noValidate>
-
         {/* Info del cliente */}
         {clienteNombre && (
           <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800/30 rounded-xl">
@@ -180,9 +172,7 @@ const UsuarioClienteForm = ({
                 className={`${inputCls(!!errors.email)} ${isEditing ? 'bg-slate-50 dark:bg-centhrix-card cursor-not-allowed' : ''}`}
               />
             </div>
-            {errors.email && (
-              <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
             {isEditing && (
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                 El email no se puede modificar
@@ -311,8 +301,8 @@ const UsuarioClienteForm = ({
               <div className="text-sm text-blue-700">
                 <p className="font-medium">Permisos del usuario</p>
                 <p className="mt-1 text-blue-600">
-                  Por defecto, el usuario tendrá permisos básicos de visualización.
-                  Podrás personalizar los permisos después de crear el usuario.
+                  Por defecto, el usuario tendrá permisos básicos de visualización. Podrás
+                  personalizar los permisos después de crear el usuario.
                 </p>
               </div>
             </div>

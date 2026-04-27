@@ -15,15 +15,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { makeSanitizeHandler, SANITIZE } from '../../../utils/sanitizeForms';
 import PropTypes from 'prop-types';
-import {
-  Building2,
-  FileText,
-  MapPin,
-  Phone,
-  Mail,
-  Globe,
-  Calendar,
-} from 'lucide-react';
+import { Building2, FileText, MapPin, Phone, Mail, Globe, Calendar } from 'lucide-react';
 import { Button, Modal } from '../../../components/common/index';
 import { clienteSchema } from '../../../utils/validationSchemas';
 
@@ -78,7 +70,8 @@ const InputField = ({ label, icon: Icon, required, error, children }) => (
   </div>
 );
 
-const inputCls = (hasIcon, hasError) => `
+const inputCls = (hasIcon, hasError) =>
+  `
   w-full px-4 py-2.5
   bg-white dark:bg-centhrix-card border rounded-xl
   text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400
@@ -92,13 +85,7 @@ const inputCls = (hasIcon, hasError) => `
 // COMPONENTE PRINCIPAL
 // ============================================================================
 
-const ClienteForm = ({
-  isOpen,
-  onClose,
-  onSubmit,
-  cliente = null,
-  loading = false,
-}) => {
+const ClienteForm = ({ isOpen, onClose, onSubmit, cliente = null, loading = false }) => {
   const [activeTab, setActiveTab] = useState('info');
   const isEditing = !!cliente;
 
@@ -163,14 +150,20 @@ const ClienteForm = ({
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}
-      subtitle={isEditing ? `Editando: ${cliente?.razon_social}` : 'Complete la información del cliente'}
+      subtitle={
+        isEditing ? `Editando: ${cliente?.razon_social}` : 'Complete la información del cliente'
+      }
       size="lg"
       footer={
         <>
           <Button variant="outline" onClick={onClose} disabled={loading || isSubmitting}>
             Cancelar
           </Button>
-          <Button variant="primary" onClick={handleSubmit(submitForm)} loading={loading || isSubmitting}>
+          <Button
+            variant="primary"
+            onClick={handleSubmit(submitForm)}
+            loading={loading || isSubmitting}
+          >
             {isEditing ? 'Guardar Cambios' : 'Crear Cliente'}
           </Button>
         </>
@@ -186,9 +179,10 @@ const ClienteForm = ({
               onClick={() => setActiveTab(tab.id)}
               className={`
                 pb-3 px-1 text-sm font-medium transition-colors relative
-                ${activeTab === tab.id
-                  ? 'text-orange-600'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                ${
+                  activeTab === tab.id
+                    ? 'text-orange-600'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                 }
               `}
             >
@@ -203,17 +197,26 @@ const ClienteForm = ({
 
       <form onSubmit={handleSubmit(submitForm)} noValidate>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
           {/* ── TAB INFORMACIÓN ── */}
           {activeTab === 'info' && (
             <>
-              <InputField label="Razón Social" icon={Building2} required error={errors.razon_social?.message}>
+              <InputField
+                label="Razón Social"
+                icon={Building2}
+                required
+                error={errors.razon_social?.message}
+              >
                 <input
                   {...register('razon_social')}
                   type="text"
                   placeholder="Nombre de la empresa o persona"
                   maxLength={200}
-                  onChange={makeSanitizeHandler(setValue, 'razon_social', SANITIZE.TEXTO_UPPER, 200)}
+                  onChange={makeSanitizeHandler(
+                    setValue,
+                    'razon_social',
+                    SANITIZE.TEXTO_UPPER,
+                    200
+                  )}
                   className={inputCls(true, !!errors.razon_social)}
                 />
               </InputField>
@@ -230,10 +233,15 @@ const ClienteForm = ({
               </InputField>
 
               <InputField label="Tipo de Cliente" error={errors.tipo_cliente?.message}>
-                <select {...register('tipo_cliente')} className={inputCls(false, !!errors.tipo_cliente)}>
+                <select
+                  {...register('tipo_cliente')}
+                  className={inputCls(false, !!errors.tipo_cliente)}
+                >
                   <option value="">Seleccionar...</option>
                   {TIPOS_CLIENTE.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
                   ))}
                 </select>
               </InputField>
@@ -242,12 +250,18 @@ const ClienteForm = ({
                 <select {...register('sector')} className={inputCls(false, !!errors.sector)}>
                   <option value="">Seleccionar...</option>
                   {SECTORES.map((s) => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
                   ))}
                 </select>
               </InputField>
 
-              <InputField label="Fecha Inicio Relación" icon={Calendar} error={errors.fecha_inicio_relacion?.message}>
+              <InputField
+                label="Fecha Inicio Relación"
+                icon={Calendar}
+                error={errors.fecha_inicio_relacion?.message}
+              >
                 <input
                   {...register('fecha_inicio_relacion')}
                   type="date"
@@ -270,7 +284,9 @@ const ClienteForm = ({
                           value={estado.value}
                           className="w-4 h-4 text-orange-500 focus:ring-orange-500"
                         />
-                        <span className="text-sm text-slate-700 dark:text-slate-300">{estado.label}</span>
+                        <span className="text-sm text-slate-700 dark:text-slate-300">
+                          {estado.label}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -280,8 +296,12 @@ const ClienteForm = ({
               {/* Código de cliente (solo lectura en edición) */}
               {isEditing && cliente?.codigo_cliente && (
                 <div className="md:col-span-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                  <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Código de Cliente</p>
-                  <p className="text-sm text-blue-800 dark:text-blue-300 font-mono">{cliente.codigo_cliente}</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                    Código de Cliente
+                  </p>
+                  <p className="text-sm text-blue-800 dark:text-blue-300 font-mono">
+                    {cliente.codigo_cliente}
+                  </p>
                 </div>
               )}
             </>
@@ -318,7 +338,12 @@ const ClienteForm = ({
                   type="text"
                   placeholder="Departamento"
                   maxLength={100}
-                  onChange={makeSanitizeHandler(setValue, 'departamento', SANITIZE.TEXTO_UPPER, 100)}
+                  onChange={makeSanitizeHandler(
+                    setValue,
+                    'departamento',
+                    SANITIZE.TEXTO_UPPER,
+                    100
+                  )}
                   className={inputCls(false, !!errors.departamento)}
                 />
               </InputField>

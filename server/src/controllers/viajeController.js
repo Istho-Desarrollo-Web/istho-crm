@@ -8,14 +8,45 @@
  */
 
 const { Op } = require('sequelize');
-const { Viaje, Vehiculo, CajaMenor, MovimientoCajaMenor, Usuario, Auditoria, sequelize } = require('../models');
-const { success, created, paginated, notFound, conflict, serverError, error: errorResponse } = require('../utils/responses');
-const { parsePaginacion, buildPaginacion, parseOrdenamiento, limpiarObjeto, getClientIP, sanitizarBusqueda } = require('../utils/helpers');
+const {
+  Viaje,
+  Vehiculo,
+  CajaMenor,
+  MovimientoCajaMenor,
+  Usuario,
+  Auditoria,
+  sequelize,
+} = require('../models');
+const {
+  success,
+  created,
+  paginated,
+  notFound,
+  conflict,
+  serverError,
+  error: errorResponse,
+} = require('../utils/responses');
+const {
+  parsePaginacion,
+  buildPaginacion,
+  parseOrdenamiento,
+  limpiarObjeto,
+  getClientIP,
+  sanitizarBusqueda,
+} = require('../utils/helpers');
 const logger = require('../utils/logger');
 const notificacionService = require('../services/notificacionService');
 const socketService = require('../services/socketService');
 
-const CAMPOS_ORDENAMIENTO = ['numero', 'fecha', 'destino', 'cliente_nombre', 'valor_viaje', 'estado', 'created_at'];
+const CAMPOS_ORDENAMIENTO = [
+  'numero',
+  'fecha',
+  'destino',
+  'cliente_nombre',
+  'valor_viaje',
+  'estado',
+  'created_at',
+];
 
 /**
  * GET /viajes
@@ -63,7 +94,7 @@ const listar = async (req, res) => {
         { origen: { [Op.like]: `%${s}%` } },
         { cliente_nombre: { [Op.like]: `%${s}%` } },
         { documento_cliente: { [Op.like]: `%${s}%` } },
-        { no_factura: { [Op.like]: `%${s}%` } }
+        { no_factura: { [Op.like]: `%${s}%` } },
       ];
     }
 
@@ -77,9 +108,13 @@ const listar = async (req, res) => {
       offset,
       include: [
         { model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa', 'tipo_vehiculo'] },
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
-        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero', 'estado'] }
-      ]
+        {
+          model: Usuario,
+          as: 'conductor',
+          attributes: ['id', 'nombre', 'apellido', 'nombre_completo'],
+        },
+        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero', 'estado'] },
+      ],
     });
 
     return paginated(res, rows, buildPaginacion(count, page, limit));
@@ -96,17 +131,30 @@ const obtenerPorId = async (req, res) => {
   try {
     const viaje = await Viaje.findByPk(req.params.id, {
       include: [
-        { model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa', 'tipo_vehiculo', 'capacidad_ton'] },
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
-        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero', 'estado', 'saldo_actual'] },
         {
-          model: MovimientoCajaMenor, as: 'gastos',
+          model: Vehiculo,
+          as: 'vehiculo',
+          attributes: ['id', 'placa', 'tipo_vehiculo', 'capacidad_ton'],
+        },
+        {
+          model: Usuario,
+          as: 'conductor',
+          attributes: ['id', 'nombre', 'apellido', 'nombre_completo'],
+        },
+        {
+          model: CajaMenor,
+          as: 'cajaMenor',
+          attributes: ['id', 'numero', 'estado', 'saldo_actual'],
+        },
+        {
+          model: MovimientoCajaMenor,
+          as: 'gastos',
           include: [
             { model: Usuario, as: 'usuario', attributes: ['id', 'nombre_completo'] },
-            { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] }
-          ]
-        }
-      ]
+            { model: Usuario, as: 'aprobador', attributes: ['id', 'nombre_completo'] },
+          ],
+        },
+      ],
     });
 
     if (!viaje) return notFound(res, 'Viaje no encontrado');
@@ -138,7 +186,9 @@ const crear = async (req, res) => {
     // Verificar vehículo
     const vehiculo = await Vehiculo.findByPk(datos.vehiculo_id, { transaction });
     if (!vehiculo) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Vehículo no encontrado');
     }
 
@@ -146,11 +196,15 @@ const crear = async (req, res) => {
     if (datos.caja_menor_id) {
       const caja = await CajaMenor.findByPk(datos.caja_menor_id, { transaction });
       if (!caja) {
-        try { await transaction.rollback(); } catch (_) {}
+        try {
+          await transaction.rollback();
+        } catch (_) {}
         return notFound(res, 'Caja menor no encontrada');
       }
       if (caja.estado === 'cerrada') {
-        try { await transaction.rollback(); } catch (_) {}
+        try {
+          await transaction.rollback();
+        } catch (_) {}
         return errorResponse(res, 'La caja menor está cerrada', 400);
       }
     }
@@ -168,7 +222,7 @@ const crear = async (req, res) => {
       datos_nuevos: datos,
       ip_address: getClientIP(req),
       user_agent: req.get('user-agent'),
-      descripcion: `Viaje #${viaje.numero} creado: ${viaje.origen} → ${viaje.destino}`
+      descripcion: `Viaje #${viaje.numero} creado: ${viaje.origen} → ${viaje.destino}`,
     });
 
     await transaction.commit();
@@ -177,9 +231,13 @@ const crear = async (req, res) => {
     const resultado = await Viaje.findByPk(viaje.id, {
       include: [
         { model: Vehiculo, as: 'vehiculo', attributes: ['id', 'placa', 'tipo_vehiculo'] },
-        { model: Usuario, as: 'conductor', attributes: ['id', 'nombre', 'apellido', 'nombre_completo'] },
-        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] }
-      ]
+        {
+          model: Usuario,
+          as: 'conductor',
+          attributes: ['id', 'nombre', 'apellido', 'nombre_completo'],
+        },
+        { model: CajaMenor, as: 'cajaMenor', attributes: ['id', 'numero'] },
+      ],
     });
 
     socketService.emitToAll('viaje:creado', {
@@ -197,7 +255,9 @@ const crear = async (req, res) => {
 
     return created(res, resultado, 'Viaje registrado exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al crear viaje:', { message: error.message });
     return serverError(res, 'Error al crear viaje', error);
   }
@@ -214,17 +274,23 @@ const actualizar = async (req, res) => {
 
     const viaje = await Viaje.findByPk(id, { transaction });
     if (!viaje) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Viaje no encontrado');
     }
 
     if (viaje.estado === 'anulado') {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return errorResponse(res, 'No se puede modificar un viaje anulado', 400);
     }
 
     if (req.user.esConductor && viaje.conductor_id !== req.user.id) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Viaje no encontrado');
     }
 
@@ -240,7 +306,7 @@ const actualizar = async (req, res) => {
       datos_anteriores: datosAnteriores,
       datos_nuevos: datos,
       ip_address: getClientIP(req),
-      descripcion: `Viaje #${viaje.numero} actualizado`
+      descripcion: `Viaje #${viaje.numero} actualizado`,
     });
 
     await transaction.commit();
@@ -255,19 +321,23 @@ const actualizar = async (req, res) => {
 
     // Notificar a financieros si el viaje se completó
     if (datos.estado === 'completado' && datosAnteriores.estado !== 'completado') {
-      notificacionService.notificarViajeCompletado({
-        id: viaje.id,
-        numero: viaje.numero,
-        origen: viaje.origen,
-        destino: viaje.destino,
-        valor_viaje: viaje.valor_viaje,
-        conductor_nombre: req.user.nombre_completo,
-      }).catch(() => {});
+      notificacionService
+        .notificarViajeCompletado({
+          id: viaje.id,
+          numero: viaje.numero,
+          origen: viaje.origen,
+          destino: viaje.destino,
+          valor_viaje: viaje.valor_viaje,
+          conductor_nombre: req.user.nombre_completo,
+        })
+        .catch(() => {});
     }
 
     return success(res, viaje, 'Viaje actualizado exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al actualizar viaje:', { message: error.message });
     return serverError(res, 'Error al actualizar viaje', error);
   }
@@ -282,13 +352,17 @@ const eliminar = async (req, res) => {
     const { id } = req.params;
     const viaje = await Viaje.findByPk(id, { transaction });
     if (!viaje) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Viaje no encontrado');
     }
 
     const gastos = await MovimientoCajaMenor.count({ where: { viaje_id: id } });
     if (gastos > 0) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return conflict(res, `No se puede eliminar: tiene ${gastos} gasto(s) asociado(s)`);
     }
 
@@ -303,14 +377,16 @@ const eliminar = async (req, res) => {
       usuario_nombre: req.user.nombre_completo,
       datos_anteriores: datosAnteriores,
       ip_address: getClientIP(req),
-      descripcion: `Viaje #${viaje.numero} eliminado`
+      descripcion: `Viaje #${viaje.numero} eliminado`,
     });
 
     await transaction.commit();
     socketService.emitToAll('viaje:eliminado', { id: parseInt(id) });
     return success(res, { id }, 'Viaje eliminado exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al eliminar viaje:', { message: error.message });
     return serverError(res, 'Error al eliminar viaje', error);
   }
@@ -325,27 +401,36 @@ const completar = async (req, res) => {
   try {
     const viaje = await Viaje.findByPk(req.params.id, { transaction });
     if (!viaje) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Viaje no encontrado');
     }
 
     if (viaje.estado !== 'activo') {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return errorResponse(res, `No se puede completar un viaje en estado "${viaje.estado}"`, 400);
     }
 
     // Conductor solo puede completar sus propios viajes
     if (req.user.esConductor && viaje.conductor_id !== req.user.id) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return errorResponse(res, 'No tienes permiso para completar este viaje', 403);
     }
 
     const datosAnteriores = viaje.toJSON();
 
-    await viaje.update({
-      estado: 'completado',
-      ...(req.body.observaciones && { observaciones: req.body.observaciones }),
-    }, { transaction });
+    await viaje.update(
+      {
+        estado: 'completado',
+        ...(req.body.observaciones && { observaciones: req.body.observaciones }),
+      },
+      { transaction }
+    );
 
     await Auditoria.registrar({
       tabla: 'viajes',
@@ -356,7 +441,7 @@ const completar = async (req, res) => {
       datos_anteriores: datosAnteriores,
       datos_nuevos: { estado: 'completado' },
       ip_address: getClientIP(req),
-      descripcion: `Viaje #${viaje.numero} completado`
+      descripcion: `Viaje #${viaje.numero} completado`,
     });
 
     await transaction.commit();
@@ -364,19 +449,23 @@ const completar = async (req, res) => {
     socketService.emitToAll('viaje:actualizado', { id: viaje.id, estado: 'completado' });
 
     // Notificar
-    notificacionService.notificarViajeCompletado?.({
-      id: viaje.id,
-      numero: viaje.numero,
-      origen: viaje.origen,
-      destino: viaje.destino,
-      conductor_nombre: req.user.nombre_completo,
-      valor_viaje: viaje.valor_viaje,
-    }).catch(() => {});
+    notificacionService
+      .notificarViajeCompletado?.({
+        id: viaje.id,
+        numero: viaje.numero,
+        origen: viaje.origen,
+        destino: viaje.destino,
+        conductor_nombre: req.user.nombre_completo,
+        valor_viaje: viaje.valor_viaje,
+      })
+      .catch(() => {});
 
     logger.info('Viaje completado:', { id: viaje.id, numero: viaje.numero });
     return success(res, viaje, 'Viaje completado exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al completar viaje:', { message: error.message });
     return serverError(res, 'Error al completar viaje', error);
   }
@@ -391,22 +480,29 @@ const anular = async (req, res) => {
   try {
     const viaje = await Viaje.findByPk(req.params.id, { transaction });
     if (!viaje) {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return notFound(res, 'Viaje no encontrado');
     }
 
     if (viaje.estado === 'anulado') {
-      try { await transaction.rollback(); } catch (_) {}
+      try {
+        await transaction.rollback();
+      } catch (_) {}
       return errorResponse(res, 'El viaje ya está anulado', 400);
     }
 
     const datosAnteriores = viaje.toJSON();
     const motivo = req.body.motivo || req.body.observaciones || 'Sin motivo especificado';
 
-    await viaje.update({
-      estado: 'anulado',
-      observaciones: `${viaje.observaciones ? viaje.observaciones + ' | ' : ''}ANULADO: ${motivo}`,
-    }, { transaction });
+    await viaje.update(
+      {
+        estado: 'anulado',
+        observaciones: `${viaje.observaciones ? viaje.observaciones + ' | ' : ''}ANULADO: ${motivo}`,
+      },
+      { transaction }
+    );
 
     await Auditoria.registrar({
       tabla: 'viajes',
@@ -417,7 +513,7 @@ const anular = async (req, res) => {
       datos_anteriores: datosAnteriores,
       datos_nuevos: { estado: 'anulado', motivo },
       ip_address: getClientIP(req),
-      descripcion: `Viaje #${viaje.numero} anulado. Motivo: ${motivo}`
+      descripcion: `Viaje #${viaje.numero} anulado. Motivo: ${motivo}`,
     });
 
     await transaction.commit();
@@ -427,7 +523,9 @@ const anular = async (req, res) => {
     logger.info('Viaje anulado:', { id: viaje.id, numero: viaje.numero, motivo });
     return success(res, viaje, 'Viaje anulado exitosamente');
   } catch (error) {
-    try { await transaction.rollback(); } catch (_) {}
+    try {
+      await transaction.rollback();
+    } catch (_) {}
     logger.error('Error al anular viaje:', { message: error.message });
     return serverError(res, 'Error al anular viaje', error);
   }

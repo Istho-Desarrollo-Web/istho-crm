@@ -1,8 +1,8 @@
 /**
  * ISTHO CRM - Configuración JWT
- * 
+ *
  * Configuración para autenticación con JSON Web Tokens.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  */
 
@@ -13,7 +13,7 @@ const jwtSecret = process.env.JWT_SECRET;
 if (!jwtSecret || jwtSecret.length < 32) {
   throw new Error(
     '[SEGURIDAD] JWT_SECRET no configurado o demasiado corto. ' +
-    'Configure la variable de entorno JWT_SECRET con mínimo 32 caracteres.'
+      'Configure la variable de entorno JWT_SECRET con mínimo 32 caracteres.'
   );
 }
 
@@ -34,5 +34,5 @@ module.exports = {
   issuer: 'istho-crm-api',
 
   // Audience (audiencia del token)
-  audience: 'istho-crm-client'
+  audience: 'istho-crm-client',
 };

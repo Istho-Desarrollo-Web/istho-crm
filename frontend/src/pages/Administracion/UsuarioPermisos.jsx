@@ -11,8 +11,15 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  X, Save, Shield, RotateCcw, ChevronDown, ChevronRight,
-  CheckCircle, AlertTriangle, Loader2
+  X,
+  Save,
+  Shield,
+  RotateCcw,
+  ChevronDown,
+  ChevronRight,
+  CheckCircle,
+  AlertTriangle,
+  Loader2,
 } from 'lucide-react';
 import adminService from '../../api/admin.service';
 
@@ -72,7 +79,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
     try {
       const [permisosRes, catalogoRes] = await Promise.all([
         adminService.getPermisosUsuario(usuario.id),
-        adminService.getPermisos()
+        adminService.getPermisos(),
       ]);
 
       const permData = permisosRes.data;
@@ -86,7 +93,9 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
 
         // Expandir todos los módulos
         const groups = {};
-        Object.keys(permData.catalogo || {}).forEach(m => { groups[m] = true; });
+        Object.keys(permData.catalogo || {}).forEach((m) => {
+          groups[m] = true;
+        });
         setExpandedGroups(groups);
       } else {
         // Usuario interno
@@ -102,21 +111,23 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
           const allPermisos = catalogoData.permisos || [];
           const ids = new Set();
           Object.entries(pp).forEach(([modulo, acciones]) => {
-            acciones.forEach(accion => {
-              const p = allPermisos.find(x => x.modulo === modulo && x.accion === accion);
+            acciones.forEach((accion) => {
+              const p = allPermisos.find((x) => x.modulo === modulo && x.accion === accion);
               if (p) ids.add(p.id);
             });
           });
           setSelectedPermisos(ids);
         } else {
           // Usar permisos del rol
-          const rolIds = new Set((permData.permisos_rol || []).map(p => p.id));
+          const rolIds = new Set((permData.permisos_rol || []).map((p) => p.id));
           setSelectedPermisos(rolIds);
         }
 
         // Expandir todos los grupos
         const groups = {};
-        (catalogoData.agrupados || []).forEach(g => { groups[g.modulo] = true; });
+        (catalogoData.agrupados || []).forEach((g) => {
+          groups[g.modulo] = true;
+        });
         setExpandedGroups(groups);
       }
     } catch (err) {
@@ -126,17 +137,19 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
     setLoading(false);
   }, [usuario.id]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const toggleGroup = (modulo) => {
-    setExpandedGroups(prev => ({ ...prev, [modulo]: !prev[modulo] }));
+    setExpandedGroups((prev) => ({ ...prev, [modulo]: !prev[modulo] }));
   };
 
   // ── Handlers para usuarios internos ──
 
   const togglePermiso = (permisoId) => {
     if (!tienePersonalizados) setTienePersonalizados(true);
-    setSelectedPermisos(prev => {
+    setSelectedPermisos((prev) => {
       const next = new Set(prev);
       if (next.has(permisoId)) {
         next.delete(permisoId);
@@ -149,12 +162,12 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
 
   const toggleModuloCompleto = (modulo) => {
     if (!tienePersonalizados) setTienePersonalizados(true);
-    const moduloPermisos = catalogoPermisos.filter(p => p.modulo === modulo);
-    const allChecked = moduloPermisos.every(p => selectedPermisos.has(p.id));
+    const moduloPermisos = catalogoPermisos.filter((p) => p.modulo === modulo);
+    const allChecked = moduloPermisos.every((p) => selectedPermisos.has(p.id));
 
-    setSelectedPermisos(prev => {
+    setSelectedPermisos((prev) => {
       const next = new Set(prev);
-      moduloPermisos.forEach(p => {
+      moduloPermisos.forEach((p) => {
         if (allChecked) {
           next.delete(p.id);
         } else {
@@ -174,7 +187,9 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
       setTienePersonalizados(false);
       // Recargar permisos del rol
       await fetchData();
-      setTimeout(() => { setSuccessMsg(''); }, 2000);
+      setTimeout(() => {
+        setSuccessMsg('');
+      }, 2000);
       if (onSave) onSave();
     } catch (err) {
       setError(err.response?.data?.message || 'Error al restaurar permisos');
@@ -185,7 +200,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
   // ── Handlers para usuarios cliente ──
 
   const togglePermisoCliente = (modulo, accion) => {
-    setPermisosCliente(prev => {
+    setPermisosCliente((prev) => {
       const next = { ...prev };
       if (!next[modulo]) next[modulo] = {};
       next[modulo] = { ...next[modulo], [accion]: !next[modulo][accion] };
@@ -203,13 +218,13 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
     try {
       if (data.tipo === 'cliente') {
         await adminService.actualizarPermisosUsuario(usuario.id, {
-          permisos_cliente: permisosCliente
+          permisos_cliente: permisosCliente,
         });
       } else {
         // Convertir Set de IDs a formato { modulo: ['accion1', 'accion2'] }
         const permisos_personalizados = {};
-        selectedPermisos.forEach(id => {
-          const p = catalogoPermisos.find(x => x.id === id);
+        selectedPermisos.forEach((id) => {
+          const p = catalogoPermisos.find((x) => x.id === id);
           if (p) {
             if (!permisos_personalizados[p.modulo]) permisos_personalizados[p.modulo] = [];
             permisos_personalizados[p.modulo].push(p.accion);
@@ -217,13 +232,15 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
         });
 
         await adminService.actualizarPermisosUsuario(usuario.id, {
-          permisos_personalizados
+          permisos_personalizados,
         });
         setTienePersonalizados(true);
       }
 
       setSuccessMsg('Permisos guardados exitosamente');
-      setTimeout(() => { setSuccessMsg(''); }, 2000);
+      setTimeout(() => {
+        setSuccessMsg('');
+      }, 2000);
       if (onSave) onSave();
     } catch (err) {
       setError(err.response?.data?.message || 'Error al guardar permisos');
@@ -246,8 +263,8 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
       const allPermisos = catalogoPermisos;
       const originalIds = new Set();
       Object.entries(data.permisos_personalizados).forEach(([modulo, acciones]) => {
-        acciones.forEach(accion => {
-          const p = allPermisos.find(x => x.modulo === modulo && x.accion === accion);
+        acciones.forEach((accion) => {
+          const p = allPermisos.find((x) => x.modulo === modulo && x.accion === accion);
           if (p) originalIds.add(p.id);
         });
       });
@@ -259,7 +276,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
     }
 
     // Comparar con permisos del rol
-    const rolIds = new Set((data.permisos_rol || []).map(p => p.id));
+    const rolIds = new Set((data.permisos_rol || []).map((p) => p.id));
     if (rolIds.size !== selectedPermisos.size) return true;
     for (const id of selectedPermisos) {
       if (!rolIds.has(id)) return true;
@@ -336,16 +353,23 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
               {Object.entries(data.catalogo || {}).map(([modulo, acciones]) => {
                 const isExpanded = expandedGroups[modulo];
                 const moduloPermisos = permisosCliente[modulo] || {};
-                const totalActivos = acciones.filter(a => moduloPermisos[a.codigo]).length;
+                const totalActivos = acciones.filter((a) => moduloPermisos[a.codigo]).length;
 
                 return (
-                  <div key={modulo} className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                  <div
+                    key={modulo}
+                    className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden"
+                  >
                     <button
                       onClick={() => toggleGroup(modulo)}
                       className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-centhrix-bg/50 hover:bg-slate-100 dark:hover:bg-centhrix-bg/70 transition-colors"
                     >
                       <span className="flex items-center gap-2 font-medium text-sm text-slate-700 dark:text-slate-200">
-                        {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                        {isExpanded ? (
+                          <ChevronDown className="w-4 h-4" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4" />
+                        )}
                         {MODULO_LABELS[modulo] || modulo}
                       </span>
                       <span className="text-xs text-slate-400">
@@ -360,8 +384,12 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
                             className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 cursor-pointer"
                           >
                             <div>
-                              <span className="text-sm text-slate-700 dark:text-slate-200">{accion.nombre}</span>
-                              <span className="block text-[11px] text-slate-400">{accion.descripcion}</span>
+                              <span className="text-sm text-slate-700 dark:text-slate-200">
+                                {accion.nombre}
+                              </span>
+                              <span className="block text-[11px] text-slate-400">
+                                {accion.descripcion}
+                              </span>
                             </div>
                             <input
                               type="checkbox"
@@ -381,16 +409,17 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
             /* ════ PERMISOS INTERNO ════ */
             <div className="space-y-3">
               {/* Info banner */}
-              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs ${
-                tienePersonalizados
-                  ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'
-                  : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
-              }`}>
+              <div
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs ${
+                  tienePersonalizados
+                    ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'
+                    : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                }`}
+              >
                 <Shield className="w-4 h-4 shrink-0" />
                 {tienePersonalizados
                   ? 'Este usuario tiene permisos personalizados (no hereda del rol).'
-                  : `Permisos heredados del rol "${data?.rol?.nombre}". Al modificar se crearán permisos personalizados.`
-                }
+                  : `Permisos heredados del rol "${data?.rol?.nombre}". Al modificar se crearán permisos personalizados.`}
                 {tienePersonalizados && (
                   <button
                     onClick={handleRestaurarRol}
@@ -405,18 +434,25 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
               {/* Matriz de permisos */}
               {catalogoAgrupados.map((grupo) => {
                 const isExpanded = expandedGroups[grupo.modulo];
-                const moduloPermisos = catalogoPermisos.filter(p => p.modulo === grupo.modulo);
-                const allChecked = moduloPermisos.every(p => selectedPermisos.has(p.id));
-                const someChecked = moduloPermisos.some(p => selectedPermisos.has(p.id));
-                const totalActivos = moduloPermisos.filter(p => selectedPermisos.has(p.id)).length;
+                const moduloPermisos = catalogoPermisos.filter((p) => p.modulo === grupo.modulo);
+                const allChecked = moduloPermisos.every((p) => selectedPermisos.has(p.id));
+                const someChecked = moduloPermisos.some((p) => selectedPermisos.has(p.id));
+                const totalActivos = moduloPermisos.filter((p) =>
+                  selectedPermisos.has(p.id)
+                ).length;
 
                 return (
-                  <div key={grupo.modulo} className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                  <div
+                    key={grupo.modulo}
+                    className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden"
+                  >
                     <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 dark:bg-centhrix-bg/50">
                       <input
                         type="checkbox"
                         checked={allChecked}
-                        ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }}
+                        ref={(el) => {
+                          if (el) el.indeterminate = someChecked && !allChecked;
+                        }}
                         onChange={() => toggleModuloCompleto(grupo.modulo)}
                         className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500 cursor-pointer"
                       />
@@ -425,9 +461,15 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
                         className="flex-1 flex items-center justify-between"
                       >
                         <span className="flex items-center gap-2 font-medium text-sm text-slate-700 dark:text-slate-200">
-                          {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          {isExpanded ? (
+                            <ChevronDown className="w-4 h-4" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4" />
+                          )}
                           {MODULO_LABELS[grupo.modulo] || grupo.modulo}
-                          <span className="text-[10px] text-slate-400 font-normal">({grupo.grupo})</span>
+                          <span className="text-[10px] text-slate-400 font-normal">
+                            ({grupo.grupo})
+                          </span>
                         </span>
                         <span className="text-xs text-slate-400">
                           {totalActivos}/{moduloPermisos.length}
@@ -437,9 +479,13 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
                     {isExpanded && (
                       <div className="divide-y divide-gray-100 dark:divide-slate-700/50">
                         {grupo.acciones.map((accion) => {
-                          const permiso = catalogoPermisos.find(p => p.modulo === grupo.modulo && p.accion === accion.accion);
+                          const permiso = catalogoPermisos.find(
+                            (p) => p.modulo === grupo.modulo && p.accion === accion.accion
+                          );
                           if (!permiso) return null;
-                          const isFromRol = (data?.permisos_rol || []).some(p => p.id === permiso.id);
+                          const isFromRol = (data?.permisos_rol || []).some(
+                            (p) => p.id === permiso.id
+                          );
 
                           return (
                             <label
@@ -455,7 +501,9 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
                                     rol
                                   </span>
                                 )}
-                                <span className="text-[11px] text-slate-400 hidden sm:inline">{accion.descripcion}</span>
+                                <span className="text-[11px] text-slate-400 hidden sm:inline">
+                                  {accion.descripcion}
+                                </span>
                               </div>
                               <input
                                 type="checkbox"
@@ -480,8 +528,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
           <span className="text-xs text-slate-400">
             {data?.tipo === 'cliente'
               ? `${Object.values(permisosCliente).reduce((acc, m) => acc + Object.values(m).filter(Boolean).length, 0)} permisos activos`
-              : `${selectedPermisos.size} permisos seleccionados`
-            }
+              : `${selectedPermisos.size} permisos seleccionados`}
           </span>
           <div className="flex gap-2">
             <button

@@ -1,15 +1,23 @@
 /**
  * ISTHO CRM - Controlador de Clientes
- * 
+ *
  * Maneja todas las operaciones CRUD de clientes y contactos.
  * Incluye paginación, filtros, búsqueda y auditoría.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  */
 
 const { Op } = require('sequelize');
-const { Cliente, Contacto, Operacion, Inventario, Usuario, Auditoria, sequelize } = require('../models');
+const {
+  Cliente,
+  Contacto,
+  Operacion,
+  Inventario,
+  Usuario,
+  Auditoria,
+  sequelize,
+} = require('../models');
 const notificacionService = require('../services/notificacionService');
 const {
   success,
@@ -19,7 +27,7 @@ const {
   error: errorResponse,
   notFound,
   conflict,
-  serverError
+  serverError,
 } = require('../utils/responses');
 const {
   parsePaginacion,
@@ -27,12 +35,19 @@ const {
   parseOrdenamiento,
   limpiarObjeto,
   getClientIP,
-  sanitizarBusqueda
+  sanitizarBusqueda,
 } = require('../utils/helpers');
 const logger = require('../utils/logger');
 
 // Campos permitidos para ordenamiento
-const CAMPOS_ORDENAMIENTO = ['razon_social', 'codigo_cliente', 'created_at', 'ciudad', 'estado', 'nit'];
+const CAMPOS_ORDENAMIENTO = [
+  'razon_social',
+  'codigo_cliente',
+  'created_at',
+  'ciudad',
+  'estado',
+  'nit',
+];
 
 // =============================================
 // OPERACIONES DE CLIENTES
@@ -46,30 +61,30 @@ const listar = async (req, res) => {
   try {
     const { page, limit, offset } = parsePaginacion(req.query);
     const order = parseOrdenamiento(req.query, CAMPOS_ORDENAMIENTO);
-    
+
     // Construir condiciones de filtro
     const where = {};
-    
+
     // Filtro por estado
     if (req.query.estado && req.query.estado !== 'todos') {
       where.estado = req.query.estado;
     }
-    
+
     // Filtro por tipo de cliente
     if (req.query.tipo_cliente && req.query.tipo_cliente !== 'todos') {
       where.tipo_cliente = req.query.tipo_cliente;
     }
-    
+
     // Filtro por ciudad
     if (req.query.ciudad) {
       where.ciudad = { [Op.like]: `%${sanitizarBusqueda(req.query.ciudad)}%` };
     }
-    
+
     // Filtro por departamento
     if (req.query.departamento) {
       where.departamento = { [Op.like]: `%${sanitizarBusqueda(req.query.departamento)}%` };
     }
-    
+
     // Búsqueda general (razón social, NIT, código)
     if (req.query.search) {
       const searchTerm = sanitizarBusqueda(req.query.search);
@@ -77,27 +92,29 @@ const listar = async (req, res) => {
         { razon_social: { [Op.like]: `%${searchTerm}%` } },
         { nit: { [Op.like]: `%${searchTerm}%` } },
         { codigo_cliente: { [Op.like]: `%${searchTerm}%` } },
-        { email: { [Op.like]: `%${searchTerm}%` } }
+        { email: { [Op.like]: `%${searchTerm}%` } },
       ];
     }
-    
+
     // Ejecutar consulta principal (sin subquery por cada fila)
     const { count, rows } = await Cliente.findAndCountAll({
       where,
       order,
       limit,
       offset,
-      include: [{
-        model: Contacto,
-        as: 'contactos',
-        where: { es_principal: true },
-        required: false,
-        attributes: ['id', 'nombre', 'cargo', 'telefono', 'email']
-      }]
+      include: [
+        {
+          model: Contacto,
+          as: 'contactos',
+          where: { es_principal: true },
+          required: false,
+          attributes: ['id', 'nombre', 'cargo', 'telefono', 'email'],
+        },
+      ],
     });
 
     // Batch: contar productos en una sola query para todos los clientes de esta página
-    const clienteIds = rows.map(c => c.id);
+    const clienteIds = rows.map((c) => c.id);
     const conteoPorCliente = {};
     if (clienteIds.length > 0) {
       const conteos = await sequelize.query(
@@ -110,7 +127,7 @@ const listar = async (req, res) => {
     }
 
     // Inyectar total_productos en cada fila
-    const rowsConProductos = rows.map(c => {
+    const rowsConProductos = rows.map((c) => {
       const plain = c.toJSON();
       plain.total_productos = conteoPorCliente[c.id] || 0;
       return plain;
@@ -119,11 +136,10 @@ const listar = async (req, res) => {
     logger.debug('Clientes listados:', {
       total: count,
       page,
-      filtros: req.query
+      filtros: req.query,
     });
 
     return paginated(res, rowsConProductos, buildPaginacion(count, page, limit));
-    
   } catch (error) {
     logger.error('Error al listar clientes:', { message: error.message });
     return serverError(res, 'Error al obtener la lista de clientes', error);
@@ -138,72 +154,62 @@ const estadisticas = async (req, res) => {
   try {
     // Total de clientes por estado
     const porEstado = await Cliente.findAll({
-      attributes: [
-        'estado',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']
-      ],
-      group: ['estado']
+      attributes: ['estado', [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']],
+      group: ['estado'],
     });
-    
+
     // Total de clientes por tipo
     const porTipo = await Cliente.findAll({
-      attributes: [
-        'tipo_cliente',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']
-      ],
-      group: ['tipo_cliente']
+      attributes: ['tipo_cliente', [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']],
+      group: ['tipo_cliente'],
     });
-    
+
     // Total de clientes por ciudad (top 10)
     const porCiudad = await Cliente.findAll({
-      attributes: [
-        'ciudad',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']
-      ],
+      attributes: ['ciudad', [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']],
       where: {
-        ciudad: { [Op.ne]: null }
+        ciudad: { [Op.ne]: null },
       },
       group: ['ciudad'],
       order: [[sequelize.literal('cantidad'), 'DESC']],
-      limit: 10
+      limit: 10,
     });
-    
+
     // Clientes nuevos este mes
     const inicioMes = new Date();
     inicioMes.setDate(1);
     inicioMes.setHours(0, 0, 0, 0);
-    
+
     const nuevosEsteMes = await Cliente.count({
       where: {
-        created_at: { [Op.gte]: inicioMes }
-      }
+        created_at: { [Op.gte]: inicioMes },
+      },
     });
-    
+
     // Total general
     const total = await Cliente.count();
     const activos = await Cliente.count({ where: { estado: 'activo' } });
-    
+
     const stats = {
       total,
       activos,
       inactivos: total - activos,
       nuevosEsteMes,
-      porEstado: porEstado.map(e => ({
+      porEstado: porEstado.map((e) => ({
         estado: e.estado,
-        cantidad: parseInt(e.dataValues.cantidad)
+        cantidad: parseInt(e.dataValues.cantidad),
       })),
-      porTipo: porTipo.map(t => ({
+      porTipo: porTipo.map((t) => ({
         tipo: t.tipo_cliente,
-        cantidad: parseInt(t.dataValues.cantidad)
+        cantidad: parseInt(t.dataValues.cantidad),
       })),
-      porCiudad: porCiudad.map(c => ({
+      porCiudad: porCiudad.map((c) => ({
         ciudad: c.ciudad || 'Sin especificar',
-        cantidad: parseInt(c.dataValues.cantidad)
-      }))
+        cantidad: parseInt(c.dataValues.cantidad),
+      })),
     };
-    
+
     return success(res, stats);
-    
   } catch (error) {
     logger.error('Error al obtener estadísticas:', { message: error.message });
     return serverError(res, 'Error al obtener estadísticas', error);
@@ -217,15 +223,20 @@ const estadisticas = async (req, res) => {
 const obtenerPorId = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const cliente = await Cliente.findByPk(id, {
-      include: [{
-        model: Contacto,
-        as: 'contactos',
-        where: { activo: true },
-        required: false,
-        order: [['es_principal', 'DESC'], ['nombre', 'ASC']]
-      }]
+      include: [
+        {
+          model: Contacto,
+          as: 'contactos',
+          where: { activo: true },
+          required: false,
+          order: [
+            ['es_principal', 'DESC'],
+            ['nombre', 'ASC'],
+          ],
+        },
+      ],
     });
 
     if (!cliente) {
@@ -240,8 +251,8 @@ const obtenerPorId = async (req, res) => {
     const operacionesMes = await Operacion.count({
       where: {
         cliente_id: id,
-        created_at: { [Op.gte]: inicioMes }
-      }
+        created_at: { [Op.gte]: inicioMes },
+      },
     });
 
     const totalProductos = await Inventario.count({ where: { cliente_id: id } });
@@ -251,7 +262,6 @@ const obtenerPorId = async (req, res) => {
     clienteData.total_productos = totalProductos;
 
     return success(res, clienteData);
-    
   } catch (error) {
     logger.error('Error al obtener cliente:', { message: error.message, id: req.params.id });
     return serverError(res, 'Error al obtener el cliente', error);
@@ -264,35 +274,35 @@ const obtenerPorId = async (req, res) => {
  */
 const crear = async (req, res) => {
   const transaction = await sequelize.transaction();
-  
+
   try {
     const datos = limpiarObjeto(req.body);
-    
+
     // Verificar NIT duplicado
-    const nitExiste = await Cliente.findOne({ 
+    const nitExiste = await Cliente.findOne({
       where: { nit: datos.nit },
-      paranoid: false
+      paranoid: false,
     });
-    
+
     if (nitExiste) {
       await transaction.rollback();
       return conflict(res, `El NIT ${datos.nit} ya está registrado`);
     }
-    
+
     // ========== GENERAR CÓDIGO DE CLIENTE AUTOMÁTICAMENTE ==========
     if (!datos.codigo_cliente) {
       const ultimoCliente = await Cliente.findOne({
         order: [['id', 'DESC']],
-        paranoid: false
+        paranoid: false,
       });
       const siguienteNum = ultimoCliente ? ultimoCliente.id + 1 : 1;
       datos.codigo_cliente = `CLI-${String(siguienteNum).padStart(4, '0')}`;
     }
     // ================================================================
-    
+
     // Crear cliente
     const cliente = await Cliente.create(datos, { transaction });
-    
+
     // Registrar en auditoría
     await Auditoria.registrar({
       tabla: 'clientes',
@@ -303,9 +313,9 @@ const crear = async (req, res) => {
       datos_nuevos: datos,
       ip_address: getClientIP(req),
       user_agent: req.get('user-agent'),
-      descripcion: `Cliente creado: ${cliente.razon_social} (${cliente.codigo_cliente})`
+      descripcion: `Cliente creado: ${cliente.razon_social} (${cliente.codigo_cliente})`,
     });
-    
+
     await transaction.commit();
 
     // Notificar nuevo cliente
@@ -314,11 +324,10 @@ const crear = async (req, res) => {
     logger.info('Cliente creado:', {
       clienteId: cliente.id,
       codigo: cliente.codigo_cliente,
-      creadoPor: req.user.id
+      creadoPor: req.user.id,
     });
 
     return created(res, 'Cliente creado exitosamente', cliente);
-    
   } catch (error) {
     await transaction.rollback();
     logger.error('Error al crear cliente:', { message: error.message });
@@ -332,41 +341,41 @@ const crear = async (req, res) => {
  */
 const actualizar = async (req, res) => {
   const transaction = await sequelize.transaction();
-  
+
   try {
     const { id } = req.params;
     const datos = limpiarObjeto(req.body);
-    
+
     // Buscar cliente
     const cliente = await Cliente.findByPk(id);
-    
+
     if (!cliente) {
       await transaction.rollback();
       return notFound(res, 'Cliente no encontrado');
     }
-    
+
     // Si se cambia el NIT, verificar que no esté duplicado
     if (datos.nit && datos.nit !== cliente.nit) {
       const nitExiste = await Cliente.findOne({
-        where: { 
+        where: {
           nit: datos.nit,
-          id: { [Op.ne]: id }
+          id: { [Op.ne]: id },
         },
-        paranoid: false
+        paranoid: false,
       });
-      
+
       if (nitExiste) {
         await transaction.rollback();
         return conflict(res, `El NIT ${datos.nit} ya está registrado`);
       }
     }
-    
+
     // Guardar datos anteriores para auditoría
     const datosAnteriores = cliente.toJSON();
-    
+
     // Actualizar
     await cliente.update(datos, { transaction });
-    
+
     // Registrar en auditoría
     await Auditoria.registrar({
       tabla: 'clientes',
@@ -378,28 +387,29 @@ const actualizar = async (req, res) => {
       datos_nuevos: datos,
       ip_address: getClientIP(req),
       user_agent: req.get('user-agent'),
-      descripcion: `Cliente actualizado: ${cliente.razon_social}`
+      descripcion: `Cliente actualizado: ${cliente.razon_social}`,
     });
-    
+
     await transaction.commit();
-    
+
     // Recargar con contactos
     await cliente.reload({
-      include: [{
-        model: Contacto,
-        as: 'contactos',
-        where: { activo: true },
-        required: false
-      }]
+      include: [
+        {
+          model: Contacto,
+          as: 'contactos',
+          where: { activo: true },
+          required: false,
+        },
+      ],
     });
-    
-    logger.info('Cliente actualizado:', { 
-      clienteId: id, 
-      actualizadoPor: req.user.id 
+
+    logger.info('Cliente actualizado:', {
+      clienteId: id,
+      actualizadoPor: req.user.id,
     });
-    
+
     return successMessage(res, 'Cliente actualizado exitosamente', cliente);
-    
   } catch (error) {
     await transaction.rollback();
     logger.error('Error al actualizar cliente:', { message: error.message, id: req.params.id });
@@ -413,23 +423,23 @@ const actualizar = async (req, res) => {
  */
 const eliminar = async (req, res) => {
   const transaction = await sequelize.transaction();
-  
+
   try {
     const { id } = req.params;
-    
+
     const cliente = await Cliente.findByPk(id);
-    
+
     if (!cliente) {
       await transaction.rollback();
       return notFound(res, 'Cliente no encontrado');
     }
-    
+
     // Guardar datos para auditoría
     const datosAnteriores = cliente.toJSON();
-    
+
     // Soft delete (paranoid: true en el modelo)
     await cliente.destroy({ transaction });
-    
+
     // Registrar en auditoría
     await Auditoria.registrar({
       tabla: 'clientes',
@@ -440,21 +450,22 @@ const eliminar = async (req, res) => {
       datos_anteriores: datosAnteriores,
       ip_address: getClientIP(req),
       user_agent: req.get('user-agent'),
-      descripcion: `Cliente eliminado: ${cliente.razon_social} (${cliente.codigo_cliente})`
+      descripcion: `Cliente eliminado: ${cliente.razon_social} (${cliente.codigo_cliente})`,
     });
-    
+
     await transaction.commit();
 
     // Notificar eliminación de cliente
-    notificacionService.notificarClienteEliminado(cliente, req.user.nombre_completo).catch(() => {});
+    notificacionService
+      .notificarClienteEliminado(cliente, req.user.nombre_completo)
+      .catch(() => {});
 
     logger.info('Cliente eliminado:', {
       clienteId: id,
-      eliminadoPor: req.user.id
+      eliminadoPor: req.user.id,
     });
 
     return successMessage(res, 'Cliente eliminado exitosamente');
-    
   } catch (error) {
     await transaction.rollback();
     logger.error('Error al eliminar cliente:', { message: error.message, id: req.params.id });
@@ -473,31 +484,36 @@ const eliminar = async (req, res) => {
 const listarContactos = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Verificar que el cliente existe
     const cliente = await Cliente.findByPk(id);
-    
+
     if (!cliente) {
       return notFound(res, 'Cliente no encontrado');
     }
-    
+
     // Incluir inactivos si se solicita
     const incluirInactivos = req.query.incluir_inactivos === 'true';
-    
+
     const where = { cliente_id: id };
     if (!incluirInactivos) {
       where.activo = true;
     }
-    
+
     const contactos = await Contacto.findAll({
       where,
-      order: [['es_principal', 'DESC'], ['nombre', 'ASC']]
+      order: [
+        ['es_principal', 'DESC'],
+        ['nombre', 'ASC'],
+      ],
     });
-    
+
     return success(res, contactos);
-    
   } catch (error) {
-    logger.error('Error al listar contactos:', { message: error.message, clienteId: req.params.id });
+    logger.error('Error al listar contactos:', {
+      message: error.message,
+      clienteId: req.params.id,
+    });
     return serverError(res, 'Error al obtener los contactos', error);
   }
 };
@@ -508,25 +524,28 @@ const listarContactos = async (req, res) => {
  */
 const crearContacto = async (req, res) => {
   const transaction = await sequelize.transaction();
-  
+
   try {
     const { id } = req.params;
     const datos = limpiarObjeto(req.body);
-    
+
     // Verificar que el cliente existe
     const cliente = await Cliente.findByPk(id);
-    
+
     if (!cliente) {
       await transaction.rollback();
       return notFound(res, 'Cliente no encontrado');
     }
-    
+
     // Crear contacto
-    const contacto = await Contacto.create({
-      ...datos,
-      cliente_id: id
-    }, { transaction });
-    
+    const contacto = await Contacto.create(
+      {
+        ...datos,
+        cliente_id: id,
+      },
+      { transaction }
+    );
+
     // Registrar en auditoría
     await Auditoria.registrar({
       tabla: 'contactos',
@@ -536,19 +555,18 @@ const crearContacto = async (req, res) => {
       usuario_nombre: req.user.nombre_completo,
       datos_nuevos: { ...datos, cliente_id: id },
       ip_address: getClientIP(req),
-      descripcion: `Contacto creado: ${contacto.nombre} para cliente ${cliente.razon_social}`
+      descripcion: `Contacto creado: ${contacto.nombre} para cliente ${cliente.razon_social}`,
     });
-    
+
     await transaction.commit();
-    
-    logger.info('Contacto creado:', { 
-      contactoId: contacto.id, 
+
+    logger.info('Contacto creado:', {
+      contactoId: contacto.id,
       clienteId: id,
-      creadoPor: req.user.id 
+      creadoPor: req.user.id,
     });
-    
+
     return created(res, 'Contacto creado exitosamente', contacto);
-    
   } catch (error) {
     await transaction.rollback();
     logger.error('Error al crear contacto:', { message: error.message });
@@ -562,34 +580,34 @@ const crearContacto = async (req, res) => {
  */
 const actualizarContacto = async (req, res) => {
   const transaction = await sequelize.transaction();
-  
+
   try {
     const { id, contactoId } = req.params;
     const datos = limpiarObjeto(req.body);
-    
+
     // Verificar que el cliente existe
     const cliente = await Cliente.findByPk(id);
     if (!cliente) {
       await transaction.rollback();
       return notFound(res, 'Cliente no encontrado');
     }
-    
+
     // Buscar contacto
     const contacto = await Contacto.findOne({
-      where: { id: contactoId, cliente_id: id }
+      where: { id: contactoId, cliente_id: id },
     });
-    
+
     if (!contacto) {
       await transaction.rollback();
       return notFound(res, 'Contacto no encontrado');
     }
-    
+
     // Guardar datos anteriores
     const datosAnteriores = contacto.toJSON();
-    
+
     // Actualizar
     await contacto.update(datos, { transaction });
-    
+
     // Registrar en auditoría
     await Auditoria.registrar({
       tabla: 'contactos',
@@ -600,19 +618,18 @@ const actualizarContacto = async (req, res) => {
       datos_anteriores: datosAnteriores,
       datos_nuevos: datos,
       ip_address: getClientIP(req),
-      descripcion: `Contacto actualizado: ${contacto.nombre}`
+      descripcion: `Contacto actualizado: ${contacto.nombre}`,
     });
-    
+
     await transaction.commit();
-    
-    logger.info('Contacto actualizado:', { 
-      contactoId, 
+
+    logger.info('Contacto actualizado:', {
+      contactoId,
       clienteId: id,
-      actualizadoPor: req.user.id 
+      actualizadoPor: req.user.id,
     });
-    
+
     return successMessage(res, 'Contacto actualizado exitosamente', contacto);
-    
   } catch (error) {
     await transaction.rollback();
     logger.error('Error al actualizar contacto:', { message: error.message });
@@ -626,32 +643,32 @@ const actualizarContacto = async (req, res) => {
  */
 const eliminarContacto = async (req, res) => {
   const transaction = await sequelize.transaction();
-  
+
   try {
     const { id, contactoId } = req.params;
-    
+
     // Verificar que el cliente existe
     const cliente = await Cliente.findByPk(id);
     if (!cliente) {
       await transaction.rollback();
       return notFound(res, 'Cliente no encontrado');
     }
-    
+
     // Buscar contacto
     const contacto = await Contacto.findOne({
-      where: { id: contactoId, cliente_id: id }
+      where: { id: contactoId, cliente_id: id },
     });
-    
+
     if (!contacto) {
       await transaction.rollback();
       return notFound(res, 'Contacto no encontrado');
     }
-    
+
     const datosAnteriores = contacto.toJSON();
-    
+
     // Eliminar (hard delete para contactos)
     await contacto.destroy({ transaction });
-    
+
     // Registrar en auditoría
     await Auditoria.registrar({
       tabla: 'contactos',
@@ -661,19 +678,18 @@ const eliminarContacto = async (req, res) => {
       usuario_nombre: req.user.nombre_completo,
       datos_anteriores: datosAnteriores,
       ip_address: getClientIP(req),
-      descripcion: `Contacto eliminado: ${contacto.nombre} del cliente ${cliente.razon_social}`
+      descripcion: `Contacto eliminado: ${contacto.nombre} del cliente ${cliente.razon_social}`,
     });
-    
+
     await transaction.commit();
-    
-    logger.info('Contacto eliminado:', { 
-      contactoId, 
+
+    logger.info('Contacto eliminado:', {
+      contactoId,
       clienteId: id,
-      eliminadoPor: req.user.id 
+      eliminadoPor: req.user.id,
     });
-    
+
     return successMessage(res, 'Contacto eliminado exitosamente');
-    
   } catch (error) {
     await transaction.rollback();
     logger.error('Error al eliminar contacto:', { message: error.message });
@@ -709,7 +725,7 @@ const historial = async (req, res) => {
     });
 
     // Transformar a formato historial
-    const items = operaciones.map(op => {
+    const items = operaciones.map((op) => {
       const tipo_op = op.tipo === 'entrada' ? 'Entrada' : 'Salida';
       const doc = op.documento_wms || op.numero_operacion;
       let titulo, descripcion, tipo;
@@ -748,9 +764,11 @@ const historial = async (req, res) => {
     });
 
     return paginated(res, items, buildPaginacion(count, parseInt(page), parseInt(limit)));
-
   } catch (error) {
-    logger.error('Error al obtener historial del cliente:', { message: error.message, clienteId: req.params.id });
+    logger.error('Error al obtener historial del cliente:', {
+      message: error.message,
+      clienteId: req.params.id,
+    });
     return serverError(res, 'Error al obtener el historial', error);
   }
 };
@@ -781,7 +799,9 @@ const subirLogo = async (req, res) => {
       if (cliente.logo_url?.includes('cloudinary.com')) {
         try {
           await cloudinaryService.eliminar(`istho-crm/logos/cliente_${id}`, 'image');
-        } catch { /* ignorar si no existe */ }
+        } catch {
+          /* ignorar si no existe */
+        }
       }
       // Subir a Cloudinary con compresión automática
       const resultado = await cloudinaryService.subirImagen(req.file.path, {
@@ -789,7 +809,11 @@ const subirLogo = async (req, res) => {
         publicId: `cliente_${id}`,
       });
       logo_url = resultado.url;
-      try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch {
+        /* ignore */
+      }
       logger.info('Logo subido a Cloudinary:', { clienteId: id, url: logo_url });
     } else {
       // Fallback: URL local (desarrollo sin Cloudinary)
@@ -846,9 +870,15 @@ const importarClientes = async (req, res) => {
     // Leer encabezados (fila 1)
     const headers = [];
     sheet.getRow(1).eachCell((cell, colNumber) => {
-      headers[colNumber] = String(cell.value || '').toLowerCase().trim()
+      headers[colNumber] = String(cell.value || '')
+        .toLowerCase()
+        .trim()
         .replace(/\s+/g, '_')
-        .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i').replace(/ó/g, 'o').replace(/ú/g, 'u')
+        .replace(/á/g, 'a')
+        .replace(/é/g, 'e')
+        .replace(/í/g, 'i')
+        .replace(/ó/g, 'o')
+        .replace(/ú/g, 'u')
         .replace(/ñ/g, 'n');
     });
 
@@ -967,17 +997,49 @@ const descargarPlantillaImportacion = async (req, res) => {
         { name: 'notas', filterButton: true },
       ],
       rows: [
-        ['800245795-0', 'EMPRESA EJEMPLO S.A.S.', 'corporativo', 'manufactura', 'Calle 46A # 53C-15', 'MEDELLÍN', 'ANTIOQUIA', '6042341234', 'contacto@empresa.com', '2024-01-15', ''],
-        ['900123456-7', 'COMERCIAL DEMO LTDA', 'pyme', 'retail', 'Carrera 70 # 45-30', 'BOGOTÁ', 'CUNDINAMARCA', '3001234567', 'ventas@demo.com', '2023-06-01', ''],
+        [
+          '800245795-0',
+          'EMPRESA EJEMPLO S.A.S.',
+          'corporativo',
+          'manufactura',
+          'Calle 46A # 53C-15',
+          'MEDELLÍN',
+          'ANTIOQUIA',
+          '6042341234',
+          'contacto@empresa.com',
+          '2024-01-15',
+          '',
+        ],
+        [
+          '900123456-7',
+          'COMERCIAL DEMO LTDA',
+          'pyme',
+          'retail',
+          'Carrera 70 # 45-30',
+          'BOGOTÁ',
+          'CUNDINAMARCA',
+          '3001234567',
+          'ventas@demo.com',
+          '2023-06-01',
+          '',
+        ],
       ],
     });
 
     // Ajustar anchos de columna
     const anchos = [18, 35, 18, 16, 35, 20, 20, 14, 30, 22, 35];
-    sheet.columns.forEach((col, i) => { col.width = anchos[i] || 18; });
+    sheet.columns.forEach((col, i) => {
+      col.width = anchos[i] || 18;
+    });
 
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="plantilla_importacion_clientes.xlsx"');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="plantilla_importacion_clientes.xlsx"'
+    );
 
     await workbook.xlsx.write(res);
     res.end();

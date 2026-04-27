@@ -28,9 +28,7 @@ const tabs = [
 // ======================================================
 describe('DataTable - SimpleTable', () => {
   it('renderiza columnas con scope="col"', () => {
-    const { container } = render(
-      <DataTable columns={columnas} data={filas} />
-    );
+    const { container } = render(<DataTable columns={columnas} data={filas} />);
 
     const headers = container.querySelectorAll('th[scope="col"]');
     expect(headers).toHaveLength(2);
@@ -39,9 +37,7 @@ describe('DataTable - SimpleTable', () => {
   });
 
   it('renderiza filas de datos', () => {
-    const { container } = render(
-      <DataTable columns={columnas} data={filas} />
-    );
+    const { container } = render(<DataTable columns={columnas} data={filas} />);
 
     const rows = container.querySelectorAll('tbody tr');
     expect(rows).toHaveLength(2);
@@ -50,17 +46,13 @@ describe('DataTable - SimpleTable', () => {
   });
 
   it('muestra mensaje vacío cuando data está vacía', () => {
-    render(
-      <DataTable columns={columnas} data={[]} emptyMessage="Sin registros" />
-    );
+    render(<DataTable columns={columnas} data={[]} emptyMessage="Sin registros" />);
 
     expect(screen.getByText('Sin registros')).toBeInTheDocument();
   });
 
   it('tabla tiene aria-busy="true" cuando loading=true', () => {
-    const { container } = render(
-      <DataTable columns={columnas} data={filas} loading />
-    );
+    const { container } = render(<DataTable columns={columnas} data={filas} loading />);
 
     const table = container.querySelector('table');
     expect(table).toHaveAttribute('aria-busy', 'true');
@@ -141,9 +133,7 @@ describe('DataTable - SimpleTable', () => {
   });
 
   it('fila sin onRowClick no tiene tabIndex ni botón sr-only', () => {
-    const { container } = render(
-      <DataTable columns={columnas} data={filas} />
-    );
+    const { container } = render(<DataTable columns={columnas} data={filas} />);
 
     const row = container.querySelector('tbody tr');
     expect(row).not.toHaveAttribute('tabindex');
@@ -162,9 +152,7 @@ describe('DataTable - SimpleTable', () => {
   });
 
   it('en estado loading: renderiza 5 filas skeleton', () => {
-    const { container } = render(
-      <DataTable columns={columnas} data={filas} loading />
-    );
+    const { container } = render(<DataTable columns={columnas} data={filas} loading />);
 
     const rows = container.querySelectorAll('tbody tr');
     expect(rows).toHaveLength(5);
@@ -184,9 +172,7 @@ describe('DataTable - SimpleTable', () => {
       },
     ];
 
-    const { container } = render(
-      <DataTable columns={columnasConRender} data={filas} />
-    );
+    const { container } = render(<DataTable columns={columnasConRender} data={filas} />);
 
     const customStatus = container.querySelector('.custom-status');
     expect(customStatus).toHaveTextContent('ACTIVO');
@@ -198,9 +184,7 @@ describe('DataTable - SimpleTable', () => {
       { key: 'nombre', label: 'Nombre' },
     ];
 
-    const { container } = render(
-      <DataTable columns={columnasConId} data={filas} />
-    );
+    const { container } = render(<DataTable columns={columnasConId} data={filas} />);
 
     const idCell = container.querySelector('span.text-orange-600');
     expect(idCell).toHaveTextContent('1');
@@ -212,9 +196,7 @@ describe('DataTable - SimpleTable', () => {
       { key: 'estado', label: 'Estado', type: 'status' },
     ];
 
-    const { container } = render(
-      <DataTable columns={columnasConStatus} data={filas} />
-    );
+    const { container } = render(<DataTable columns={columnasConStatus} data={filas} />);
 
     const firstDataRow = container.querySelector('tbody tr:first-child');
     expect(firstDataRow).toHaveTextContent('activo');
@@ -230,11 +212,7 @@ describe('DataTable - Tabs', () => {
 
   it('renderiza tablist con tabs', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} />
     );
 
     const tablist = container.querySelector('[role="tablist"]');
@@ -248,12 +226,7 @@ describe('DataTable - Tabs', () => {
 
   it('tab activo tiene aria-selected="true"', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="activos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="activos" />
     );
 
     const activeTab = container.querySelector('[aria-selected="true"]');
@@ -262,12 +235,7 @@ describe('DataTable - Tabs', () => {
 
   it('tab inactivo tiene aria-selected="false" y tabIndex="-1"', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="activos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="activos" />
     );
 
     const inactiveTab = container.querySelector('[id="tab-inactivos"]');
@@ -277,12 +245,7 @@ describe('DataTable - Tabs', () => {
 
   it('tab activo tiene tabIndex="0"', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="activos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="activos" />
     );
 
     const activeTab = container.querySelector('[id="tab-activos"]');
@@ -291,12 +254,7 @@ describe('DataTable - Tabs', () => {
 
   it('cambia tab al hacer click', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="activos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="activos" />
     );
 
     const inactiveTab = container.querySelector('[id="tab-inactivos"]');
@@ -308,12 +266,7 @@ describe('DataTable - Tabs', () => {
 
   it('tabpanel tiene role="tabpanel" y aria-labelledby correcto', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="activos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="activos" />
     );
 
     const tabpanel = container.querySelector('[role="tabpanel"]');
@@ -324,12 +277,7 @@ describe('DataTable - Tabs', () => {
 
   it('cambia tabpanel al cambiar tab', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="activos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="activos" />
     );
 
     const inactiveTab = container.querySelector('[id="tab-inactivos"]');
@@ -342,12 +290,7 @@ describe('DataTable - Tabs', () => {
 
   it('navega entre tabs con ArrowRight', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="activos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="activos" />
     );
 
     const activeTab = container.querySelector('[id="tab-activos"]');
@@ -359,12 +302,7 @@ describe('DataTable - Tabs', () => {
 
   it('navega entre tabs con ArrowLeft', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="inactivos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="inactivos" />
     );
 
     const activeTab = container.querySelector('[id="tab-inactivos"]');
@@ -376,12 +314,7 @@ describe('DataTable - Tabs', () => {
 
   it('ArrowRight envuelve al último tab al primero', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="inactivos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="inactivos" />
     );
 
     const activeTab = container.querySelector('[id="tab-inactivos"]');
@@ -393,12 +326,7 @@ describe('DataTable - Tabs', () => {
 
   it('ArrowLeft envuelve al primer tab al último', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="activos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="activos" />
     );
 
     const activeTab = container.querySelector('[id="tab-activos"]');
@@ -428,12 +356,7 @@ describe('DataTable - Tabs', () => {
 
   it('renderiza tabla dentro de tabpanel con datos del tab activo', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="activos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="activos" />
     );
 
     const tabpanel = container.querySelector('[role="tabpanel"]');
@@ -458,13 +381,7 @@ describe('DataTable - Tabs', () => {
   });
 
   it('tabs muestran count cuando se proporciona', () => {
-    const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-      />
-    );
+    render(<DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} />);
 
     expect(screen.getByText('5')).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
@@ -472,12 +389,7 @@ describe('DataTable - Tabs', () => {
 
   it('renderiza con defaultTab especificado', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="inactivos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="inactivos" />
     );
 
     const activeTab = container.querySelector('[aria-selected="true"]');
@@ -486,12 +398,7 @@ describe('DataTable - Tabs', () => {
 
   it('tab activo tiene underline visual (span con clase bg-orange-500)', () => {
     const { container } = render(
-      <DataTable
-        tabs={tabs}
-        columns={columnasConTabs}
-        data={filasConTabs}
-        defaultTab="activos"
-      />
+      <DataTable tabs={tabs} columns={columnasConTabs} data={filasConTabs} defaultTab="activos" />
     );
 
     const activeTab = container.querySelector('[id="tab-activos"]');

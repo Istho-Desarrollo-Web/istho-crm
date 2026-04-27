@@ -15,8 +15,20 @@ import apiClient from '@api/client';
 import { ADMIN_ENDPOINTS } from '@api/endpoints';
 import useNotification from '@hooks/useNotification';
 import {
-  Settings, ArrowLeft, Plus, Trash2, ToggleLeft, ToggleRight,
-  Edit3, Save, X, FileText, Truck, CheckCircle, Info, Database
+  Settings,
+  ArrowLeft,
+  Plus,
+  Trash2,
+  ToggleLeft,
+  ToggleRight,
+  Edit3,
+  Save,
+  X,
+  FileText,
+  Truck,
+  CheckCircle,
+  Info,
+  Database,
 } from 'lucide-react';
 
 // ============================================================================
@@ -29,22 +41,22 @@ const CATEGORIAS = {
     descripcion: 'Solo los kardex con estos motivos serán procesados por el CRM',
     icono: FileText,
     color: 'purple',
-    campos: ['valor_wms', 'valor_crm', 'requiere_detalle', 'descripcion']
+    campos: ['valor_wms', 'valor_crm', 'requiere_detalle', 'descripcion'],
   },
   tipo_orden: {
     titulo: 'Mapeo de Tipos de Orden',
     descripcion: 'Fallback cuando el WMS no envía tipo_documento (CO/PK/CR)',
     icono: Truck,
     color: 'blue',
-    campos: ['valor_wms', 'valor_crm', 'tipo_documento', 'descripcion']
+    campos: ['valor_wms', 'valor_crm', 'tipo_documento', 'descripcion'],
   },
   estado_valido: {
     titulo: 'Estados Válidos para Procesar',
     descripcion: 'Solo las órdenes con estos estados serán aceptadas por el CRM',
     icono: CheckCircle,
     color: 'emerald',
-    campos: ['valor_wms', 'valor_crm', 'descripcion']
-  }
+    campos: ['valor_wms', 'valor_crm', 'descripcion'],
+  },
 };
 
 const COLOR_MAP = {
@@ -65,7 +77,7 @@ const COLOR_MAP = {
     icon: 'bg-emerald-100 dark:bg-emerald-900/30',
     iconText: 'text-emerald-600 dark:text-emerald-400',
     badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300',
-  }
+  },
 };
 
 // ============================================================================
@@ -97,7 +109,9 @@ const ConfiguracionWms = () => {
     }
   }, [notifyError]);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
 
   // ─── Crear ───────────────────────────────────────────────────────────────
   const handleCrear = async () => {
@@ -169,7 +183,7 @@ const ConfiguracionWms = () => {
       valor_crm: item.valor_crm,
       tipo_documento: item.tipo_documento,
       requiere_detalle: item.requiere_detalle,
-      descripcion: item.descripcion || ''
+      descripcion: item.descripcion || '',
     });
   };
 
@@ -181,7 +195,7 @@ const ConfiguracionWms = () => {
       valor_crm: '',
       tipo_documento: categoria === 'tipo_orden' ? 'CO' : null,
       requiere_detalle: false,
-      descripcion: ''
+      descripcion: '',
     });
   };
 
@@ -193,7 +207,9 @@ const ConfiguracionWms = () => {
 
   // ─── Contar totales ──────────────────────────────────────────────────────
   const totalConfigs = Object.values(data).flat().length;
-  const totalActivas = Object.values(data).flat().filter(i => i.activo).length;
+  const totalActivas = Object.values(data)
+    .flat()
+    .filter((i) => i.activo).length;
   const totalInactivas = totalConfigs - totalActivas;
 
   // ════════════════════════════════════════════════════════════════════════
@@ -218,15 +234,22 @@ const ConfiguracionWms = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-centhrix-card transition-colors">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-centhrix-card transition-colors"
+            >
               <ArrowLeft className="w-5 h-5 text-slate-400" />
             </button>
             <div className="p-2.5 bg-red-100 dark:bg-red-900/30 rounded-xl">
               <Settings className="w-7 h-7 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Configuración WMS</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestiona cómo el CRM procesa datos del WMS Centhrix</p>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+                Configuración WMS
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-0.5">
+                Gestiona cómo el CRM procesa datos del WMS Centhrix
+              </p>
             </div>
           </div>
         </div>
@@ -272,8 +295,10 @@ const ConfiguracionWms = () => {
               <p className="font-semibold text-slate-800 dark:text-slate-100">¿Cómo funciona?</p>
               <p className="mt-1 text-slate-500 dark:text-slate-400">
                 El WMS envía datos al CRM cuando una orden cambia a estado &quot;Finalizada&quot;.
-                El CRM valida el estado, el tipo de orden y (para Kardex) el motivo antes de procesarla.
-                Solo las configuraciones <strong className="text-slate-700 dark:text-slate-200">activas</strong> se usan para validar.
+                El CRM valida el estado, el tipo de orden y (para Kardex) el motivo antes de
+                procesarla. Solo las configuraciones{' '}
+                <strong className="text-slate-700 dark:text-slate-200">activas</strong> se usan para
+                validar.
               </p>
             </div>
           </div>
@@ -286,7 +311,10 @@ const ConfiguracionWms = () => {
           const items = data[categoria] || [];
 
           return (
-            <div key={categoria} className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
+            <div
+              key={categoria}
+              className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6"
+            >
               {/* Título de sección */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
@@ -294,8 +322,12 @@ const ConfiguracionWms = () => {
                     <Icono className={`w-5 h-5 ${colors.iconText}`} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{config.titulo}</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{config.descripcion}</p>
+                    <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                      {config.titulo}
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {config.descripcion}
+                    </p>
                   </div>
                 </div>
                 <button
@@ -339,7 +371,9 @@ const ConfiguracionWms = () => {
                           onCancelar={cancelar}
                         />
                       ) : (
-                        <div className={`flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-slate-700 bg-slate-50 dark:bg-centhrix-bg/50 transition-all hover:shadow-sm ${!item.activo ? 'opacity-50' : ''}`}>
+                        <div
+                          className={`flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-slate-700 bg-slate-50 dark:bg-centhrix-bg/50 transition-all hover:shadow-sm ${!item.activo ? 'opacity-50' : ''}`}
+                        >
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
@@ -350,7 +384,9 @@ const ConfiguracionWms = () => {
                                 {item.valor_crm}
                               </span>
                               {item.tipo_documento && (
-                                <span className={`px-2 py-0.5 text-xs rounded-full font-semibold ${colors.badge}`}>
+                                <span
+                                  className={`px-2 py-0.5 text-xs rounded-full font-semibold ${colors.badge}`}
+                                >
                                   {item.tipo_documento}
                                 </span>
                               )}
@@ -361,7 +397,9 @@ const ConfiguracionWms = () => {
                               )}
                             </div>
                             {item.descripcion && (
-                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">{item.descripcion}</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
+                                {item.descripcion}
+                              </p>
                             )}
                           </div>
 
@@ -371,10 +409,11 @@ const ConfiguracionWms = () => {
                               className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-centhrix-surface transition-colors"
                               title={item.activo ? 'Desactivar' : 'Activar'}
                             >
-                              {item.activo
-                                ? <ToggleRight className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
-                                : <ToggleLeft className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-                              }
+                              {item.activo ? (
+                                <ToggleRight className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
+                              ) : (
+                                <ToggleLeft className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                              )}
                             </button>
                             <button
                               onClick={() => iniciarEdicion(item)}
@@ -411,7 +450,7 @@ const ConfiguracionWms = () => {
 
 const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCancelar, esNuevo }) => {
   const handleChange = (campo, valor) => {
-    setFormData(prev => ({ ...prev, [campo]: valor }));
+    setFormData((prev) => ({ ...prev, [campo]: valor }));
   };
 
   return (
@@ -419,7 +458,9 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Valor WMS */}
         <div>
-          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Valor WMS (como lo envía el WMS)</label>
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+            Valor WMS (como lo envía el WMS)
+          </label>
           <input
             type="text"
             value={formData.valor_wms || ''}
@@ -431,7 +472,9 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
 
         {/* Valor CRM */}
         <div>
-          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Nombre en CRM (como se muestra)</label>
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+            Nombre en CRM (como se muestra)
+          </label>
           <input
             type="text"
             value={formData.valor_crm || ''}
@@ -444,7 +487,9 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
         {/* Tipo documento (solo tipo_orden) */}
         {categoria === 'tipo_orden' && (
           <div>
-            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Tipo Documento CRM</label>
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+              Tipo Documento CRM
+            </label>
             <select
               value={formData.tipo_documento || 'CO'}
               onChange={(e) => handleChange('tipo_documento', e.target.value)}
@@ -466,13 +511,17 @@ const FormularioConfig = ({ formData, setFormData, categoria, onGuardar, onCance
               onChange={(e) => handleChange('requiere_detalle', e.target.checked)}
               className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 dark:bg-centhrix-surface text-orange-500 focus:ring-orange-500"
             />
-            <label className="text-sm text-slate-600 dark:text-slate-400">Requiere detalle adicional del WMS</label>
+            <label className="text-sm text-slate-600 dark:text-slate-400">
+              Requiere detalle adicional del WMS
+            </label>
           </div>
         )}
 
         {/* Descripción */}
         <div className={categoria === 'estado_valido' ? '' : 'sm:col-span-2'}>
-          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Descripción (opcional)</label>
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+            Descripción (opcional)
+          </label>
           <input
             type="text"
             value={formData.descripcion || ''}

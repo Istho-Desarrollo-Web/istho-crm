@@ -3,9 +3,9 @@
  * ISTHO CRM - ClientesList
  * ============================================================================
  * Lista de clientes conectada al backend real.
- * 
+ *
  * ACTUALIZADO: Filtros alineados con ENUMs del modelo Cliente
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 2.1.0
  * @date Enero 2026
@@ -35,7 +35,6 @@ import {
 } from 'lucide-react';
 
 // Layout
-
 
 // Components
 import {
@@ -130,7 +129,9 @@ const RowActions = ({ cliente, onView, onEdit, onDelete, onChangeStatus }) => {
           elevation: 0,
           sx: {
             overflow: 'visible',
-            filter: isDark ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))' : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+            filter: isDark
+              ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))'
+              : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
             mt: 0.5,
             borderRadius: '0.75rem',
             border: isDark ? '1px solid #334155' : '1px solid #f3f4f6',
@@ -146,13 +147,23 @@ const RowActions = ({ cliente, onView, onEdit, onDelete, onChangeStatus }) => {
           },
         }}
       >
-        <MenuItem onClick={() => { onView(cliente); setAnchorEl(null); }}>
+        <MenuItem
+          onClick={() => {
+            onView(cliente);
+            setAnchorEl(null);
+          }}
+        >
           <Eye className="w-4 h-4" />
           Ver detalle
         </MenuItem>
 
         <ProtectedAction module="clientes" action="editar">
-          <MenuItem onClick={() => { onEdit(cliente); setAnchorEl(null); }}>
+          <MenuItem
+            onClick={() => {
+              onEdit(cliente);
+              setAnchorEl(null);
+            }}
+          >
             <Pencil className="w-4 h-4" />
             Editar
           </MenuItem>
@@ -160,8 +171,14 @@ const RowActions = ({ cliente, onView, onEdit, onDelete, onChangeStatus }) => {
 
         <ProtectedAction module="clientes" action="cambiar_estado">
           <MenuItem
-            onClick={() => { onChangeStatus(cliente); setAnchorEl(null); }}
-            sx={{ color: '#d97706 !important', '&:hover': { backgroundColor: isDark ? '#451a03 !important' : '#fffbeb !important' } }}
+            onClick={() => {
+              onChangeStatus(cliente);
+              setAnchorEl(null);
+            }}
+            sx={{
+              color: '#d97706 !important',
+              '&:hover': { backgroundColor: isDark ? '#451a03 !important' : '#fffbeb !important' },
+            }}
           >
             <RefreshCw className="w-4 h-4" />
             Cambiar Estado
@@ -170,8 +187,14 @@ const RowActions = ({ cliente, onView, onEdit, onDelete, onChangeStatus }) => {
 
         <ProtectedAction module="clientes" action="eliminar">
           <MenuItem
-            onClick={() => { onDelete(cliente); setAnchorEl(null); }}
-            sx={{ color: '#dc2626 !important', '&:hover': { backgroundColor: isDark ? '#451a1a !important' : '#fef2f2 !important' } }}
+            onClick={() => {
+              onDelete(cliente);
+              setAnchorEl(null);
+            }}
+            sx={{
+              color: '#dc2626 !important',
+              '&:hover': { backgroundColor: isDark ? '#451a1a !important' : '#fef2f2 !important' },
+            }}
           >
             <Trash2 className="w-4 h-4" />
             Eliminar
@@ -194,7 +217,13 @@ const ClientesList = () => {
   // ──────────────────────────────────────────────────────────────────────────
   // HOOKS — todos deben declararse antes de cualquier return condicional
   // ──────────────────────────────────────────────────────────────────────────
-  const { success: notifySuccess, apiError, saved, deleted, error: notifyError } = useNotification();
+  const {
+    success: notifySuccess,
+    apiError,
+    saved,
+    deleted,
+    error: notifyError,
+  } = useNotification();
   const fileInputRef = useRef(null);
   const [importModal, setImportModal] = useState({ isOpen: false });
   const [importFile, setImportFile] = useState(null);
@@ -207,7 +236,10 @@ const ClientesList = () => {
   const handleExport = async () => {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      await descargarArchivo(`${baseUrl}/reportes/clientes/excel`, `clientes-${fechaDescarga()}.xlsx`);
+      await descargarArchivo(
+        `${baseUrl}/reportes/clientes/excel`,
+        `clientes-${fechaDescarga()}.xlsx`
+      );
     } catch {
       notifyError('Error al exportar la lista de clientes');
     }
@@ -216,7 +248,10 @@ const ClientesList = () => {
   const handleDownloadPlantilla = async () => {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      await descargarArchivo(`${baseUrl}/clientes/plantilla-importacion`, 'plantilla-importacion.xlsx');
+      await descargarArchivo(
+        `${baseUrl}/clientes/plantilla-importacion`,
+        'plantilla-importacion.xlsx'
+      );
     } catch {
       notifyError('Error al descargar la plantilla de importación');
     }
@@ -250,10 +285,18 @@ const ClientesList = () => {
     try {
       const readXlsxFile = (await import('read-excel-file/browser')).default;
       const rawRows = await readXlsxFile(file);
-      if (rawRows.length < 2) { notifyError('El archivo no contiene datos'); return; }
+      if (rawRows.length < 2) {
+        notifyError('El archivo no contiene datos');
+        return;
+      }
       const [headers, ...dataRows] = rawRows;
-      const rows = dataRows.map(row => Object.fromEntries(headers.map((h, i) => [String(h ?? ''), row[i] ?? ''])));
-      if (rows.length === 0) { notifyError('El archivo no contiene datos'); return; }
+      const rows = dataRows.map((row) =>
+        Object.fromEntries(headers.map((h, i) => [String(h ?? ''), row[i] ?? '']))
+      );
+      if (rows.length === 0) {
+        notifyError('El archivo no contiene datos');
+        return;
+      }
       setImportPreview(rows.slice(0, 20));
     } catch (_err) {
       // El servidor validará si falla el parse local
@@ -276,7 +319,7 @@ const ClientesList = () => {
       const token = localStorage.getItem('istho_token');
       const res = await fetch(`${baseUrl}/clientes/importar`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
       const data = await res.json();
@@ -315,7 +358,7 @@ const ClientesList = () => {
     initialFilters: {
       estado: searchParams.get('estado') || undefined,
       sector: searchParams.get('sector') || undefined,
-    }
+    },
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -454,13 +497,13 @@ const ClientesList = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-
-
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
         {/* PAGE HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Clientes</h1>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+              Clientes
+            </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">
               Gestiona la información de tus clientes
             </p>
@@ -475,17 +518,28 @@ const ClientesList = () => {
             />
 
             <ProtectedAction module="clientes" action="exportar">
-              <Button variant="outline" icon={Download} size="md" onClick={handleExport} title="Exportar">
+              <Button
+                variant="outline"
+                icon={Download}
+                size="md"
+                onClick={handleExport}
+                title="Exportar"
+              >
                 <span className="hidden sm:inline">Exportar</span>
               </Button>
             </ProtectedAction>
 
             <ProtectedAction module="clientes" action="importar">
-              <Button variant="outline" icon={Upload} size="md" onClick={handleOpenImport} title="Importar">
+              <Button
+                variant="outline"
+                icon={Upload}
+                size="md"
+                onClick={handleOpenImport}
+                title="Importar"
+              >
                 <span className="hidden sm:inline">Importar</span>
               </Button>
             </ProtectedAction>
-
           </div>
         </div>
 
@@ -494,10 +548,7 @@ const ClientesList = () => {
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300">
             <p className="font-medium">Error al cargar clientes</p>
             <p className="text-sm">{error}</p>
-            <button
-              onClick={refresh}
-              className="mt-2 text-sm underline hover:no-underline"
-            >
+            <button onClick={refresh} className="mt-2 text-sm underline hover:no-underline">
               Reintentar
             </button>
           </div>
@@ -576,13 +627,20 @@ const ClientesList = () => {
         {/* RESULTS COUNT + VIEW TOGGLE */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            {pagination.total} cliente{pagination.total !== 1 && 's'} encontrado{pagination.total !== 1 && 's'}
+            {pagination.total} cliente{pagination.total !== 1 && 's'} encontrado
+            {pagination.total !== 1 && 's'}
           </p>
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-lg p-1">
-            <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+            >
               <List className="w-4 h-4" />
             </button>
-            <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}>
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-centhrix-surface shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+            >
               <LayoutGrid className="w-4 h-4" />
             </button>
           </div>
@@ -592,7 +650,10 @@ const ClientesList = () => {
         {loading ? (
           <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 animate-pulse">
+              <div
+                key={i}
+                className="flex items-center gap-4 py-4 border-b border-gray-50 animate-pulse"
+              >
                 <div className="w-10 h-10 bg-gray-200 rounded-full" />
                 <div className="flex-1 space-y-2">
                   <div className="h-4 bg-gray-200 rounded w-1/3" />
@@ -634,7 +695,8 @@ const ClientesList = () => {
                       className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                     >
                       <span className="inline-flex items-center gap-1">
-                        Cliente <SortIcon field="razon_social" sortField={sortField} sortDir={sortDir} />
+                        Cliente{' '}
+                        <SortIcon field="razon_social" sortField={sortField} sortDir={sortDir} />
                       </span>
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -765,18 +827,24 @@ const ClientesList = () => {
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 dark:text-slate-400">NIT</span>
-                      <span className="text-slate-700 dark:text-slate-200 font-mono text-xs">{cliente.nit}</span>
+                      <span className="text-slate-700 dark:text-slate-200 font-mono text-xs">
+                        {cliente.nit}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 dark:text-slate-400">Ciudad</span>
-                      <span className="text-slate-700 dark:text-slate-200">{cliente.ciudad || '-'}</span>
+                      <span className="text-slate-700 dark:text-slate-200">
+                        {cliente.ciudad || '-'}
+                      </span>
                     </div>
                   </div>
 
                   {/* Footer: Estado */}
                   <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
                     <StatusChip status={cliente.estado} />
-                    <span className="text-xs text-slate-400">{formatTipoCliente(cliente.tipo_cliente)}</span>
+                    <span className="text-xs text-slate-400">
+                      {formatTipoCliente(cliente.tipo_cliente)}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -830,12 +898,26 @@ const ClientesList = () => {
           loading={formLoading}
           customContent={
             <div className="space-y-2">
-              {FILTER_OPTIONS.estado.map(opt => {
+              {FILTER_OPTIONS.estado.map((opt) => {
                 const isActual = statusModal.cliente?.estado === opt.value;
                 const colores = {
-                  activo: { active: 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400', badge: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' },
-                  inactivo: { active: 'border-slate-400 bg-slate-50 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300', badge: 'bg-slate-100 dark:bg-centhrix-surface text-slate-500 dark:text-slate-400' },
-                  suspendido: { active: 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400', badge: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' },
+                  activo: {
+                    active:
+                      'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400',
+                    badge:
+                      'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
+                  },
+                  inactivo: {
+                    active:
+                      'border-slate-400 bg-slate-50 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300',
+                    badge:
+                      'bg-slate-100 dark:bg-centhrix-surface text-slate-500 dark:text-slate-400',
+                  },
+                  suspendido: {
+                    active:
+                      'border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400',
+                    badge: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
+                  },
                 };
                 const c = colores[opt.value] || colores.inactivo;
                 return (
@@ -845,15 +927,18 @@ const ClientesList = () => {
                     disabled={isActual || formLoading}
                     className={`
                       w-full p-3 flex items-center justify-between rounded-xl border-2 transition-all text-sm font-medium
-                      ${isActual
-                        ? `${c.active} cursor-not-allowed opacity-80`
-                        : 'bg-white dark:bg-centhrix-card border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer'
+                      ${
+                        isActual
+                          ? `${c.active} cursor-not-allowed opacity-80`
+                          : 'bg-white dark:bg-centhrix-card border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 cursor-pointer'
                       }
                     `}
                   >
                     <span>{opt.label}</span>
                     {isActual && (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${c.badge}`}>Estado actual</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${c.badge}`}>
+                        Estado actual
+                      </span>
                     )}
                   </button>
                 );
@@ -873,7 +958,6 @@ const ClientesList = () => {
         size="lg"
       >
         <div className="space-y-5">
-
           {/* Plantilla */}
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-centhrix-card/60 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-3">
@@ -881,8 +965,12 @@ const ClientesList = () => {
                 <FileDown className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Plantilla de importación</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Descarga el formato correcto con columnas y ejemplos</p>
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                  Plantilla de importación
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Descarga el formato correcto con columnas y ejemplos
+                </p>
               </div>
             </div>
             <Button variant="outline" size="sm" icon={FileDown} onClick={handleDownloadPlantilla}>
@@ -898,14 +986,18 @@ const ClientesList = () => {
               </p>
               <div
                 className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer
-                  ${isDragOver
-                    ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/10'
-                    : importFile
-                      ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/10'
-                      : 'border-slate-300 dark:border-slate-600 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/10'
+                  ${
+                    isDragOver
+                      ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/10'
+                      : importFile
+                        ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/10'
+                        : 'border-slate-300 dark:border-slate-600 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/10'
                   }`}
                 onClick={() => fileInputRef.current?.click()}
-                onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragOver(true);
+                }}
                 onDragLeave={() => setIsDragOver(false)}
                 onDrop={handleImportDrop}
               >
@@ -919,7 +1011,9 @@ const ClientesList = () => {
                 {importFile ? (
                   <div className="flex flex-col items-center gap-2">
                     <CheckCircle className="w-10 h-10 text-emerald-500" />
-                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{importFile.name}</p>
+                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                      {importFile.name}
+                    </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {(importFile.size / 1024).toFixed(1)} KB · Haz clic para cambiar el archivo
                     </p>
@@ -930,7 +1024,9 @@ const ClientesList = () => {
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
                       Arrastra y suelta el archivo aquí
                     </p>
-                    <p className="text-xs text-slate-400">o haz clic para seleccionarlo · .xlsx, .xls, .csv</p>
+                    <p className="text-xs text-slate-400">
+                      o haz clic para seleccionarlo · .xlsx, .xls, .csv
+                    </p>
                   </div>
                 )}
               </div>
@@ -942,12 +1038,20 @@ const ClientesList = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Vista previa — {importPreview.length >= 20 ? 'primeros 20 registros' : `${importPreview.length} registros`}
-                  <span className="ml-2 text-xs font-normal text-slate-400">({importFile?.name})</span>
+                  Vista previa —{' '}
+                  {importPreview.length >= 20
+                    ? 'primeros 20 registros'
+                    : `${importPreview.length} registros`}
+                  <span className="ml-2 text-xs font-normal text-slate-400">
+                    ({importFile?.name})
+                  </span>
                 </p>
                 <button
                   type="button"
-                  onClick={() => { setImportPreview(null); setImportFile(null); }}
+                  onClick={() => {
+                    setImportPreview(null);
+                    setImportFile(null);
+                  }}
                   className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline underline-offset-2"
                 >
                   Cambiar archivo
@@ -957,23 +1061,42 @@ const ClientesList = () => {
                 <table className="w-full text-sm">
                   <thead className="sticky top-0">
                     <tr className="bg-slate-50 dark:bg-centhrix-card">
-                      <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">#</th>
-                      {Object.keys(importPreview[0] || {}).slice(0, 8).map((key) => (
-                        <th key={key} className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase whitespace-nowrap">
-                          {key}
-                        </th>
-                      ))}
+                      <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">
+                        #
+                      </th>
+                      {Object.keys(importPreview[0] || {})
+                        .slice(0, 8)
+                        .map((key) => (
+                          <th
+                            key={key}
+                            className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase whitespace-nowrap"
+                          >
+                            {key}
+                          </th>
+                        ))}
                     </tr>
                   </thead>
                   <tbody>
                     {importPreview.map((row, idx) => (
-                      <tr key={idx} className="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-card/30">
+                      <tr
+                        key={idx}
+                        className="border-t border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-card/30"
+                      >
                         <td className="py-2 px-3 text-slate-400 text-xs">{idx + 1}</td>
-                        {Object.values(row).slice(0, 8).map((val, i) => (
-                          <td key={i} className="py-2 px-3 text-slate-700 dark:text-slate-300 whitespace-nowrap max-w-[180px] truncate text-xs">
-                            {val != null && val !== '' ? String(val) : <span className="text-slate-300 dark:text-slate-600">—</span>}
-                          </td>
-                        ))}
+                        {Object.values(row)
+                          .slice(0, 8)
+                          .map((val, i) => (
+                            <td
+                              key={i}
+                              className="py-2 px-3 text-slate-700 dark:text-slate-300 whitespace-nowrap max-w-[180px] truncate text-xs"
+                            >
+                              {val != null && val !== '' ? (
+                                String(val)
+                              ) : (
+                                <span className="text-slate-300 dark:text-slate-600">—</span>
+                              )}
+                            </td>
+                          ))}
                       </tr>
                     ))}
                   </tbody>
@@ -985,21 +1108,33 @@ const ClientesList = () => {
           {/* Resultados */}
           {importResultados && (
             <div className="space-y-3">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Resultado de la importación</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Resultado de la importación
+              </p>
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-xl p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 text-center">
-                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{importResultados.creados}</p>
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                    {importResultados.creados}
+                  </p>
                   <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">Creados</p>
                 </div>
                 <div className="rounded-xl p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 text-center">
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{importResultados.actualizados}</p>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {importResultados.actualizados}
+                  </p>
                   <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">Actualizados</p>
                 </div>
-                <div className={`rounded-xl p-3 border text-center ${importResultados.errores?.length > 0 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : 'bg-slate-50 dark:bg-centhrix-card border-slate-200 dark:border-slate-700'}`}>
-                  <p className={`text-2xl font-bold ${importResultados.errores?.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}`}>
+                <div
+                  className={`rounded-xl p-3 border text-center ${importResultados.errores?.length > 0 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : 'bg-slate-50 dark:bg-centhrix-card border-slate-200 dark:border-slate-700'}`}
+                >
+                  <p
+                    className={`text-2xl font-bold ${importResultados.errores?.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}`}
+                  >
                     {importResultados.errores?.length || 0}
                   </p>
-                  <p className={`text-xs mt-0.5 ${importResultados.errores?.length > 0 ? 'text-red-700 dark:text-red-300' : 'text-slate-500'}`}>
+                  <p
+                    className={`text-xs mt-0.5 ${importResultados.errores?.length > 0 ? 'text-red-700 dark:text-red-300' : 'text-slate-500'}`}
+                  >
                     Errores
                   </p>
                 </div>
@@ -1020,10 +1155,21 @@ const ClientesList = () => {
                   {importErroresExpanded && (
                     <div className="max-h-48 overflow-y-auto divide-y divide-red-100 dark:divide-red-900/30">
                       {importResultados.errores.map((err, idx) => (
-                        <div key={idx} className="px-4 py-2 flex items-start gap-3 bg-white dark:bg-centhrix-card">
-                          <span className="text-xs text-slate-400 shrink-0 mt-0.5 font-mono">F{err.fila}</span>
-                          {err.nit && <span className="text-xs font-mono text-slate-500 shrink-0 mt-0.5">{err.nit}</span>}
-                          <span className="text-xs text-red-600 dark:text-red-400">{err.error}</span>
+                        <div
+                          key={idx}
+                          className="px-4 py-2 flex items-start gap-3 bg-white dark:bg-centhrix-card"
+                        >
+                          <span className="text-xs text-slate-400 shrink-0 mt-0.5 font-mono">
+                            F{err.fila}
+                          </span>
+                          {err.nit && (
+                            <span className="text-xs font-mono text-slate-500 shrink-0 mt-0.5">
+                              {err.nit}
+                            </span>
+                          )}
+                          <span className="text-xs text-red-600 dark:text-red-400">
+                            {err.error}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -1032,7 +1178,10 @@ const ClientesList = () => {
               )}
               <button
                 type="button"
-                onClick={() => { setImportResultados(null); setImportFile(null); }}
+                onClick={() => {
+                  setImportResultados(null);
+                  setImportFile(null);
+                }}
                 className="text-xs text-slate-500 hover:text-orange-600 dark:text-slate-400 dark:hover:text-orange-400 underline underline-offset-2"
               >
                 Importar otro archivo
@@ -1063,7 +1212,6 @@ const ClientesList = () => {
           </div>
         </div>
       </Modal>
-
     </div>
   );
 };

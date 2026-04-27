@@ -58,7 +58,10 @@ const REPORTES_OPERATIVOS = [
     icon: MapPin,
     color: 'bg-teal-500',
     navigateTo: '/reportes/inventario-ubicacion',
-    exportEndpoints: { excel: '/reportes/inventario-ubicacion/excel', pdf: '/reportes/inventario-ubicacion/pdf' },
+    exportEndpoints: {
+      excel: '/reportes/inventario-ubicacion/excel',
+      pdf: '/reportes/inventario-ubicacion/pdf',
+    },
   },
   {
     id: 'clientes',
@@ -66,7 +69,7 @@ const REPORTES_OPERATIVOS = [
     descripcion: 'Listado de clientes, contactos y estado',
     icon: Users,
     color: 'bg-violet-500',
-    exportEndpoints: { excel: '/reportes/clientes/excel', pdf: '/reportes/clientes/pdf' } ,
+    exportEndpoints: { excel: '/reportes/clientes/excel', pdf: '/reportes/clientes/pdf' },
   },
   {
     id: 'averias',
@@ -87,7 +90,7 @@ const REPORTES_FINANCIEROS = [
     descripcion: 'Historial de viajes, rutas, conductores y estados',
     icon: Truck,
     color: 'bg-blue-500',
-    exportEndpoints: { excel: '/reportes/viajes/excel', pdf: '/reportes/viajes/pdf' } ,
+    exportEndpoints: { excel: '/reportes/viajes/excel', pdf: '/reportes/viajes/pdf' },
   },
   {
     id: 'cajas-menores',
@@ -124,7 +127,10 @@ const REPORTES_CLIENTE = [
     icon: MapPin,
     color: 'bg-teal-500',
     navigateTo: '/reportes/inventario-ubicacion',
-    exportEndpoints: { excel: '/reportes/inventario-ubicacion/excel', pdf: '/reportes/inventario-ubicacion/pdf' },
+    exportEndpoints: {
+      excel: '/reportes/inventario-ubicacion/excel',
+      pdf: '/reportes/inventario-ubicacion/pdf',
+    },
   },
   {
     id: 'operaciones',
@@ -176,8 +182,17 @@ const ReporteCard = ({ reporte, canExport }) => {
   const handleExportExcel = async () => {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      const slug = (reporte?.titulo ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^reporte\s+(de\s+)?/i, '').replace(/\s+/g, '-') || 'exportado';
-      await descargarArchivo(`${baseUrl}${reporte.exportEndpoints.excel}`, `reporte-${slug}-${fechaDescarga()}.xlsx`);
+      const slug =
+        (reporte?.titulo ?? '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/^reporte\s+(de\s+)?/i, '')
+          .replace(/\s+/g, '-') || 'exportado';
+      await descargarArchivo(
+        `${baseUrl}${reporte.exportEndpoints.excel}`,
+        `reporte-${slug}-${fechaDescarga()}.xlsx`
+      );
     } catch {
       notifyError('Error al exportar el reporte Excel');
     }
@@ -187,8 +202,17 @@ const ReporteCard = ({ reporte, canExport }) => {
     if (!reporte.exportEndpoints?.pdf) return;
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      const slug = (reporte?.titulo ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^reporte\s+(de\s+)?/i, '').replace(/\s+/g, '-') || 'exportado';
-      await descargarArchivo(`${baseUrl}${reporte.exportEndpoints.pdf}`, `reporte-${slug}-${fechaDescarga()}.pdf`);
+      const slug =
+        (reporte?.titulo ?? '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/^reporte\s+(de\s+)?/i, '')
+          .replace(/\s+/g, '-') || 'exportado';
+      await descargarArchivo(
+        `${baseUrl}${reporte.exportEndpoints.pdf}`,
+        `reporte-${slug}-${fechaDescarga()}.pdf`
+      );
     } catch {
       notifyError('Error al exportar el reporte PDF');
     }
@@ -203,16 +227,12 @@ const ReporteCard = ({ reporte, canExport }) => {
       </div>
 
       <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{reporte.titulo}</h3>
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">{reporte.descripcion}</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">
+        {reporte.descripcion}
+      </p>
 
       <div className="space-y-2">
-        <Button
-          variant="primary"
-          size="sm"
-          icon={Eye}
-          onClick={handleView}
-          fullWidth
-        >
+        <Button variant="primary" size="sm" icon={Eye} onClick={handleView} fullWidth>
           Ver Reporte
         </Button>
 
@@ -259,11 +279,12 @@ const ReportesList = () => {
   const rol = user?.rol || 'operador';
   const reportes = getReportesPorRol(rol);
 
-  const subtitulo = rol === 'financiera'
-    ? 'Reportes financieros y de gestion de viajes'
-    : rol === 'cliente'
-      ? 'Consulta y exporta reportes de tus productos'
-      : 'Genera y exporta reportes de gestion';
+  const subtitulo =
+    rol === 'financiera'
+      ? 'Reportes financieros y de gestion de viajes'
+      : rol === 'cliente'
+        ? 'Consulta y exporta reportes de tus productos'
+        : 'Genera y exporta reportes de gestion';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
@@ -271,7 +292,9 @@ const ReportesList = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Reportes</h1>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+              Reportes
+            </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">{subtitulo}</p>
           </div>
         </div>
@@ -284,7 +307,9 @@ const ReportesList = () => {
                 <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{reportes.length}</p>
+                <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                  {reportes.length}
+                </p>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Reportes disponibles</p>
               </div>
             </div>
@@ -296,7 +321,9 @@ const ReportesList = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">Excel / PDF</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Formatos de exportacion</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Formatos de exportacion
+                </p>
               </div>
             </div>
           </div>
@@ -323,7 +350,9 @@ const ReportesList = () => {
         ) : (
           <div className="bg-white dark:bg-centhrix-card rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-slate-700 text-center mb-6">
             <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-            <p className="text-slate-500 dark:text-slate-400">No hay reportes disponibles para tu rol</p>
+            <p className="text-slate-500 dark:text-slate-400">
+              No hay reportes disponibles para tu rol
+            </p>
           </div>
         )}
 
@@ -338,8 +367,12 @@ const ReportesList = () => {
                 <Calendar className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-slate-800 dark:text-slate-100">Reportes Programados</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Configura el envio automatico de reportes por email</p>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                  Reportes Programados
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Configura el envio automatico de reportes por email
+                </p>
               </div>
               <Eye className="w-5 h-5 text-slate-400" />
             </button>

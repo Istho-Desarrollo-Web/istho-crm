@@ -3,12 +3,12 @@
  * ISTHO CRM - ClienteDetail
  * ============================================================================
  * Vista de detalle del cliente conectada al backend real.
- * 
+ *
  * ACTUALIZACIÓN v2.6.0:
  * - Nuevo tab "Usuarios Portal" para gestionar usuarios de cliente
  * - Integración con componente UsuariosCliente
  * - Corrección de template literals
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 2.6.0
  * @date Enero 2026
@@ -39,7 +39,6 @@ import {
 } from 'lucide-react';
 
 // Layout
-
 
 // Components
 import { Button, StatusChip, KpiCard, ConfirmDialog, Modal } from '../../components/common';
@@ -89,8 +88,6 @@ const formatSector = (sector) => {
   return sectores[sector] || sector || '-';
 };
 
-
-
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTES INTERNOS
 // ════════════════════════════════════════════════════════════════════════════
@@ -99,20 +96,27 @@ const formatSector = (sector) => {
  * Tarjeta de contacto
  */
 const ContactCard = ({ contacto, onEdit, onDelete, canEdit }) => (
-  <div className={`
+  <div
+    className={`
     p-4 rounded-xl border transition-colors
-    ${contacto.es_principal
-      ? 'border-orange-200 dark:border-orange-800/50 bg-orange-50 dark:bg-orange-900/20'
-      : 'border-gray-100 dark:border-slate-700 bg-white dark:bg-centhrix-card hover:bg-slate-50 dark:hover:bg-centhrix-surface/50'
+    ${
+      contacto.es_principal
+        ? 'border-orange-200 dark:border-orange-800/50 bg-orange-50 dark:bg-orange-900/20'
+        : 'border-gray-100 dark:border-slate-700 bg-white dark:bg-centhrix-card hover:bg-slate-50 dark:hover:bg-centhrix-surface/50'
     }
-  `}>
+  `}
+  >
     <div className="flex items-start justify-between">
       <div className="flex items-center gap-3">
-        <div className={`
+        <div
+          className={`
           w-10 h-10 rounded-full flex items-center justify-center
           ${contacto.es_principal ? 'bg-orange-200 dark:bg-orange-900/40' : 'bg-slate-200 dark:bg-centhrix-surface'}
-        `}>
-          <User className={`w-5 h-5 ${contacto.es_principal ? 'text-orange-700 dark:text-orange-400' : 'text-slate-600 dark:text-slate-300'}`} />
+        `}
+        >
+          <User
+            className={`w-5 h-5 ${contacto.es_principal ? 'text-orange-700 dark:text-orange-400' : 'text-slate-600 dark:text-slate-300'}`}
+          />
         </div>
         <div>
           <div className="flex items-center gap-2">
@@ -123,7 +127,9 @@ const ContactCard = ({ contacto, onEdit, onDelete, canEdit }) => (
               </span>
             )}
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{contacto.cargo || 'Sin cargo'}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {contacto.cargo || 'Sin cargo'}
+          </p>
         </div>
       </div>
       {canEdit && (
@@ -164,22 +170,70 @@ const ContactCard = ({ contacto, onEdit, onDelete, canEdit }) => (
  * Item de actividad/historial
  */
 const ESTADO_CONFIG = {
-  cerrado: { label: 'Cerrado', bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-700 dark:text-emerald-400' },
-  en_proceso: { label: 'En Proceso', bg: 'bg-blue-100 dark:bg-blue-900/30', color: 'text-blue-700 dark:text-blue-400' },
-  anulado: { label: 'Anulado', bg: 'bg-red-100 dark:bg-red-900/30', color: 'text-red-700 dark:text-red-400' },
-  borrador: { label: 'Borrador', bg: 'bg-slate-100 dark:bg-centhrix-surface', color: 'text-slate-700 dark:text-slate-300' },
+  cerrado: {
+    label: 'Cerrado',
+    bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+    color: 'text-emerald-700 dark:text-emerald-400',
+  },
+  en_proceso: {
+    label: 'En Proceso',
+    bg: 'bg-blue-100 dark:bg-blue-900/30',
+    color: 'text-blue-700 dark:text-blue-400',
+  },
+  anulado: {
+    label: 'Anulado',
+    bg: 'bg-red-100 dark:bg-red-900/30',
+    color: 'text-red-700 dark:text-red-400',
+  },
+  borrador: {
+    label: 'Borrador',
+    bg: 'bg-slate-100 dark:bg-centhrix-surface',
+    color: 'text-slate-700 dark:text-slate-300',
+  },
 };
 
 const ActivityItem = ({ actividad }) => {
   const iconConfig = {
-    operacion: { icon: Truck, bg: 'bg-blue-100 dark:bg-blue-900/30', color: 'text-blue-600 dark:text-blue-400' },
-    despacho: { icon: Truck, bg: 'bg-blue-100 dark:bg-blue-900/30', color: 'text-blue-600 dark:text-blue-400' },
-    llamada: { icon: Phone, bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-600 dark:text-emerald-400' },
-    documento: { icon: FileCheck, bg: 'bg-violet-100 dark:bg-violet-900/30', color: 'text-violet-600 dark:text-violet-400' },
-    nota: { icon: MessageSquare, bg: 'bg-amber-100 dark:bg-amber-900/30', color: 'text-amber-600 dark:text-amber-400' },
-    creacion: { icon: Building2, bg: 'bg-slate-100 dark:bg-centhrix-surface', color: 'text-slate-600 dark:text-slate-300' },
-    actualizar: { icon: Pencil, bg: 'bg-orange-100 dark:bg-orange-900/30', color: 'text-orange-600 dark:text-orange-400' },
-    login: { icon: User, bg: 'bg-green-100 dark:bg-green-900/30', color: 'text-green-600 dark:text-green-400' },
+    operacion: {
+      icon: Truck,
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      color: 'text-blue-600 dark:text-blue-400',
+    },
+    despacho: {
+      icon: Truck,
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      color: 'text-blue-600 dark:text-blue-400',
+    },
+    llamada: {
+      icon: Phone,
+      bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+      color: 'text-emerald-600 dark:text-emerald-400',
+    },
+    documento: {
+      icon: FileCheck,
+      bg: 'bg-violet-100 dark:bg-violet-900/30',
+      color: 'text-violet-600 dark:text-violet-400',
+    },
+    nota: {
+      icon: MessageSquare,
+      bg: 'bg-amber-100 dark:bg-amber-900/30',
+      color: 'text-amber-600 dark:text-amber-400',
+    },
+    creacion: {
+      icon: Building2,
+      bg: 'bg-slate-100 dark:bg-centhrix-surface',
+      color: 'text-slate-600 dark:text-slate-300',
+    },
+    actualizar: {
+      icon: Pencil,
+      bg: 'bg-orange-100 dark:bg-orange-900/30',
+      color: 'text-orange-600 dark:text-orange-400',
+    },
+    login: {
+      icon: User,
+      bg: 'bg-green-100 dark:bg-green-900/30',
+      color: 'text-green-600 dark:text-green-400',
+    },
   };
 
   const config = iconConfig[actividad.tipo] || iconConfig[actividad.accion] || iconConfig.nota;
@@ -188,7 +242,9 @@ const ActivityItem = ({ actividad }) => {
 
   return (
     <div className="flex gap-4">
-      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${config.bg}`}>
+      <div
+        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${config.bg}`}
+      >
         <Icon className={`w-5 h-5 ${config.color}`} />
       </div>
       <div className="flex-1 pb-6 border-b border-gray-100 dark:border-slate-700 last:border-0">
@@ -202,7 +258,9 @@ const ActivityItem = ({ actividad }) => {
             </p>
           </div>
           {estadoConfig && (
-            <span className={`text-xs px-2 py-1 rounded-full ${estadoConfig.bg} ${estadoConfig.color}`}>
+            <span
+              className={`text-xs px-2 py-1 rounded-full ${estadoConfig.bg} ${estadoConfig.color}`}
+            >
               {estadoConfig.label}
             </span>
           )}
@@ -233,15 +291,21 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
 
   useEffect(() => {
     if (isOpen) {
-      setFormData(contacto || { es_principal: false, recibe_notificaciones: true, tipos_notificacion: ['todas'] });
+      setFormData(
+        contacto || {
+          es_principal: false,
+          recibe_notificaciones: true,
+          tipos_notificacion: ['todas'],
+        }
+      );
       setErrors({});
     }
   }, [contacto, isOpen]);
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: null }));
+      setErrors((prev) => ({ ...prev, [field]: null }));
     }
   };
 
@@ -288,8 +352,9 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
             type="text"
             value={formData.nombre || ''}
             onChange={(e) => handleChange('nombre', e.target.value)}
-            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${errors.nombre ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
-              }`}
+            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
+              errors.nombre ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
+            }`}
             placeholder="Nombre del contacto"
           />
           {errors.nombre && <p className="text-xs text-red-500 mt-1">{errors.nombre}</p>}
@@ -316,8 +381,9 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
             type="tel"
             value={formData.telefono || ''}
             onChange={(e) => handleChange('telefono', e.target.value)}
-            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${errors.telefono ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
-              }`}
+            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
+              errors.telefono ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
+            }`}
             placeholder="+57 300 123 4567"
           />
           {errors.telefono && <p className="text-xs text-red-500 mt-1">{errors.telefono}</p>}
@@ -331,8 +397,9 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
             type="email"
             value={formData.email || ''}
             onChange={(e) => handleChange('email', e.target.value)}
-            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${errors.email ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
-              }`}
+            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
+              errors.email ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
+            }`}
             placeholder="email@empresa.com"
           />
           {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
@@ -354,68 +421,78 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
               checked={formData.recibe_notificaciones ?? true}
               onChange={(e) => {
                 handleChange('recibe_notificaciones', e.target.checked);
-                if (e.target.checked && !(formData.tipos_notificacion?.length)) {
+                if (e.target.checked && !formData.tipos_notificacion?.length) {
                   handleChange('tipos_notificacion', ['todas']);
                 }
               }}
               className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
             />
-            <span className="text-sm text-slate-700 dark:text-slate-300">Recibe notificaciones</span>
+            <span className="text-sm text-slate-700 dark:text-slate-300">
+              Recibe notificaciones
+            </span>
           </label>
         </div>
 
         {/* Tipos de notificación (visible solo si recibe_notificaciones) */}
-        {formData.recibe_notificaciones && (() => {
-          const tipos = formData.tipos_notificacion || ['todas'];
-          const esTodas = tipos.includes('todas');
+        {formData.recibe_notificaciones &&
+          (() => {
+            const tipos = formData.tipos_notificacion || ['todas'];
+            const esTodas = tipos.includes('todas');
 
-          const handleTipoChange = (tipo, checked) => {
-            if (tipo === 'todas') {
-              handleChange('tipos_notificacion', checked ? ['todas'] : ['ingreso', 'salida', 'kardex']);
-              return;
-            }
-            // Si estaba en modo "todas", expandir a individuales
-            const base = esTodas ? ['ingreso', 'salida', 'kardex'] : [...tipos];
-            const sin_todas = base.filter(t => t !== 'todas');
-            const nuevos = checked
-              ? [...new Set([...sin_todas, tipo])]
-              : sin_todas.filter(t => t !== tipo);
-            // Si quedan todos los 3, guardar como 'todas'
-            const todos3 = ['ingreso', 'salida', 'kardex'].every(t => nuevos.includes(t));
-            handleChange('tipos_notificacion', todos3 ? ['todas'] : nuevos.length ? nuevos : ['todas']);
-          };
+            const handleTipoChange = (tipo, checked) => {
+              if (tipo === 'todas') {
+                handleChange(
+                  'tipos_notificacion',
+                  checked ? ['todas'] : ['ingreso', 'salida', 'kardex']
+                );
+                return;
+              }
+              // Si estaba en modo "todas", expandir a individuales
+              const base = esTodas ? ['ingreso', 'salida', 'kardex'] : [...tipos];
+              const sin_todas = base.filter((t) => t !== 'todas');
+              const nuevos = checked
+                ? [...new Set([...sin_todas, tipo])]
+                : sin_todas.filter((t) => t !== tipo);
+              // Si quedan todos los 3, guardar como 'todas'
+              const todos3 = ['ingreso', 'salida', 'kardex'].every((t) => nuevos.includes(t));
+              handleChange(
+                'tipos_notificacion',
+                todos3 ? ['todas'] : nuevos.length ? nuevos : ['todas']
+              );
+            };
 
-          const tiposOpciones = [
-            { value: 'todas', label: 'Todas las operaciones' },
-            { value: 'ingreso', label: 'Entradas de inventario' },
-            { value: 'salida', label: 'Salidas de inventario' },
-            { value: 'kardex', label: 'Ajustes de Kardex' },
-          ];
+            const tiposOpciones = [
+              { value: 'todas', label: 'Todas las operaciones' },
+              { value: 'ingreso', label: 'Entradas de inventario' },
+              { value: 'salida', label: 'Salidas de inventario' },
+              { value: 'kardex', label: 'Ajustes de Kardex' },
+            ];
 
-          return (
-            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-3 space-y-2 bg-slate-50 dark:bg-centhrix-card/50">
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                Tipos de notificación
-              </p>
-              <div className="space-y-1.5">
-                {tiposOpciones.map(({ value, label }) => {
-                  const isChecked = value === 'todas' ? esTodas : (esTodas || tipos.includes(value));
-                  return (
-                    <label key={value} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={(e) => handleTipoChange(value, e.target.checked)}
-                        className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
-                      />
-                      <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
-                    </label>
-                  );
-                })}
+            return (
+              <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-3 space-y-2 bg-slate-50 dark:bg-centhrix-card/50">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Tipos de notificación
+                </p>
+                <div className="space-y-1.5">
+                  {tiposOpciones.map(({ value, label }) => {
+                    const isChecked =
+                      value === 'todas' ? esTodas : esTodas || tipos.includes(value);
+                    return (
+                      <label key={value} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => handleTipoChange(value, e.target.checked)}
+                          className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                        />
+                        <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          );
-        })()}
+            );
+          })()}
       </div>
     </Modal>
   );
@@ -503,20 +580,23 @@ const ClienteDetail = () => {
   // CARGAR DATOS
   // ──────────────────────────────────────────────────────────────────────────
 
-  const loadContactos = useCallback(async (clienteId) => {
-    setLoadingContactos(true);
-    try {
-      const response = await fetchContactos(clienteId);
-      if (response?.success) {
-        setContactos(response.data || []);
+  const loadContactos = useCallback(
+    async (clienteId) => {
+      setLoadingContactos(true);
+      try {
+        const response = await fetchContactos(clienteId);
+        if (response?.success) {
+          setContactos(response.data || []);
+        }
+      } catch (err) {
+        console.error('Error cargando contactos:', err);
+        setContactos([]);
+      } finally {
+        setLoadingContactos(false);
       }
-    } catch (err) {
-      console.error('Error cargando contactos:', err);
-      setContactos([]);
-    } finally {
-      setLoadingContactos(false);
-    }
-  }, [fetchContactos]);
+    },
+    [fetchContactos]
+  );
 
   // Cargar historial del cliente
   const loadHistorial = useCallback(async (clienteId) => {
@@ -637,7 +717,6 @@ const ClienteDetail = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-gray-200 dark:bg-centhrix-surface rounded w-48" />
@@ -660,14 +739,17 @@ const ClienteDetail = () => {
   if (error || !cliente) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-
         <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Building2 className="w-8 h-8 text-red-500 dark:text-red-400" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Cliente no encontrado</h2>
-            <p className="text-slate-500 dark:text-slate-400 mb-4">{error || 'El cliente solicitado no existe'}</p>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+              Cliente no encontrado
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-4">
+              {error || 'El cliente solicitado no existe'}
+            </p>
             <Button variant="primary" onClick={() => navigate('/clientes')}>
               Volver a Clientes
             </Button>
@@ -694,8 +776,6 @@ const ClienteDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-
-
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
         {/* HEADER */}
         <div className="flex items-center justify-between mb-6 gap-2">
@@ -740,7 +820,9 @@ const ClienteDetail = () => {
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-slate-100 truncate">{cliente.razon_social}</h1>
+                  <h1 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-slate-100 truncate">
+                    {cliente.razon_social}
+                  </h1>
                   <StatusChip status={cliente.estado} />
                 </div>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">
@@ -752,12 +834,22 @@ const ClienteDetail = () => {
 
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             {canEdit && (
-              <Button variant="outline" icon={Pencil} onClick={() => setEditModal(true)} title="Editar">
+              <Button
+                variant="outline"
+                icon={Pencil}
+                onClick={() => setEditModal(true)}
+                title="Editar"
+              >
                 <span className="hidden sm:inline">Editar</span>
               </Button>
             )}
             {canDelete && (
-              <Button variant="danger" icon={Trash2} onClick={() => setDeleteModal(true)} title="Eliminar">
+              <Button
+                variant="danger"
+                icon={Trash2}
+                onClick={() => setDeleteModal(true)}
+                title="Eliminar"
+              >
                 <span className="hidden sm:inline">Eliminar</span>
               </Button>
             )}
@@ -803,9 +895,10 @@ const ClienteDetail = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`
                       py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-medium transition-colors relative flex items-center gap-1.5 whitespace-nowrap
-                      ${activeTab === tab.id
-                        ? 'text-orange-600 dark:text-orange-400'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                      ${
+                        activeTab === tab.id
+                          ? 'text-orange-600 dark:text-orange-400'
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                       }
                     `}
                     title={tab.label}
@@ -829,26 +922,33 @@ const ClienteDetail = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Información General */}
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-slate-800 dark:text-slate-100">Información General</h4>
+                  <h4 className="font-semibold text-slate-800 dark:text-slate-100">
+                    Información General
+                  </h4>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 text-sm">
                       <Building2 className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                       <span className="text-slate-500 dark:text-slate-400 w-32">Tipo:</span>
-                      <span className="text-slate-800 dark:text-slate-200">{formatTipoCliente(cliente.tipo_cliente)}</span>
+                      <span className="text-slate-800 dark:text-slate-200">
+                        {formatTipoCliente(cliente.tipo_cliente)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 text-sm">
                       <FileText className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                       <span className="text-slate-500 dark:text-slate-400 w-32">Sector:</span>
-                      <span className="text-slate-800 dark:text-slate-200">{formatSector(cliente.sector)}</span>
+                      <span className="text-slate-800 dark:text-slate-200">
+                        {formatSector(cliente.sector)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 text-sm">
                       <Calendar className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-                      <span className="text-slate-500 dark:text-slate-400 w-32">Cliente desde:</span>
+                      <span className="text-slate-500 dark:text-slate-400 w-32">
+                        Cliente desde:
+                      </span>
                       <span className="text-slate-800 dark:text-slate-200">
                         {cliente.fecha_inicio_relacion
                           ? formatDateShort(cliente.fecha_inicio_relacion)
-                          : formatDateShort(cliente.created_at)
-                        }
+                          : formatDateShort(cliente.created_at)}
                       </span>
                     </div>
                   </div>
@@ -861,7 +961,9 @@ const ClienteDetail = () => {
                     <div className="flex items-start gap-3 text-sm">
                       <MapPin className="w-5 h-5 text-slate-400 dark:text-slate-500 mt-0.5" />
                       <div>
-                        <p className="text-slate-800 dark:text-slate-200">{cliente.direccion || '-'}</p>
+                        <p className="text-slate-800 dark:text-slate-200">
+                          {cliente.direccion || '-'}
+                        </p>
                         {(cliente.ciudad || cliente.departamento) && (
                           <p className="text-slate-500 dark:text-slate-400">
                             {[cliente.ciudad, cliente.departamento].filter(Boolean).join(', ')}
@@ -871,11 +973,15 @@ const ClienteDetail = () => {
                     </div>
                     <div className="flex items-center gap-3 text-sm">
                       <Phone className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-                      <span className="text-slate-800 dark:text-slate-200">{cliente.telefono || '-'}</span>
+                      <span className="text-slate-800 dark:text-slate-200">
+                        {cliente.telefono || '-'}
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 text-sm">
                       <Mail className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-                      <span className="text-slate-800 dark:text-slate-200">{cliente.email || '-'}</span>
+                      <span className="text-slate-800 dark:text-slate-200">
+                        {cliente.email || '-'}
+                      </span>
                     </div>
                     {cliente.sitio_web && (
                       <div className="flex items-center gap-3 text-sm">
@@ -896,7 +1002,9 @@ const ClienteDetail = () => {
                 {/* Observaciones */}
                 {cliente.notas && (
                   <div className="space-y-4">
-                    <h4 className="font-semibold text-slate-800 dark:text-slate-100">Observaciones</h4>
+                    <h4 className="font-semibold text-slate-800 dark:text-slate-100">
+                      Observaciones
+                    </h4>
                     <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-centhrix-bg/50 p-4 rounded-xl whitespace-pre-wrap">
                       {cliente.notas}
                     </p>
@@ -926,13 +1034,18 @@ const ClienteDetail = () => {
                 {loadingContactos ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[0, 1, 2].map((i) => (
-                      <div key={i} className="h-32 bg-gray-100 dark:bg-centhrix-surface rounded-xl animate-pulse" />
+                      <div
+                        key={i}
+                        className="h-32 bg-gray-100 dark:bg-centhrix-surface rounded-xl animate-pulse"
+                      />
                     ))}
                   </div>
                 ) : contactos.length === 0 ? (
                   <div className="text-center py-12">
                     <User className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                    <p className="text-slate-500 dark:text-slate-400 mb-4">No hay contactos registrados</p>
+                    <p className="text-slate-500 dark:text-slate-400 mb-4">
+                      No hay contactos registrados
+                    </p>
                     {canEdit && (
                       <Button
                         variant="primary"
@@ -964,10 +1077,7 @@ const ClienteDetail = () => {
             {/* Tab: Usuarios Portal (NUEVO) */}
             {/* ══════════════════════════════════════════════════════════════ */}
             {activeTab === 'usuarios' && canManageUsers && (
-              <UsuariosCliente
-                clienteId={cliente.id}
-                clienteNombre={cliente.razon_social}
-              />
+              <UsuariosCliente clienteId={cliente.id} clienteNombre={cliente.razon_social} />
             )}
 
             {/* ══════════════════════════════════════════════════════════════ */}
@@ -978,13 +1088,18 @@ const ClienteDetail = () => {
                 {loadingHistorial ? (
                   <div className="space-y-4">
                     {[0, 1, 2, 3].map((i) => (
-                      <div key={i} className="h-20 bg-gray-100 dark:bg-centhrix-surface rounded-xl animate-pulse" />
+                      <div
+                        key={i}
+                        className="h-20 bg-gray-100 dark:bg-centhrix-surface rounded-xl animate-pulse"
+                      />
                     ))}
                   </div>
                 ) : historial.length === 0 ? (
                   <div className="text-center py-12">
                     <Clock className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                    <p className="text-slate-500 dark:text-slate-400">No hay operaciones registradas</p>
+                    <p className="text-slate-500 dark:text-slate-400">
+                      No hay operaciones registradas
+                    </p>
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
                       Las operaciones de entrada y salida del cliente aparecerán aquí
                     </p>

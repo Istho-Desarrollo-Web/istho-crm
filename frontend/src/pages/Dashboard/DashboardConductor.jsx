@@ -68,8 +68,18 @@ const formatDate = (date) => {
   const d = new Date(date);
   const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   const meses = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
   ];
   return `${dias[d.getDay()]}, ${d.getDate()} de ${meses[d.getMonth()]} ${d.getFullYear()}`;
 };
@@ -163,7 +173,9 @@ const DashboardConductor = () => {
       const res = await cajasMenoresService.getAll({ estado: 'abierta', limit: 1 });
       const cajas = res?.data?.data || res?.data || [];
       setCajaActiva(Array.isArray(cajas) ? cajas[0] || null : null);
-    } catch { /* ignorado intencionalmente */ }
+    } catch {
+      /* ignorado intencionalmente */
+    }
   }, []);
 
   const refetchGastos = useCallback(async () => {
@@ -171,7 +183,9 @@ const DashboardConductor = () => {
       const res = await movimientosService.getAll({ limit: 5 });
       const g = res?.data?.data || res?.data?.rows || res?.data || [];
       setGastos(Array.isArray(g) ? g : []);
-    } catch { /* ignorado intencionalmente */ }
+    } catch {
+      /* ignorado intencionalmente */
+    }
   }, []);
 
   // ──────────────────────────────────────────────────────────────────────
@@ -231,7 +245,9 @@ const DashboardConductor = () => {
         const res = await viajesService.getAll({ limit: 5, sort: '-fecha' });
         const v = res?.data?.data || res?.data || [];
         setViajes(Array.isArray(v) ? v : []);
-      } catch { /* ignorado intencionalmente */ }
+      } catch {
+        /* ignorado intencionalmente */
+      }
     };
     const handleViajeActualizado = (data) => {
       setViajes((prev) => prev.map((v) => (v.id === data.id ? { ...v, ...data } : v)));
@@ -293,270 +309,272 @@ const DashboardConductor = () => {
   // ──────────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 pt-24 pb-8 px-3 sm:px-4">
-    <div className="max-w-lg mx-auto space-y-5">
-
-      {/* ═══════════════════════════════════════════════════════════════════
+      <div className="max-w-lg mx-auto space-y-5">
+        {/* ═══════════════════════════════════════════════════════════════════
           1. WELCOME HEADER
           ═══════════════════════════════════════════════════════════════════ */}
-      <div className="flex items-center gap-4">
-        {user?.avatar_url ? (
-          <img src={getServerFileUrl(user.avatar_url)} alt={nombre} className="w-12 h-12 rounded-full object-cover shrink-0 shadow-md" />
-        ) : (
-          <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg font-bold shrink-0">
-            {iniciales}
+        <div className="flex items-center gap-4">
+          {user?.avatar_url ? (
+            <img
+              src={getServerFileUrl(user.avatar_url)}
+              alt={nombre}
+              className="w-12 h-12 rounded-full object-cover shrink-0 shadow-md"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg font-bold shrink-0">
+              {iniciales}
+            </div>
+          )}
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+              {getGreeting()}, {nombre}
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5" />
+              {formatDate(new Date())}
+            </p>
           </div>
-        )}
-        <div className="min-w-0">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">
-            {getGreeting()}, {nombre}
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-            <Calendar className="w-3.5 h-3.5" />
-            {formatDate(new Date())}
-          </p>
         </div>
-      </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════
+        {/* ═══════════════════════════════════════════════════════════════════
           2. CAJA MENOR ACTIVA
           ═══════════════════════════════════════════════════════════════════ */}
-      <div
-        className={`rounded-2xl p-5 shadow-sm border transition-colors ${
-          cajaActiva
-            ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 cursor-pointer active:bg-gray-50 dark:active:bg-gray-750'
-            : 'bg-gray-50 dark:bg-gray-800/50 border-dashed border-gray-300 dark:border-gray-600'
-        }`}
-        onClick={() => cajaActiva && navigate(`/viajes/cajas-menores/${cajaActiva.id}`)}
-        role={cajaActiva ? 'button' : undefined}
-        tabIndex={cajaActiva ? 0 : undefined}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-              Caja Menor Activa
-            </h2>
+        <div
+          className={`rounded-2xl p-5 shadow-sm border transition-colors ${
+            cajaActiva
+              ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 cursor-pointer active:bg-gray-50 dark:active:bg-gray-750'
+              : 'bg-gray-50 dark:bg-gray-800/50 border-dashed border-gray-300 dark:border-gray-600'
+          }`}
+          onClick={() => cajaActiva && navigate(`/viajes/cajas-menores/${cajaActiva.id}`)}
+          role={cajaActiva ? 'button' : undefined}
+          tabIndex={cajaActiva ? 0 : undefined}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Wallet className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                Caja Menor Activa
+              </h2>
+            </div>
+            {cajaActiva && <ChevronRight className="w-5 h-5 text-gray-400" />}
           </div>
-          {cajaActiva && (
-            <ChevronRight className="w-5 h-5 text-gray-400" />
+
+          {cajaActiva ? (
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                {cajaActiva.numero || `Caja #${cajaActiva.id}`}
+              </p>
+              <p
+                className={`text-3xl font-bold mb-2 ${Number(cajaActiva.saldo_actual) < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}
+              >
+                {formatMoney(cajaActiva.saldo_actual)}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Saldo inicial: {formatMoney(cajaActiva.saldo_inicial)}
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center py-4 text-center">
+              <Wallet className="w-10 h-10 text-gray-300 dark:text-gray-600 mb-2" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                No tienes caja menor activa
+              </p>
+            </div>
           )}
         </div>
 
-        {cajaActiva ? (
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-              {cajaActiva.numero || `Caja #${cajaActiva.id}`}
-            </p>
-            <p className={`text-3xl font-bold mb-2 ${Number(cajaActiva.saldo_actual) < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-              {formatMoney(cajaActiva.saldo_actual)}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Saldo inicial: {formatMoney(cajaActiva.saldo_inicial)}
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center py-4 text-center">
-            <Wallet className="w-10 h-10 text-gray-300 dark:text-gray-600 mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              No tienes caja menor activa
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════════════════
+        {/* ═══════════════════════════════════════════════════════════════════
           3. ACCIONES RÁPIDAS
           ═══════════════════════════════════════════════════════════════════ */}
-      <div>
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">
-          Acciones Rápidas
-        </h2>
-        <div className="grid grid-cols-2 gap-3">
-          {/* Nuevo Viaje */}
-          <button
-            onClick={() => navigate('/viajes/viajes/nuevo')}
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 active:scale-95 transition-all min-h-[100px]"
-          >
-            <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-800/50 flex items-center justify-center">
-              <Plus className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-medium">Nuevo Viaje</span>
-          </button>
-
-          {/* Registrar Gasto */}
-          <button
-            onClick={() => navigate('/viajes/movimientos?nuevo=1')}
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30 active:scale-95 transition-all min-h-[100px]"
-          >
-            <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center">
-              <Receipt className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-medium">Registrar Gasto</span>
-          </button>
-
-          {/* Mis Viajes */}
-          <button
-            onClick={() => navigate('/viajes/viajes')}
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/30 active:scale-95 transition-all min-h-[100px]"
-          >
-            <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-800/50 flex items-center justify-center">
-              <Truck className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-medium">Mis Viajes</span>
-          </button>
-
-          {/* Mis Gastos */}
-          <button
-            onClick={() => navigate('/viajes/movimientos')}
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 active:scale-95 transition-all min-h-[100px]"
-          >
-            <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-800/50 flex items-center justify-center">
-              <DollarSign className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-medium">Mis Gastos</span>
-          </button>
-        </div>
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          4. ÚLTIMOS VIAJES
-          ═══════════════════════════════════════════════════════════════════ */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-            Últimos Viajes
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">
+            Acciones Rápidas
           </h2>
-          {viajes.length > 0 && (
+          <div className="grid grid-cols-2 gap-3">
+            {/* Nuevo Viaje */}
+            <button
+              onClick={() => navigate('/viajes/viajes/nuevo')}
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 active:scale-95 transition-all min-h-[100px]"
+            >
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-800/50 flex items-center justify-center">
+                <Plus className="w-5 h-5" />
+              </div>
+              <span className="text-sm font-medium">Nuevo Viaje</span>
+            </button>
+
+            {/* Registrar Gasto */}
+            <button
+              onClick={() => navigate('/viajes/movimientos?nuevo=1')}
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30 active:scale-95 transition-all min-h-[100px]"
+            >
+              <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center">
+                <Receipt className="w-5 h-5" />
+              </div>
+              <span className="text-sm font-medium">Registrar Gasto</span>
+            </button>
+
+            {/* Mis Viajes */}
             <button
               onClick={() => navigate('/viajes/viajes')}
-              className="text-xs text-blue-600 dark:text-blue-400 font-medium flex items-center gap-0.5 hover:underline"
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/30 active:scale-95 transition-all min-h-[100px]"
             >
-              Ver todos <ChevronRight className="w-3.5 h-3.5" />
+              <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-800/50 flex items-center justify-center">
+                <Truck className="w-5 h-5" />
+              </div>
+              <span className="text-sm font-medium">Mis Viajes</span>
             </button>
-          )}
-        </div>
 
-        {viajes.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
-            <Truck className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Aún no tienes viajes registrados
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {viajes.map((viaje) => (
-              <button
-                key={viaje.id}
-                onClick={() => navigate(`/viajes/viajes/${viaje.id}`)}
-                className="w-full text-left rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 hover:bg-gray-50 dark:hover:bg-gray-750 active:scale-[0.98] transition-all"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {viaje.numero || `Viaje #${viaje.id}`}
-                      </span>
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getEstadoBadge(
-                          viaje.estado
-                        )}`}
-                      >
-                        {viaje.estado?.replace(/_/g, ' ')}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                      {viaje.fecha && (
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {formatDateShort(viaje.fecha)}
-                        </span>
-                      )}
-                      {viaje.destino && (
-                        <span className="flex items-center gap-1 truncate">
-                          <MapPin className="w-3 h-3" />
-                          {viaje.destino}
-                        </span>
-                      )}
-                    </div>
-                    {viaje.vehiculo_placa && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1">
-                        <Truck className="w-3 h-3" />
-                        {viaje.vehiculo_placa}
-                      </p>
-                    )}
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-gray-400 shrink-0 mt-1" />
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          5. GASTOS PENDIENTES
-          ═══════════════════════════════════════════════════════════════════ */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-            Últimos Gastos
-          </h2>
-          {gastos.length > 0 && (
+            {/* Mis Gastos */}
             <button
               onClick={() => navigate('/viajes/movimientos')}
-              className="text-xs text-blue-600 dark:text-blue-400 font-medium flex items-center gap-0.5 hover:underline"
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 active:scale-95 transition-all min-h-[100px]"
             >
-              Ver todos <ChevronRight className="w-3.5 h-3.5" />
+              <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-800/50 flex items-center justify-center">
+                <DollarSign className="w-5 h-5" />
+              </div>
+              <span className="text-sm font-medium">Mis Gastos</span>
             </button>
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════════════
+          4. ÚLTIMOS VIAJES
+          ═══════════════════════════════════════════════════════════════════ */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+              Últimos Viajes
+            </h2>
+            {viajes.length > 0 && (
+              <button
+                onClick={() => navigate('/viajes/viajes')}
+                className="text-xs text-blue-600 dark:text-blue-400 font-medium flex items-center gap-0.5 hover:underline"
+              >
+                Ver todos <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {viajes.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
+              <Truck className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Aún no tienes viajes registrados
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {viajes.map((viaje) => (
+                <button
+                  key={viaje.id}
+                  onClick={() => navigate(`/viajes/viajes/${viaje.id}`)}
+                  className="w-full text-left rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 hover:bg-gray-50 dark:hover:bg-gray-750 active:scale-[0.98] transition-all"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {viaje.numero || `Viaje #${viaje.id}`}
+                        </span>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getEstadoBadge(
+                            viaje.estado
+                          )}`}
+                        >
+                          {viaje.estado?.replace(/_/g, ' ')}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                        {viaje.fecha && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {formatDateShort(viaje.fecha)}
+                          </span>
+                        )}
+                        {viaje.destino && (
+                          <span className="flex items-center gap-1 truncate">
+                            <MapPin className="w-3 h-3" />
+                            {viaje.destino}
+                          </span>
+                        )}
+                      </div>
+                      {viaje.vehiculo_placa && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1">
+                          <Truck className="w-3 h-3" />
+                          {viaje.vehiculo_placa}
+                        </p>
+                      )}
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-400 shrink-0 mt-1" />
+                  </div>
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
-        {gastos.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
-            <Receipt className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Aún no tienes gastos registrados
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {gastos.map((gasto) => (
-              <div
-                key={gasto.id}
-                className={`rounded-xl border border-gray-200 dark:border-gray-700 ${getGastoTint(
-                  getAprobacionEstado(gasto)
-                )} p-4`}
+        {/* ═══════════════════════════════════════════════════════════════════
+          5. GASTOS PENDIENTES
+          ═══════════════════════════════════════════════════════════════════ */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+              Últimos Gastos
+            </h2>
+            {gastos.length > 0 && (
+              <button
+                onClick={() => navigate('/viajes/movimientos')}
+                className="text-xs text-blue-600 dark:text-blue-400 font-medium flex items-center gap-0.5 hover:underline"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {gasto.consecutivo || `#${gasto.id}`}
-                      </span>
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getEstadoBadge(
-                          getAprobacionEstado(gasto)
-                        )}`}
-                      >
-                        {getAprobacionEstado(gasto)}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {CONCEPTO_LABELS[gasto.concepto] || gasto.concepto || 'Sin concepto'}
-                    </p>
-                  </div>
-                  <span className="text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">
-                    {formatMoney(gasto.valor)}
-                  </span>
-                </div>
-              </div>
-            ))}
+                Ver todos <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
-        )}
-      </div>
 
-    </div>
+          {gastos.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
+              <Receipt className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Aún no tienes gastos registrados
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {gastos.map((gasto) => (
+                <div
+                  key={gasto.id}
+                  className={`rounded-xl border border-gray-200 dark:border-gray-700 ${getGastoTint(
+                    getAprobacionEstado(gasto)
+                  )} p-4`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {gasto.consecutivo || `#${gasto.id}`}
+                        </span>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getEstadoBadge(
+                            getAprobacionEstado(gasto)
+                          )}`}
+                        >
+                          {getAprobacionEstado(gasto)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {CONCEPTO_LABELS[gasto.concepto] || gasto.concepto || 'Sin concepto'}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">
+                      {formatMoney(gasto.valor)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

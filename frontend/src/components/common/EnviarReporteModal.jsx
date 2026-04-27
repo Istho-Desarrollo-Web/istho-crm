@@ -18,7 +18,10 @@ const EnviarReporteModal = ({ isOpen, onClose, tipoReporte, onSend }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const emails = destinatarios.split(',').map(e => e.trim()).filter(Boolean);
+    const emails = destinatarios
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean);
     if (emails.length === 0) {
       setError('Ingresa al menos un email');
       return;
@@ -53,11 +56,12 @@ const EnviarReporteModal = ({ isOpen, onClose, tipoReporte, onSend }) => {
     }
   };
 
-  const checkboxCls = (active) => `flex-1 flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-all ${
-    active
-      ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
-      : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
-  }`;
+  const checkboxCls = (active) =>
+    `flex-1 flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-all ${
+      active
+        ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
+        : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
+    }`;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
@@ -66,9 +70,14 @@ const EnviarReporteModal = ({ isOpen, onClose, tipoReporte, onSend }) => {
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
           <div className="flex items-center gap-2">
             <Mail className="w-5 h-5 text-orange-500" />
-            <h3 className="font-semibold text-slate-800 dark:text-slate-100">Enviar Reporte por Email</h3>
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+              Enviar Reporte por Email
+            </h3>
           </div>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded">
+          <button
+            onClick={onClose}
+            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -82,7 +91,10 @@ const EnviarReporteModal = ({ isOpen, onClose, tipoReporte, onSend }) => {
             <input
               type="text"
               value={destinatarios}
-              onChange={(e) => { setDestinatarios(e.target.value); setError(''); }}
+              onChange={(e) => {
+                setDestinatarios(e.target.value);
+                setError('');
+              }}
               placeholder="correo@ejemplo.com, otro@ejemplo.com"
               className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
               autoFocus
@@ -97,31 +109,59 @@ const EnviarReporteModal = ({ isOpen, onClose, tipoReporte, onSend }) => {
             </label>
             <div className="flex gap-3">
               <label className={checkboxCls(formatoExcel)}>
-                <div className={`w-4 h-4 rounded border flex items-center justify-center ${
-                  formatoExcel ? 'bg-orange-500 border-orange-500' : 'border-slate-300 dark:border-slate-500'
-                }`}>
+                <div
+                  className={`w-4 h-4 rounded border flex items-center justify-center ${
+                    formatoExcel
+                      ? 'bg-orange-500 border-orange-500'
+                      : 'border-slate-300 dark:border-slate-500'
+                  }`}
+                >
                   {formatoExcel && <Check className="w-3 h-3 text-white" />}
                 </div>
-                <FileSpreadsheet className={`w-5 h-5 ${formatoExcel ? 'text-orange-500' : 'text-slate-400'}`} />
-                <span className={`text-sm font-medium ${formatoExcel ? 'text-orange-700 dark:text-orange-300' : 'text-slate-600 dark:text-slate-300'}`}>Excel</span>
-                <input type="checkbox" checked={formatoExcel} onChange={() => setFormatoExcel(!formatoExcel)} className="hidden" />
+                <FileSpreadsheet
+                  className={`w-5 h-5 ${formatoExcel ? 'text-orange-500' : 'text-slate-400'}`}
+                />
+                <span
+                  className={`text-sm font-medium ${formatoExcel ? 'text-orange-700 dark:text-orange-300' : 'text-slate-600 dark:text-slate-300'}`}
+                >
+                  Excel
+                </span>
+                <input
+                  type="checkbox"
+                  checked={formatoExcel}
+                  onChange={() => setFormatoExcel(!formatoExcel)}
+                  className="hidden"
+                />
               </label>
               <label className={checkboxCls(formatoPdf)}>
-                <div className={`w-4 h-4 rounded border flex items-center justify-center ${
-                  formatoPdf ? 'bg-orange-500 border-orange-500' : 'border-slate-300 dark:border-slate-500'
-                }`}>
+                <div
+                  className={`w-4 h-4 rounded border flex items-center justify-center ${
+                    formatoPdf
+                      ? 'bg-orange-500 border-orange-500'
+                      : 'border-slate-300 dark:border-slate-500'
+                  }`}
+                >
                   {formatoPdf && <Check className="w-3 h-3 text-white" />}
                 </div>
-                <FileText className={`w-5 h-5 ${formatoPdf ? 'text-orange-500' : 'text-slate-400'}`} />
-                <span className={`text-sm font-medium ${formatoPdf ? 'text-orange-700 dark:text-orange-300' : 'text-slate-600 dark:text-slate-300'}`}>PDF</span>
-                <input type="checkbox" checked={formatoPdf} onChange={() => setFormatoPdf(!formatoPdf)} className="hidden" />
+                <FileText
+                  className={`w-5 h-5 ${formatoPdf ? 'text-orange-500' : 'text-slate-400'}`}
+                />
+                <span
+                  className={`text-sm font-medium ${formatoPdf ? 'text-orange-700 dark:text-orange-300' : 'text-slate-600 dark:text-slate-300'}`}
+                >
+                  PDF
+                </span>
+                <input
+                  type="checkbox"
+                  checked={formatoPdf}
+                  onChange={() => setFormatoPdf(!formatoPdf)}
+                  className="hidden"
+                />
               </label>
             </div>
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
           <button
             type="submit"

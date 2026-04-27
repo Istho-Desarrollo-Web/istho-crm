@@ -37,8 +37,22 @@ const listar = async (req, res) => {
 
     const plantillas = await PlantillaEmail.findAll({
       where,
-      order: [['tipo', 'ASC'], ['nombre', 'ASC']],
-      attributes: ['id', 'nombre', 'tipo', 'subtipo', 'asunto_template', 'es_predeterminada', 'activo', 'firma_habilitada', 'created_at', 'updated_at'],
+      order: [
+        ['tipo', 'ASC'],
+        ['nombre', 'ASC'],
+      ],
+      attributes: [
+        'id',
+        'nombre',
+        'tipo',
+        'subtipo',
+        'asunto_template',
+        'es_predeterminada',
+        'activo',
+        'firma_habilitada',
+        'created_at',
+        'updated_at',
+      ],
     });
 
     return success(res, plantillas);
@@ -117,10 +131,13 @@ const crear = async (req, res) => {
       datos.campos_disponibles = PlantillaEmail.CAMPOS_POR_TIPO[datos.tipo] || [];
     }
 
-    const plantilla = await PlantillaEmail.create({
-      ...datos,
-      creado_por: req.user.id,
-    }, { transaction });
+    const plantilla = await PlantillaEmail.create(
+      {
+        ...datos,
+        creado_por: req.user.id,
+      },
+      { transaction }
+    );
 
     await Auditoria.registrar({
       tabla: 'plantillas_email',
@@ -176,10 +193,13 @@ const actualizar = async (req, res) => {
       );
     }
 
-    await plantilla.update({
-      ...datos,
-      actualizado_por: req.user.id,
-    }, { transaction });
+    await plantilla.update(
+      {
+        ...datos,
+        actualizado_por: req.user.id,
+      },
+      { transaction }
+    );
 
     await Auditoria.registrar({
       tabla: 'plantillas_email',
@@ -255,23 +275,49 @@ const preview = async (req, res) => {
     // Generar datos de ejemplo
     const camposTipo = PlantillaEmail.CAMPOS_POR_TIPO[plantilla.tipo] || [];
     const datosEjemplo = {};
-    camposTipo.forEach(campo => {
+    camposTipo.forEach((campo) => {
       datosEjemplo[campo.variable] = datosCustom[campo.variable] || campo.ejemplo;
     });
 
     // Datos de ejemplo para listas (productos) en plantillas de operación
     if (plantilla.tipo === 'operacion_cierre') {
       datosEjemplo.productos = datosCustom.productos || [
-        { sku: 'SKU-001', producto: 'Producto de Ejemplo A', numero_caja: 'CJ-000101', cantidad: 50, unidad_medida: 'UND', cantidad_averia: 0 },
-        { sku: 'SKU-002', producto: 'Producto de Ejemplo B', numero_caja: 'CJ-000102', cantidad: 75, unidad_medida: 'UND', cantidad_averia: 2 },
-        { sku: 'SKU-003', producto: 'Producto de Ejemplo C', numero_caja: 'CJ-000103', cantidad: 25, unidad_medida: 'CJ', cantidad_averia: 1 },
+        {
+          sku: 'SKU-001',
+          producto: 'Producto de Ejemplo A',
+          numero_caja: 'CJ-000101',
+          cantidad: 50,
+          unidad_medida: 'UND',
+          cantidad_averia: 0,
+        },
+        {
+          sku: 'SKU-002',
+          producto: 'Producto de Ejemplo B',
+          numero_caja: 'CJ-000102',
+          cantidad: 75,
+          unidad_medida: 'UND',
+          cantidad_averia: 2,
+        },
+        {
+          sku: 'SKU-003',
+          producto: 'Producto de Ejemplo C',
+          numero_caja: 'CJ-000103',
+          cantidad: 25,
+          unidad_medida: 'CJ',
+          cantidad_averia: 1,
+        },
       ];
       datosEjemplo.tieneAverias = true;
       datosEjemplo.esIngreso = plantilla.subtipo === 'ingreso' || !plantilla.subtipo;
       datosEjemplo.esSalida = plantilla.subtipo === 'salida';
       datosEjemplo.averias = datosCustom.averias || [
         { sku: 'SKU-002', tipo_averia: 'Producto golpeado', cantidad: 2, descripcion: '' },
-        { sku: 'SKU-003', tipo_averia: 'Empaque dañado', cantidad: 1, descripcion: 'Caja aplastada en transporte' },
+        {
+          sku: 'SKU-003',
+          tipo_averia: 'Empaque dañado',
+          cantidad: 1,
+          descripcion: 'Caja aplastada en transporte',
+        },
       ];
     }
 
@@ -286,7 +332,9 @@ const preview = async (req, res) => {
     if (plantilla.firma_habilitada) {
       const firmaHtml = plantilla.firma_html || PlantillaEmail.FIRMA_DEFAULT;
       const firmaCompiled = Handlebars.compile(firmaHtml);
-      cuerpoRenderizado += firmaCompiled({ logoFirmaDataUri: PlantillaEmail.getLogoFirmaDataUri() });
+      cuerpoRenderizado += firmaCompiled({
+        logoFirmaDataUri: PlantillaEmail.getLogoFirmaDataUri(),
+      });
     }
 
     return success(res, {
@@ -315,23 +363,49 @@ const previewRaw = async (req, res) => {
     // Generar datos de ejemplo
     const camposTipo = PlantillaEmail.CAMPOS_POR_TIPO[tipo] || [];
     const datosEjemplo = {};
-    camposTipo.forEach(campo => {
+    camposTipo.forEach((campo) => {
       datosEjemplo[campo.variable] = campo.ejemplo;
     });
 
     // Datos de ejemplo para listas (productos) en plantillas de operación
     if (tipo === 'operacion_cierre') {
       datosEjemplo.productos = [
-        { sku: 'SKU-001', producto: 'Producto de Ejemplo A', numero_caja: 'CJ-000101', cantidad: 50, unidad_medida: 'UND', cantidad_averia: 0 },
-        { sku: 'SKU-002', producto: 'Producto de Ejemplo B', numero_caja: 'CJ-000102', cantidad: 75, unidad_medida: 'UND', cantidad_averia: 2 },
-        { sku: 'SKU-003', producto: 'Producto de Ejemplo C', numero_caja: 'CJ-000103', cantidad: 25, unidad_medida: 'CJ', cantidad_averia: 1 },
+        {
+          sku: 'SKU-001',
+          producto: 'Producto de Ejemplo A',
+          numero_caja: 'CJ-000101',
+          cantidad: 50,
+          unidad_medida: 'UND',
+          cantidad_averia: 0,
+        },
+        {
+          sku: 'SKU-002',
+          producto: 'Producto de Ejemplo B',
+          numero_caja: 'CJ-000102',
+          cantidad: 75,
+          unidad_medida: 'UND',
+          cantidad_averia: 2,
+        },
+        {
+          sku: 'SKU-003',
+          producto: 'Producto de Ejemplo C',
+          numero_caja: 'CJ-000103',
+          cantidad: 25,
+          unidad_medida: 'CJ',
+          cantidad_averia: 1,
+        },
       ];
       datosEjemplo.tieneAverias = true;
       datosEjemplo.esIngreso = true;
       datosEjemplo.esSalida = false;
       datosEjemplo.averias = [
         { sku: 'SKU-002', tipo_averia: 'Producto golpeado', cantidad: 2, descripcion: '' },
-        { sku: 'SKU-003', tipo_averia: 'Empaque dañado', cantidad: 1, descripcion: 'Caja aplastada en transporte' },
+        {
+          sku: 'SKU-003',
+          tipo_averia: 'Empaque dañado',
+          cantidad: 1,
+          descripcion: 'Caja aplastada en transporte',
+        },
       ];
     }
 
@@ -344,7 +418,9 @@ const previewRaw = async (req, res) => {
     if (firma_habilitada !== false) {
       const firmaSource = firma_html || PlantillaEmail.FIRMA_DEFAULT;
       const firmaCompiled = Handlebars.compile(firmaSource);
-      cuerpoRenderizado += firmaCompiled({ logoFirmaDataUri: PlantillaEmail.getLogoFirmaDataUri() });
+      cuerpoRenderizado += firmaCompiled({
+        logoFirmaDataUri: PlantillaEmail.getLogoFirmaDataUri(),
+      });
     }
 
     return success(res, {

@@ -10,15 +10,17 @@ export const exportToCsv = (data, columns, filename = 'export') => {
   const BOM = '\uFEFF';
   const separator = ';';
 
-  const header = columns.map(c => `"${c.label}"`).join(separator);
+  const header = columns.map((c) => `"${c.label}"`).join(separator);
 
-  const rows = data.map(row =>
-    columns.map(col => {
-      let val = col.key.split('.').reduce((o, k) => o?.[k], row);
-      if (val === null || val === undefined) val = '';
-      if (typeof val === 'string') val = val.replace(/"/g, '""');
-      return `"${val}"`;
-    }).join(separator)
+  const rows = data.map((row) =>
+    columns
+      .map((col) => {
+        let val = col.key.split('.').reduce((o, k) => o?.[k], row);
+        if (val === null || val === undefined) val = '';
+        if (typeof val === 'string') val = val.replace(/"/g, '""');
+        return `"${val}"`;
+      })
+      .join(separator)
   );
 
   const csv = BOM + [header, ...rows].join('\r\n');

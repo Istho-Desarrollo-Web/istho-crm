@@ -49,7 +49,10 @@ const Modal = ({
     const handleTab = (e) => {
       if (e.key !== 'Tab') return;
       const els = getFocusable();
-      if (els.length === 0) { e.preventDefault(); return; }
+      if (els.length === 0) {
+        e.preventDefault();
+        return;
+      }
       if (e.shiftKey) {
         if (document.activeElement === els[0]) {
           e.preventDefault();
@@ -70,12 +73,16 @@ const Modal = ({
   // Prevenir scroll del body cuando el modal está abierto
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : 'unset';
-    return () => { document.body.style.overflow = 'unset'; };
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen]);
 
   // Cerrar con ESC
   useEffect(() => {
-    const handleEsc = (e) => { if (e.key === 'Escape') onClose?.(); };
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') onClose?.();
+    };
     if (isOpen) window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [isOpen, onClose]);
@@ -117,9 +124,13 @@ const Modal = ({
         {/* Header */}
         <div className="flex items-start justify-between p-6 border-b border-gray-100">
           <div>
-            <h2 id={titleId} className="text-xl font-semibold text-slate-800">{title}</h2>
+            <h2 id={titleId} className="text-xl font-semibold text-slate-800">
+              {title}
+            </h2>
             {subtitle && (
-              <p id={descId} className="text-sm text-slate-500 mt-1">{subtitle}</p>
+              <p id={descId} className="text-sm text-slate-500 mt-1">
+                {subtitle}
+              </p>
             )}
           </div>
           {showCloseButton && (
@@ -134,9 +145,7 @@ const Modal = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto p-6">{children}</div>
 
         {/* Footer */}
         {footer && (

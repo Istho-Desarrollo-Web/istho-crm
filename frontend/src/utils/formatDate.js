@@ -61,12 +61,19 @@ export const formatDateShort = (fecha) => {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-  }).formatToParts(d).forEach(({ type, value }) => { partes[type] = value; });
+  })
+    .formatToParts(d)
+    .forEach(({ type, value }) => {
+      partes[type] = value;
+    });
 
   switch (formato) {
-    case 'MM/DD/YYYY': return `${partes.month}/${partes.day}/${partes.year}`;
-    case 'YYYY-MM-DD': return `${partes.year}-${partes.month}-${partes.day}`;
-    default:           return `${partes.day}/${partes.month}/${partes.year}`;
+    case 'MM/DD/YYYY':
+      return `${partes.month}/${partes.day}/${partes.year}`;
+    case 'YYYY-MM-DD':
+      return `${partes.year}-${partes.month}-${partes.day}`;
+    default:
+      return `${partes.day}/${partes.month}/${partes.year}`;
   }
 };
 

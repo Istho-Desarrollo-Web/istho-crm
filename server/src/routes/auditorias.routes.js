@@ -54,22 +54,47 @@ router.get('/kardex/:id', auditoriaWmsController.obtenerKardexPorId);
 // ACCIONES SOBRE LÍNEAS
 // =============================================
 
-router.put('/:id/lineas/:lineaId/verificar', requiereRolMinimo('operador'), auditoriaWmsController.verificarLinea);
-router.delete('/:id/lineas/:lineaId', requiereRolMinimo('operador'), auditoriaWmsController.eliminarLinea);
-router.put('/:id/lineas/:lineaId/restaurar', requiereRolMinimo('operador'), auditoriaWmsController.restaurarLinea);
+router.put(
+  '/:id/lineas/:lineaId/verificar',
+  requiereRolMinimo('operador'),
+  auditoriaWmsController.verificarLinea
+);
+router.delete(
+  '/:id/lineas/:lineaId',
+  requiereRolMinimo('operador'),
+  auditoriaWmsController.eliminarLinea
+);
+router.put(
+  '/:id/lineas/:lineaId/restaurar',
+  requiereRolMinimo('operador'),
+  auditoriaWmsController.restaurarLinea
+);
 
 // =============================================
 // DATOS LOGÍSTICOS
 // =============================================
 
-router.put('/:id/logistica', requiereRolMinimo('operador'), auditoriaWmsController.guardarDatosLogisticos);
+router.put(
+  '/:id/logistica',
+  requiereRolMinimo('operador'),
+  auditoriaWmsController.guardarDatosLogisticos
+);
 
 // =============================================
 // EVIDENCIAS
 // =============================================
 
-router.post('/:id/evidencias', requiereRolMinimo('operador'), uploadCumplido.array('evidencias', 15), auditoriaWmsController.subirEvidencias);
-router.delete('/:id/evidencias/:evidenciaId', requiereRolMinimo('operador'), auditoriaWmsController.eliminarEvidencia);
+router.post(
+  '/:id/evidencias',
+  requiereRolMinimo('operador'),
+  uploadCumplido.array('evidencias', 15),
+  auditoriaWmsController.subirEvidencias
+);
+router.delete(
+  '/:id/evidencias/:evidenciaId',
+  requiereRolMinimo('operador'),
+  auditoriaWmsController.eliminarEvidencia
+);
 
 // =============================================
 // CIERRE

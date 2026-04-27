@@ -1,6 +1,6 @@
 /**
  * ISTHO CRM - Layout Components Barrel Export
- * 
+ *
  * @author Coordinación TI ISTHO
  * @date Enero 2026
  */

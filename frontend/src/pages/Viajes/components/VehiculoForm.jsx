@@ -38,7 +38,8 @@ const InputField = ({ label, icon: Icon, required, error, children }) => (
   </div>
 );
 
-const inputClasses = (hasIcon, hasError) => `
+const inputClasses = (hasIcon, hasError) =>
+  `
   w-full px-4 py-2.5
   bg-white dark:bg-centhrix-card border rounded-xl
   text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
@@ -80,14 +81,18 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
 
     setActiveTab('basico');
 
-    vehiculosService.getConductores()
-      .then(res => { if (res.success) setConductores(res.data || []); })
+    vehiculosService
+      .getConductores()
+      .then((res) => {
+        if (res.success) setConductores(res.data || []);
+      })
       .catch(() => {});
 
     if (vehiculoId) {
       setLoadingData(true);
-      vehiculosService.getById(vehiculoId)
-        .then(res => {
+      vehiculosService
+        .getById(vehiculoId)
+        .then((res) => {
           if (res.success && res.data) {
             const v = res.data;
             reset({
@@ -120,7 +125,10 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
       const payload = {
         ...data,
         placa: data.placa?.toUpperCase(),
-        capacidad_ton: data.capacidad_ton !== '' && data.capacidad_ton != null ? parseFloat(data.capacidad_ton) : null,
+        capacidad_ton:
+          data.capacidad_ton !== '' && data.capacidad_ton != null
+            ? parseFloat(data.capacidad_ton)
+            : null,
         conductor_id: data.conductor_id || null,
         vencimiento_soat: data.vencimiento_soat || null,
         vencimiento_tecnicomecanica: data.vencimiento_tecnicomecanica || null,
@@ -131,7 +139,9 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
         : await vehiculosService.create(payload);
 
       if (response.success) {
-        notifySuccess(isEditing ? 'Vehículo actualizado correctamente' : 'Vehículo creado correctamente');
+        notifySuccess(
+          isEditing ? 'Vehículo actualizado correctamente' : 'Vehículo creado correctamente'
+        );
         onSuccess?.();
         onClose();
       } else {
@@ -152,18 +162,29 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
     <Modal
       isOpen={open}
       onClose={onClose}
-      title={readOnly ? 'Detalle Vehículo' : (isEditing ? 'Editar Vehículo' : 'Nuevo Vehículo')}
-      subtitle={isEditing ? `${readOnly ? 'Viendo' : 'Editando'} vehículo` : 'Complete la información del vehículo'}
+      title={readOnly ? 'Detalle Vehículo' : isEditing ? 'Editar Vehículo' : 'Nuevo Vehículo'}
+      subtitle={
+        isEditing
+          ? `${readOnly ? 'Viendo' : 'Editando'} vehículo`
+          : 'Complete la información del vehículo'
+      }
       size="lg"
       footer={
         readOnly ? (
-          <Button variant="outline" onClick={onClose}>Cerrar</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cerrar
+          </Button>
         ) : (
           <>
             <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button variant="primary" onClick={handleSubmit(onSubmit)} loading={isSubmitting} disabled={loadingData}>
+            <Button
+              variant="primary"
+              onClick={handleSubmit(onSubmit)}
+              loading={isSubmitting}
+              disabled={loadingData}
+            >
               {isEditing ? 'Guardar Cambios' : 'Crear Vehículo'}
             </Button>
           </>
@@ -186,9 +207,10 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                   onClick={() => setActiveTab(tab.id)}
                   className={`
                     pb-3 px-1 text-sm font-medium transition-colors relative
-                    ${activeTab === tab.id
-                      ? 'text-orange-600'
-                      : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                    ${
+                      activeTab === tab.id
+                        ? 'text-orange-600'
+                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                     }
                   `}
                 >
@@ -203,7 +225,6 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
 
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
               {/* ── TAB BÁSICO ── */}
               {activeTab === 'basico' && (
                 <>
@@ -219,15 +240,21 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                     />
                   </InputField>
 
-                  <InputField label="Tipo de Vehículo" required error={errors.tipo_vehiculo?.message}>
+                  <InputField
+                    label="Tipo de Vehículo"
+                    required
+                    error={errors.tipo_vehiculo?.message}
+                  >
                     <select
                       {...register('tipo_vehiculo')}
                       disabled={readOnly}
                       className={inputClasses(false, !!errors.tipo_vehiculo)}
                     >
                       <option value="">Seleccionar...</option>
-                      {TIPOS_VEHICULO.map(t => (
-                        <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                      {TIPOS_VEHICULO.map((t) => (
+                        <option key={t} value={t}>
+                          {t.charAt(0).toUpperCase() + t.slice(1)}
+                        </option>
                       ))}
                     </select>
                   </InputField>
@@ -295,7 +322,9 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                               value={estado}
                               className="w-4 h-4 text-orange-500 focus:ring-orange-500"
                             />
-                            <span className="text-sm text-slate-700 dark:text-slate-300 capitalize">{estado}</span>
+                            <span className="text-sm text-slate-700 dark:text-slate-300 capitalize">
+                              {estado}
+                            </span>
                           </label>
                         ))}
                       </div>
@@ -307,7 +336,11 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
               {/* ── TAB DOCUMENTOS ── */}
               {activeTab === 'documentos' && (
                 <>
-                  <InputField label="Vencimiento SOAT" icon={Calendar} error={errors.vencimiento_soat?.message}>
+                  <InputField
+                    label="Vencimiento SOAT"
+                    icon={Calendar}
+                    error={errors.vencimiento_soat?.message}
+                  >
                     <input
                       {...register('vencimiento_soat')}
                       type="date"
@@ -316,7 +349,11 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                     />
                   </InputField>
 
-                  <InputField label="Vencimiento Tecnomecánica" icon={Calendar} error={errors.vencimiento_tecnicomecanica?.message}>
+                  <InputField
+                    label="Vencimiento Tecnomecánica"
+                    icon={Calendar}
+                    error={errors.vencimiento_tecnicomecanica?.message}
+                  >
                     <input
                       {...register('vencimiento_tecnicomecanica')}
                       type="date"
@@ -325,38 +362,65 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                     />
                   </InputField>
 
-                  <InputField label="Póliza de Responsabilidad" icon={Shield} error={errors.poliza_responsabilidad?.message}>
+                  <InputField
+                    label="Póliza de Responsabilidad"
+                    icon={Shield}
+                    error={errors.poliza_responsabilidad?.message}
+                  >
                     <input
                       {...register('poliza_responsabilidad')}
                       type="text"
                       placeholder="Número de póliza"
                       maxLength={50}
                       disabled={readOnly}
-                      onChange={makeSanitizeHandler(setValue, 'poliza_responsabilidad', SANITIZE.ALFANUM_UPPER, 50)}
+                      onChange={makeSanitizeHandler(
+                        setValue,
+                        'poliza_responsabilidad',
+                        SANITIZE.ALFANUM_UPPER,
+                        50
+                      )}
                       className={inputClasses(true, !!errors.poliza_responsabilidad)}
                     />
                   </InputField>
 
-                  <InputField label="Número de Motor" icon={Cog} error={errors.numero_motor?.message}>
+                  <InputField
+                    label="Número de Motor"
+                    icon={Cog}
+                    error={errors.numero_motor?.message}
+                  >
                     <input
                       {...register('numero_motor')}
                       type="text"
                       placeholder="Número de motor"
                       maxLength={50}
                       disabled={readOnly}
-                      onChange={makeSanitizeHandler(setValue, 'numero_motor', SANITIZE.ALFANUM_UPPER, 50)}
+                      onChange={makeSanitizeHandler(
+                        setValue,
+                        'numero_motor',
+                        SANITIZE.ALFANUM_UPPER,
+                        50
+                      )}
                       className={inputClasses(true, !!errors.numero_motor)}
                     />
                   </InputField>
 
-                  <InputField label="Número de Chasis" icon={FileText} error={errors.numero_chasis?.message}>
+                  <InputField
+                    label="Número de Chasis"
+                    icon={FileText}
+                    error={errors.numero_chasis?.message}
+                  >
                     <input
                       {...register('numero_chasis')}
                       type="text"
                       placeholder="Número de chasis"
                       maxLength={50}
                       disabled={readOnly}
-                      onChange={makeSanitizeHandler(setValue, 'numero_chasis', SANITIZE.ALFANUM_UPPER, 50)}
+                      onChange={makeSanitizeHandler(
+                        setValue,
+                        'numero_chasis',
+                        SANITIZE.ALFANUM_UPPER,
+                        50
+                      )}
                       className={inputClasses(true, !!errors.numero_chasis)}
                     />
                   </InputField>
@@ -366,7 +430,11 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
               {/* ── TAB ASIGNACIÓN ── */}
               {activeTab === 'asignacion' && (
                 <>
-                  <InputField label="Conductor Asignado" icon={User} error={errors.conductor_id?.message}>
+                  <InputField
+                    label="Conductor Asignado"
+                    icon={User}
+                    error={errors.conductor_id?.message}
+                  >
                     <select
                       {...register('conductor_id')}
                       disabled={readOnly}
@@ -375,14 +443,19 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                       <option value="">Sin asignar</option>
                       {conductores.map((c) => (
                         <option key={c.id} value={c.id}>
-                          {c.nombre_completo || `${c.nombre || ''} ${c.apellido || ''}`.trim() || c.username}
+                          {c.nombre_completo ||
+                            `${c.nombre || ''} ${c.apellido || ''}`.trim() ||
+                            c.username}
                         </option>
                       ))}
                     </select>
                   </InputField>
 
                   <div className="md:col-span-2">
-                    <InputField label="Descripción / Observaciones" error={errors.descripcion?.message}>
+                    <InputField
+                      label="Descripción / Observaciones"
+                      error={errors.descripcion?.message}
+                    >
                       <textarea
                         {...register('descripcion')}
                         placeholder="Notas adicionales sobre el vehículo..."

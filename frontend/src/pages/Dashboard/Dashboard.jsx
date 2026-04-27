@@ -5,7 +5,7 @@
  * Dashboard actualizado para reflejar el flujo de auditoría de Entradas y
  * Salidas del WMS. Muestra KPIs de auditoría, tablas de operaciones
  * recientes, gráficos y alertas de inventario.
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 3.0.0
  * @date Marzo 2026
@@ -120,7 +120,9 @@ const STATUS_STYLES = {
 const StatusBadgeMini = ({ status }) => {
   const s = STATUS_STYLES[status] || STATUS_STYLES.pendiente;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${s.bg} ${s.text}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${s.bg} ${s.text}`}
+    >
       <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
       {s.label}
     </span>
@@ -141,10 +143,14 @@ const OperationRow = ({ op, type, onClick }) => {
       className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/20 cursor-pointer transition-colors group"
     >
       <td className="px-4 py-3">
-        <p className={`text-sm font-semibold text-${accentColor}-600 dark:text-${accentColor}-400`}>{op.documento}</p>
+        <p className={`text-sm font-semibold text-${accentColor}-600 dark:text-${accentColor}-400`}>
+          {op.documento}
+        </p>
       </td>
       <td className="px-4 py-3">
-        <p className="text-sm text-slate-700 dark:text-slate-200 font-medium truncate max-w-[180px]">{op.cliente}</p>
+        <p className="text-sm text-slate-700 dark:text-slate-200 font-medium truncate max-w-[180px]">
+          {op.cliente}
+        </p>
       </td>
       <td className="px-4 py-3 hidden md:table-cell">
         <p className="text-xs text-slate-500 dark:text-slate-400">{op.tipo}</p>
@@ -157,7 +163,9 @@ const OperationRow = ({ op, type, onClick }) => {
               style={{ width: `${progress}%` }}
             />
           </div>
-          <span className="text-xs text-slate-400 font-mono">{op.verificadas}/{op.lineas}</span>
+          <span className="text-xs text-slate-400 font-mono">
+            {op.verificadas}/{op.lineas}
+          </span>
         </div>
       </td>
       <td className="px-4 py-3">
@@ -174,7 +182,16 @@ const OperationRow = ({ op, type, onClick }) => {
 // OPERATIONS TABLE CARD
 // ════════════════════════════════════════════════════════════════════════════
 
-const OperationsCard = ({ title, subtitle, icon: Icon, accentColor, operations, type, onRowClick, onViewAll }) => (
+const OperationsCard = ({
+  title,
+  subtitle,
+  icon: Icon,
+  accentColor,
+  operations,
+  type,
+  onRowClick,
+  onViewAll,
+}) => (
   <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
     <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
       <div className="flex items-center gap-3">
@@ -197,11 +214,21 @@ const OperationsCard = ({ title, subtitle, icon: Icon, accentColor, operations, 
       <table className="w-full">
         <thead>
           <tr className="bg-slate-50/50 dark:bg-centhrix-bg/30">
-            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Doc</th>
-            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Cliente</th>
-            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider hidden md:table-cell">Tipo</th>
-            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Líneas</th>
-            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Estado</th>
+            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              Doc
+            </th>
+            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              Cliente
+            </th>
+            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider hidden md:table-cell">
+              Tipo
+            </th>
+            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              Líneas
+            </th>
+            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              Estado
+            </th>
             <th className="px-4 py-2.5 w-8" />
           </tr>
         </thead>
@@ -211,7 +238,9 @@ const OperationsCard = ({ title, subtitle, icon: Icon, accentColor, operations, 
           ))}
           {operations.length === 0 && (
             <tr>
-              <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">No hay operaciones recientes</td>
+              <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">
+                No hay operaciones recientes
+              </td>
             </tr>
           )}
         </tbody>
@@ -229,7 +258,9 @@ const QuickAction = ({ icon: Icon, label, description, color, onClick }) => (
     onClick={onClick}
     className="flex items-center gap-4 p-4 bg-white dark:bg-centhrix-card rounded-xl border border-gray-100 dark:border-slate-700 hover:border-transparent hover:shadow-md dark:hover:shadow-lg transition-all group text-left w-full"
   >
-    <div className={`p-3 rounded-xl bg-${color}-100 dark:bg-${color}-900/30 group-hover:scale-110 transition-transform`}>
+    <div
+      className={`p-3 rounded-xl bg-${color}-100 dark:bg-${color}-900/30 group-hover:scale-110 transition-transform`}
+    >
       <Icon className={`w-6 h-6 text-${color}-600 dark:text-${color}-400`} />
     </div>
     <div className="flex-1 min-w-0">
@@ -289,9 +320,9 @@ const Dashboard = () => {
       const items = Array.isArray(data) ? data : [];
       setRealAlertas(items);
       setAlertasCounts({
-        agotado: items.filter(a => a.tipo === 'agotado').length,
-        stock_bajo: items.filter(a => a.tipo === 'bajo_stock').length,
-        vencimiento: items.filter(a => a.tipo === 'vencimiento').length,
+        agotado: items.filter((a) => a.tipo === 'agotado').length,
+        stock_bajo: items.filter((a) => a.tipo === 'bajo_stock').length,
+        vencimiento: items.filter((a) => a.tipo === 'vencimiento').length,
       });
     } catch {
       setRealAlertas([]);
@@ -306,7 +337,7 @@ const Dashboard = () => {
   }, [fetchAlertas]);
 
   useEffect(() => {
-    reportesService.getPeriodosDisponibles().then(res => {
+    reportesService.getPeriodosDisponibles().then((res) => {
       if (res?.success && res.data) {
         setPeriodos(res.data.periodos || []);
         setAniosDisponibles(res.data.anios?.length ? res.data.anios : [hoyDash.getFullYear()]);
@@ -317,9 +348,9 @@ const Dashboard = () => {
   useEffect(() => {
     if (!loadingAlertas && realAlertas.length > 0) {
       const porTipo = {
-        agotado: realAlertas.filter(a => a.tipo === 'agotado'),
-        stock_bajo: realAlertas.filter(a => a.tipo === 'bajo_stock'),
-        vencimiento: realAlertas.filter(a => a.tipo === 'vencimiento'),
+        agotado: realAlertas.filter((a) => a.tipo === 'agotado'),
+        stock_bajo: realAlertas.filter((a) => a.tipo === 'bajo_stock'),
+        vencimiento: realAlertas.filter((a) => a.tipo === 'vencimiento'),
       };
       inventoryAlert(realAlertas.length, porTipo);
     }
@@ -344,34 +375,46 @@ const Dashboard = () => {
   };
 
   // ── CHART DATA ──
-  const barData = chartData.despachosPorEstado?.map(item => ({
-    label: item.name,
-    value1: item.value,
-  })) || [];
+  const barData =
+    chartData.despachosPorEstado?.map((item) => ({
+      label: item.name,
+      value1: item.value,
+    })) || [];
 
   const pieData = chartData.ingresosVsSalidas || [];
 
-  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const MESES = [
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
+  ];
 
   // Meses disponibles para el año seleccionado (solo los que tienen datos + mes actual)
   const mesesDisponibles = (() => {
     const mesActual = hoyDash.getMonth() + 1;
     const anioActual = hoyDash.getFullYear();
-    const mesesConDatos = periodos
-      .filter(p => p.anio === anioFiltro)
-      .map(p => p.mes);
+    const mesesConDatos = periodos.filter((p) => p.anio === anioFiltro).map((p) => p.mes);
     if (anioFiltro === anioActual && !mesesConDatos.includes(mesActual)) {
       mesesConDatos.push(mesActual);
     }
     mesesConDatos.sort((a, b) => a - b);
     return mesesConDatos.length
-      ? mesesConDatos.map(m => ({ value: m, label: MESES[m - 1] }))
+      ? mesesConDatos.map((m) => ({ value: m, label: MESES[m - 1] }))
       : [{ value: mesActual, label: MESES[mesActual - 1] }];
   })();
 
   // Ajustar mes si no está disponible en el año seleccionado
   useEffect(() => {
-    if (mesesDisponibles.length && !mesesDisponibles.find(m => m.value === mesFiltro)) {
+    if (mesesDisponibles.length && !mesesDisponibles.find((m) => m.value === mesFiltro)) {
       setMesFiltro(mesesDisponibles[mesesDisponibles.length - 1].value);
     }
   }, [anioFiltro]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -379,17 +422,19 @@ const Dashboard = () => {
   const mesNombre = `${MESES[mesFiltro - 1]} ${anioFiltro}`;
 
   // ── ALERTS FORMAT (desde alertas reales del backend) ──
-  const formattedAlertas = realAlertas.slice(0, 5).map(alerta => ({
+  const formattedAlertas = realAlertas.slice(0, 5).map((alerta) => ({
     id: alerta.id,
     type: alerta.tipo === 'vencimiento' ? 'vencimiento' : 'inventario',
-    title: alerta.tipo === 'bajo_stock'
-      ? `Stock bajo - ${alerta.producto_nombre || alerta.nombre}`
-      : alerta.tipo === 'agotado'
-        ? `Agotado - ${alerta.producto_nombre || alerta.nombre}`
-        : `Por vencer - ${alerta.producto_nombre || alerta.nombre}`,
-    description: alerta.tipo === 'vencimiento'
-      ? `Vence en ${alerta.dias_restantes || '?'} días`
-      : `${alerta.stock_actual ?? alerta.stockActual ?? 0} ${alerta.unidad_medida || 'UND'} disponibles`,
+    title:
+      alerta.tipo === 'bajo_stock'
+        ? `Stock bajo - ${alerta.producto_nombre || alerta.nombre}`
+        : alerta.tipo === 'agotado'
+          ? `Agotado - ${alerta.producto_nombre || alerta.nombre}`
+          : `Por vencer - ${alerta.producto_nombre || alerta.nombre}`,
+    description:
+      alerta.tipo === 'vencimiento'
+        ? `Vence en ${alerta.dias_restantes || '?'} días`
+        : `${alerta.stock_actual ?? alerta.stockActual ?? 0} ${alerta.unidad_medida || 'UND'} disponibles`,
     date: alerta.fecha_vencimiento
       ? `Vence: ${formatDateShort(alerta.fecha_vencimiento)}`
       : alerta.cliente_nombre || alerta.cliente || '',
@@ -400,7 +445,6 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
-
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* PAGE HEADER */}
         {/* ════════════════════════════════════════════════════════════════ */}
@@ -432,8 +476,12 @@ const Dashboard = () => {
               ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}
             `}
           >
-            <RefreshCw className={`w-4 h-4 text-slate-500 dark:text-slate-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline text-sm text-slate-600 dark:text-slate-300">Actualizar</span>
+            <RefreshCw
+              className={`w-4 h-4 text-slate-500 dark:text-slate-400 ${isRefreshing ? 'animate-spin' : ''}`}
+            />
+            <span className="hidden sm:inline text-sm text-slate-600 dark:text-slate-300">
+              Actualizar
+            </span>
           </button>
         </div>
 
@@ -521,9 +569,7 @@ const Dashboard = () => {
             title="Operaciones por Estado"
             subtitle="Distribución actual de operaciones"
             data={barData}
-            legend={[
-              { label: 'Cantidad', color: '#E74C3C' },
-            ]}
+            legend={[{ label: 'Cantidad', color: '#E74C3C' }]}
             height={300}
             loading={loading}
           />
@@ -537,20 +583,24 @@ const Dashboard = () => {
               <div className="flex items-center gap-1.5">
                 <select
                   value={mesFiltro}
-                  onChange={e => setMesFiltro(Number(e.target.value))}
+                  onChange={(e) => setMesFiltro(Number(e.target.value))}
                   className="text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:focus:ring-blue-500 cursor-pointer"
                 >
                   {mesesDisponibles.map(({ value, label }) => (
-                    <option key={value} value={value}>{label}</option>
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
                   ))}
                 </select>
                 <select
                   value={anioFiltro}
-                  onChange={e => setAnioFiltro(Number(e.target.value))}
+                  onChange={(e) => setAnioFiltro(Number(e.target.value))}
                   className="text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:focus:ring-blue-500 cursor-pointer"
                 >
-                  {aniosDisponibles.map(a => (
-                    <option key={a} value={a}>{a}</option>
+                  {aniosDisponibles.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -589,7 +639,6 @@ const Dashboard = () => {
         {/* ALERTS + SUMMARY */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-
           {/* Resumen Rápido de Auditoría */}
           <div className="lg:col-span-2 bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
             <div className="flex items-center gap-3 mb-6">
@@ -597,8 +646,12 @@ const Dashboard = () => {
                 <Activity className="w-5 h-5 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Resumen de Operaciones</h3>
-                <p className="text-xs text-slate-400 dark:text-slate-500">Estado actual de las operaciones en curso</p>
+                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
+                  Resumen de Operaciones
+                </h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500">
+                  Estado actual de las operaciones en curso
+                </p>
               </div>
             </div>
 
@@ -607,36 +660,48 @@ const Dashboard = () => {
               <div className="p-4 rounded-xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30">
                 <div className="flex items-center gap-2 mb-3">
                   <Clock className="w-5 h-5 text-amber-500" />
-                  <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">Pendientes</span>
+                  <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+                    Pendientes
+                  </span>
                 </div>
                 <p className="text-2xl sm:text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1">
                   {(kpis.entradasPendientes ?? 0) + (kpis.salidasPendientes ?? 0)}
                 </p>
-                <p className="text-xs text-amber-500/80 dark:text-amber-400/60">Requieren atención</p>
+                <p className="text-xs text-amber-500/80 dark:text-amber-400/60">
+                  Requieren atención
+                </p>
               </div>
 
               {/* En Proceso */}
               <div className="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30">
                 <div className="flex items-center gap-2 mb-3">
                   <Loader2 className="w-5 h-5 text-blue-500" />
-                  <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">En Proceso</span>
+                  <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                    En Proceso
+                  </span>
                 </div>
                 <p className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
                   {kpis.auditoriasEnProceso ?? 0}
                 </p>
-                <p className="text-xs text-blue-500/80 dark:text-blue-400/60">Verificándose ahora</p>
+                <p className="text-xs text-blue-500/80 dark:text-blue-400/60">
+                  Verificándose ahora
+                </p>
               </div>
 
               {/* Cerradas */}
               <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30">
                 <div className="flex items-center gap-2 mb-3">
                   <CheckCircle className="w-5 h-5 text-emerald-500" />
-                  <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Cerradas</span>
+                  <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                    Cerradas
+                  </span>
                 </div>
                 <p className="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">
                   {kpis.auditoriasCerradasMes ?? 0}
                 </p>
-                <p className="text-xs text-emerald-500/80 dark:text-emerald-400/60">Completadas este mes</p>
+                <p className="text-xs text-emerald-500/80 dark:text-emerald-400/60">
+                  Completadas este mes
+                </p>
               </div>
             </div>
           </div>
@@ -656,7 +721,9 @@ const Dashboard = () => {
 
             {!loadingAlertas && realAlertas.length > 0 && (
               <div className="mt-4 bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4">
-                <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Resumen de Alertas</h4>
+                <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                  Resumen de Alertas
+                </h4>
                 <div className="space-y-2">
                   {alertasCounts.agotado > 0 && (
                     <div className="flex items-center justify-between text-sm">
@@ -664,7 +731,9 @@ const Dashboard = () => {
                         <Package className="w-4 h-4" />
                         Agotados
                       </span>
-                      <span className="font-medium text-slate-700 dark:text-slate-300">{alertasCounts.agotado}</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {alertasCounts.agotado}
+                      </span>
                     </div>
                   )}
                   {alertasCounts.stock_bajo > 0 && (
@@ -673,7 +742,9 @@ const Dashboard = () => {
                         <AlertTriangle className="w-4 h-4" />
                         Stock Bajo
                       </span>
-                      <span className="font-medium text-slate-700 dark:text-slate-300">{alertasCounts.stock_bajo}</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {alertasCounts.stock_bajo}
+                      </span>
                     </div>
                   )}
                   {alertasCounts.vencimiento > 0 && (
@@ -682,7 +753,9 @@ const Dashboard = () => {
                         <Clock className="w-4 h-4" />
                         Por Vencer
                       </span>
-                      <span className="font-medium text-slate-700 dark:text-slate-300">{alertasCounts.vencimiento}</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {alertasCounts.vencimiento}
+                      </span>
                     </div>
                   )}
                 </div>

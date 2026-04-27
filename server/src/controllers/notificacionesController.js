@@ -3,7 +3,7 @@
  * ISTHO CRM - Controlador de Notificaciones
  * ============================================================================
  * Gestiona las notificaciones del sistema.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  * @date Enero 2026
@@ -293,11 +293,19 @@ const parsearPrefs = (raw) => {
   let val = raw;
   // Si es string (TEXT column o double-encode), parsear
   if (typeof val === 'string') {
-    try { val = JSON.parse(val); } catch { return {}; }
+    try {
+      val = JSON.parse(val);
+    } catch {
+      return {};
+    }
   }
   // Si aún es string (triple-encode), parsear de nuevo
   if (typeof val === 'string') {
-    try { val = JSON.parse(val); } catch { return {}; }
+    try {
+      val = JSON.parse(val);
+    } catch {
+      return {};
+    }
   }
   // Rechazar arrays, null, o el objeto-de-caracteres generado por { ...string }
   if (!val || typeof val !== 'object' || Array.isArray(val)) return {};
@@ -316,14 +324,16 @@ const getPreferencias = async (req, res) => {
     const prefs = parsearPrefs(usuario?.preferencias);
 
     const resultado = {};
-    Object.keys(PREFERENCIAS_NOTIF_DEFAULT).forEach(key => {
+    Object.keys(PREFERENCIAS_NOTIF_DEFAULT).forEach((key) => {
       resultado[key] = prefs[key] !== false;
     });
 
     res.json({ success: true, data: resultado });
   } catch (error) {
     console.error('[Notificaciones] Error al obtener preferencias:', error);
-    res.status(500).json({ success: false, message: 'Error al obtener preferencias', error: error.message });
+    res
+      .status(500)
+      .json({ success: false, message: 'Error al obtener preferencias', error: error.message });
   }
 };
 
@@ -340,27 +350,30 @@ const updatePreferencias = async (req, res) => {
     const prefsActuales = parsearPrefs(usuario.preferencias);
     const nuevasPrefs = { ...prefsActuales };
 
-    Object.keys(PREFERENCIAS_NOTIF_DEFAULT).forEach(key => {
+    Object.keys(PREFERENCIAS_NOTIF_DEFAULT).forEach((key) => {
       if (key in req.body) {
         nuevasPrefs[key] = req.body[key] === true || req.body[key] === 'true';
       }
     });
 
     // Guardar como JSON string explícito para evitar double-serialization de Sequelize
-    await Usuario.update(
-      { preferencias: nuevasPrefs },
-      { where: { id: req.user.id } }
-    );
+    await Usuario.update({ preferencias: nuevasPrefs }, { where: { id: req.user.id } });
 
     const resultado = {};
-    Object.keys(PREFERENCIAS_NOTIF_DEFAULT).forEach(key => {
+    Object.keys(PREFERENCIAS_NOTIF_DEFAULT).forEach((key) => {
       resultado[key] = nuevasPrefs[key] !== false;
     });
 
-    res.json({ success: true, data: resultado, message: 'Preferencias actualizadas correctamente' });
+    res.json({
+      success: true,
+      data: resultado,
+      message: 'Preferencias actualizadas correctamente',
+    });
   } catch (error) {
     console.error('[Notificaciones] Error al actualizar preferencias:', error);
-    res.status(500).json({ success: false, message: 'Error al actualizar preferencias', error: error.message });
+    res
+      .status(500)
+      .json({ success: false, message: 'Error al actualizar preferencias', error: error.message });
   }
 };
 

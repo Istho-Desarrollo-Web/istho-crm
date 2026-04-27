@@ -10,8 +10,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  ArrowLeft, AlertTriangle, Package, FileText, Tag,
-  FileSpreadsheet, Download, RefreshCw, Mail, Image,
+  ArrowLeft,
+  AlertTriangle,
+  Package,
+  FileText,
+  Tag,
+  FileSpreadsheet,
+  Download,
+  RefreshCw,
+  Mail,
+  Image,
 } from 'lucide-react';
 
 // Components
@@ -33,7 +41,8 @@ const ReporteAverias = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { hasPermission } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
-  const canDownload = hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
+  const canDownload =
+    hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
 
   const [loading, setLoading] = useState(true);
   const [firstLoad, setFirstLoad] = useState(true);
@@ -54,7 +63,9 @@ const ReporteAverias = () => {
   const handleFiltersChange = (newFilters) => {
     setFilters(newFilters);
     const params = new URLSearchParams();
-    Object.entries(newFilters).forEach(([k, v]) => { if (v) params.set(k, v); });
+    Object.entries(newFilters).forEach(([k, v]) => {
+      if (v) params.set(k, v);
+    });
     setSearchParams(params, { replace: true });
   };
 
@@ -65,7 +76,7 @@ const ReporteAverias = () => {
       const params = {};
       if (filters.fecha_desde) params.fecha_desde = filters.fecha_desde;
       if (filters.fecha_hasta) params.fecha_hasta = filters.fecha_hasta;
-      if (filters.cliente_id)  params.cliente_id  = filters.cliente_id;
+      if (filters.cliente_id) params.cliente_id = filters.cliente_id;
 
       const res = await reportesService.getReporteAverias(params);
       if (res?.success && res.data) {
@@ -81,20 +92,22 @@ const ReporteAverias = () => {
     }
   }, [filters]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const buildFilterParams = () => {
     const params = new URLSearchParams();
     if (filters.fecha_desde) params.set('fecha_desde', filters.fecha_desde);
     if (filters.fecha_hasta) params.set('fecha_hasta', filters.fecha_hasta);
-    if (filters.cliente_id)  params.set('cliente_id',  filters.cliente_id);
+    if (filters.cliente_id) params.set('cliente_id', filters.cliente_id);
     return params.toString();
   };
 
   const handleExport = async (format) => {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
-      const ext      = format === 'excel' ? 'xlsx' : 'pdf';
+      const ext = format === 'excel' ? 'xlsx' : 'pdf';
       const endpoint = format === 'excel' ? '/reportes/averias/excel' : '/reportes/averias/pdf';
       await descargarArchivo(
         `${baseUrl}${endpoint}?${buildFilterParams()}`,
@@ -106,11 +119,11 @@ const ReporteAverias = () => {
   };
 
   // Datos para gráficos
-  const pieData = porTipo.map(t => ({ name: t.tipo, value: t.count }));
+  const pieData = porTipo.map((t) => ({ name: t.tipo, value: t.count }));
   const barData = [...porTipo]
     .sort((a, b) => b.unidades - a.unidades)
     .slice(0, 8)
-    .map(t => ({ label: t.tipo.substring(0, 18), value1: t.unidades, value2: t.count }));
+    .map((t) => ({ label: t.tipo.substring(0, 18), value1: t.unidades, value2: t.count }));
 
   if (loading && firstLoad) {
     return (
@@ -132,7 +145,6 @@ const ReporteAverias = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-centhrix-bg dark:to-centhrix-bg">
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -147,18 +159,40 @@ const ReporteAverias = () => {
                 <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Reporte de Averías</h1>
-                <p className="text-slate-500 dark:text-slate-400">Registro detallado de averías por operación</p>
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                  Reporte de Averías
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400">
+                  Registro detallado de averías por operación
+                </p>
               </div>
             </div>
           </div>
 
-          <AccionesDropdown acciones={[
-            { label: 'Actualizar',  icon: RefreshCw,      onClick: fetchData },
-            { label: 'Enviar',      icon: Mail,            onClick: () => setEmailModal(true), hidden: !canDownload },
-            { label: 'Excel',       icon: FileSpreadsheet, onClick: () => handleExport('excel'), hidden: !canDownload },
-            { label: 'PDF',         icon: Download,        onClick: () => handleExport('pdf'),   hidden: !canDownload, variant: 'primary' },
-          ]} />
+          <AccionesDropdown
+            acciones={[
+              { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+              {
+                label: 'Enviar',
+                icon: Mail,
+                onClick: () => setEmailModal(true),
+                hidden: !canDownload,
+              },
+              {
+                label: 'Excel',
+                icon: FileSpreadsheet,
+                onClick: () => handleExport('excel'),
+                hidden: !canDownload,
+              },
+              {
+                label: 'PDF',
+                icon: Download,
+                onClick: () => handleExport('pdf'),
+                hidden: !canDownload,
+                variant: 'primary',
+              },
+            ]}
+          />
         </div>
 
         {error && (
@@ -219,7 +253,10 @@ const ReporteAverias = () => {
               title="Unidades Averiadas por Tipo"
               subtitle="Top 8 tipos con más unidades"
               data={barData}
-              legend={[{ label: 'Unidades', color: '#E74C3C' }, { label: 'Registros', color: '#3B82F6' }]}
+              legend={[
+                { label: 'Unidades', color: '#E74C3C' },
+                { label: 'Registros', color: '#3B82F6' },
+              ]}
               height={300}
             />
           </div>
@@ -230,9 +267,12 @@ const ReporteAverias = () => {
           <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-6">
             <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-slate-800 dark:text-slate-100">Detalle de Averías</h3>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                  Detalle de Averías
+                </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  {averias.length} registro{averias.length !== 1 ? 's' : ''} encontrado{averias.length !== 1 ? 's' : ''}
+                  {averias.length} registro{averias.length !== 1 ? 's' : ''} encontrado
+                  {averias.length !== 1 ? 's' : ''}
                 </p>
               </div>
               <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-centhrix-surface px-2.5 py-1 rounded-full">
@@ -243,60 +283,119 @@ const ReporteAverias = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-centhrix-surface/50">
-                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-8">#</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Fecha</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">N° Registro</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Tipo</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Cliente</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Origen</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Referencia</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Producto</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Tipo Avería</th>
-                    <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Cant.</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Descripción</th>
-                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Registrado por</th>
-                    <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Foto</th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400 w-8">
+                      #
+                    </th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                      Fecha
+                    </th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                      N° Registro
+                    </th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                      Tipo
+                    </th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                      Cliente
+                    </th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                      Origen
+                    </th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                      Referencia
+                    </th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                      Producto
+                    </th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                      Tipo Avería
+                    </th>
+                    <th className="text-right px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                      Cant.
+                    </th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                      Descripción
+                    </th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                      Registrado por
+                    </th>
+                    <th className="text-center px-4 py-3 font-medium text-slate-500 dark:text-slate-400">
+                      Foto
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                   {averias.map((a, idx) => {
                     const tipo = (a.operacion?.tipo || '').toLowerCase();
-                    const tipoBadgeClass = tipo === 'ingreso'
-                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                      : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+                    const tipoBadgeClass =
+                      tipo === 'ingreso'
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
                     const fecha = a.operacion?.fecha_operacion
-                      ? new Date(a.operacion.fecha_operacion + 'T00:00:00').toLocaleDateString('es-CO')
+                      ? new Date(a.operacion.fecha_operacion + 'T00:00:00').toLocaleDateString(
+                          'es-CO'
+                        )
                       : '—';
                     return (
-                      <tr key={a.id} className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors">
+                      <tr
+                        key={a.id}
+                        className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors"
+                      >
                         <td className="px-4 py-3 text-slate-400 dark:text-slate-500">{idx + 1}</td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{fecha}</td>
-                        <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-300">{a.operacion?.numero_operacion || '—'}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                          {fecha}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-300">
+                          {a.operacion?.numero_operacion || '—'}
+                        </td>
                         <td className="px-4 py-3">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${tipoBadgeClass}`}>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${tipoBadgeClass}`}
+                          >
                             {tipo === 'ingreso' ? 'Entrada' : 'Salida'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-slate-700 dark:text-slate-200 max-w-[160px] truncate" title={a.operacion?.cliente?.razon_social}>
+                        <td
+                          className="px-4 py-3 text-slate-700 dark:text-slate-200 max-w-[160px] truncate"
+                          title={a.operacion?.cliente?.razon_social}
+                        >
                           {a.operacion?.cliente?.razon_social || '—'}
                         </td>
-                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{a.operacion?.origen || '—'}</td>
-                        <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-300">{a.sku || '—'}</td>
-                        <td className="px-4 py-3 text-slate-800 dark:text-slate-200 max-w-[180px] truncate" title={a.detalle?.producto}>
+                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                          {a.operacion?.origen || '—'}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-300">
+                          {a.sku || '—'}
+                        </td>
+                        <td
+                          className="px-4 py-3 text-slate-800 dark:text-slate-200 max-w-[180px] truncate"
+                          title={a.detalle?.producto}
+                        >
                           {a.detalle?.producto || '—'}
                         </td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{a.tipo_averia || '—'}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                          {a.tipo_averia || '—'}
+                        </td>
                         <td className="px-4 py-3 text-right font-bold text-red-600 dark:text-red-400">
                           {(parseFloat(a.cantidad) || 0).toLocaleString('es-CO')}
                         </td>
-                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400 max-w-[200px] truncate" title={a.descripcion}>
+                        <td
+                          className="px-4 py-3 text-slate-500 dark:text-slate-400 max-w-[200px] truncate"
+                          title={a.descripcion}
+                        >
                           {a.descripcion || '—'}
                         </td>
-                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{a.registrador?.nombre_completo || '—'}</td>
+                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                          {a.registrador?.nombre_completo || '—'}
+                        </td>
                         <td className="px-4 py-3 text-center">
                           {a.foto_url ? (
-                            <a href={a.foto_url} target="_blank" rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center text-blue-500 hover:text-blue-700">
+                            <a
+                              href={a.foto_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center text-blue-500 hover:text-blue-700"
+                            >
                               <Image className="w-4 h-4" />
                             </a>
                           ) : (
@@ -316,20 +415,28 @@ const ReporteAverias = () => {
         {!loading && averias.length === 0 && (
           <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-12 text-center mb-6">
             <AlertTriangle className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-            <p className="text-slate-500 dark:text-slate-400">No se encontraron averías en el período seleccionado.</p>
+            <p className="text-slate-500 dark:text-slate-400">
+              No se encontraron averías en el período seleccionado.
+            </p>
           </div>
         )}
 
         {/* Exportar */}
         {canDownload && (
           <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
-            <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-3">Exportar Reporte Completo</h3>
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-3">
+              Exportar Reporte Completo
+            </h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-              Descarga el listado completo de averías con todos los detalles.
-              Los filtros seleccionados se aplicarán a la exportación.
+              Descarga el listado completo de averías con todos los detalles. Los filtros
+              seleccionados se aplicarán a la exportación.
             </p>
             <div className="flex items-center gap-3">
-              <Button variant="outline" icon={FileSpreadsheet} onClick={() => handleExport('excel')}>
+              <Button
+                variant="outline"
+                icon={FileSpreadsheet}
+                onClick={() => handleExport('excel')}
+              >
                 Exportar Excel
               </Button>
               <Button variant="outline" icon={Download} onClick={() => handleExport('pdf')}>
@@ -345,7 +452,10 @@ const ReporteAverias = () => {
         onClose={() => setEmailModal(false)}
         tipoReporte="averias"
         onSend={async (data) => {
-          const res = await reportesService.enviarPorEmail({ ...data, cliente_id: filters.cliente_id });
+          const res = await reportesService.enviarPorEmail({
+            ...data,
+            cliente_id: filters.cliente_id,
+          });
           if (res.success) enqueueSnackbar(res.message, { variant: 'success' });
           else throw new Error(res.message);
         }}

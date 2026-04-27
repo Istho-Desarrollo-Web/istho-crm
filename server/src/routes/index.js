@@ -1,6 +1,6 @@
 ﻿/**
  * ISTHO CRM - Router Principal
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  */
@@ -45,8 +45,8 @@ router.get('/', (req, res) => {
       vehiculos: '/vehiculos - Gestión de vehículos',
       cajaMenor: '/cajas-menores - Gestión de cajas menores',
       viajes: '/viajes - Registro de viajes',
-      movimientos: '/movimientos-caja-menor - Gastos e ingresos'
-    }
+      movimientos: '/movimientos-caja-menor - Gastos e ingresos',
+    },
   });
 });
 

@@ -20,7 +20,7 @@ const {
   Usuario,
   Auditoria,
   OperacionDocumento,
-  sequelize
+  sequelize,
 } = require('../models');
 const {
   success,
@@ -28,7 +28,7 @@ const {
   paginated,
   error: errorResponse,
   notFound,
-  serverError
+  serverError,
 } = require('../utils/responses');
 const { parsePaginacion, getClientIP } = require('../utils/helpers');
 const excelService = require('../services/excelService');
@@ -62,7 +62,7 @@ const listarEntradas = async (req, res) => {
       where[Op.or] = [
         { numero_operacion: { [Op.like]: `%${search}%` } },
         { documento_wms: { [Op.like]: `%${search}%` } },
-        { '$cliente.razon_social$': { [Op.like]: `%${search}%` } }
+        { '$cliente.razon_social$': { [Op.like]: `%${search}%` } },
       ];
     }
 
@@ -79,20 +79,32 @@ const listarEntradas = async (req, res) => {
     });
 
     // Luego traer los datos completos de esos IDs
-    const ids = idRows.map(r => r.id);
+    const ids = idRows.map((r) => r.id);
     let rows = [];
     if (ids.length > 0) {
       rows = await Operacion.findAll({
         where: { id: { [Op.in]: ids } },
         include: [
           { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] },
-          { model: OperacionDetalle, as: 'detalles', attributes: ['id', 'producto', 'sku', 'cantidad', 'unidad_medida', 'cantidad_averia', 'verificado'] }
+          {
+            model: OperacionDetalle,
+            as: 'detalles',
+            attributes: [
+              'id',
+              'producto',
+              'sku',
+              'cantidad',
+              'unidad_medida',
+              'cantidad_averia',
+              'verificado',
+            ],
+          },
         ],
         order: [['created_at', 'DESC']],
       });
     }
 
-    const entradas = rows.map(op => ({
+    const entradas = rows.map((op) => ({
       id: op.id,
       documento: op.numero_operacion,
       documento_wms: op.documento_wms || null,
@@ -102,7 +114,10 @@ const listarEntradas = async (req, res) => {
       fecha_ingreso: op.fecha_operacion || op.created_at,
       estado: op.estado,
       lineas: op.detalles?.length || op.total_referencias || 0,
-      lineas_verificadas: Math.min((op.detalles || []).filter(d => d.verificado).length, op.detalles?.length || 0),
+      lineas_verificadas: Math.min(
+        (op.detalles || []).filter((d) => d.verificado).length,
+        op.detalles?.length || 0
+      ),
     }));
 
     return paginated(res, entradas, { total: count, page, limit });
@@ -126,20 +141,39 @@ const obtenerEntradaPorId = async (req, res) => {
         {
           model: Cliente,
           as: 'cliente',
-          attributes: ['id', 'razon_social']
+          attributes: ['id', 'razon_social'],
         },
         {
           model: OperacionDetalle,
           as: 'detalles',
-          attributes: ['id', 'producto', 'sku', 'cantidad', 'unidad_medida', 'cantidad_averia', 'lote', 'fecha_vencimiento', 'verificado', 'numero_caja', 'deleted_at'],
-          paranoid: false // Incluir líneas eliminadas para permitir restauración
+          attributes: [
+            'id',
+            'producto',
+            'sku',
+            'cantidad',
+            'unidad_medida',
+            'cantidad_averia',
+            'lote',
+            'fecha_vencimiento',
+            'verificado',
+            'numero_caja',
+            'deleted_at',
+          ],
+          paranoid: false, // Incluir líneas eliminadas para permitir restauración
         },
         {
           model: OperacionDocumento,
           as: 'documentos',
-          attributes: ['id', 'archivo_nombre', 'archivo_url', 'archivo_tipo', 'archivo_tamanio', 'created_at']
-        }
-      ]
+          attributes: [
+            'id',
+            'archivo_nombre',
+            'archivo_url',
+            'archivo_tipo',
+            'archivo_tamanio',
+            'created_at',
+          ],
+        },
+      ],
     });
 
     if (!operacion) {
@@ -154,7 +188,7 @@ const obtenerEntradaPorId = async (req, res) => {
       tipo_documento: 'Recepción',
       fecha_ingreso: operacion.fecha_operacion || operacion.created_at,
       estado: operacion.estado,
-      lineas: (operacion.detalles || []).map(d => ({
+      lineas: (operacion.detalles || []).map((d) => ({
         id: d.id,
         sku: d.sku || '',
         producto: d.producto,
@@ -176,14 +210,14 @@ const obtenerEntradaPorId = async (req, res) => {
         destino: operacion.destino || '',
         observaciones: operacion.observaciones || '',
       },
-      evidencias: (operacion.documentos || []).map(doc => ({
+      evidencias: (operacion.documentos || []).map((doc) => ({
         id: doc.id,
         nombre: doc.archivo_nombre,
         url: doc.archivo_url,
         tipo: doc.archivo_tipo,
         tamanio: doc.archivo_tamanio,
-        fecha: doc.created_at
-      }))
+        fecha: doc.created_at,
+      })),
     };
 
     return success(res, data);
@@ -221,7 +255,7 @@ const listarSalidas = async (req, res) => {
       where[Op.or] = [
         { numero_operacion: { [Op.like]: `%${search}%` } },
         { documento_wms: { [Op.like]: `%${search}%` } },
-        { '$cliente.razon_social$': { [Op.like]: `%${search}%` } }
+        { '$cliente.razon_social$': { [Op.like]: `%${search}%` } },
       ];
     }
 
@@ -238,20 +272,32 @@ const listarSalidas = async (req, res) => {
     });
 
     // Luego traer los datos completos de esos IDs
-    const ids = idRows.map(r => r.id);
+    const ids = idRows.map((r) => r.id);
     let rows = [];
     if (ids.length > 0) {
       rows = await Operacion.findAll({
         where: { id: { [Op.in]: ids } },
         include: [
           { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] },
-          { model: OperacionDetalle, as: 'detalles', attributes: ['id', 'producto', 'sku', 'cantidad', 'unidad_medida', 'cantidad_averia', 'verificado'] }
+          {
+            model: OperacionDetalle,
+            as: 'detalles',
+            attributes: [
+              'id',
+              'producto',
+              'sku',
+              'cantidad',
+              'unidad_medida',
+              'cantidad_averia',
+              'verificado',
+            ],
+          },
         ],
         order: [['created_at', 'DESC']],
       });
     }
 
-    const salidas = rows.map(op => ({
+    const salidas = rows.map((op) => ({
       id: op.id,
       documento: op.numero_operacion,
       documento_wms: op.documento_wms || null,
@@ -261,7 +307,10 @@ const listarSalidas = async (req, res) => {
       fecha_salida: op.fecha_operacion || op.created_at,
       estado: op.estado,
       lineas: op.detalles?.length || op.total_referencias || 0,
-      lineas_verificadas: Math.min((op.detalles || []).filter(d => d.verificado).length, op.detalles?.length || 0),
+      lineas_verificadas: Math.min(
+        (op.detalles || []).filter((d) => d.verificado).length,
+        op.detalles?.length || 0
+      ),
     }));
 
     return paginated(res, salidas, { total: count, page, limit });
@@ -285,20 +334,39 @@ const obtenerSalidaPorId = async (req, res) => {
         {
           model: Cliente,
           as: 'cliente',
-          attributes: ['id', 'razon_social']
+          attributes: ['id', 'razon_social'],
         },
         {
           model: OperacionDetalle,
           as: 'detalles',
-          attributes: ['id', 'producto', 'sku', 'cantidad', 'unidad_medida', 'cantidad_averia', 'lote', 'fecha_vencimiento', 'verificado', 'numero_caja', 'deleted_at'],
-          paranoid: false // Incluir líneas eliminadas para permitir restauración
+          attributes: [
+            'id',
+            'producto',
+            'sku',
+            'cantidad',
+            'unidad_medida',
+            'cantidad_averia',
+            'lote',
+            'fecha_vencimiento',
+            'verificado',
+            'numero_caja',
+            'deleted_at',
+          ],
+          paranoid: false, // Incluir líneas eliminadas para permitir restauración
         },
         {
           model: OperacionDocumento,
           as: 'documentos',
-          attributes: ['id', 'archivo_nombre', 'archivo_url', 'archivo_tipo', 'archivo_tamanio', 'created_at']
-        }
-      ]
+          attributes: [
+            'id',
+            'archivo_nombre',
+            'archivo_url',
+            'archivo_tipo',
+            'archivo_tamanio',
+            'created_at',
+          ],
+        },
+      ],
     });
 
     if (!operacion) {
@@ -313,7 +381,7 @@ const obtenerSalidaPorId = async (req, res) => {
       tipo_documento: 'Despacho',
       fecha_salida: operacion.fecha_operacion || operacion.created_at,
       estado: operacion.estado,
-      lineas: (operacion.detalles || []).map(d => ({
+      lineas: (operacion.detalles || []).map((d) => ({
         id: d.id,
         sku: d.sku || '',
         producto: d.producto,
@@ -335,14 +403,14 @@ const obtenerSalidaPorId = async (req, res) => {
         destino: operacion.destino || '',
         observaciones: operacion.observaciones || '',
       },
-      evidencias: (operacion.documentos || []).map(doc => ({
+      evidencias: (operacion.documentos || []).map((doc) => ({
         id: doc.id,
         nombre: doc.archivo_nombre,
         url: doc.archivo_url,
         tipo: doc.archivo_tipo,
         tamanio: doc.archivo_tamanio,
-        fecha: doc.created_at
-      }))
+        fecha: doc.created_at,
+      })),
     };
 
     return success(res, data);
@@ -380,7 +448,7 @@ const listarKardex = async (req, res) => {
         { numero_operacion: { [Op.like]: `%${search}%` } },
         { documento_wms: { [Op.like]: `%${search}%` } },
         { motivo_kardex: { [Op.like]: `%${search}%` } },
-        { '$cliente.razon_social$': { [Op.like]: `%${search}%` } }
+        { '$cliente.razon_social$': { [Op.like]: `%${search}%` } },
       ];
     }
 
@@ -395,20 +463,32 @@ const listarKardex = async (req, res) => {
       distinct: true,
     });
 
-    const ids = idRows.map(r => r.id);
+    const ids = idRows.map((r) => r.id);
     let rows = [];
     if (ids.length > 0) {
       rows = await Operacion.findAll({
         where: { id: { [Op.in]: ids } },
         include: [
           { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] },
-          { model: OperacionDetalle, as: 'detalles', attributes: ['id', 'producto', 'sku', 'cantidad', 'unidad_medida', 'cantidad_averia', 'verificado'] }
+          {
+            model: OperacionDetalle,
+            as: 'detalles',
+            attributes: [
+              'id',
+              'producto',
+              'sku',
+              'cantidad',
+              'unidad_medida',
+              'cantidad_averia',
+              'verificado',
+            ],
+          },
         ],
         order: [['created_at', 'DESC']],
       });
     }
 
-    const kardex = rows.map(op => ({
+    const kardex = rows.map((op) => ({
       id: op.id,
       documento: op.numero_operacion,
       documento_wms: op.documento_wms || null,
@@ -419,7 +499,10 @@ const listarKardex = async (req, res) => {
       fecha_ingreso: op.fecha_operacion || op.created_at,
       estado: op.estado,
       lineas: op.detalles?.length || op.total_referencias || 0,
-      lineas_verificadas: Math.min((op.detalles || []).filter(d => d.verificado).length, op.detalles?.length || 0),
+      lineas_verificadas: Math.min(
+        (op.detalles || []).filter((d) => d.verificado).length,
+        op.detalles?.length || 0
+      ),
     }));
 
     return paginated(res, kardex, { total: count, page, limit });
@@ -443,20 +526,40 @@ const obtenerKardexPorId = async (req, res) => {
         {
           model: Cliente,
           as: 'cliente',
-          attributes: ['id', 'razon_social']
+          attributes: ['id', 'razon_social'],
         },
         {
           model: OperacionDetalle,
           as: 'detalles',
-          attributes: ['id', 'producto', 'sku', 'cantidad', 'unidad_medida', 'cantidad_averia', 'lote', 'fecha_vencimiento', 'verificado', 'numero_caja', 'documento_asociado', 'deleted_at'],
-          paranoid: false
+          attributes: [
+            'id',
+            'producto',
+            'sku',
+            'cantidad',
+            'unidad_medida',
+            'cantidad_averia',
+            'lote',
+            'fecha_vencimiento',
+            'verificado',
+            'numero_caja',
+            'documento_asociado',
+            'deleted_at',
+          ],
+          paranoid: false,
         },
         {
           model: OperacionDocumento,
           as: 'documentos',
-          attributes: ['id', 'archivo_nombre', 'archivo_url', 'archivo_tipo', 'archivo_tamanio', 'created_at']
-        }
-      ]
+          attributes: [
+            'id',
+            'archivo_nombre',
+            'archivo_url',
+            'archivo_tipo',
+            'archivo_tamanio',
+            'created_at',
+          ],
+        },
+      ],
     });
 
     if (!operacion) {
@@ -473,7 +576,7 @@ const obtenerKardexPorId = async (req, res) => {
       motivo: operacion.motivo_kardex || '',
       fecha_ingreso: operacion.fecha_operacion || operacion.created_at,
       estado: operacion.estado,
-      lineas: (operacion.detalles || []).map(d => ({
+      lineas: (operacion.detalles || []).map((d) => ({
         id: d.id,
         sku: d.sku || '',
         producto: d.producto,
@@ -496,14 +599,14 @@ const obtenerKardexPorId = async (req, res) => {
         destino: operacion.destino || '',
         observaciones: operacion.observaciones || '',
       },
-      evidencias: (operacion.documentos || []).map(doc => ({
+      evidencias: (operacion.documentos || []).map((doc) => ({
         id: doc.id,
         nombre: doc.archivo_nombre,
         url: doc.archivo_url,
         tipo: doc.archivo_tipo,
         tamanio: doc.archivo_tamanio,
-        fecha: doc.created_at
-      }))
+        fecha: doc.created_at,
+      })),
     };
 
     return success(res, data);
@@ -527,7 +630,7 @@ const verificarLinea = async (req, res) => {
     const { cantidad_averia, tipo_averia, observaciones_averia, verificado } = req.body;
 
     const detalle = await OperacionDetalle.findOne({
-      where: { id: lineaId, operacion_id: id }
+      where: { id: lineaId, operacion_id: id },
     });
 
     if (!detalle) {
@@ -556,7 +659,7 @@ const verificarLinea = async (req, res) => {
       usuario_id: req.user?.id,
       usuario_nombre: req.user?.nombre_completo,
       descripcion: `Línea actualizada: ${detalle.producto}`,
-      ip_address: getClientIP(req)
+      ip_address: getClientIP(req),
     });
 
     return successMessage(res, 'Línea actualizada correctamente');
@@ -575,7 +678,7 @@ const eliminarLinea = async (req, res) => {
     const { id, lineaId } = req.params;
 
     const detalle = await OperacionDetalle.findOne({
-      where: { id: lineaId, operacion_id: id }
+      where: { id: lineaId, operacion_id: id },
     });
 
     if (!detalle) {
@@ -597,7 +700,7 @@ const eliminarLinea = async (req, res) => {
       usuario_id: req.user?.id,
       usuario_nombre: req.user?.nombre_completo,
       descripcion: `Línea eliminada: ${productoNombre}`,
-      ip_address: getClientIP(req)
+      ip_address: getClientIP(req),
     });
 
     return successMessage(res, 'Línea eliminada correctamente');
@@ -617,7 +720,7 @@ const restaurarLinea = async (req, res) => {
 
     const detalle = await OperacionDetalle.findOne({
       where: { id: lineaId, operacion_id: id },
-      paranoid: false
+      paranoid: false,
     });
 
     if (!detalle) {
@@ -633,7 +736,7 @@ const restaurarLinea = async (req, res) => {
       usuario_id: req.user?.id,
       usuario_nombre: req.user?.nombre_completo,
       descripcion: `Línea restaurada: ${detalle.producto}`,
-      ip_address: getClientIP(req)
+      ip_address: getClientIP(req),
     });
 
     return successMessage(res, 'Línea restaurada correctamente');
@@ -678,7 +781,7 @@ const guardarDatosLogisticos = async (req, res) => {
       usuario_id: req.user?.id,
       usuario_nombre: req.user?.nombre_completo,
       descripcion: `Datos logísticos actualizados para ${operacion.numero_operacion}`,
-      ip_address: getClientIP(req)
+      ip_address: getClientIP(req),
     });
 
     return successMessage(res, 'Datos logísticos guardados correctamente');
@@ -711,8 +814,10 @@ const subirEvidencias = async (req, res) => {
     }
 
     // Validar límites: max 10 fotos/ZIP + 5 PDFs
-    const imagenes = archivos.filter(f => f.mimetype.startsWith('image/') || /\.(zip|rar)$/i.test(f.originalname));
-    const pdfs = archivos.filter(f => f.mimetype === 'application/pdf');
+    const imagenes = archivos.filter(
+      (f) => f.mimetype.startsWith('image/') || /\.(zip|rar)$/i.test(f.originalname)
+    );
+    const pdfs = archivos.filter((f) => f.mimetype === 'application/pdf');
     if (imagenes.length > 10) {
       return errorResponse(res, 'Máximo 10 fotos/archivos comprimidos permitidos', 400);
     }
@@ -738,7 +843,7 @@ const subirEvidencias = async (req, res) => {
           archivo_tipo: resultado.mimetype,
           archivo_tamanio: resultado.size || resultado.bytes,
           cloudinary_public_id: resultado.public_id,
-          subido_por: req.user?.id
+          subido_por: req.user?.id,
         });
       }
     }
@@ -749,7 +854,11 @@ const subirEvidencias = async (req, res) => {
 
     // Limpiar archivos temporales de multer
     const fs = require('fs');
-    archivos.forEach(f => { try { fs.unlinkSync(f.path); } catch (_) {} });
+    archivos.forEach((f) => {
+      try {
+        fs.unlinkSync(f.path);
+      } catch (_) {}
+    });
 
     await Auditoria.registrar({
       tabla: 'operaciones',
@@ -758,11 +867,16 @@ const subirEvidencias = async (req, res) => {
       usuario_id: req.user?.id,
       usuario_nombre: req.user?.nombre_completo,
       descripcion: `${documentos.length} evidencia(s) subida(s) para ${operacion.numero_operacion}`,
-      ip_address: getClientIP(req)
+      ip_address: getClientIP(req),
     });
 
     return successMessage(res, `${documentos.length} evidencia(s) subida(s) correctamente`, {
-      archivos: documentos.map(d => ({ id: d.id, nombre: d.archivo_nombre, url: d.archivo_url, tipo: d.archivo_tipo }))
+      archivos: documentos.map((d) => ({
+        id: d.id,
+        nombre: d.archivo_nombre,
+        url: d.archivo_url,
+        tipo: d.archivo_tipo,
+      })),
     });
   } catch (err) {
     logger.error('[AUDITORIAS] Error al subir evidencias:', err);
@@ -779,7 +893,7 @@ const eliminarEvidencia = async (req, res) => {
     const { id, evidenciaId } = req.params;
 
     const documento = await OperacionDocumento.findOne({
-      where: { id: evidenciaId, operacion_id: id }
+      where: { id: evidenciaId, operacion_id: id },
     });
 
     if (!documento) {
@@ -812,7 +926,7 @@ const eliminarEvidencia = async (req, res) => {
       usuario_id: req.user?.id,
       usuario_nombre: req.user?.nombre_completo,
       descripcion: `Evidencia eliminada: ${documento.archivo_nombre}`,
-      ip_address: getClientIP(req)
+      ip_address: getClientIP(req),
     });
 
     return successMessage(res, 'Evidencia eliminada correctamente');
@@ -839,7 +953,7 @@ const cerrarAuditoria = async (req, res) => {
     const { enviar_correo, correos_destino, plantilla_id } = req.body;
 
     const operacion = await Operacion.findByPk(id, {
-      include: [{ model: Cliente, as: 'cliente' }]
+      include: [{ model: Cliente, as: 'cliente' }],
     });
     if (!operacion) {
       return notFound(res, 'Operación no encontrada');
@@ -860,16 +974,16 @@ const cerrarAuditoria = async (req, res) => {
           cliente_id: operacion.cliente_id,
           recibe_notificaciones: true,
           activo: true,
-          email: { [Op.ne]: null }
-        }
+          email: { [Op.ne]: null },
+        },
       });
       // Filtrar según tipos_notificacion del contacto vs tipo de la operación
       const tipoOp = operacion.tipo; // 'ingreso' | 'salida' | 'kardex'
-      const contactosFiltrados = contactos.filter(c => {
+      const contactosFiltrados = contactos.filter((c) => {
         const tipos = c.tipos_notificacion || ['todas'];
         return tipos.includes('todas') || tipos.includes(tipoOp);
       });
-      correosEnvio = contactosFiltrados.map(c => c.email).join(', ');
+      correosEnvio = contactosFiltrados.map((c) => c.email).join(', ');
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -880,7 +994,7 @@ const cerrarAuditoria = async (req, res) => {
       estado: 'cerrado',
       fecha_cierre: new Date(),
       cerrado_por: req.user?.id,
-      correos_destino: correosEnvio || null
+      correos_destino: correosEnvio || null,
     });
 
     await Auditoria.registrar({
@@ -890,13 +1004,17 @@ const cerrarAuditoria = async (req, res) => {
       usuario_id: req.user?.id,
       usuario_nombre: req.user?.nombre_completo,
       descripcion: `Auditoría cerrada: ${operacion.numero_operacion}`,
-      ip_address: getClientIP(req)
+      ip_address: getClientIP(req),
     });
 
     // Notificar in-app a usuarios del cliente + admins
-    notificacionService.notificarOperacionCerrada(operacion, req.user?.nombre_completo || 'Sistema').catch(err => {
-      logger.error('[AUDITORIAS] Error al enviar notificación de cierre:', { message: err.message });
-    });
+    notificacionService
+      .notificarOperacionCerrada(operacion, req.user?.nombre_completo || 'Sistema')
+      .catch((err) => {
+        logger.error('[AUDITORIAS] Error al enviar notificación de cierre:', {
+          message: err.message,
+        });
+      });
 
     // ════════════════════════════════════════════════════════════════════
     // ENVIAR CORREO ELECTRÓNICO
@@ -914,20 +1032,31 @@ const cerrarAuditoria = async (req, res) => {
               { model: OperacionDetalle, as: 'detalles' },
               { model: OperacionDocumento, as: 'documentos' },
               { model: OperacionAveria, as: 'averias' },
-              { model: Usuario, as: 'cerrador', attributes: ['id', 'nombre_completo'] }
-            ]
+              { model: Usuario, as: 'cerrador', attributes: ['id', 'nombre_completo'] },
+            ],
           });
-          const resultado = await emailService.enviarCierreOperacion(operacion, correosEnvio, plantilla_id || null);
+          const resultado = await emailService.enviarCierreOperacion(
+            operacion,
+            correosEnvio,
+            plantilla_id || null
+          );
           await operacion.update({
             correo_enviado: resultado.success,
-            fecha_correo_enviado: resultado.success ? new Date() : null
+            fecha_correo_enviado: resultado.success ? new Date() : null,
           });
           logger.info('[AUDITORIAS] Correo de cierre enviado en background:', {
-            operacion_id: opId, destinatarios: correosEnvio, success: resultado.success
+            operacion_id: opId,
+            destinatarios: correosEnvio,
+            success: resultado.success,
           });
         } catch (emailErr) {
-          logger.error('[AUDITORIAS] Error al enviar correo en background:', { operacion_id: opId, message: emailErr.message });
-          await Operacion.update({ correo_enviado: false }, { where: { id: opId } }).catch(() => {});
+          logger.error('[AUDITORIAS] Error al enviar correo en background:', {
+            operacion_id: opId,
+            message: emailErr.message,
+          });
+          await Operacion.update({ correo_enviado: false }, { where: { id: opId } }).catch(
+            () => {}
+          );
         }
       });
     }
@@ -955,7 +1084,7 @@ const obtenerDestinatarios = async (req, res) => {
   try {
     const { id } = req.params;
     const operacion = await Operacion.findByPk(id, {
-      attributes: ['id', 'cliente_id', 'tipo']
+      attributes: ['id', 'cliente_id', 'tipo'],
     });
     if (!operacion) return notFound(res, 'Auditoría no encontrada');
 
@@ -964,18 +1093,18 @@ const obtenerDestinatarios = async (req, res) => {
         cliente_id: operacion.cliente_id,
         recibe_notificaciones: true,
         activo: true,
-        email: { [Op.ne]: null }
+        email: { [Op.ne]: null },
       },
-      attributes: ['id', 'nombre', 'cargo', 'email', 'tipos_notificacion']
+      attributes: ['id', 'nombre', 'cargo', 'email', 'tipos_notificacion'],
     });
 
     const tipoOp = operacion.tipo; // 'ingreso' | 'salida' | 'kardex'
     const destinatarios = contactos
-      .filter(c => {
+      .filter((c) => {
         const tipos = c.tipos_notificacion || ['todas'];
         return tipos.includes('todas') || tipos.includes(tipoOp);
       })
-      .map(c => ({ nombre: c.nombre, cargo: c.cargo, email: c.email }));
+      .map((c) => ({ nombre: c.nombre, cargo: c.cargo, email: c.email }));
 
     return success(res, destinatarios);
   } catch (err) {
@@ -1005,7 +1134,7 @@ const estadisticas = async (req, res) => {
       attributes: ['tipo', 'estado', [sequelize.fn('COUNT', sequelize.col('id')), 'total']],
       where,
       group: ['tipo', 'estado'],
-      raw: true
+      raw: true,
     });
 
     // Transformar resultado plano en la estructura que espera el frontend
@@ -1033,7 +1162,7 @@ const estadisticas = async (req, res) => {
         pendientes: resultado.kardex.pendiente || 0,
         en_proceso: resultado.kardex.en_proceso || 0,
         cerradas: resultado.kardex.cerrado || 0,
-      }
+      },
     });
   } catch (err) {
     logger.error('[AUDITORIAS] Error al obtener estadísticas:', err);
@@ -1059,7 +1188,7 @@ const recientes = async (req, res) => {
       where,
       include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
       order: [['created_at', 'DESC']],
-      limit: limite * 3 // Máximo posible si hay suficientes de cada tipo
+      limit: limite * 3, // Máximo posible si hay suficientes de cada tipo
     });
 
     // Separar por tipo, tomando hasta `limite` de cada uno
@@ -1076,7 +1205,8 @@ const recientes = async (req, res) => {
       id: op.id,
       documento: op.numero_operacion,
       cliente: op.cliente?.razon_social || 'Sin cliente',
-      tipo_documento: op.tipo === 'ingreso' ? 'Recepción' : op.tipo === 'kardex' ? 'Kardex' : 'Despacho',
+      tipo_documento:
+        op.tipo === 'ingreso' ? 'Recepción' : op.tipo === 'kardex' ? 'Kardex' : 'Despacho',
       tipo_documento_wms: op.tipo_documento_wms || null,
       fecha: op.fecha_operacion || op.created_at,
       estado: op.estado,
@@ -1119,13 +1249,16 @@ const exportarExcel = async (req, res) => {
     const operaciones = await Operacion.findAll({
       where,
       include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
-      order: [['created_at', 'DESC']]
+      order: [['created_at', 'DESC']],
     });
 
     const buffer = await excelService.exportarOperaciones(operaciones);
     const filename = `auditorias_${tipo}_${new Date().toISOString().split('T')[0]}.xlsx`;
 
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buffer);
   } catch (error) {

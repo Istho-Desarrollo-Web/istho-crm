@@ -1,7 +1,7 @@
 /**
  * ISTHO CRM - MetricCard Component
  * Tarjeta de métricas/KPIs reutilizable
- * 
+ *
  * @author Coordinación TI ISTHO
  * @date Enero 2026
  */
@@ -30,12 +30,8 @@ const MetricCard = ({
       <div className="flex items-start justify-between">
         {/* Content */}
         <div className="flex-1">
-          <p className="text-sm font-medium text-slate-500 mb-1">
-            {title}
-          </p>
-          <p className="text-3xl font-bold text-slate-800">
-            {value}
-          </p>
+          <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
+          <p className="text-3xl font-bold text-slate-800">{value}</p>
           {change && (
             <p
               className={`text-sm mt-2 font-medium ${

@@ -30,7 +30,11 @@ import {
 import { KpiCard, Button } from '../../components/common';
 import { formatDate } from '../../utils/formatDate';
 import { getGreeting } from '../../utils/greeting';
-import { cajasMenoresService, movimientosService, vehiculosService } from '../../api/viajes.service';
+import {
+  cajasMenoresService,
+  movimientosService,
+  vehiculosService,
+} from '../../api/viajes.service';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import useNotification from '../../hooks/useNotification';
@@ -115,7 +119,9 @@ const QuickAction = ({ icon: Icon, label, description, color, onClick }) => (
     onClick={onClick}
     className="flex items-center gap-4 p-4 bg-white dark:bg-centhrix-card rounded-xl border border-gray-100 dark:border-slate-700 hover:border-transparent hover:shadow-md dark:hover:shadow-lg transition-all group text-left w-full"
   >
-    <div className={`p-3 rounded-xl bg-${color}-100 dark:bg-${color}-900/30 group-hover:scale-110 transition-transform`}>
+    <div
+      className={`p-3 rounded-xl bg-${color}-100 dark:bg-${color}-900/30 group-hover:scale-110 transition-transform`}
+    >
       <Icon className={`w-6 h-6 text-${color}-600 dark:text-${color}-400`} />
     </div>
     <div className="flex-1 min-w-0">
@@ -234,7 +240,9 @@ const DashboardFinanciera = () => {
       const res = await cajasMenoresService.getStats();
       setStats(res?.data || res || {});
       setLastUpdated(new Date());
-    } catch { /* ignorado intencionalmente */ }
+    } catch {
+      /* ignorado intencionalmente */
+    }
   }, []);
 
   useEffect(() => {
@@ -247,7 +255,9 @@ const DashboardFinanciera = () => {
         const res = await movimientosService.getAll({ aprobado: 'pendiente', limit: 20 });
         const data = res?.data?.rows || res?.data || [];
         setPendientes(Array.isArray(data) ? data : []);
-      } catch { /* ignorado intencionalmente */ }
+      } catch {
+        /* ignorado intencionalmente */
+      }
     };
     const handleMovimientoActualizado = (data) => {
       // Si fue aprobado o rechazado, sacar de pendientes y actualizar saldo en caja
@@ -282,16 +292,16 @@ const DashboardFinanciera = () => {
         const res = await cajasMenoresService.getAll({ estado: 'abierta', limit: 10 });
         const data = res?.data?.rows || res?.data || [];
         setCajasAbiertas(Array.isArray(data) ? data : []);
-      } catch { /* ignorado intencionalmente */ }
+      } catch {
+        /* ignorado intencionalmente */
+      }
       refetchStats();
     };
     const handleCajaActualizada = (data) => {
       if (data.estado === 'cerrada') {
         setCajasAbiertas((prev) => prev.filter((c) => c.id !== data.id));
       } else {
-        setCajasAbiertas((prev) =>
-          prev.map((c) => (c.id === data.id ? { ...c, ...data } : c))
-        );
+        setCajasAbiertas((prev) => prev.map((c) => (c.id === data.id ? { ...c, ...data } : c)));
       }
       refetchStats();
     };
@@ -380,9 +390,7 @@ const DashboardFinanciera = () => {
   };
 
   const toggleSelect = (id) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
+    setSelected((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
   };
 
   const toggleSelectAll = () => {
@@ -409,7 +417,6 @@ const DashboardFinanciera = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
-
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* PAGE HEADER */}
         {/* ════════════════════════════════════════════════════════════════ */}
@@ -441,8 +448,12 @@ const DashboardFinanciera = () => {
               ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}
             `}
           >
-            <RefreshCw className={`w-4 h-4 text-slate-500 dark:text-slate-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline text-sm text-slate-600 dark:text-slate-300">Actualizar</span>
+            <RefreshCw
+              className={`w-4 h-4 text-slate-500 dark:text-slate-400 ${isRefreshing ? 'animate-spin' : ''}`}
+            />
+            <span className="hidden sm:inline text-sm text-slate-600 dark:text-slate-300">
+              Actualizar
+            </span>
           </button>
         </div>
 
@@ -604,7 +615,10 @@ const DashboardFinanciera = () => {
                           <div className="flex items-center gap-2">
                             <Users className="h-4 w-4 text-slate-400" />
                             <span className="text-sm text-slate-700 dark:text-slate-200 font-medium truncate max-w-[140px]">
-                              {mov.usuario?.nombre_completo || mov.CajaMenor?.asignado_nombre || mov.usuario_nombre || '-'}
+                              {mov.usuario?.nombre_completo ||
+                                mov.CajaMenor?.asignado_nombre ||
+                                mov.usuario_nombre ||
+                                '-'}
                             </span>
                           </div>
                         </td>
@@ -614,7 +628,10 @@ const DashboardFinanciera = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
-                          {mov.cajaMenor?.numero || mov.CajaMenor?.numero || mov.caja_menor_numero || '-'}
+                          {mov.cajaMenor?.numero ||
+                            mov.CajaMenor?.numero ||
+                            mov.caja_menor_numero ||
+                            '-'}
                         </td>
                         <td className="px-4 py-3 text-right text-sm font-semibold text-slate-800 dark:text-white">
                           {formatCOP(mov.valor)}
@@ -692,14 +709,19 @@ const DashboardFinanciera = () => {
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
                           <Users className="h-3 w-3" />
-                          {caja.asignado_nombre || caja.asignado?.nombre_completo || caja.Asignado?.nombre_completo || '-'}
+                          {caja.asignado_nombre ||
+                            caja.asignado?.nombre_completo ||
+                            caja.Asignado?.nombre_completo ||
+                            '-'}
                         </p>
                         <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
                           {formatFecha(caja.fecha_apertura || caja.createdAt)}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-sm font-bold ${Number(caja.saldo_actual) < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-white'}`}>
+                        <span
+                          className={`text-sm font-bold ${Number(caja.saldo_actual) < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-white'}`}
+                        >
                           {formatCOP(caja.saldo_actual)}
                         </span>
                         <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-600" />
@@ -729,17 +751,15 @@ const DashboardFinanciera = () => {
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
                   {alertas.map((alerta, idx) => (
-                    <div
-                      key={alerta.id || idx}
-                      className="flex items-center justify-between p-4"
-                    >
+                    <div key={alerta.id || idx} className="flex items-center justify-between p-4">
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-slate-800 dark:text-white truncate">
                           {alerta.placa || alerta.vehiculo}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                           {alerta.tipo === 'soat' ? 'SOAT' : 'Tecnomecanica'}
-                          {alerta.fecha_vencimiento && ` - ${formatFecha(alerta.fecha_vencimiento)}`}
+                          {alerta.fecha_vencimiento &&
+                            ` - ${formatFecha(alerta.fecha_vencimiento)}`}
                         </p>
                       </div>
                       <span

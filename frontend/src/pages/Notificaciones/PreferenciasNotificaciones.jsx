@@ -1,8 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Bell, ArrowLeft, Volume2, VolumeX,
-  Truck, Package, Users, Car, FileText, AlertTriangle, Save, Loader2
+  Bell,
+  ArrowLeft,
+  Volume2,
+  VolumeX,
+  Truck,
+  Package,
+  Users,
+  Car,
+  FileText,
+  AlertTriangle,
+  Save,
+  Loader2,
 } from 'lucide-react';
 import notificacionesService from '@api/notificacionesService';
 import { useAuth } from '@context/AuthContext';
@@ -122,10 +132,12 @@ export default function PreferenciasNotificaciones() {
     }
   }, [showError]);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
 
   const togglePref = (key) => {
-    setPrefs(prev => ({ ...prev, [key]: !prev[key] }));
+    setPrefs((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const guardar = async () => {
@@ -142,14 +154,11 @@ export default function PreferenciasNotificaciones() {
     }
   };
 
-  const activasCount = prefs
-    ? CATEGORIAS.filter(c => prefs[c.key]).length
-    : 0;
+  const activasCount = prefs ? CATEGORIAS.filter((c) => prefs[c.key]).length : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-centhrix-bg">
       <div className="max-w-2xl mx-auto px-4 py-8">
-
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
@@ -183,12 +192,12 @@ export default function PreferenciasNotificaciones() {
           </div>
         ) : (
           <div className="space-y-4">
-
             {/* Nota urgente */}
             <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
               <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
               <p className="text-xs text-amber-700 dark:text-amber-300">
-                Las notificaciones de prioridad <strong>urgente</strong> se envían siempre, independientemente de estas preferencias.
+                Las notificaciones de prioridad <strong>urgente</strong> se envían siempre,
+                independientemente de estas preferencias.
               </p>
             </div>
 
@@ -196,7 +205,9 @@ export default function PreferenciasNotificaciones() {
             <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
               {CATEGORIAS.map(({ key, titulo, descripcion, icono: Icono, color, bg }) => (
                 <div key={key} className="flex items-center gap-4 px-5 py-4">
-                  <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
+                  <div
+                    className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center shrink-0`}
+                  >
                     <Icono className={`w-4 h-4 ${color}`} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -216,13 +227,16 @@ export default function PreferenciasNotificaciones() {
             <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-4 px-5 py-4">
                 <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
-                  {prefs.notificaciones_sonido
-                    ? <Volume2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                    : <VolumeX className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                  }
+                  {prefs.notificaciones_sonido ? (
+                    <Volume2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  ) : (
+                    <VolumeX className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">Sonido de notificaciones</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    Sonido de notificaciones
+                  </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     Reproduce un sonido al recibir nuevas notificaciones en tiempo real.
                   </p>
@@ -245,13 +259,17 @@ export default function PreferenciasNotificaciones() {
                 disabled={guardando}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-centhrix-accent hover:bg-centhrix-hover text-white text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {guardando
-                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</>
-                  : <><Save className="w-4 h-4" /> Guardar preferencias</>
-                }
+                {guardando ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" /> Guardar preferencias
+                  </>
+                )}
               </button>
             </div>
-
           </div>
         )}
       </div>

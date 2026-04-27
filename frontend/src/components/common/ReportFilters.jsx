@@ -15,7 +15,14 @@ import clientesService from '../../api/clientes.service';
 // ============================================
 // REPORT FILTERS
 // ============================================
-const ReportFilters = ({ filters, onChange, loading = false, showDateRange = true, showCliente = true, extraFilters }) => {
+const ReportFilters = ({
+  filters,
+  onChange,
+  loading = false,
+  showDateRange = true,
+  showCliente = true,
+  extraFilters,
+}) => {
   const { isCliente } = useAuth();
   const [clientes, setClientes] = useState([]);
   const [loadingClientes, setLoadingClientes] = useState(false);
@@ -31,7 +38,8 @@ const ReportFilters = ({ filters, onChange, loading = false, showDateRange = tru
   useEffect(() => {
     if (showCliente && !esPortal) {
       setLoadingClientes(true);
-      clientesService.getAll({ limit: 100, estado: 'activo' })
+      clientesService
+        .getAll({ limit: 100, estado: 'activo' })
         .then((res) => {
           const list = Array.isArray(res?.data) ? res.data : res?.data?.rows || [];
           setClientes(list);
@@ -42,7 +50,7 @@ const ReportFilters = ({ filters, onChange, loading = false, showDateRange = tru
   }, [showCliente, esPortal]);
 
   const handleLocalChange = (field, value) => {
-    setLocalFilters(prev => ({ ...prev, [field]: value }));
+    setLocalFilters((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleApply = () => {
@@ -146,10 +154,11 @@ const ReportFilters = ({ filters, onChange, loading = false, showDateRange = tru
                 : 'bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-centhrix-card'
             }`}
           >
-            {loading
-              ? <Loader2 className="w-4 h-4 animate-spin" />
-              : <Search className="w-4 h-4" />
-            }
+            {loading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Search className="w-4 h-4" />
+            )}
             {loading ? 'Cargando...' : 'Aplicar'}
           </button>
         </div>

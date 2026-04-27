@@ -8,14 +8,7 @@
  */
 
 import PropTypes from 'prop-types';
-import {
-  AlertTriangle,
-  FileWarning,
-  Package,
-  Clock,
-  ChevronRight,
-  Bell,
-} from 'lucide-react';
+import { AlertTriangle, FileWarning, Package, Clock, ChevronRight, Bell } from 'lucide-react';
 
 // Configuración de tipos de alerta
 const ALERT_CONFIG = {
@@ -70,13 +63,9 @@ const AlertItem = ({ alert, onClick }) => {
         <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
           {alert.title}
         </p>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          {alert.description}
-        </p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{alert.description}</p>
         {alert.date && (
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-            {alert.date}
-          </p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{alert.date}</p>
         )}
       </div>
 
@@ -144,11 +133,7 @@ const AlertWidget = ({
       ) : (
         <div className="space-y-3">
           {displayedAlerts.map((alert, idx) => (
-            <AlertItem
-              key={alert.id || idx}
-              alert={alert}
-              onClick={onAlertClick}
-            />
+            <AlertItem key={alert.id || idx} alert={alert} onClick={onAlertClick} />
           ))}
 
           {hasMore && (

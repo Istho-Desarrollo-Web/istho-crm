@@ -44,9 +44,7 @@ afterAll(async () => {
 // ─────────────────────────────────────────────
 describe('POST /auth/login', () => {
   test('devuelve 200 y token con credenciales válidas', async () => {
-    const res = await request(app)
-      .post(`${API}/auth/login`)
-      .send(CREDENCIALES_VALIDAS);
+    const res = await request(app).post(`${API}/auth/login`).send(CREDENCIALES_VALIDAS);
 
     // Puede devolver 200 con token o 200 con requiere_2fa / requiere_setup_2fa
     expect(res.status).toBe(200);
@@ -65,9 +63,7 @@ describe('POST /auth/login', () => {
   });
 
   test('devuelve 400 cuando falta el email', async () => {
-    const res = await request(app)
-      .post(`${API}/auth/login`)
-      .send({ password: 'cualquier_cosa' });
+    const res = await request(app).post(`${API}/auth/login`).send({ password: 'cualquier_cosa' });
 
     expect([400, 401, 422]).toContain(res.status);
     expect(res.body.success).toBe(false);
@@ -114,9 +110,7 @@ describe('GET /auth/me', () => {
 
   test('devuelve 200 con token válido', async () => {
     // Primero hacer login para obtener token
-    const loginRes = await request(app)
-      .post(`${API}/auth/login`)
-      .send(CREDENCIALES_VALIDAS);
+    const loginRes = await request(app).post(`${API}/auth/login`).send(CREDENCIALES_VALIDAS);
 
     // Si el usuario tiene 2FA activo, saltamos este test
     if (loginRes.body.data?.requiere_2fa || loginRes.body.data?.requiere_setup_2fa) {
@@ -126,9 +120,7 @@ describe('GET /auth/me', () => {
     const token = loginRes.body.data?.token;
     if (!token) return; // Usuario con 2FA — no se puede probar sin código TOTP
 
-    const meRes = await request(app)
-      .get(`${API}/auth/me`)
-      .set('Authorization', `Bearer ${token}`);
+    const meRes = await request(app).get(`${API}/auth/me`).set('Authorization', `Bearer ${token}`);
 
     expect(meRes.status).toBe(200);
     expect(meRes.body.success).toBe(true);
@@ -141,9 +133,7 @@ describe('GET /auth/me', () => {
 // ─────────────────────────────────────────────
 describe('POST /auth/refresh', () => {
   test('devuelve 401 sin refreshToken', async () => {
-    const res = await request(app)
-      .post(`${API}/auth/refresh`)
-      .send({});
+    const res = await request(app).post(`${API}/auth/refresh`).send({});
 
     expect(res.status).toBe(401);
     expect(res.body.success).toBe(false);
@@ -159,9 +149,7 @@ describe('POST /auth/refresh', () => {
   });
 
   test('devuelve 200 con refreshToken válido', async () => {
-    const loginRes = await request(app)
-      .post(`${API}/auth/login`)
-      .send(CREDENCIALES_VALIDAS);
+    const loginRes = await request(app).post(`${API}/auth/login`).send(CREDENCIALES_VALIDAS);
 
     if (loginRes.body.data?.requiere_2fa || loginRes.body.data?.requiere_setup_2fa) {
       return;
@@ -170,9 +158,7 @@ describe('POST /auth/refresh', () => {
     const refreshToken = loginRes.body.data?.refreshToken;
     if (!refreshToken) return;
 
-    const res = await request(app)
-      .post(`${API}/auth/refresh`)
-      .send({ refreshToken });
+    const res = await request(app).post(`${API}/auth/refresh`).send({ refreshToken });
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);

@@ -55,4 +55,10 @@ const limiterTotp = rateLimit({
   message: mensajeError(5),
 });
 
-module.exports = { limiterGeneral, limiterLogin, limiterForgotPassword, limiterExport, limiterTotp };
+module.exports = {
+  limiterGeneral,
+  limiterLogin,
+  limiterForgotPassword,
+  limiterExport,
+  limiterTotp,
+};

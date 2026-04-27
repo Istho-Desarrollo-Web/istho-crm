@@ -22,7 +22,7 @@ const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage, ariaLab
   if (loading) {
     return (
       <div className="overflow-x-auto">
-        <table className="w-full" aria-busy="true" aria-label={ariaLabel || "Cargando datos"}>
+        <table className="w-full" aria-busy="true" aria-label={ariaLabel || 'Cargando datos'}>
           <thead>
             <tr className="border-b border-gray-100 dark:border-slate-700">
               {columns.map((col, idx) => (
@@ -38,10 +38,7 @@ const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage, ariaLab
           </thead>
           <tbody>
             {[...Array(5)].map((_, rowIdx) => (
-              <tr
-                key={rowIdx}
-                className="border-b border-gray-50 dark:border-slate-700"
-              >
+              <tr key={rowIdx} className="border-b border-gray-50 dark:border-slate-700">
                 {columns.map((_, colIdx) => (
                   <td key={colIdx} className="py-4 px-4">
                     <div className="h-4 bg-gray-200 dark:bg-centhrix-surface rounded animate-pulse" />
@@ -91,12 +88,16 @@ const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage, ariaLab
             <tr
               key={row.id || rowIdx}
               onClick={() => onRowClick?.(row)}
-              onKeyDown={onRowClick ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onRowClick(row);
-                }
-              } : undefined}
+              onKeyDown={
+                onRowClick
+                  ? (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onRowClick(row);
+                      }
+                    }
+                  : undefined
+              }
               tabIndex={onRowClick ? 0 : undefined}
               className={`
                 border-b border-gray-50 dark:border-slate-700
@@ -122,7 +123,10 @@ const SimpleTable = ({ columns, data, onRowClick, loading, emptyMessage, ariaLab
                 <td className="sr-only">
                   <button
                     tabIndex={-1}
-                    onClick={(e) => { e.stopPropagation(); onRowClick(row); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRowClick(row);
+                    }}
                   >
                     Ver detalles
                   </button>
@@ -149,26 +153,14 @@ const renderCell = (row, col) => {
   }
 
   if (col.type === 'id') {
-    return (
-      <span className="font-medium text-orange-600 dark:text-orange-400">
-        {value}
-      </span>
-    );
+    return <span className="font-medium text-orange-600 dark:text-orange-400">{value}</span>;
   }
 
   if (col.type === 'currency') {
-    return (
-      <span className="font-medium text-slate-600 dark:text-slate-300">
-        {value}
-      </span>
-    );
+    return <span className="font-medium text-slate-600 dark:text-slate-300">{value}</span>;
   }
 
-  return (
-    <span className="text-slate-600 dark:text-slate-300">
-      {value}
-    </span>
-  );
+  return <span className="text-slate-600 dark:text-slate-300">{value}</span>;
 };
 
 // ======================================================
@@ -191,12 +183,14 @@ const DataTable = ({
   // Sin tabs → tabla simple
   if (!tabs || tabs.length === 0) {
     return (
-      <div className="
+      <div
+        className="
         bg-white dark:bg-centhrix-card
         rounded-2xl shadow-sm
         border border-gray-100 dark:border-slate-700
         overflow-hidden
-      ">
+      "
+      >
         <SimpleTable
           columns={columns}
           data={data}
@@ -219,18 +213,26 @@ const DataTable = ({
   const currentData = data[activeTab] || data;
 
   return (
-    <div className="
+    <div
+      className="
       bg-white dark:bg-centhrix-card
       rounded-2xl shadow-sm
       border border-gray-100 dark:border-slate-700
       overflow-hidden
-    ">
+    "
+    >
       {/* Tabs */}
-      <div role="tablist" aria-label="Secciones" className="flex border-b border-gray-100 dark:border-slate-700">
+      <div
+        role="tablist"
+        aria-label="Secciones"
+        className="flex border-b border-gray-100 dark:border-slate-700"
+      >
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            ref={(el) => { tabRefs.current[tab.id] = el; }}
+            ref={(el) => {
+              tabRefs.current[tab.id] = el;
+            }}
             role="tab"
             id={`tab-${tab.id}`}
             aria-selected={activeTab === tab.id}
@@ -238,7 +240,7 @@ const DataTable = ({
             tabIndex={activeTab === tab.id ? 0 : -1}
             onClick={() => handleTabChange(tab.id)}
             onKeyDown={(e) => {
-              const tabIds = tabs.map(t => t.id);
+              const tabIds = tabs.map((t) => t.id);
               const currentIdx = tabIds.indexOf(activeTab);
               if (e.key === 'ArrowRight') {
                 const next = tabIds[(currentIdx + 1) % tabIds.length];
@@ -250,9 +252,10 @@ const DataTable = ({
             }}
             className={`
               px-6 py-4 text-sm font-medium transition-colors relative
-              ${activeTab === tab.id
-                ? 'text-slate-900 dark:text-slate-100'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              ${
+                activeTab === tab.id
+                  ? 'text-slate-900 dark:text-slate-100'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
               }
             `}
           >
@@ -295,10 +298,7 @@ DataTable.propTypes = {
       count: PropTypes.number,
     })
   ),
-  columns: PropTypes.oneOfType([
-    PropTypes.array,
-    PropTypes.object,
-  ]).isRequired,
+  columns: PropTypes.oneOfType([PropTypes.array, PropTypes.object]).isRequired,
   data: PropTypes.oneOfType([PropTypes.array, PropTypes.object]).isRequired,
   defaultTab: PropTypes.string,
   onTabChange: PropTypes.func,

@@ -3,7 +3,7 @@
  * ISTHO CRM - Rutas de Notificaciones
  * ============================================================================
  * Endpoints para gestión de notificaciones.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  * @date Enero 2026

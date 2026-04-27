@@ -1,8 +1,8 @@
 /**
  * ISTHO CRM - Índice de Modelos
- * 
+ *
  * Inicializa todos los modelos Sequelize y define sus relaciones.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 2.0.0 - Agregado MovimientoInventario
  */
@@ -74,126 +74,126 @@ const WmsSyncLog = WmsSyncLogModel(sequelize);
 Cliente.hasMany(Contacto, {
   foreignKey: 'cliente_id',
   as: 'contactos',
-  onDelete: 'CASCADE'
+  onDelete: 'CASCADE',
 });
 Contacto.belongsTo(Cliente, {
   foreignKey: 'cliente_id',
-  as: 'cliente'
+  as: 'cliente',
 });
 
 // Cliente <-> Inventario (1:N)
 Cliente.hasMany(Inventario, {
   foreignKey: 'cliente_id',
   as: 'inventario',
-  onDelete: 'CASCADE'
+  onDelete: 'CASCADE',
 });
 Inventario.belongsTo(Cliente, {
   foreignKey: 'cliente_id',
-  as: 'cliente'
+  as: 'cliente',
 });
 
 // Cliente <-> Operación (1:N)
 Cliente.hasMany(Operacion, {
   foreignKey: 'cliente_id',
   as: 'operaciones',
-  onDelete: 'RESTRICT'
+  onDelete: 'RESTRICT',
 });
 Operacion.belongsTo(Cliente, {
   foreignKey: 'cliente_id',
-  as: 'cliente'
+  as: 'cliente',
 });
 
 // Usuario <-> Operación (creador)
 Usuario.hasMany(Operacion, {
   foreignKey: 'creado_por',
-  as: 'operaciones_creadas'
+  as: 'operaciones_creadas',
 });
 Operacion.belongsTo(Usuario, {
   foreignKey: 'creado_por',
-  as: 'creador'
+  as: 'creador',
 });
 
 // Usuario <-> Operación (cerrador)
 Usuario.hasMany(Operacion, {
   foreignKey: 'cerrado_por',
-  as: 'operaciones_cerradas'
+  as: 'operaciones_cerradas',
 });
 Operacion.belongsTo(Usuario, {
   foreignKey: 'cerrado_por',
-  as: 'cerrador'
+  as: 'cerrador',
 });
 
 // Operación <-> OperacionDetalle (1:N)
 Operacion.hasMany(OperacionDetalle, {
   foreignKey: 'operacion_id',
   as: 'detalles',
-  onDelete: 'CASCADE'
+  onDelete: 'CASCADE',
 });
 OperacionDetalle.belongsTo(Operacion, {
   foreignKey: 'operacion_id',
-  as: 'operacion'
+  as: 'operacion',
 });
 
 // Operación <-> OperacionAveria (1:N)
 Operacion.hasMany(OperacionAveria, {
   foreignKey: 'operacion_id',
   as: 'averias',
-  onDelete: 'CASCADE'
+  onDelete: 'CASCADE',
 });
 OperacionAveria.belongsTo(Operacion, {
   foreignKey: 'operacion_id',
-  as: 'operacion'
+  as: 'operacion',
 });
 
 // OperacionDetalle <-> OperacionAveria (1:N)
 OperacionDetalle.hasMany(OperacionAveria, {
   foreignKey: 'detalle_id',
-  as: 'evidencias_averia'
+  as: 'evidencias_averia',
 });
 OperacionAveria.belongsTo(OperacionDetalle, {
   foreignKey: 'detalle_id',
-  as: 'detalle'
+  as: 'detalle',
 });
 
 // Usuario <-> OperacionAveria (registrado por)
 Usuario.hasMany(OperacionAveria, {
   foreignKey: 'registrado_por',
-  as: 'averias_registradas'
+  as: 'averias_registradas',
 });
 OperacionAveria.belongsTo(Usuario, {
   foreignKey: 'registrado_por',
-  as: 'registrador'
+  as: 'registrador',
 });
 
 // Operación <-> OperacionDocumento (1:N)
 Operacion.hasMany(OperacionDocumento, {
   foreignKey: 'operacion_id',
   as: 'documentos',
-  onDelete: 'CASCADE'
+  onDelete: 'CASCADE',
 });
 OperacionDocumento.belongsTo(Operacion, {
   foreignKey: 'operacion_id',
-  as: 'operacion'
+  as: 'operacion',
 });
 
 // Usuario <-> OperacionDocumento (subido por)
 Usuario.hasMany(OperacionDocumento, {
   foreignKey: 'subido_por',
-  as: 'documentos_subidos'
+  as: 'documentos_subidos',
 });
 OperacionDocumento.belongsTo(Usuario, {
   foreignKey: 'subido_por',
-  as: 'usuario_subio'
+  as: 'usuario_subio',
 });
 
 // Usuario <-> Auditoría (1:N)
 Usuario.hasMany(Auditoria, {
   foreignKey: 'usuario_id',
-  as: 'acciones'
+  as: 'acciones',
 });
 Auditoria.belongsTo(Usuario, {
   foreignKey: 'usuario_id',
-  as: 'usuario'
+  as: 'usuario',
 });
 
 // ============================================
@@ -204,31 +204,31 @@ Auditoria.belongsTo(Usuario, {
 Inventario.hasMany(MovimientoInventario, {
   foreignKey: 'inventario_id',
   as: 'movimientos',
-  onDelete: 'CASCADE'
+  onDelete: 'CASCADE',
 });
 MovimientoInventario.belongsTo(Inventario, {
   foreignKey: 'inventario_id',
-  as: 'inventario'
+  as: 'inventario',
 });
 
 // Usuario <-> MovimientoInventario (1:N)
 Usuario.hasMany(MovimientoInventario, {
   foreignKey: 'usuario_id',
-  as: 'movimientos_inventario'
+  as: 'movimientos_inventario',
 });
 MovimientoInventario.belongsTo(Usuario, {
   foreignKey: 'usuario_id',
-  as: 'usuario'
+  as: 'usuario',
 });
 
 // Operacion <-> MovimientoInventario (1:N) - Opcional
 Operacion.hasMany(MovimientoInventario, {
   foreignKey: 'operacion_id',
-  as: 'movimientos_inventario'
+  as: 'movimientos_inventario',
 });
 MovimientoInventario.belongsTo(Operacion, {
   foreignKey: 'operacion_id',
-  as: 'operacion'
+  as: 'operacion',
 });
 
 // ============================================
@@ -239,60 +239,68 @@ MovimientoInventario.belongsTo(Operacion, {
 Inventario.hasMany(CajaInventario, {
   foreignKey: 'inventario_id',
   as: 'cajas',
-  onDelete: 'CASCADE'
+  onDelete: 'CASCADE',
 });
 CajaInventario.belongsTo(Inventario, {
   foreignKey: 'inventario_id',
-  as: 'inventario'
+  as: 'inventario',
 });
 
 // Operacion <-> CajaInventario (1:N)
 Operacion.hasMany(CajaInventario, {
   foreignKey: 'operacion_id',
   as: 'cajas',
-  onDelete: 'SET NULL'
+  onDelete: 'SET NULL',
 });
 CajaInventario.belongsTo(Operacion, {
   foreignKey: 'operacion_id',
-  as: 'operacion'
+  as: 'operacion',
 });
 
 // OperacionDetalle <-> CajaInventario (1:1)
 OperacionDetalle.hasOne(CajaInventario, {
   foreignKey: 'operacion_detalle_id',
-  as: 'caja'
+  as: 'caja',
 });
 CajaInventario.belongsTo(OperacionDetalle, {
   foreignKey: 'operacion_detalle_id',
-  as: 'detalle'
+  as: 'detalle',
 });
 
 Notificacion.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
 Usuario.hasMany(Notificacion, { foreignKey: 'usuario_id', as: 'notificaciones' });
 
 // Usuario <-> PasswordHistorico (1:N)
-Usuario.hasMany(PasswordHistorico, { foreignKey: 'usuario_id', as: 'password_historico', onDelete: 'CASCADE' });
+Usuario.hasMany(PasswordHistorico, {
+  foreignKey: 'usuario_id',
+  as: 'password_historico',
+  onDelete: 'CASCADE',
+});
 PasswordHistorico.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
 
 // Usuario <-> TokenBlacklist (1:N)
-Usuario.hasMany(TokenBlacklist, { foreignKey: 'usuario_id', as: 'tokens_revocados', onDelete: 'CASCADE' });
+Usuario.hasMany(TokenBlacklist, {
+  foreignKey: 'usuario_id',
+  as: 'tokens_revocados',
+  onDelete: 'CASCADE',
+});
 TokenBlacklist.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
 
 // Usuario <-> Usuario (invitaciones)
 Usuario.belongsTo(Usuario, {
   foreignKey: 'invitado_por',
-  as: 'usuarioInvitador'
+  as: 'usuarioInvitador',
 });
 
 Usuario.hasMany(Usuario, {
   foreignKey: 'invitado_por',
-  as: 'usuariosInvitados'
+  as: 'usuariosInvitados',
 });
 
 // Usuario <-> Cliente (para usuarios tipo cliente)
 Usuario.belongsTo(Cliente, {
   foreignKey: 'cliente_id',
-  as: 'cliente'
+  as: 'cliente',
 });
 
 // ============================================
@@ -304,23 +312,23 @@ Rol.belongsToMany(Permiso, {
   through: RolPermiso,
   foreignKey: 'rol_id',
   otherKey: 'permiso_id',
-  as: 'permisos'
+  as: 'permisos',
 });
 Permiso.belongsToMany(Rol, {
   through: RolPermiso,
   foreignKey: 'permiso_id',
   otherKey: 'rol_id',
-  as: 'roles'
+  as: 'roles',
 });
 
 // Usuario <-> Rol (N:1)
 Usuario.belongsTo(Rol, {
   foreignKey: 'rol_id',
-  as: 'rolInfo'
+  as: 'rolInfo',
 });
 Rol.hasMany(Usuario, {
   foreignKey: 'rol_id',
-  as: 'usuarios'
+  as: 'usuarios',
 });
 
 // ReporteProgramado <-> Usuario y Cliente
@@ -361,7 +369,11 @@ Vehiculo.hasMany(Viaje, { foreignKey: 'vehiculo_id', as: 'viajes' });
 Viaje.belongsTo(Usuario, { foreignKey: 'conductor_id', as: 'conductor' });
 
 // CajaMenor <-> MovimientoCajaMenor (1:N)
-CajaMenor.hasMany(MovimientoCajaMenor, { foreignKey: 'caja_menor_id', as: 'movimientos', onDelete: 'CASCADE' });
+CajaMenor.hasMany(MovimientoCajaMenor, {
+  foreignKey: 'caja_menor_id',
+  as: 'movimientos',
+  onDelete: 'CASCADE',
+});
 MovimientoCajaMenor.belongsTo(CajaMenor, { foreignKey: 'caja_menor_id', as: 'cajaMenor' });
 
 // Viaje <-> MovimientoCajaMenor (1:N - gastos del viaje)
@@ -394,7 +406,7 @@ const db = {
   OperacionDocumento,
   NotificacionEmail,
   MovimientoInventario,
-  CajaInventario,  // ← NUEVO: Cajas individuales
+  CajaInventario, // ← NUEVO: Cajas individuales
   PlantillaEmail,
   Notificacion,
   Rol,

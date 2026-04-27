@@ -41,19 +41,65 @@ import notificacionesService from '../../api/notificacionesService';
 // ════════════════════════════════════════════════════════════════════════════
 
 const TIPO_CONFIG = {
-  despacho: { icon: Truck, bg: 'bg-blue-100 dark:bg-blue-900/30', color: 'text-blue-600 dark:text-blue-400', label: 'Despacho' },
-  alerta: { icon: AlertTriangle, bg: 'bg-amber-100 dark:bg-amber-900/30', color: 'text-amber-600 dark:text-amber-400', label: 'Alerta' },
-  cliente: { icon: Users, bg: 'bg-violet-100 dark:bg-violet-900/30', color: 'text-violet-600 dark:text-violet-400', label: 'Cliente' },
-  reporte: { icon: FileText, bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-600 dark:text-emerald-400', label: 'Reporte' },
-  sistema: { icon: Info, bg: 'bg-slate-100 dark:bg-centhrix-surface', color: 'text-slate-600 dark:text-slate-400', label: 'Sistema' },
-  inventario: { icon: Package, bg: 'bg-orange-100 dark:bg-orange-900/30', color: 'text-orange-600 dark:text-orange-400', label: 'Inventario' },
+  despacho: {
+    icon: Truck,
+    bg: 'bg-blue-100 dark:bg-blue-900/30',
+    color: 'text-blue-600 dark:text-blue-400',
+    label: 'Despacho',
+  },
+  alerta: {
+    icon: AlertTriangle,
+    bg: 'bg-amber-100 dark:bg-amber-900/30',
+    color: 'text-amber-600 dark:text-amber-400',
+    label: 'Alerta',
+  },
+  cliente: {
+    icon: Users,
+    bg: 'bg-violet-100 dark:bg-violet-900/30',
+    color: 'text-violet-600 dark:text-violet-400',
+    label: 'Cliente',
+  },
+  reporte: {
+    icon: FileText,
+    bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+    color: 'text-emerald-600 dark:text-emerald-400',
+    label: 'Reporte',
+  },
+  sistema: {
+    icon: Info,
+    bg: 'bg-slate-100 dark:bg-centhrix-surface',
+    color: 'text-slate-600 dark:text-slate-400',
+    label: 'Sistema',
+  },
+  inventario: {
+    icon: Package,
+    bg: 'bg-orange-100 dark:bg-orange-900/30',
+    color: 'text-orange-600 dark:text-orange-400',
+    label: 'Inventario',
+  },
 };
 
 const PRIORIDAD_CONFIG = {
-  urgente: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', label: 'Urgente' },
-  alta: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-400', label: 'Alta' },
-  normal: { bg: 'bg-slate-100 dark:bg-centhrix-surface', text: 'text-slate-600 dark:text-slate-400', label: 'Normal' },
-  baja: { bg: 'bg-slate-50 dark:bg-centhrix-card', text: 'text-slate-500 dark:text-slate-500', label: 'Baja' },
+  urgente: {
+    bg: 'bg-red-100 dark:bg-red-900/30',
+    text: 'text-red-700 dark:text-red-400',
+    label: 'Urgente',
+  },
+  alta: {
+    bg: 'bg-orange-100 dark:bg-orange-900/30',
+    text: 'text-orange-700 dark:text-orange-400',
+    label: 'Alta',
+  },
+  normal: {
+    bg: 'bg-slate-100 dark:bg-centhrix-surface',
+    text: 'text-slate-600 dark:text-slate-400',
+    label: 'Normal',
+  },
+  baja: {
+    bg: 'bg-slate-50 dark:bg-centhrix-card',
+    text: 'text-slate-500 dark:text-slate-500',
+    label: 'Baja',
+  },
 };
 
 const FILTER_OPTIONS = [
@@ -110,11 +156,13 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
   };
 
   return (
-    <div className={`relative p-4 rounded-2xl border transition-all ${
-      notificacion.leida
-        ? 'bg-white dark:bg-centhrix-card border-gray-100 dark:border-slate-700'
-        : 'bg-orange-50/50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800/50'
-    }`}>
+    <div
+      className={`relative p-4 rounded-2xl border transition-all ${
+        notificacion.leida
+          ? 'bg-white dark:bg-centhrix-card border-gray-100 dark:border-slate-700'
+          : 'bg-orange-50/50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800/50'
+      }`}
+    >
       {/* Indicador no leída */}
       {!notificacion.leida && (
         <span className="absolute top-4 right-4 w-2.5 h-2.5 bg-orange-500 rounded-full animate-pulse" />
@@ -122,7 +170,9 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
 
       <div className="flex gap-4">
         {/* Icon */}
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${config.bg}`}>
+        <div
+          className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${config.bg}`}
+        >
           <Icon className={`w-6 h-6 ${config.color}`} />
         </div>
 
@@ -130,14 +180,20 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-4 mb-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h4 className={`font-medium ${notificacion.leida ? 'text-slate-700 dark:text-slate-300' : 'text-slate-900 dark:text-slate-100'}`}>
+              <h4
+                className={`font-medium ${notificacion.leida ? 'text-slate-700 dark:text-slate-300' : 'text-slate-900 dark:text-slate-100'}`}
+              >
                 {notificacion.titulo}
               </h4>
-              <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${config.bg} ${config.color}`}>
+              <span
+                className={`px-2 py-0.5 text-xs font-medium rounded-full ${config.bg} ${config.color}`}
+              >
                 {config.label}
               </span>
               {notificacion.prioridad && notificacion.prioridad !== 'normal' && (
-                <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${prioridad.bg} ${prioridad.text}`}>
+                <span
+                  className={`px-2 py-0.5 text-xs font-medium rounded-full ${prioridad.bg} ${prioridad.text}`}
+                >
                   {prioridad.label}
                 </span>
               )}
@@ -158,7 +214,10 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
                   <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-centhrix-card rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 py-1 z-20">
                     {!notificacion.leida && (
                       <button
-                        onClick={() => { onMarcarLeida(notificacion.id); setMenuOpen(false); }}
+                        onClick={() => {
+                          onMarcarLeida(notificacion.id);
+                          setMenuOpen(false);
+                        }}
                         className="flex items-center gap-2 w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
                       >
                         <Check className="w-4 h-4" />
@@ -167,7 +226,10 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
                     )}
                     {(notificacion.accion_url || notificacion.url) && (
                       <button
-                        onClick={() => { handleAccion(); setMenuOpen(false); }}
+                        onClick={() => {
+                          handleAccion();
+                          setMenuOpen(false);
+                        }}
                         className="flex items-center gap-2 w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-surface"
                       >
                         <Eye className="w-4 h-4" />
@@ -175,7 +237,10 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
                       </button>
                     )}
                     <button
-                      onClick={() => { onEliminar(notificacion.id); setMenuOpen(false); }}
+                      onClick={() => {
+                        onEliminar(notificacion.id);
+                        setMenuOpen(false);
+                      }}
                       className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -187,7 +252,9 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
             </div>
           </div>
 
-          <p className={`text-sm mb-2 ${notificacion.leida ? 'text-slate-500 dark:text-slate-400' : 'text-slate-600 dark:text-slate-300'}`}>
+          <p
+            className={`text-sm mb-2 ${notificacion.leida ? 'text-slate-500 dark:text-slate-400' : 'text-slate-600 dark:text-slate-300'}`}
+          >
             {notificacion.mensaje || notificacion.descripcion}
           </p>
 
@@ -219,7 +286,11 @@ const NotificacionCard = ({ notificacion, onMarcarLeida, onEliminar }) => {
 const Notificaciones = () => {
   const _navigate = useNavigate();
   const { success, apiError } = useNotification();
-  const { fetchCount, marcarLeida: ctxMarcarLeida, marcarTodasLeidas: ctxMarcarTodasLeidas } = useNotificaciones();
+  const {
+    fetchCount,
+    marcarLeida: ctxMarcarLeida,
+    marcarTodasLeidas: ctxMarcarTodasLeidas,
+  } = useNotificaciones();
 
   // ──────────────────────────────────────────────────────────────────────────
   // ESTADOS
@@ -235,27 +306,34 @@ const Notificaciones = () => {
   // ──────────────────────────────────────────────────────────────────────────
   // CARGAR NOTIFICACIONES
   // ──────────────────────────────────────────────────────────────────────────
-  const fetchNotificaciones = useCallback(async (page = 1) => {
-    try {
-      const params = { page, limit: PAGE_SIZE };
-      if (filter !== 'todas' && filter !== 'no_leidas') params.tipo = filter;
-      if (filter === 'no_leidas') params.no_leidas = true;
+  const fetchNotificaciones = useCallback(
+    async (page = 1) => {
+      try {
+        const params = { page, limit: PAGE_SIZE };
+        if (filter !== 'todas' && filter !== 'no_leidas') params.tipo = filter;
+        if (filter === 'no_leidas') params.no_leidas = true;
 
-      const result = await notificacionesService.getAll(params);
-      const items = Array.isArray(result?.data) ? result.data : (Array.isArray(result) ? result : []);
-      setNotificaciones(items);
-      if (result?.pagination) {
-        setPagination({
-          page: result.pagination.page || page,
-          total: result.pagination.total || 0,
-          totalPages: result.pagination.totalPages || 1,
-        });
+        const result = await notificacionesService.getAll(params);
+        const items = Array.isArray(result?.data)
+          ? result.data
+          : Array.isArray(result)
+            ? result
+            : [];
+        setNotificaciones(items);
+        if (result?.pagination) {
+          setPagination({
+            page: result.pagination.page || page,
+            total: result.pagination.total || 0,
+            totalPages: result.pagination.totalPages || 1,
+          });
+        }
+      } catch (err) {
+        console.error('Error cargando notificaciones:', err);
+        setNotificaciones([]);
       }
-    } catch (err) {
-      console.error('Error cargando notificaciones:', err);
-      setNotificaciones([]);
-    }
-  }, [filter]);
+    },
+    [filter]
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -270,8 +348,8 @@ const Notificaciones = () => {
   // STATS
   // ──────────────────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
-    const noLeidas = notificaciones.filter(n => !n.leida).length;
-    const urgentes = notificaciones.filter(n => n.prioridad === 'urgente' && !n.leida).length;
+    const noLeidas = notificaciones.filter((n) => !n.leida).length;
+    const urgentes = notificaciones.filter((n) => n.prioridad === 'urgente' && !n.leida).length;
     return { noLeidas, urgentes };
   }, [notificaciones]);
 
@@ -281,7 +359,7 @@ const Notificaciones = () => {
   const filteredNotificaciones = useMemo(() => {
     if (!searchTerm) return notificaciones;
     const search = searchTerm.toLowerCase();
-    return notificaciones.filter(n => {
+    return notificaciones.filter((n) => {
       const titulo = (n.titulo || '').toLowerCase();
       const mensaje = (n.mensaje || n.descripcion || '').toLowerCase();
       return titulo.includes(search) || mensaje.includes(search);
@@ -302,7 +380,9 @@ const Notificaciones = () => {
   const handleMarcarLeida = async (id) => {
     try {
       await ctxMarcarLeida(id); // Actualiza badge inmediatamente
-      setNotificaciones(prev => prev.map(n => n.id === id ? { ...n, leida: true, fecha_lectura: new Date() } : n));
+      setNotificaciones((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, leida: true, fecha_lectura: new Date() } : n))
+      );
     } catch (err) {
       apiError(err);
     }
@@ -311,7 +391,9 @@ const Notificaciones = () => {
   const handleMarcarTodasLeidas = async () => {
     try {
       await ctxMarcarTodasLeidas(); // Pone badge a 0 inmediatamente
-      setNotificaciones(prev => prev.map(n => ({ ...n, leida: true, fecha_lectura: new Date() })));
+      setNotificaciones((prev) =>
+        prev.map((n) => ({ ...n, leida: true, fecha_lectura: new Date() }))
+      );
       success('Todas las notificaciones marcadas como leídas');
     } catch (err) {
       apiError(err);
@@ -321,7 +403,7 @@ const Notificaciones = () => {
   const handleEliminar = async (id) => {
     try {
       await notificacionesService.eliminar(id);
-      setNotificaciones(prev => prev.filter(n => n.id !== id));
+      setNotificaciones((prev) => prev.filter((n) => n.id !== id));
       fetchCount();
       success('Notificación eliminada');
     } catch (err) {
@@ -332,7 +414,7 @@ const Notificaciones = () => {
   const handleEliminarLeidas = async () => {
     try {
       await notificacionesService.eliminarLeidas();
-      setNotificaciones(prev => prev.filter(n => !n.leida));
+      setNotificaciones((prev) => prev.filter((n) => !n.leida));
       fetchCount();
       success('Notificaciones leídas eliminadas');
     } catch (err) {
@@ -367,16 +449,16 @@ const Notificaciones = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <main className="pt-28 px-4 pb-8 max-w-4xl mx-auto">
-
         {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Notificaciones</h1>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+              Notificaciones
+            </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">
               {pagination.total > 0
                 ? `${pagination.total} notificación${pagination.total > 1 ? 'es' : ''} en total`
-                : 'No tienes notificaciones'
-              }
+                : 'No tienes notificaciones'}
             </p>
           </div>
 
@@ -392,20 +474,22 @@ const Notificaciones = () => {
               <span className="hidden sm:inline">Actualizar</span>
             </Button>
             {/* Resto de acciones: dropdown en móvil, botones en desktop */}
-            <AccionesDropdown acciones={[
-              {
-                label: 'Marcar todas leídas',
-                icon: CheckCheck,
-                onClick: handleMarcarTodasLeidas,
-                hidden: stats.noLeidas === 0,
-              },
-              {
-                label: 'Borrar todas',
-                icon: Trash2,
-                onClick: () => setConfirmBorrarTodas(true),
-                hidden: pagination.total === 0,
-              },
-            ]} />
+            <AccionesDropdown
+              acciones={[
+                {
+                  label: 'Marcar todas leídas',
+                  icon: CheckCheck,
+                  onClick: handleMarcarTodasLeidas,
+                  hidden: stats.noLeidas === 0,
+                },
+                {
+                  label: 'Borrar todas',
+                  icon: Trash2,
+                  onClick: () => setConfirmBorrarTodas(true),
+                  hidden: pagination.total === 0,
+                },
+              ]}
+            />
           </div>
         </div>
 
@@ -417,7 +501,8 @@ const Notificaciones = () => {
             </div>
             <div className="flex-1">
               <p className="font-medium text-red-800 dark:text-red-300">
-                Tienes {stats.urgentes} alerta{stats.urgentes > 1 ? 's' : ''} urgente{stats.urgentes > 1 ? 's' : ''}
+                Tienes {stats.urgentes} alerta{stats.urgentes > 1 ? 's' : ''} urgente
+                {stats.urgentes > 1 ? 's' : ''}
               </p>
               <p className="text-sm text-red-600 dark:text-red-400">Requieren atención inmediata</p>
             </div>
@@ -463,7 +548,10 @@ const Notificaciones = () => {
         {loading ? (
           <div className="space-y-4">
             {[0, 1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white dark:bg-centhrix-card rounded-2xl p-4 animate-pulse border border-gray-100 dark:border-slate-700">
+              <div
+                key={i}
+                className="bg-white dark:bg-centhrix-card rounded-2xl p-4 animate-pulse border border-gray-100 dark:border-slate-700"
+              >
                 <div className="flex gap-4">
                   <div className="w-12 h-12 bg-gray-200 dark:bg-centhrix-surface rounded-xl" />
                   <div className="flex-1 space-y-2">
@@ -480,12 +568,13 @@ const Notificaciones = () => {
             <div className="w-16 h-16 bg-slate-100 dark:bg-centhrix-surface rounded-full flex items-center justify-center mx-auto mb-4">
               <Bell className="w-8 h-8 text-slate-400 dark:text-slate-500" />
             </div>
-            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200 mb-1">Sin notificaciones</h3>
+            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200 mb-1">
+              Sin notificaciones
+            </h3>
             <p className="text-slate-500 dark:text-slate-400">
               {filter !== 'todas'
                 ? 'No hay notificaciones con el filtro seleccionado'
-                : 'No tienes notificaciones pendientes'
-              }
+                : 'No tienes notificaciones pendientes'}
             </p>
           </div>
         ) : (
@@ -525,7 +614,7 @@ const Notificaciones = () => {
             )}
 
             {/* Acciones masivas */}
-            {notificaciones.some(n => n.leida) && (
+            {notificaciones.some((n) => n.leida) && (
               <div className="mt-6 flex justify-center">
                 <Button
                   variant="ghost"
@@ -552,17 +641,14 @@ const Notificaciones = () => {
                 </h3>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-                Esta acción eliminará permanentemente todas tus notificaciones. No se puede deshacer.
+                Esta acción eliminará permanentemente todas tus notificaciones. No se puede
+                deshacer.
               </p>
               <div className="flex items-center justify-end gap-3">
                 <Button variant="ghost" onClick={() => setConfirmBorrarTodas(false)}>
                   Cancelar
                 </Button>
-                <Button
-                  variant="danger"
-                  icon={Trash2}
-                  onClick={handleBorrarTodas}
-                >
+                <Button variant="danger" icon={Trash2} onClick={handleBorrarTodas}>
                   Borrar todas
                 </Button>
               </div>

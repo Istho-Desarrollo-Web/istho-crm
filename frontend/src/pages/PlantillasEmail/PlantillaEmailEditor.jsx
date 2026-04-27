@@ -124,8 +124,9 @@ const PlantillaEmailEditor = () => {
   useEffect(() => {
     if (isEdit) {
       setLoading(true);
-      plantillasEmailService.getById(id)
-        .then(response => {
+      plantillasEmailService
+        .getById(id)
+        .then((response) => {
           if (response?.success && response.data) {
             const p = response.data;
             setFormData({
@@ -142,7 +143,7 @@ const PlantillaEmailEditor = () => {
             loadCampos(p.tipo);
           }
         })
-        .catch(err => {
+        .catch((err) => {
           notifyError('Error al cargar la plantilla');
           console.error(err);
         })
@@ -152,13 +153,16 @@ const PlantillaEmailEditor = () => {
     }
 
     // Cargar logo de firma
-    plantillasEmailService.getLogoFirma()
-      .then(res => { if (res?.success && res.data?.logoDataUri) setLogoFirma(res.data.logoDataUri); })
+    plantillasEmailService
+      .getLogoFirma()
+      .then((res) => {
+        if (res?.success && res.data?.logoDataUri) setLogoFirma(res.data.logoDataUri);
+      })
       .catch(() => {});
   }, [id, isEdit, loadCampos, notifyError]);
 
   const handleChange = (field, value) => {
-    setFormData(prev => {
+    setFormData((prev) => {
       const updated = { ...prev, [field]: value };
       // Limpiar subtipo al cambiar tipo
       if (field === 'tipo') updated.subtipo = '';
@@ -185,14 +189,14 @@ const PlantillaEmailEditor = () => {
       const end = inputEl.selectionEnd;
       const text = isAsunto ? formData.asunto_template : formData.cuerpo_html;
       const newText = text.substring(0, start) + variable + text.substring(end);
-      setFormData(prev => ({ ...prev, [field]: newText }));
+      setFormData((prev) => ({ ...prev, [field]: newText }));
 
       setTimeout(() => {
         inputEl.focus();
         inputEl.selectionStart = inputEl.selectionEnd = start + variable.length;
       }, 0);
     } else {
-      setFormData(prev => ({ ...prev, [field]: prev[field] + variable }));
+      setFormData((prev) => ({ ...prev, [field]: prev[field] + variable }));
     }
   };
 
@@ -246,8 +250,9 @@ const PlantillaEmailEditor = () => {
     }
   };
 
-  const inputClass = "w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500";
-  const labelClass = "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1";
+  const inputClass =
+    'w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
+  const labelClass = 'block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1';
 
   if (loading) {
     return (
@@ -301,7 +306,9 @@ const PlantillaEmailEditor = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Datos básicos */}
             <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-4">Información Básica</h3>
+              <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-4">
+                Información Básica
+              </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
@@ -321,8 +328,10 @@ const PlantillaEmailEditor = () => {
                     onChange={(e) => handleChange('tipo', e.target.value)}
                     className={inputClass}
                   >
-                    {TIPO_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    {TIPO_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -337,8 +346,10 @@ const PlantillaEmailEditor = () => {
                     onChange={(e) => handleChange('subtipo', e.target.value)}
                     className={inputClass}
                   >
-                    {SUBTIPO_OPTIONS[formData.tipo].map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    {SUBTIPO_OPTIONS[formData.tipo].map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
                     ))}
                   </select>
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
@@ -351,7 +362,9 @@ const PlantillaEmailEditor = () => {
                 <label className={labelClass}>
                   Asunto del Correo *
                   {activeField === 'asunto_template' && (
-                    <span className="ml-2 text-xs font-normal text-orange-500">← variables se insertarán aquí</span>
+                    <span className="ml-2 text-xs font-normal text-orange-500">
+                      ← variables se insertarán aquí
+                    </span>
                   )}
                 </label>
                 <input
@@ -364,7 +377,8 @@ const PlantillaEmailEditor = () => {
                   placeholder="Ej: [ISTHO] {{tipoOperacion}} - {{numeroOperacion}}"
                 />
                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                  Haz clic aquí y luego en una variable del panel derecho para insertarla en el asunto
+                  Haz clic aquí y luego en una variable del panel derecho para insertarla en el
+                  asunto
                 </p>
               </div>
 
@@ -398,10 +412,14 @@ const PlantillaEmailEditor = () => {
                 <h3 className="font-semibold text-slate-800 dark:text-slate-100">
                   Cuerpo del Correo (HTML)
                   {activeField === 'cuerpo_html' && (
-                    <span className="ml-2 text-xs font-normal text-orange-500">← variables se insertarán aquí</span>
+                    <span className="ml-2 text-xs font-normal text-orange-500">
+                      ← variables se insertarán aquí
+                    </span>
                   )}
                 </h3>
-                <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">Handlebars + HTML</span>
+                <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">
+                  Handlebars + HTML
+                </span>
               </div>
 
               <textarea
@@ -414,14 +432,17 @@ const PlantillaEmailEditor = () => {
               />
 
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
-                Usa {'{{variable}}'} para insertar datos dinámicos. Condicionales: {'{{#if variable}}...{{/if}}'}. Listas: {'{{#each lista}}...{{/each}}'}
+                Usa {'{{variable}}'} para insertar datos dinámicos. Condicionales:{' '}
+                {'{{#if variable}}...{{/if}}'}. Listas: {'{{#each lista}}...{{/each}}'}
               </p>
             </div>
 
             {/* Firma */}
             <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-slate-800 dark:text-slate-100">Firma ISTHO S.A.S.</h3>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                  Firma ISTHO S.A.S.
+                </h3>
                 <button
                   onClick={() => handleChange('firma_habilitada', !formData.firma_habilitada)}
                   className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"
@@ -442,15 +463,28 @@ const PlantillaEmailEditor = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleChange('firma_html', '')}
-                      className={!formData.firma_html ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : ''}
+                      className={
+                        !formData.firma_html
+                          ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'
+                          : ''
+                      }
                     >
                       Firma por Defecto
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleChange('firma_html', formData.firma_html || firmaDefault || 'Editar firma personalizada...')}
-                      className={formData.firma_html ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : ''}
+                      onClick={() =>
+                        handleChange(
+                          'firma_html',
+                          formData.firma_html || firmaDefault || 'Editar firma personalizada...'
+                        )
+                      }
+                      className={
+                        formData.firma_html
+                          ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'
+                          : ''
+                      }
                     >
                       Firma Personalizada
                     </Button>
@@ -467,15 +501,29 @@ const PlantillaEmailEditor = () => {
                     <div className="bg-slate-50 dark:bg-centhrix-bg/50 rounded-xl p-4 border border-slate-200 dark:border-slate-600">
                       <div className="flex items-center gap-3">
                         {logoFirma ? (
-                          <img src={logoFirma} alt="Logo" className="w-12 h-12 rounded-xl object-cover" />
+                          <img
+                            src={logoFirma}
+                            alt="Logo"
+                            className="w-12 h-12 rounded-xl object-cover"
+                          />
                         ) : (
-                          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">IS</div>
+                          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                            IS
+                          </div>
                         )}
                         <div>
-                          <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">ISTHO S.A.S.</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Centro Logístico Industrial del Norte</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Girardota, Antioquia - Colombia</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Tel: (604) 405 2000 | info@istho.com.co</p>
+                          <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">
+                            ISTHO S.A.S.
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Centro Logístico Industrial del Norte
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Girardota, Antioquia - Colombia
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Tel: (604) 405 2000 | info@istho.com.co
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -486,7 +534,11 @@ const PlantillaEmailEditor = () => {
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0">
                         {logoFirma ? (
-                          <img src={logoFirma} alt="Logo firma" className="w-10 h-10 rounded-lg object-cover" />
+                          <img
+                            src={logoFirma}
+                            alt="Logo firma"
+                            className="w-10 h-10 rounded-lg object-cover"
+                          />
                         ) : (
                           <div className="w-10 h-10 bg-slate-200 dark:bg-centhrix-surface rounded-lg flex items-center justify-center">
                             <Image className="w-5 h-5 text-slate-400" />
@@ -497,12 +549,22 @@ const PlantillaEmailEditor = () => {
                         <p className="text-xs font-medium text-slate-700 dark:text-slate-200">
                           {logoFirma ? 'Logo de firma cargado' : 'Sin logo de firma'}
                         </p>
-                        <p className="text-[11px] text-slate-400">Se usara en todas las firmas de correo (max 5MB)</p>
+                        <p className="text-[11px] text-slate-400">
+                          Se usara en todas las firmas de correo (max 5MB)
+                        </p>
                       </div>
-                      <label className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg cursor-pointer transition-colors ${
-                        logoUploading ? 'bg-slate-100 text-slate-400' : 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 hover:bg-orange-100'
-                      }`}>
-                        {logoUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                      <label
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg cursor-pointer transition-colors ${
+                          logoUploading
+                            ? 'bg-slate-100 text-slate-400'
+                            : 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 hover:bg-orange-100'
+                        }`}
+                      >
+                        {logoUploading ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="w-3.5 h-3.5" />
+                        )}
                         {logoUploading ? 'Subiendo...' : 'Subir Logo'}
                         <input
                           type="file"
@@ -540,11 +602,15 @@ const PlantillaEmailEditor = () => {
           {/* ════════════════════════════════════════════════════════ */}
           <div className="space-y-6">
             <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-5 sticky top-32">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">Variables Disponibles</h3>
+              <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">
+                Variables Disponibles
+              </h3>
               <p className="text-xs text-slate-400 dark:text-slate-500 mb-2">
                 Haz clic para insertar en el campo activo
               </p>
-              <div className={`text-xs px-3 py-1.5 rounded-lg mb-4 font-medium ${activeField === 'asunto_template' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300'}`}>
+              <div
+                className={`text-xs px-3 py-1.5 rounded-lg mb-4 font-medium ${activeField === 'asunto_template' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300'}`}
+              >
                 Insertando en: {activeField === 'asunto_template' ? 'Asunto' : 'Cuerpo HTML'}
               </div>
 
@@ -567,16 +633,26 @@ const PlantillaEmailEditor = () => {
               </div>
 
               <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                <h4 className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Condicionales</h4>
+                <h4 className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+                  Condicionales
+                </h4>
                 <div className="space-y-1.5">
                   <button
-                    onClick={() => handleInsertVariable('{{#if variable}}\n  <!-- contenido si existe -->\n{{/if}}')}
+                    onClick={() =>
+                      handleInsertVariable(
+                        '{{#if variable}}\n  <!-- contenido si existe -->\n{{/if}}'
+                      )
+                    }
                     className="w-full text-left px-3 py-1.5 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-centhrix-surface/50 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
                   >
                     {'{{#if}}...{{/if}}'}
                   </button>
                   <button
-                    onClick={() => handleInsertVariable('{{#each lista}}\n  <tr><td>{{this.campo}}</td></tr>\n{{/each}}')}
+                    onClick={() =>
+                      handleInsertVariable(
+                        '{{#each lista}}\n  <tr><td>{{this.campo}}</td></tr>\n{{/each}}'
+                      )
+                    }
                     className="w-full text-left px-3 py-1.5 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-centhrix-surface/50 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
                   >
                     {'{{#each}}...{{/each}}'}
@@ -597,8 +673,12 @@ const PlantillaEmailEditor = () => {
           <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
               <div>
-                <h3 className="font-semibold text-slate-800 dark:text-slate-100">Vista Previa del Email</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Asunto: {previewAsunto}</p>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                  Vista Previa del Email
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Asunto: {previewAsunto}
+                </p>
               </div>
               <button
                 onClick={() => setShowPreview(false)}

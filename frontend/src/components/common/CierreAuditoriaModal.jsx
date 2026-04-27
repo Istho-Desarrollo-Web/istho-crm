@@ -72,27 +72,25 @@ const CierreAuditoriaModal = ({
     if (!isOpen) return;
     setLoading(true);
 
-    plantillasEmailService.getAll({ tipo: 'operacion_cierre', activo: true })
-      .then(res => {
+    plantillasEmailService
+      .getAll({ tipo: 'operacion_cierre', activo: true })
+      .then((res) => {
         const data = res?.data || res || [];
-        const lista = Array.isArray(data) ? data : (data.data || []);
+        const lista = Array.isArray(data) ? data : data.data || [];
 
         // Filtrar: primero las del subtipo actual, luego las genéricas
-        const relevantes = lista.filter(p =>
-          p.subtipo === tipoAuditoria || !p.subtipo
-        );
+        const relevantes = lista.filter((p) => p.subtipo === tipoAuditoria || !p.subtipo);
         // Agregar también las de otros subtipos por si quieren usar otra
-        const otras = lista.filter(p =>
-          p.subtipo && p.subtipo !== tipoAuditoria
-        );
+        const otras = lista.filter((p) => p.subtipo && p.subtipo !== tipoAuditoria);
 
         const todas = [...relevantes, ...otras];
         setPlantillas(todas);
 
         // Seleccionar la predeterminada del subtipo actual
-        const predeterminada = relevantes.find(p =>
-          p.es_predeterminada && p.subtipo === tipoAuditoria
-        ) || relevantes.find(p => p.es_predeterminada) || relevantes[0];
+        const predeterminada =
+          relevantes.find((p) => p.es_predeterminada && p.subtipo === tipoAuditoria) ||
+          relevantes.find((p) => p.es_predeterminada) ||
+          relevantes[0];
 
         if (predeterminada) {
           setSelectedId(predeterminada.id);
@@ -108,8 +106,9 @@ const CierreAuditoriaModal = ({
   useEffect(() => {
     if (!isOpen || !auditoriaId) return;
     setLoadingDestinatarios(true);
-    auditoriasService.getDestinatarios(auditoriaId)
-      .then(res => {
+    auditoriasService
+      .getDestinatarios(auditoriaId)
+      .then((res) => {
         const data = res?.data || res || [];
         setDestinatarios(Array.isArray(data) ? data : []);
       })
@@ -127,7 +126,7 @@ const CierreAuditoriaModal = ({
 
   if (!isOpen) return null;
 
-  const selectedPlantilla = plantillas.find(p => p.id === selectedId);
+  const selectedPlantilla = plantillas.find((p) => p.id === selectedId);
 
   const handleConfirm = () => {
     onConfirm({
@@ -149,7 +148,9 @@ const CierreAuditoriaModal = ({
       {/* Modal */}
       <div className="relative w-full max-w-lg bg-white dark:bg-centhrix-card rounded-2xl shadow-2xl animate-fadeIn">
         {/* Header */}
-        <div className={`flex items-center gap-3 p-5 border-b border-gray-100 dark:border-slate-700`}>
+        <div
+          className={`flex items-center gap-3 p-5 border-b border-gray-100 dark:border-slate-700`}
+        >
           <div className={`p-2.5 rounded-xl ${c.bg}`}>
             <CheckCircle2 className={`w-6 h-6 ${c.icon}`} />
           </div>
@@ -182,7 +183,9 @@ const CierreAuditoriaModal = ({
                 onChange={(e) => setEnviarCorreo(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className={`w-11 h-6 bg-slate-200 dark:bg-centhrix-surface rounded-full peer peer-checked:bg-emerald-500 transition-colors`} />
+              <div
+                className={`w-11 h-6 bg-slate-200 dark:bg-centhrix-surface rounded-full peer peer-checked:bg-emerald-500 transition-colors`}
+              />
               <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-5" />
             </div>
             <div className="flex items-center gap-2">
@@ -236,19 +239,23 @@ const CierreAuditoriaModal = ({
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       {selectedPlantilla?.es_predeterminada && (
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${c.badge}`}>
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${c.badge}`}
+                        >
                           <Star className="w-3 h-3" />
                           Por defecto
                         </span>
                       )}
-                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+                      <ChevronDown
+                        className={`w-4 h-4 text-slate-400 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
+                      />
                     </div>
                   </button>
 
                   {/* Dropdown */}
                   {showDropdown && (
                     <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-centhrix-surface rounded-xl shadow-lg border border-slate-200 dark:border-slate-600 z-10 max-h-60 overflow-y-auto">
-                      {plantillas.map(p => (
+                      {plantillas.map((p) => (
                         <button
                           key={p.id}
                           type="button"
@@ -262,17 +269,27 @@ const CierreAuditoriaModal = ({
                               : 'hover:bg-slate-50 dark:hover:bg-centhrix-card/50'
                           } ${p.id !== plantillas[plantillas.length - 1].id ? 'border-b border-slate-100 dark:border-slate-600' : ''}`}
                         >
-                          <FileText className={`w-4 h-4 flex-shrink-0 ${p.id === selectedId ? c.icon : 'text-slate-400'}`} />
+                          <FileText
+                            className={`w-4 h-4 flex-shrink-0 ${p.id === selectedId ? c.icon : 'text-slate-400'}`}
+                          />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium truncate">{p.nombre}</span>
                               {p.es_predeterminada && (
-                                <Star className={`w-3 h-3 flex-shrink-0 ${p.id === selectedId ? c.icon : 'text-amber-400'}`} />
+                                <Star
+                                  className={`w-3 h-3 flex-shrink-0 ${p.id === selectedId ? c.icon : 'text-amber-400'}`}
+                                />
                               )}
                             </div>
                             {p.subtipo && (
                               <span className="text-xs text-slate-400 dark:text-slate-500 capitalize">
-                                {p.subtipo === 'ingreso' ? 'Entrada' : p.subtipo === 'salida' ? 'Salida' : p.subtipo === 'kardex' ? 'Kardex' : p.subtipo}
+                                {p.subtipo === 'ingreso'
+                                  ? 'Entrada'
+                                  : p.subtipo === 'salida'
+                                    ? 'Salida'
+                                    : p.subtipo === 'kardex'
+                                      ? 'Kardex'
+                                      : p.subtipo}
                               </span>
                             )}
                           </div>
@@ -317,9 +334,12 @@ const CierreAuditoriaModal = ({
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate">
-                          {d.nombre}{d.cargo ? ` · ${d.cargo}` : ''}
+                          {d.nombre}
+                          {d.cargo ? ` · ${d.cargo}` : ''}
                         </p>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{d.email}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
+                          {d.email}
+                        </p>
                       </div>
                     </li>
                   ))}
@@ -332,7 +352,8 @@ const CierreAuditoriaModal = ({
           <div className="p-3 bg-slate-50 dark:bg-centhrix-surface/50 rounded-xl">
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               Una vez completada la operación, no podrá realizar más cambios.
-              {enviarCorreo && ' Se enviará el correo de notificación a los contactos configurados del cliente.'}
+              {enviarCorreo &&
+                ' Se enviará el correo de notificación a los contactos configurados del cliente.'}
             </p>
           </div>
         </div>

@@ -1,18 +1,18 @@
-{{!--
-  ISTHO CRM - Plantilla Alerta de Inventario (v2.0)
-  Variables: stockBajo[], proximosVencer[], vencidos[], urlInventario
---}}
+{{!-- ISTHO CRM - Plantilla Alerta de Inventario (v2.0) Variables: stockBajo[], proximosVencer[],
+vencidos[], urlInventario --}}
 
-<div style="padding: 0;">
-  <h2 style="color: #1e293b; margin: 0 0 5px 0; font-size: 22px; font-weight: 700;">
+<div style="padding: 0">
+  <h2 style="color: #1e293b; margin: 0 0 5px 0; font-size: 22px; font-weight: 700">
     Alerta de Inventario
   </h2>
-  <p style="color: #64748b; font-size: 14px; margin: 0 0 25px 0;">
+  <p style="color: #64748b; font-size: 14px; margin: 0 0 25px 0">
     Se han detectado alertas que requieren su atencion
   </p>
 
   {{#if stockBajo.length}}
-  <h3 style="color: #dc2626; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600;">Stock Bajo</h3>
+  <h3 style="color: #dc2626; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600">
+    Stock Bajo
+  </h3>
 
   <div class="info-box error">
     Los siguientes productos tienen stock por debajo del minimo establecido.
@@ -23,31 +23,29 @@
       <tr>
         <th>SKU</th>
         <th>Producto</th>
-        <th style="text-align: right;">Stock Actual</th>
-        <th style="text-align: right;">Stock Minimo</th>
+        <th style="text-align: right">Stock Actual</th>
+        <th style="text-align: right">Stock Minimo</th>
         <th>Ubicacion</th>
       </tr>
     </thead>
     <tbody>
       {{#each stockBajo}}
       <tr>
-        <td style="font-family: monospace; font-size: 13px;">{{this.sku}}</td>
+        <td style="font-family: monospace; font-size: 13px">{{this.sku}}</td>
         <td>{{this.producto}}</td>
-        <td style="text-align: right; color: #dc2626; font-weight: 700;">{{this.cantidad}}</td>
-        <td style="text-align: right;">{{this.stock_minimo}}</td>
+        <td style="text-align: right; color: #dc2626; font-weight: 700">{{this.cantidad}}</td>
+        <td style="text-align: right">{{this.stock_minimo}}</td>
         <td>{{this.ubicacion}}</td>
       </tr>
       {{/each}}
     </tbody>
   </table>
-  {{/if}}
+  {{/if}} {{#if proximosVencer.length}}
+  <h3 style="color: #d97706; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600">
+    Proximos a Vencer
+  </h3>
 
-  {{#if proximosVencer.length}}
-  <h3 style="color: #d97706; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600;">Proximos a Vencer</h3>
-
-  <div class="info-box warning">
-    Los siguientes productos vencen en los proximos 30 dias.
-  </div>
+  <div class="info-box warning">Los siguientes productos vencen en los proximos 30 dias.</div>
 
   <table class="data-table">
     <thead>
@@ -55,29 +53,30 @@
         <th>SKU</th>
         <th>Producto</th>
         <th>Lote</th>
-        <th style="text-align: right;">Cantidad</th>
+        <th style="text-align: right">Cantidad</th>
         <th>Vencimiento</th>
       </tr>
     </thead>
     <tbody>
       {{#each proximosVencer}}
       <tr>
-        <td style="font-family: monospace; font-size: 13px;">{{this.sku}}</td>
+        <td style="font-family: monospace; font-size: 13px">{{this.sku}}</td>
         <td>{{this.producto}}</td>
         <td>{{this.lote}}</td>
-        <td style="text-align: right;">{{this.cantidad}}</td>
-        <td style="color: #d97706; font-weight: 600;">{{this.fecha_vencimiento}}</td>
+        <td style="text-align: right">{{this.cantidad}}</td>
+        <td style="color: #d97706; font-weight: 600">{{this.fecha_vencimiento}}</td>
       </tr>
       {{/each}}
     </tbody>
   </table>
-  {{/if}}
-
-  {{#if vencidos.length}}
-  <h3 style="color: #dc2626; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600;">Productos Vencidos</h3>
+  {{/if}} {{#if vencidos.length}}
+  <h3 style="color: #dc2626; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600">
+    Productos Vencidos
+  </h3>
 
   <div class="info-box error">
-    <strong>ATENCION:</strong> Los siguientes productos ya estan vencidos y requieren accion inmediata.
+    <strong>ATENCION:</strong> Los siguientes productos ya estan vencidos y requieren accion
+    inmediata.
   </div>
 
   <table class="data-table">
@@ -86,29 +85,29 @@
         <th>SKU</th>
         <th>Producto</th>
         <th>Lote</th>
-        <th style="text-align: right;">Cantidad</th>
+        <th style="text-align: right">Cantidad</th>
         <th>Vencimiento</th>
       </tr>
     </thead>
     <tbody>
       {{#each vencidos}}
       <tr>
-        <td style="font-family: monospace; font-size: 13px;">{{this.sku}}</td>
+        <td style="font-family: monospace; font-size: 13px">{{this.sku}}</td>
         <td>{{this.producto}}</td>
         <td>{{this.lote}}</td>
-        <td style="text-align: right;">{{this.cantidad}}</td>
-        <td style="color: #dc2626; font-weight: 700;">{{this.fecha_vencimiento}}</td>
+        <td style="text-align: right">{{this.cantidad}}</td>
+        <td style="color: #dc2626; font-weight: 700">{{this.fecha_vencimiento}}</td>
       </tr>
       {{/each}}
     </tbody>
   </table>
   {{/if}}
 
-  <div style="text-align: center; margin: 30px 0;">
+  <div style="text-align: center; margin: 30px 0">
     <a href="{{urlInventario}}" class="btn">Ver Inventario Completo</a>
   </div>
 
-  <p style="color: #94a3b8; font-size: 12px; margin: 15px 0 0 0;">
+  <p style="color: #94a3b8; font-size: 12px; margin: 15px 0 0 0">
     Este correo fue generado automaticamente por el sistema de alertas de ISTHO CRM.
   </p>
 </div>

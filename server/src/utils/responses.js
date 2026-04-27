@@ -1,9 +1,9 @@
 /**
  * ISTHO CRM - Respuestas Estandarizadas
- * 
+ *
  * Funciones helper para generar respuestas consistentes en toda la API.
  * Formato acordado con el equipo de Frontend.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  */
 
@@ -32,7 +32,7 @@ const success = (res, data, statusCodeOrMessage = 200) => {
 const successMessage = (res, message, data = null, statusCode = 200) => {
   const response = {
     success: true,
-    message
+    message,
   };
   if (data) response.data = data;
   return res.status(statusCode).json(response);
@@ -48,7 +48,7 @@ const created = (res, message, data) => {
   return res.status(201).json({
     success: true,
     message,
-    data
+    data,
   });
 };
 
@@ -68,8 +68,8 @@ const paginated = (res, data, pagination) => {
       limit: pagination.limit,
       totalPages: Math.ceil(pagination.total / pagination.limit),
       hasNext: pagination.page < Math.ceil(pagination.total / pagination.limit),
-      hasPrev: pagination.page > 1
-    }
+      hasPrev: pagination.page > 1,
+    },
   });
 };
 
@@ -84,16 +84,16 @@ const paginated = (res, data, pagination) => {
 const error = (res, message, statusCode = 400, errors = null, code = null) => {
   const response = {
     success: false,
-    message
+    message,
   };
   if (errors) response.errors = errors;
   if (code) response.code = code;
-  
+
   // En desarrollo, agregar stack trace
   if (process.env.NODE_ENV === 'development' && errors?.stack) {
     response.stack = errors.stack;
   }
-  
+
   return res.status(statusCode).json(response);
 };
 
@@ -151,5 +151,5 @@ module.exports = {
   notFound,
   conflict,
   unprocessable,
-  serverError
+  serverError,
 };

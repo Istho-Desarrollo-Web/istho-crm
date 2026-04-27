@@ -15,21 +15,21 @@ const LOGO_PATH = path.join(__dirname, '../assets/logo-negro.png');
 
 // Paleta CenthriX
 const COLORES = {
-  primario:        '#1A1B3A',
-  fondoOscuro:     '#0F1023',
-  acento:          '#E74C3C',
-  blanco:          '#FFFFFF',
-  textoPrincipal:  '#333333',
+  primario: '#1A1B3A',
+  fondoOscuro: '#0F1023',
+  acento: '#E74C3C',
+  blanco: '#FFFFFF',
+  textoPrincipal: '#333333',
   textoSecundario: '#666666',
-  textoTenue:      '#AAAAAA',
-  filaPar:         '#FAFAFA',
-  filaImpar:       '#FFFFFF',
-  separador:       '#F0F0F0',
-  kpiBg:           '#F8F8F8',
-  verde:           '#2ECC71',
-  azul:            '#3498DB',
-  morado:          '#9B59B6',
-  amarillo:        '#F39C12',
+  textoTenue: '#AAAAAA',
+  filaPar: '#FAFAFA',
+  filaImpar: '#FFFFFF',
+  separador: '#F0F0F0',
+  kpiBg: '#F8F8F8',
+  verde: '#2ECC71',
+  azul: '#3498DB',
+  morado: '#9B59B6',
+  amarillo: '#F39C12',
 };
 
 // ─────────────────────────────────────────────
@@ -64,34 +64,37 @@ const agregarEncabezado = (doc, titulo, subtitulo = '') => {
   }
 
   // Nombre de marca
-  doc.fontSize(6.5)
-     .fillColor(COLORES.acento)
-     .fillOpacity(1)
-     .text('ISTHO S.A.S. · CenthriX CRM', 82, 16, { continued: false });
+  doc
+    .fontSize(6.5)
+    .fillColor(COLORES.acento)
+    .fillOpacity(1)
+    .text('ISTHO S.A.S. · CenthriX CRM', 82, 16, { continued: false });
 
   // Título del reporte
-  doc.fontSize(15)
-     .fillColor(COLORES.blanco)
-     .text(titulo, 82, 26, { continued: false });
+  doc.fontSize(15).fillColor(COLORES.blanco).text(titulo, 82, 26, { continued: false });
 
   // Subtítulo (opcional)
   if (subtitulo) {
-    doc.fontSize(8)
-       .fillColor(COLORES.textoSecundario)
-       .text(subtitulo, 82, 46, { continued: false });
+    doc
+      .fontSize(8)
+      .fillColor(COLORES.textoSecundario)
+      .text(subtitulo, 82, 46, { continued: false });
   }
 
   // Pill de fecha (esquina derecha)
   const fecha = new Date().toLocaleDateString('es-CO', {
-    year: 'numeric', month: 'long', day: 'numeric'
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   });
   const pillW = 140;
   const pillX = W - pillW - 18;
   const pillY = 25;
   doc.roundedRect(pillX, pillY, pillW, 20, 4).fill(COLORES.acento);
-  doc.fontSize(7.5)
-     .fillColor(COLORES.blanco)
-     .text(fecha, pillX, pillY + 6, { width: pillW, align: 'center' });
+  doc
+    .fontSize(7.5)
+    .fillColor(COLORES.blanco)
+    .text(fecha, pillX, pillY + 6, { width: pillW, align: 'center' });
 
   doc.y = H + 5;
 };
@@ -120,9 +123,10 @@ const agregarKpis = (doc, kpis) => {
     const color = kpi.color || COLORES.acento;
 
     // Card fondo
-    doc.rect(cx + padding / 2, startY + padding / 2, cardW - padding, secH - padding)
-       .fill(COLORES.blanco)
-       .stroke('#EEEEEE');
+    doc
+      .rect(cx + padding / 2, startY + padding / 2, cardW - padding, secH - padding)
+      .fill(COLORES.blanco)
+      .stroke('#EEEEEE');
 
     // Borde izquierdo de color
     doc.rect(cx + padding / 2, startY + padding / 2, 4, secH - padding).fill(color);
@@ -130,20 +134,23 @@ const agregarKpis = (doc, kpis) => {
     // Label
     const labelX = cx + padding / 2 + 8;
     const labelY = startY + padding / 2 + 5;
-    doc.fontSize(6.5)
-       .fillColor(COLORES.textoTenue)
-       .text(String(kpi.label).toUpperCase(), labelX, labelY, { width: cardW - padding - 12 });
+    doc
+      .fontSize(6.5)
+      .fillColor(COLORES.textoTenue)
+      .text(String(kpi.label).toUpperCase(), labelX, labelY, { width: cardW - padding - 12 });
 
     // Valor
-    doc.fontSize(17)
-       .fillColor(COLORES.primario)
-       .text(String(kpi.valor), labelX, labelY + 10, { width: cardW - padding - 12 });
+    doc
+      .fontSize(17)
+      .fillColor(COLORES.primario)
+      .text(String(kpi.valor), labelX, labelY + 10, { width: cardW - padding - 12 });
 
     // Subtexto
     if (kpi.subtexto) {
-      doc.fontSize(6.5)
-         .fillColor('#CCCCCC')
-         .text(kpi.subtexto, labelX, labelY + 30, { width: cardW - padding - 12 });
+      doc
+        .fontSize(6.5)
+        .fillColor('#CCCCCC')
+        .text(kpi.subtexto, labelX, labelY + 30, { width: cardW - padding - 12 });
     }
   });
 
@@ -164,30 +171,41 @@ const agregarPiePagina = (doc, numeroPagina, totalPaginas = 0) => {
   doc.rect(0, footerY, W, footerH).fill(COLORES.fondoOscuro);
 
   // Marca izquierda
-  doc.fontSize(7)
-     .fillColor(COLORES.acento)
-     .text('CenthriX CRM · ISTHO S.A.S.', 20, footerY + 7, { continued: false });
+  doc
+    .fontSize(7)
+    .fillColor(COLORES.acento)
+    .text('CenthriX CRM · ISTHO S.A.S.', 20, footerY + 7, { continued: false });
 
-  doc.fontSize(6.5)
-     .fillColor('#555577')
-     .text('Centro Logístico Industrial del Norte, Bodega 130 – Girardota, Antioquia', 20, footerY + 17, { continued: false });
+  doc
+    .fontSize(6.5)
+    .fillColor('#555577')
+    .text(
+      'Centro Logístico Industrial del Norte, Bodega 130 – Girardota, Antioquia',
+      20,
+      footerY + 17,
+      { continued: false }
+    );
 
   // Fecha generación + número de página (derecha)
   const ahora = new Date().toLocaleString('es-CO', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
-  const paginaLabel = totalPaginas > 0
-    ? `Pág. ${numeroPagina} / ${totalPaginas}`
-    : `Pág. ${numeroPagina}`;
+  const paginaLabel =
+    totalPaginas > 0 ? `Pág. ${numeroPagina} / ${totalPaginas}` : `Pág. ${numeroPagina}`;
 
-  doc.fontSize(6.5)
-     .fillColor('#555577')
-     .text(`Generado: ${ahora}`, W - 220, footerY + 7, { width: 130, align: 'right' });
+  doc
+    .fontSize(6.5)
+    .fillColor('#555577')
+    .text(`Generado: ${ahora}`, W - 220, footerY + 7, { width: 130, align: 'right' });
 
-  doc.fontSize(7.5)
-     .fillColor(COLORES.acento)
-     .text(paginaLabel, W - 85, footerY + 7, { width: 65, align: 'right' });
+  doc
+    .fontSize(7.5)
+    .fillColor(COLORES.acento)
+    .text(paginaLabel, W - 85, footerY + 7, { width: 65, align: 'right' });
 };
 
 /**
@@ -220,9 +238,10 @@ const generarTabla = (doc, headers, rows, opciones = {}) => {
   if (etiquetaSeccion) {
     const ey = doc.y;
     doc.rect(startX, ey + 1, 3, 9).fill(COLORES.acento);
-    doc.fontSize(8)
-       .fillColor(COLORES.acento)
-       .text(etiquetaSeccion, startX + 8, ey, { continued: false });
+    doc
+      .fontSize(8)
+      .fillColor(COLORES.acento)
+      .text(etiquetaSeccion, startX + 8, ey, { continued: false });
     doc.rect(startX, ey + 13, anchoTotal, 1).fill('#E8E8E8');
     doc.y = ey + 18;
   }
@@ -238,9 +257,10 @@ const generarTabla = (doc, headers, rows, opciones = {}) => {
   headers.forEach((header, i) => {
     const ancho = anchoColumnas[i] || anchoPorColumna;
     const align = alineacion[i] || 'left';
-    doc.fontSize(8)
-       .fillColor(COLORES.acento)
-       .text(header, x + 5, y + 7, { width: ancho - 10, align });
+    doc
+      .fontSize(8)
+      .fillColor(COLORES.acento)
+      .text(header, x + 5, y + 7, { width: ancho - 10, align });
     x += ancho;
   });
 
@@ -264,7 +284,10 @@ const generarTabla = (doc, headers, rows, opciones = {}) => {
       headers.forEach((header, i) => {
         const ancho = anchoColumnas[i] || anchoPorColumna;
         const align = alineacion[i] || 'left';
-        doc.fontSize(8).fillColor(COLORES.acento).text(header, hx + 5, y + 7, { width: ancho - 10, align });
+        doc
+          .fontSize(8)
+          .fillColor(COLORES.acento)
+          .text(header, hx + 5, y + 7, { width: ancho - 10, align });
         hx += ancho;
       });
       y += headerRowH;
@@ -275,18 +298,21 @@ const generarTabla = (doc, headers, rows, opciones = {}) => {
     doc.rect(startX, y, anchoTotal, rowH).fill(bgColor);
 
     // Separador horizontal
-    doc.strokeColor(COLORES.separador).lineWidth(0.5)
-       .moveTo(startX, y + rowH)
-       .lineTo(startX + anchoTotal, y + rowH)
-       .stroke();
+    doc
+      .strokeColor(COLORES.separador)
+      .lineWidth(0.5)
+      .moveTo(startX, y + rowH)
+      .lineTo(startX + anchoTotal, y + rowH)
+      .stroke();
 
     x = startX;
     row.forEach((cell, i) => {
       const ancho = anchoColumnas[i] || anchoPorColumna;
       const align = alineacion[i] || 'left';
-      doc.fontSize(8)
-         .fillColor(COLORES.textoPrincipal)
-         .text(String(cell ?? ''), x + 5, y + 5, { width: ancho - 10, align, lineBreak: false });
+      doc
+        .fontSize(8)
+        .fillColor(COLORES.textoPrincipal)
+        .text(String(cell ?? ''), x + 5, y + 5, { width: ancho - 10, align, lineBreak: false });
       x += ancho;
     });
 
@@ -310,27 +336,49 @@ const generarTabla = (doc, headers, rows, opciones = {}) => {
 const generarPDFOperaciones = async (operaciones, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        layout: 'landscape',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      agregarEncabezado(doc, 'REPORTE DE OPERACIONES', 'Ingresos, salidas y movimientos de inventario');
+      agregarEncabezado(
+        doc,
+        'REPORTE DE OPERACIONES',
+        'Ingresos, salidas y movimientos de inventario'
+      );
 
-      const totalIngresos = operaciones.filter(o => o.tipo === 'ingreso').length;
-      const totalSalidas  = operaciones.filter(o => o.tipo === 'salida').length;
-      const totalUnidades = operaciones.reduce((s, o) => s + (parseFloat(o.total_unidades) || 0), 0);
+      const totalIngresos = operaciones.filter((o) => o.tipo === 'ingreso').length;
+      const totalSalidas = operaciones.filter((o) => o.tipo === 'salida').length;
+      const totalUnidades = operaciones.reduce(
+        (s, o) => s + (parseFloat(o.total_unidades) || 0),
+        0
+      );
 
       agregarKpis(doc, [
-        { label: 'Total Operaciones', valor: operaciones.length,                          subtexto: 'registros',   color: COLORES.acento },
-        { label: 'Ingresos',          valor: totalIngresos,                               subtexto: 'CO · entrada', color: COLORES.verde  },
-        { label: 'Salidas',           valor: totalSalidas,                                subtexto: 'PK · salida',  color: COLORES.acento },
-        { label: 'Total Unidades',    valor: totalUnidades.toLocaleString('es-CO'),       subtexto: 'unidades',    color: COLORES.azul   },
+        {
+          label: 'Total Operaciones',
+          valor: operaciones.length,
+          subtexto: 'registros',
+          color: COLORES.acento,
+        },
+        { label: 'Ingresos', valor: totalIngresos, subtexto: 'CO · entrada', color: COLORES.verde },
+        { label: 'Salidas', valor: totalSalidas, subtexto: 'PK · salida', color: COLORES.acento },
+        {
+          label: 'Total Unidades',
+          valor: totalUnidades.toLocaleString('es-CO'),
+          subtexto: 'unidades',
+          color: COLORES.azul,
+        },
       ]);
 
       const headers = ['N° Operación', 'Tipo', 'Cliente', 'Fecha', 'Estado', 'Unidades', 'Averías'];
-      const rows = operaciones.map(op => [
+      const rows = operaciones.map((op) => [
         op.numero_operacion,
         op.tipo?.toUpperCase(),
         (op.cliente?.razon_social || 'N/A').substring(0, 25),
@@ -342,7 +390,7 @@ const generarPDFOperaciones = async (operaciones, _filtros = {}) => {
 
       const finalPage = generarTabla(doc, headers, rows, {
         anchoColumnas: [110, 65, 180, 85, 85, 90, 65],
-        alineacion:    ['left', 'center', 'left', 'center', 'center', 'right', 'right'],
+        alineacion: ['left', 'center', 'left', 'center', 'center', 'right', 'right'],
         etiquetaSeccion: 'Detalle de Operaciones',
         titulosContinuacion: 'REPORTE DE OPERACIONES',
         paginaInicial: 1,
@@ -364,25 +412,48 @@ const generarPDFOperaciones = async (operaciones, _filtros = {}) => {
 const generarPDFInventario = async (inventario, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        layout: 'landscape',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
       agregarEncabezado(doc, 'REPORTE DE INVENTARIO', 'Stock actual de productos en bodega');
 
       const totalUnidades = inventario.reduce((s, i) => s + (parseFloat(i.cantidad) || 0), 0);
-      const valorTotal    = inventario.reduce((s, i) => s + ((parseFloat(i.cantidad) || 0) * (parseFloat(i.costo_unitario) || 0)), 0);
+      const valorTotal = inventario.reduce(
+        (s, i) => s + (parseFloat(i.cantidad) || 0) * (parseFloat(i.costo_unitario) || 0),
+        0
+      );
 
       agregarKpis(doc, [
-        { label: 'Referencias',    valor: inventario.length,                                                         subtexto: 'productos',  color: COLORES.acento },
-        { label: 'Total Unidades', valor: totalUnidades.toLocaleString('es-CO'),                                     subtexto: 'en bodega',  color: COLORES.azul   },
-        { label: 'Valor Total',    valor: `$${valorTotal.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,   subtexto: 'inventario', color: COLORES.verde  },
+        {
+          label: 'Referencias',
+          valor: inventario.length,
+          subtexto: 'productos',
+          color: COLORES.acento,
+        },
+        {
+          label: 'Total Unidades',
+          valor: totalUnidades.toLocaleString('es-CO'),
+          subtexto: 'en bodega',
+          color: COLORES.azul,
+        },
+        {
+          label: 'Valor Total',
+          valor: `$${valorTotal.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,
+          subtexto: 'inventario',
+          color: COLORES.verde,
+        },
       ]);
 
       const headers = ['SKU', 'Producto', 'Cliente', 'Cantidad', 'Vencimiento', 'Estado'];
-      const rows = inventario.map(item => [
+      const rows = inventario.map((item) => [
         item.sku,
         (item.producto || '').substring(0, 32),
         (item.cliente?.razon_social || 'N/A').substring(0, 22),
@@ -393,7 +464,7 @@ const generarPDFInventario = async (inventario, _filtros = {}) => {
 
       const finalPage = generarTabla(doc, headers, rows, {
         anchoColumnas: [85, 210, 125, 75, 100, 85],
-        alineacion:    ['left', 'left', 'left', 'right', 'center', 'center'],
+        alineacion: ['left', 'left', 'left', 'right', 'center', 'center'],
         etiquetaSeccion: 'Detalle de Inventario',
         titulosContinuacion: 'REPORTE DE INVENTARIO',
         paginaInicial: 1,
@@ -415,27 +486,63 @@ const generarPDFInventario = async (inventario, _filtros = {}) => {
 const generarPDFClientes = async (clientes, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        layout: 'landscape',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      agregarEncabezado(doc, 'REPORTE DE CLIENTES', 'Directorio de clientes registrados en el sistema');
+      agregarEncabezado(
+        doc,
+        'REPORTE DE CLIENTES',
+        'Directorio de clientes registrados en el sistema'
+      );
 
-      const activos    = clientes.filter(c => c.estado === 'activo').length;
-      const inactivos  = clientes.length - activos;
-      const totalProds = clientes.reduce((s, c) => s + parseInt(c.getDataValue?.('total_productos') || c.total_productos || 0), 0);
+      const activos = clientes.filter((c) => c.estado === 'activo').length;
+      const inactivos = clientes.length - activos;
+      const totalProds = clientes.reduce(
+        (s, c) => s + parseInt(c.getDataValue?.('total_productos') || c.total_productos || 0),
+        0
+      );
 
       agregarKpis(doc, [
-        { label: 'Total Clientes', valor: clientes.length,                              subtexto: 'registrados', color: COLORES.acento },
-        { label: 'Activos',        valor: activos,                                      subtexto: 'en operación', color: COLORES.verde  },
-        { label: 'Inactivos',      valor: inactivos,                                    subtexto: 'suspendidos',  color: COLORES.textoSecundario },
-        { label: 'Total Productos', valor: totalProds.toLocaleString('es-CO'),          subtexto: 'en inventario', color: COLORES.azul },
+        {
+          label: 'Total Clientes',
+          valor: clientes.length,
+          subtexto: 'registrados',
+          color: COLORES.acento,
+        },
+        { label: 'Activos', valor: activos, subtexto: 'en operación', color: COLORES.verde },
+        {
+          label: 'Inactivos',
+          valor: inactivos,
+          subtexto: 'suspendidos',
+          color: COLORES.textoSecundario,
+        },
+        {
+          label: 'Total Productos',
+          valor: totalProds.toLocaleString('es-CO'),
+          subtexto: 'en inventario',
+          color: COLORES.azul,
+        },
       ]);
 
-      const headers = ['Código', 'Razón Social', 'NIT', 'Prod.', 'Ciudad', 'Teléfono', 'Email', 'Estado'];
-      const rows = clientes.map(c => [
+      const headers = [
+        'Código',
+        'Razón Social',
+        'NIT',
+        'Prod.',
+        'Ciudad',
+        'Teléfono',
+        'Email',
+        'Estado',
+      ];
+      const rows = clientes.map((c) => [
         c.codigo_cliente || '',
         (c.razon_social || '').substring(0, 28),
         c.nit || '',
@@ -448,7 +555,7 @@ const generarPDFClientes = async (clientes, _filtros = {}) => {
 
       const finalPage = generarTabla(doc, headers, rows, {
         anchoColumnas: [60, 162, 85, 38, 72, 75, 130, 58],
-        alineacion:    ['left', 'left', 'left', 'center', 'left', 'left', 'left', 'center'],
+        alineacion: ['left', 'left', 'left', 'center', 'left', 'left', 'left', 'center'],
         etiquetaSeccion: 'Directorio de Clientes',
         titulosContinuacion: 'REPORTE DE CLIENTES',
         paginaInicial: 1,
@@ -470,9 +577,13 @@ const generarPDFClientes = async (clientes, _filtros = {}) => {
 const generarPDFDetalleOperacion = async (operacion) => {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: 'LETTER', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
@@ -494,14 +605,20 @@ const generarPDFDetalleOperacion = async (operacion) => {
         ['Tipo:', operacion.tipo?.toUpperCase()],
         ['Estado:', operacion.estado?.toUpperCase()],
         ['Cliente:', operacion.cliente?.razon_social || 'N/A'],
-        ['Fecha:', operacion.fecha_operacion ? new Date(operacion.fecha_operacion).toLocaleDateString('es-CO') : ''],
+        [
+          'Fecha:',
+          operacion.fecha_operacion
+            ? new Date(operacion.fecha_operacion).toLocaleDateString('es-CO')
+            : '',
+        ],
       ];
       info.forEach(([label, value]) => {
-        doc.fontSize(9)
-           .fillColor(COLORES.textoSecundario)
-           .text(label, 50, doc.y, { continued: true, width: 130 })
-           .fillColor(COLORES.textoPrincipal)
-           .text(value || 'N/A', { width: 350 });
+        doc
+          .fontSize(9)
+          .fillColor(COLORES.textoSecundario)
+          .text(label, 50, doc.y, { continued: true, width: 130 })
+          .fillColor(COLORES.textoPrincipal)
+          .text(value || 'N/A', { width: 350 });
       });
 
       doc.moveDown(0.8);
@@ -515,16 +632,17 @@ const generarPDFDetalleOperacion = async (operacion) => {
         ['Teléfono:', operacion.conductor_telefono || 'N/A'],
       ];
       transporte.forEach(([label, value]) => {
-        doc.fontSize(9)
-           .fillColor(COLORES.textoSecundario)
-           .text(label, 50, doc.y, { continued: true, width: 130 })
-           .fillColor(COLORES.textoPrincipal)
-           .text(value, { width: 350 });
+        doc
+          .fontSize(9)
+          .fillColor(COLORES.textoSecundario)
+          .text(label, 50, doc.y, { continued: true, width: 130 })
+          .fillColor(COLORES.textoPrincipal)
+          .text(value, { width: 350 });
       });
 
       doc.moveDown(0.8);
       const headers = ['SKU', 'Producto', 'Cantidad', 'U.M.', 'Lote', 'Averías'];
-      const rows = (operacion.detalles || []).map(d => [
+      const rows = (operacion.detalles || []).map((d) => [
         d.sku,
         (d.producto || '').substring(0, 28),
         parseFloat(d.cantidad || 0).toLocaleString('es-CO'),
@@ -536,16 +654,20 @@ const generarPDFDetalleOperacion = async (operacion) => {
       const finalPage = generarTabla(doc, headers, rows, {
         startX: 50,
         anchoColumnas: [80, 190, 70, 50, 80, 50],
-        alineacion:    ['left', 'left', 'right', 'center', 'left', 'right'],
+        alineacion: ['left', 'left', 'right', 'center', 'left', 'right'],
         etiquetaSeccion: 'DETALLE DE PRODUCTOS',
         titulosContinuacion: `DETALLE DE OPERACION - ${operacion.numero_operacion}`,
         paginaInicial: 1,
       });
 
-      doc.fontSize(9).fillColor(COLORES.textoPrincipal)
-         .text(`Total Referencias: ${operacion.total_referencias || 0}`, 50)
-         .text(`Total Unidades: ${parseFloat(operacion.total_unidades || 0).toLocaleString('es-CO')}`)
-         .text(`Total Averias: ${operacion.total_averias || 0}`);
+      doc
+        .fontSize(9)
+        .fillColor(COLORES.textoPrincipal)
+        .text(`Total Referencias: ${operacion.total_referencias || 0}`, 50)
+        .text(
+          `Total Unidades: ${parseFloat(operacion.total_unidades || 0).toLocaleString('es-CO')}`
+        )
+        .text(`Total Averias: ${operacion.total_averias || 0}`);
 
       agregarPiePagina(doc, finalPage);
       doc.end();
@@ -563,27 +685,51 @@ const generarPDFDetalleOperacion = async (operacion) => {
 const generarPDFViajes = async (viajes, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        layout: 'landscape',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
       agregarEncabezado(doc, 'REPORTE DE VIAJES', 'Historial de viajes, rutas y conductores');
 
-      const completados  = viajes.filter(v => v.estado === 'completado').length;
-      const enProgreso   = viajes.filter(v => v.estado === 'en_progreso').length;
-      const totalGastos  = viajes.reduce((s, v) => s + (parseFloat(v.valor_viaje) || 0), 0);
+      const completados = viajes.filter((v) => v.estado === 'completado').length;
+      const enProgreso = viajes.filter((v) => v.estado === 'en_progreso').length;
+      const totalGastos = viajes.reduce((s, v) => s + (parseFloat(v.valor_viaje) || 0), 0);
 
       agregarKpis(doc, [
-        { label: 'Total Viajes',   valor: viajes.length,                                                           subtexto: 'registros',     color: COLORES.acento  },
-        { label: 'En Progreso',    valor: enProgreso,                                                              subtexto: 'activos',        color: COLORES.azul    },
-        { label: 'Completados',    valor: completados,                                                             subtexto: 'finalizados',    color: COLORES.verde   },
-        { label: 'Total Gastos',   valor: `$${totalGastos.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`, subtexto: 'valor viajes',   color: COLORES.morado  },
+        {
+          label: 'Total Viajes',
+          valor: viajes.length,
+          subtexto: 'registros',
+          color: COLORES.acento,
+        },
+        { label: 'En Progreso', valor: enProgreso, subtexto: 'activos', color: COLORES.azul },
+        { label: 'Completados', valor: completados, subtexto: 'finalizados', color: COLORES.verde },
+        {
+          label: 'Total Gastos',
+          valor: `$${totalGastos.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,
+          subtexto: 'valor viajes',
+          color: COLORES.morado,
+        },
       ]);
 
-      const headers = ['N° Viaje', 'Conductor', 'Vehículo', 'Origen', 'Destino', 'Fecha', 'Estado', 'Valor'];
-      const rows = viajes.map(v => [
+      const headers = [
+        'N° Viaje',
+        'Conductor',
+        'Vehículo',
+        'Origen',
+        'Destino',
+        'Fecha',
+        'Estado',
+        'Valor',
+      ];
+      const rows = viajes.map((v) => [
         v.numero || '',
         (v.conductor?.nombre_completo || 'N/A').substring(0, 22),
         v.vehiculo?.placa || 'N/A',
@@ -596,7 +742,7 @@ const generarPDFViajes = async (viajes, _filtros = {}) => {
 
       const finalPage = generarTabla(doc, headers, rows, {
         anchoColumnas: [65, 140, 70, 100, 100, 75, 80, 80],
-        alineacion:    ['left', 'left', 'center', 'left', 'left', 'center', 'center', 'right'],
+        alineacion: ['left', 'left', 'center', 'left', 'left', 'center', 'center', 'right'],
         etiquetaSeccion: 'Detalle de Viajes',
         titulosContinuacion: 'REPORTE DE VIAJES',
         paginaInicial: 1,
@@ -618,27 +764,56 @@ const generarPDFViajes = async (viajes, _filtros = {}) => {
 const generarPDFVehiculos = async (vehiculos, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        layout: 'landscape',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
       agregarEncabezado(doc, 'REPORTE DE VEHÍCULOS', 'Gestión de flota y documentos de transporte');
 
-      const activos = vehiculos.filter(v => v.estado === 'activo').length;
-      const mantenimiento = vehiculos.filter(v => v.estado === 'mantenimiento').length;
-      const inactivos = vehiculos.filter(v => v.estado === 'inactivo').length;
+      const activos = vehiculos.filter((v) => v.estado === 'activo').length;
+      const mantenimiento = vehiculos.filter((v) => v.estado === 'mantenimiento').length;
+      const inactivos = vehiculos.filter((v) => v.estado === 'inactivo').length;
 
       agregarKpis(doc, [
-        { label: 'Total Vehículos', valor: vehiculos.length, subtexto: 'flota registrada', color: COLORES.acento  },
-        { label: 'Activos',         valor: activos,           subtexto: 'operativos',     color: COLORES.verde   },
-        { label: 'En Taller',       valor: mantenimiento,    subtexto: 'mantenimiento', color: COLORES.amarillo },
-        { label: 'Fuera Servicio',  valor: inactivos,        subtexto: 'inactivos',     color: COLORES.textoTenue },
+        {
+          label: 'Total Vehículos',
+          valor: vehiculos.length,
+          subtexto: 'flota registrada',
+          color: COLORES.acento,
+        },
+        { label: 'Activos', valor: activos, subtexto: 'operativos', color: COLORES.verde },
+        {
+          label: 'En Taller',
+          valor: mantenimiento,
+          subtexto: 'mantenimiento',
+          color: COLORES.amarillo,
+        },
+        {
+          label: 'Fuera Servicio',
+          valor: inactivos,
+          subtexto: 'inactivos',
+          color: COLORES.textoTenue,
+        },
       ]);
 
-      const headers = ['Placa', 'Tipo', 'Marca / Modelo', 'Cap. (Ton)', 'Conductor', 'SOAT Vence', 'Tecno Vence', 'Estado'];
-      const rows = vehiculos.map(v => [
+      const headers = [
+        'Placa',
+        'Tipo',
+        'Marca / Modelo',
+        'Cap. (Ton)',
+        'Conductor',
+        'SOAT Vence',
+        'Tecno Vence',
+        'Estado',
+      ];
+      const rows = vehiculos.map((v) => [
         v.placa || '',
         (v.tipo_vehiculo || '').toUpperCase().substring(0, 12),
         `${v.marca || ''} ${v.modelo || ''}`.substring(0, 20),
@@ -651,7 +826,7 @@ const generarPDFVehiculos = async (vehiculos, _filtros = {}) => {
 
       const finalPage = generarTabla(doc, headers, rows, {
         anchoColumnas: [65, 80, 140, 65, 140, 80, 80, 80],
-        alineacion:    ['left', 'center', 'left', 'right', 'left', 'center', 'center', 'center'],
+        alineacion: ['left', 'center', 'left', 'right', 'left', 'center', 'center', 'center'],
         etiquetaSeccion: 'Lista de Vehículos',
         titulosContinuacion: 'REPORTE DE VEHÍCULOS (Continuación)',
       });
@@ -666,46 +841,70 @@ const generarPDFVehiculos = async (vehiculos, _filtros = {}) => {
   });
 };
 
-
 /**
  * Generar PDF de cajas menores
  */
 const generarPDFCajasMenores = async (cajas, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        layout: 'landscape',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
       agregarEncabezado(doc, 'REPORTE DE CAJAS MENORES', 'Estado y saldos de cajas menores');
 
-      const activas     = cajas.filter(c => c.estado === 'activa').length;
-      const cerradas    = cajas.filter(c => c.estado === 'cerrada').length;
-      const saldoTotal  = cajas.reduce((s, c) => s + (parseFloat(c.saldo_actual) || 0), 0);
+      const activas = cajas.filter((c) => c.estado === 'activa').length;
+      const cerradas = cajas.filter((c) => c.estado === 'cerrada').length;
+      const saldoTotal = cajas.reduce((s, c) => s + (parseFloat(c.saldo_actual) || 0), 0);
 
       agregarKpis(doc, [
-        { label: 'Total Cajas',   valor: cajas.length,                                                              subtexto: 'registradas',  color: COLORES.acento },
-        { label: 'Activas',       valor: activas,                                                                   subtexto: 'en uso',        color: COLORES.verde  },
-        { label: 'Cerradas',      valor: cerradas,                                                                  subtexto: 'liquidadas',    color: COLORES.azul   },
-        { label: 'Saldo Total',   valor: `$${saldoTotal.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,  subtexto: 'saldo actual',  color: COLORES.morado },
+        {
+          label: 'Total Cajas',
+          valor: cajas.length,
+          subtexto: 'registradas',
+          color: COLORES.acento,
+        },
+        { label: 'Activas', valor: activas, subtexto: 'en uso', color: COLORES.verde },
+        { label: 'Cerradas', valor: cerradas, subtexto: 'liquidadas', color: COLORES.azul },
+        {
+          label: 'Saldo Total',
+          valor: `$${saldoTotal.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,
+          subtexto: 'saldo actual',
+          color: COLORES.morado,
+        },
       ]);
 
-      const headers = ['N° Caja', 'Asignado A', 'Monto Inicial', 'Saldo Actual', 'Fecha Apertura', 'Fecha Cierre', 'Estado'];
-      const rows = cajas.map(c => [
+      const headers = [
+        'N° Caja',
+        'Asignado A',
+        'Monto Inicial',
+        'Saldo Actual',
+        'Fecha Apertura',
+        'Fecha Cierre',
+        'Estado',
+      ];
+      const rows = cajas.map((c) => [
         c.numero || '',
         (c.asignado?.nombre_completo || 'N/A').substring(0, 28),
         `$${(parseFloat(c.saldo_inicial) || 0).toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,
         `$${(parseFloat(c.saldo_actual) || 0).toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,
-        c.fecha_apertura ? new Date(c.fecha_apertura + 'T00:00:00').toLocaleDateString('es-CO') : '',
-        c.fecha_cierre   ? new Date(c.fecha_cierre   + 'T00:00:00').toLocaleDateString('es-CO') : '—',
+        c.fecha_apertura
+          ? new Date(c.fecha_apertura + 'T00:00:00').toLocaleDateString('es-CO')
+          : '',
+        c.fecha_cierre ? new Date(c.fecha_cierre + 'T00:00:00').toLocaleDateString('es-CO') : '—',
         (c.estado || '').toUpperCase(),
       ]);
 
       const finalPage = generarTabla(doc, headers, rows, {
         anchoColumnas: [65, 165, 95, 95, 95, 95, 80],
-        alineacion:    ['left', 'left', 'right', 'right', 'center', 'center', 'center'],
+        alineacion: ['left', 'left', 'right', 'right', 'center', 'center', 'center'],
         etiquetaSeccion: 'Detalle de Cajas Menores',
         titulosContinuacion: 'REPORTE DE CAJAS MENORES',
         paginaInicial: 1,
@@ -727,27 +926,51 @@ const generarPDFCajasMenores = async (cajas, _filtros = {}) => {
 const generarPDFGastos = async (movimientos, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        layout: 'landscape',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
       agregarEncabezado(doc, 'REPORTE DE GASTOS', 'Movimientos de cajas menores');
 
-      const aprobados  = movimientos.filter(m => m.aprobado).length;
-      const pendientes = movimientos.filter(m => !m.aprobado && !m.rechazado).length;
+      const aprobados = movimientos.filter((m) => m.aprobado).length;
+      const pendientes = movimientos.filter((m) => !m.aprobado && !m.rechazado).length;
       const totalMonto = movimientos.reduce((s, m) => s + (parseFloat(m.valor) || 0), 0);
 
       agregarKpis(doc, [
-        { label: 'Total Movimientos', valor: movimientos.length,                                                         subtexto: 'registros',    color: COLORES.acento },
-        { label: 'Aprobados',         valor: aprobados,                                                                  subtexto: 'confirmados',  color: COLORES.verde  },
-        { label: 'Pendientes',        valor: pendientes,                                                                 subtexto: 'por revisar',  color: COLORES.azul   },
-        { label: 'Total Monto',       valor: `$${totalMonto.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,   subtexto: 'gastos',       color: COLORES.morado },
+        {
+          label: 'Total Movimientos',
+          valor: movimientos.length,
+          subtexto: 'registros',
+          color: COLORES.acento,
+        },
+        { label: 'Aprobados', valor: aprobados, subtexto: 'confirmados', color: COLORES.verde },
+        { label: 'Pendientes', valor: pendientes, subtexto: 'por revisar', color: COLORES.azul },
+        {
+          label: 'Total Monto',
+          valor: `$${totalMonto.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,
+          subtexto: 'gastos',
+          color: COLORES.morado,
+        },
       ]);
 
-      const headers = ['N° Mov.', 'Caja', 'Concepto', 'Descripción', 'Fecha', 'Monto', 'Estado', 'Usuario'];
-      const rows = movimientos.map(m => [
+      const headers = [
+        'N° Mov.',
+        'Caja',
+        'Concepto',
+        'Descripción',
+        'Fecha',
+        'Monto',
+        'Estado',
+        'Usuario',
+      ];
+      const rows = movimientos.map((m) => [
         m.consecutivo || '',
         m.cajaMenor?.numero || 'N/A',
         (m.concepto || '').substring(0, 18),
@@ -760,7 +983,7 @@ const generarPDFGastos = async (movimientos, _filtros = {}) => {
 
       const finalPage = generarTabla(doc, headers, rows, {
         anchoColumnas: [52, 55, 100, 160, 72, 80, 80, 115],
-        alineacion:    ['center', 'center', 'left', 'left', 'center', 'right', 'center', 'left'],
+        alineacion: ['center', 'center', 'left', 'left', 'center', 'right', 'center', 'left'],
         etiquetaSeccion: 'Detalle de Movimientos',
         titulosContinuacion: 'REPORTE DE GASTOS',
         paginaInicial: 1,
@@ -783,28 +1006,57 @@ const generarPDFGastos = async (movimientos, _filtros = {}) => {
 const generarPDFInventarioUbicacion = async (cajas, _filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        layout: 'landscape',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      agregarEncabezado(doc, 'INVENTARIO POR UBICACIÓN', 'Detalle de cajas disponibles por ubicación en bodega');
+      agregarEncabezado(
+        doc,
+        'INVENTARIO POR UBICACIÓN',
+        'Detalle de cajas disponibles por ubicación en bodega'
+      );
 
       const totalCajas = cajas.length;
       const totalUnidades = cajas.reduce((s, c) => s + (parseFloat(c.cantidad) || 0), 0);
-      const ubicaciones = new Set(cajas.map(c => c.ubicacion).filter(Boolean)).size;
-      const productos = new Set(cajas.map(c => c.inventario_id)).size;
+      const ubicaciones = new Set(cajas.map((c) => c.ubicacion).filter(Boolean)).size;
+      const productos = new Set(cajas.map((c) => c.inventario_id)).size;
 
       agregarKpis(doc, [
-        { label: 'Total Cajas',  valor: totalCajas,                                      subtexto: 'registros', color: COLORES.azul   },
-        { label: 'Unidades',     valor: totalUnidades.toLocaleString('es-CO'),            subtexto: 'en bodega', color: COLORES.verde  },
-        { label: 'Ubicaciones',  valor: ubicaciones,                                      subtexto: 'únicas',   color: COLORES.acento },
-        { label: 'Productos',    valor: productos,                                        subtexto: 'únicos',   color: COLORES.morado || COLORES.azul },
+        { label: 'Total Cajas', valor: totalCajas, subtexto: 'registros', color: COLORES.azul },
+        {
+          label: 'Unidades',
+          valor: totalUnidades.toLocaleString('es-CO'),
+          subtexto: 'en bodega',
+          color: COLORES.verde,
+        },
+        { label: 'Ubicaciones', valor: ubicaciones, subtexto: 'únicas', color: COLORES.acento },
+        {
+          label: 'Productos',
+          valor: productos,
+          subtexto: 'únicos',
+          color: COLORES.morado || COLORES.azul,
+        },
       ]);
 
       const hoy = new Date();
-      const headers = ['#', 'Ref.', 'Caja', 'Saldo', 'Descripción', 'Unidad', 'Lote', 'Ubicación', 'Venc.'];
+      const headers = [
+        '#',
+        'Ref.',
+        'Caja',
+        'Saldo',
+        'Descripción',
+        'Unidad',
+        'Lote',
+        'Ubicación',
+        'Venc.',
+      ];
       const rows = cajas.map((c, idx) => {
         const fv = c.fecha_vencimiento ? new Date(c.fecha_vencimiento) : null;
         const dias = fv ? Math.ceil((fv - hoy) / (1000 * 60 * 60 * 24)) : '';
@@ -823,7 +1075,17 @@ const generarPDFInventarioUbicacion = async (cajas, _filtros = {}) => {
 
       const finalPage = generarTabla(doc, headers, rows, {
         anchoColumnas: [30, 45, 60, 65, 195, 45, 70, 85, 45],
-        alineacion:    ['center', 'right', 'right', 'right', 'left', 'center', 'right', 'center', 'right'],
+        alineacion: [
+          'center',
+          'right',
+          'right',
+          'right',
+          'left',
+          'center',
+          'right',
+          'center',
+          'right',
+        ],
         etiquetaSeccion: 'Detalle por Ubicación',
         titulosContinuacion: 'INVENTARIO POR UBICACIÓN',
         paginaInicial: 1,
@@ -846,9 +1108,14 @@ const generarPDFInventarioUbicacion = async (cajas, _filtros = {}) => {
 const generarPDFAuditoriaAcciones = async (registros, filtros = {}) => {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: 'LETTER', layout: 'landscape', margins: { top: 0, bottom: 0, left: 0, right: 0 }, autoFirstPage: true });
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        layout: 'landscape',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
@@ -864,17 +1131,39 @@ const generarPDFAuditoriaAcciones = async (registros, filtros = {}) => {
       }, {});
 
       agregarKpis(doc, [
-        { label: 'Total Registros', valor: registros.length,       subtexto: 'acciones',   color: COLORES.acento },
-        { label: 'Crear',          valor: conteos.crear || 0,      subtexto: 'inserciones', color: COLORES.verde  },
-        { label: 'Actualizar',     valor: conteos.actualizar || 0, subtexto: 'ediciones',  color: COLORES.azul   },
-        { label: 'Eliminar',       valor: conteos.eliminar || 0,   subtexto: 'bajas',      color: COLORES.acento },
+        {
+          label: 'Total Registros',
+          valor: registros.length,
+          subtexto: 'acciones',
+          color: COLORES.acento,
+        },
+        {
+          label: 'Crear',
+          valor: conteos.crear || 0,
+          subtexto: 'inserciones',
+          color: COLORES.verde,
+        },
+        {
+          label: 'Actualizar',
+          valor: conteos.actualizar || 0,
+          subtexto: 'ediciones',
+          color: COLORES.azul,
+        },
+        {
+          label: 'Eliminar',
+          valor: conteos.eliminar || 0,
+          subtexto: 'bajas',
+          color: COLORES.acento,
+        },
       ]);
 
       const headers = ['Fecha', 'Usuario', 'Rol', 'Acción', 'Módulo', 'Descripción', 'IP'];
-      const rows = registros.map(r => {
+      const rows = registros.map((r) => {
         const fecha = r.created_at || r.createdAt;
         return [
-          fecha ? new Date(fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : '',
+          fecha
+            ? new Date(fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
+            : '',
           (r.usuario?.nombre_completo || r.usuario_nombre || 'Sistema').substring(0, 22),
           r.usuario?.rol || '',
           (r.accion || '').toUpperCase(),
@@ -886,7 +1175,7 @@ const generarPDFAuditoriaAcciones = async (registros, filtros = {}) => {
 
       const finalPage = generarTabla(doc, headers, rows, {
         anchoColumnas: [90, 115, 60, 60, 80, 215, 80],
-        alineacion:    ['center', 'left', 'center', 'center', 'left', 'left', 'center'],
+        alineacion: ['center', 'left', 'center', 'center', 'left', 'left', 'center'],
         etiquetaSeccion: 'Detalle de Acciones',
         titulosContinuacion: 'AUDITORÍA DE ACCIONES',
         paginaInicial: 1,

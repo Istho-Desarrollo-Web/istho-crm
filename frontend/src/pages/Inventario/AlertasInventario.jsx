@@ -3,10 +3,10 @@
  * ISTHO CRM - AlertasInventario (Versión Corregida v2.2)
  * ============================================================================
  * Gestión de alertas de inventario conectada al backend real.
- * 
+ *
  * CORRECCIONES v2.2:
  * - Corregidos TODOS los template literals (className, navigate, message)
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 2.2.0
  * @date Enero 2026
@@ -29,7 +29,6 @@ import {
 } from 'lucide-react';
 
 // Layout
-
 
 // Components
 import { Button, FilterDropdown, KpiCard, ConfirmDialog } from '../../components/common';
@@ -108,7 +107,9 @@ const AlertaCard = ({ alerta, onView, onAtender, onDescartar, canAtender }) => {
   const diasRestantes = alerta.dias_restantes;
 
   return (
-    <div className={`bg-white dark:bg-centhrix-card rounded-2xl border ${config.border} shadow-sm overflow-hidden hover:shadow-md transition-shadow`}>
+    <div
+      className={`bg-white dark:bg-centhrix-card rounded-2xl border ${config.border} shadow-sm overflow-hidden hover:shadow-md transition-shadow`}
+    >
       <div className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
@@ -179,15 +180,20 @@ const AlertaCard = ({ alerta, onView, onAtender, onDescartar, canAtender }) => {
           <div className="bg-slate-50 dark:bg-centhrix-bg/50 rounded-xl p-3 mb-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500 dark:text-slate-400">Stock Actual</span>
-              <span className={`font-bold ${stockActual === 0 ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                {Number(stockActual).toLocaleString()} {typeof alerta.unidad_medida === 'string' ? alerta.unidad_medida : 'UND'}
+              <span
+                className={`font-bold ${stockActual === 0 ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}
+              >
+                {Number(stockActual).toLocaleString()}{' '}
+                {typeof alerta.unidad_medida === 'string' ? alerta.unidad_medida : 'UND'}
               </span>
             </div>
             {stockMinimo > 0 && (
               <>
                 <div className="flex items-center justify-between text-sm mt-1">
                   <span className="text-slate-500 dark:text-slate-400">Stock Mínimo</span>
-                  <span className="text-slate-700 dark:text-slate-300">{stockMinimo.toLocaleString()}</span>
+                  <span className="text-slate-700 dark:text-slate-300">
+                    {stockMinimo.toLocaleString()}
+                  </span>
                 </div>
                 <div className="mt-2 h-2 bg-slate-200 dark:bg-centhrix-surface rounded-full overflow-hidden">
                   <div
@@ -252,23 +258,25 @@ const AlertasInventario = () => {
   const [descartarTodasModal, setDescartarTodasModal] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
 
-  const canAtender = authHasPermission ? authHasPermission('inventario', 'ajustar') : user?.rol === 'admin';
+  const canAtender = authHasPermission
+    ? authHasPermission('inventario', 'ajustar')
+    : user?.rol === 'admin';
 
   const filteredAlertas = useMemo(() => {
     let result = [...alertas];
-    if (filters.tipo) result = result.filter(a => a.tipo === filters.tipo);
-    if (filters.prioridad) result = result.filter(a => a.prioridad === filters.prioridad);
+    if (filters.tipo) result = result.filter((a) => a.tipo === filters.tipo);
+    if (filters.prioridad) result = result.filter((a) => a.prioridad === filters.prioridad);
     return result;
   }, [alertas, filters]);
 
   const kpis = useMemo(() => {
-    const pendientes = alertas.filter(a => a.estado !== 'atendida');
+    const pendientes = alertas.filter((a) => a.estado !== 'atendida');
     return {
       total: alertas.length,
-      agotados: alertas.filter(a => a.tipo === 'agotado').length,
-      bajoStock: alertas.filter(a => a.tipo === 'bajo_stock').length,
-      porVencer: alertas.filter(a => a.tipo === 'vencimiento').length,
-      altaPrioridad: pendientes.filter(a => a.prioridad === 'alta').length,
+      agotados: alertas.filter((a) => a.tipo === 'agotado').length,
+      bajoStock: alertas.filter((a) => a.tipo === 'bajo_stock').length,
+      porVencer: alertas.filter((a) => a.tipo === 'vencimiento').length,
+      altaPrioridad: pendientes.filter((a) => a.prioridad === 'alta').length,
     };
   }, [alertas]);
 
@@ -281,9 +289,15 @@ const AlertasInventario = () => {
           <div className="w-16 h-16 bg-slate-200 dark:bg-centhrix-surface rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-8 h-8 text-slate-400" />
           </div>
-          <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">Acceso restringido</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-4">No tienes permiso para ver las alertas de inventario</p>
-          <Button variant="primary" onClick={() => navigate('/inventario')}>Volver a Inventario</Button>
+          <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">
+            Acceso restringido
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">
+            No tienes permiso para ver las alertas de inventario
+          </p>
+          <Button variant="primary" onClick={() => navigate('/inventario')}>
+            Volver a Inventario
+          </Button>
         </div>
       </div>
     );
@@ -299,7 +313,7 @@ const AlertasInventario = () => {
   };
 
   const handleFilterChange = (key, value) => {
-    setFilters(prev => {
+    setFilters((prev) => {
       const newFilters = { ...prev };
       if (value) newFilters[key] = value;
       else delete newFilters[key];
@@ -360,8 +374,6 @@ const AlertasInventario = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-
-
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* HEADER */}
@@ -375,8 +387,12 @@ const AlertasInventario = () => {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Alertas de Inventario</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-1">Gestiona las alertas de stock bajo, agotados y vencimientos</p>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+                Alertas de Inventario
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-1">
+                Gestiona las alertas de stock bajo, agotados y vencimientos
+              </p>
             </div>
           </div>
 
@@ -387,17 +403,18 @@ const AlertasInventario = () => {
               onClick={handleRefresh}
               loading={isRefreshing}
             />
-            {filteredAlertas.length > 0 && (user?.rol === 'admin' || user?.rol === 'supervisor') && (
-              <Button
-                variant="outline"
-                icon={XCircle}
-                onClick={() => setDescartarTodasModal(true)}
-                className="text-red-500 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-              >
-                <span className="hidden sm:inline">Descartar todas</span>
-                <span className="sm:hidden">Descartar</span>
-              </Button>
-            )}
+            {filteredAlertas.length > 0 &&
+              (user?.rol === 'admin' || user?.rol === 'supervisor') && (
+                <Button
+                  variant="outline"
+                  icon={XCircle}
+                  onClick={() => setDescartarTodasModal(true)}
+                  className="text-red-500 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                  <span className="hidden sm:inline">Descartar todas</span>
+                  <span className="sm:hidden">Descartar</span>
+                </Button>
+              )}
             <Button
               variant={showFilters ? 'secondary' : 'outline'}
               icon={Filter}
@@ -491,7 +508,8 @@ const AlertasInventario = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         <div className="mb-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            {filteredAlertas.length} alerta{filteredAlertas.length !== 1 ? 's' : ''} encontrada{filteredAlertas.length !== 1 ? 's' : ''}
+            {filteredAlertas.length} alerta{filteredAlertas.length !== 1 ? 's' : ''} encontrada
+            {filteredAlertas.length !== 1 ? 's' : ''}
           </p>
         </div>
 
@@ -501,7 +519,10 @@ const AlertasInventario = () => {
         {loadingAlertas ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[0, 1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-64 bg-gray-200 dark:bg-centhrix-surface rounded-2xl animate-pulse" />
+              <div
+                key={i}
+                className="h-64 bg-gray-200 dark:bg-centhrix-surface rounded-2xl animate-pulse"
+              />
             ))}
           </div>
         ) : filteredAlertas.length === 0 ? (
@@ -510,10 +531,14 @@ const AlertasInventario = () => {
               <CheckCircle className="w-8 h-8 text-emerald-500 dark:text-emerald-400" />
             </div>
             <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
-              {Object.keys(filters).length > 0 ? 'No hay alertas con estos filtros' : '¡Todo en orden!'}
+              {Object.keys(filters).length > 0
+                ? 'No hay alertas con estos filtros'
+                : '¡Todo en orden!'}
             </h3>
             <p className="text-slate-500 dark:text-slate-400">
-              {Object.keys(filters).length > 0 ? 'Intenta ajustar los filtros de búsqueda' : 'No hay alertas de inventario pendientes'}
+              {Object.keys(filters).length > 0
+                ? 'Intenta ajustar los filtros de búsqueda'
+                : 'No hay alertas de inventario pendientes'}
             </p>
           </div>
         ) : (

@@ -2,16 +2,16 @@
  * ============================================================================
  * ISTHO CRM - Servicio de Despachos
  * ============================================================================
- * 
+ *
  * ⚠️ NOTA DE NOMENCLATURA:
  * - El FRONTEND usa "Despachos" (más intuitivo para usuarios)
  * - El BACKEND usa "Operaciones" (integración con WMS)
  * - Este servicio hace el MAPEO TRANSPARENTE
- * 
+ *
  * CORRECCIÓN v1.1.0:
  * - Compatible con client.js v1.1.0 (ya devuelve response.data)
  * - Eliminado doble acceso a .data
- * 
+ *
  * Gestiona todas las operaciones relacionadas con despachos:
  * - CRUD de despachos (operaciones)
  * - Integración con documentos WMS
@@ -19,7 +19,7 @@
  * - Registro de averías con fotos
  * - Documentos de cumplido
  * - Cierre con notificación por email
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 1.1.0
  * @date Enero 2026
@@ -33,15 +33,14 @@ import { OPERACIONES_ENDPOINTS } from './endpoints';
 // ============================================================================
 
 const despachosService = {
-  
   // ════════════════════════════════════════════════════════════════════════
   // INTEGRACIÓN WMS
   // ════════════════════════════════════════════════════════════════════════
-  
+
   /**
    * Obtener documentos disponibles en el WMS para crear despachos
    * El despacho se crea a partir de un documento WMS (ingreso/salida)
-   * 
+   *
    * @param {Object} [params] - Parámetros de filtro
    * @param {string} [params.tipo] - Tipo de documento ('ingreso'|'salida')
    * @param {string} [params.cliente_codigo] - Código del cliente
@@ -59,11 +58,11 @@ const despachosService = {
       };
     }
   },
-  
+
   /**
    * Obtener detalle de un documento WMS específico
    * Incluye lista de productos del documento
-   * 
+   *
    * @param {string} numeroDocumento - Número del documento WMS
    * @returns {Promise<Object>} Detalle del documento con productos
    */
@@ -79,14 +78,14 @@ const despachosService = {
       };
     }
   },
-  
+
   // ════════════════════════════════════════════════════════════════════════
   // CRUD DE DESPACHOS
   // ════════════════════════════════════════════════════════════════════════
-  
+
   /**
    * Obtener lista de despachos con filtros y paginación
-   * 
+   *
    * @param {Object} params - Parámetros de búsqueda
    * @param {number} [params.page=1] - Número de página
    * @param {number} [params.limit=10] - Registros por página
@@ -110,11 +109,11 @@ const despachosService = {
       };
     }
   },
-  
+
   /**
    * Obtener un despacho específico por ID
    * Incluye detalle de productos, averías, documentos
-   * 
+   *
    * @param {number|string} id - ID del despacho (operación)
    * @returns {Promise<Object>} Datos completos del despacho
    */
@@ -130,10 +129,10 @@ const despachosService = {
       };
     }
   },
-  
+
   /**
    * Crear un nuevo despacho desde documento WMS
-   * 
+   *
    * @param {Object} despachoData - Datos del despacho
    * @param {string} despachoData.tipo - Tipo ('ingreso'|'salida')
    * @param {string} despachoData.documento_wms - Número del documento WMS
@@ -156,11 +155,11 @@ const despachosService = {
       };
     }
   },
-  
+
   /**
    * Anular un despacho
    * Solo si está en estado pendiente o en_proceso
-   * 
+   *
    * @param {number|string} id - ID del despacho
    * @param {string} motivo - Motivo de la anulación
    * @returns {Promise<Object>}
@@ -168,7 +167,7 @@ const despachosService = {
   anular: async (id, motivo) => {
     try {
       const response = await apiClient.delete(OPERACIONES_ENDPOINTS.BY_ID(id), {
-        data: { motivo }
+        data: { motivo },
       });
       return response; // ✅ Sin .data adicional
     } catch (error) {
@@ -179,14 +178,14 @@ const despachosService = {
       };
     }
   },
-  
+
   // ════════════════════════════════════════════════════════════════════════
   // TRANSPORTE
   // ════════════════════════════════════════════════════════════════════════
-  
+
   /**
    * Actualizar información de transporte del despacho
-   * 
+   *
    * @param {number|string} id - ID del despacho
    * @param {Object} transporteData - Datos del transporte
    * @param {string} [transporteData.vehiculo_placa] - Placa del vehículo
@@ -198,10 +197,7 @@ const despachosService = {
    */
   updateTransporte: async (id, transporteData) => {
     try {
-      const response = await apiClient.put(
-        OPERACIONES_ENDPOINTS.TRANSPORTE(id), 
-        transporteData
-      );
+      const response = await apiClient.put(OPERACIONES_ENDPOINTS.TRANSPORTE(id), transporteData);
       return response; // ✅ Sin .data adicional
     } catch (error) {
       throw {
@@ -212,14 +208,14 @@ const despachosService = {
       };
     }
   },
-  
+
   // ════════════════════════════════════════════════════════════════════════
   // AVERÍAS
   // ════════════════════════════════════════════════════════════════════════
-  
+
   /**
    * Registrar una avería con evidencia fotográfica
-   * 
+   *
    * @param {number|string} id - ID del despacho
    * @param {Object} averiaData - Datos de la avería
    * @param {string} averiaData.tipo_averia - Tipo ('daño_fisico'|'faltante'|'humedad'|'contaminacion'|'otro')
@@ -242,12 +238,9 @@ const despachosService = {
           }
         });
       }
-      
+
       const uploadClient = createUploadClient();
-      const response = await uploadClient.post(
-        OPERACIONES_ENDPOINTS.AVERIAS(id), 
-        formData
-      );
+      const response = await uploadClient.post(OPERACIONES_ENDPOINTS.AVERIAS(id), formData);
       return response; // ✅ Sin .data adicional
     } catch (error) {
       throw {
@@ -258,7 +251,7 @@ const despachosService = {
       };
     }
   },
-  
+
   /**
    * Obtener tipos de avería disponibles
    * @returns {Array} Lista de tipos de avería
@@ -270,15 +263,15 @@ const despachosService = {
     { value: 'contaminacion', label: 'Contaminación' },
     { value: 'otro', label: 'Otro' },
   ],
-  
+
   // ════════════════════════════════════════════════════════════════════════
   // DOCUMENTOS DE CUMPLIDO
   // ════════════════════════════════════════════════════════════════════════
-  
+
   /**
    * Subir documento de cumplido
    * ⚠️ OBLIGATORIO antes de cerrar el despacho
-   * 
+   *
    * @param {number|string} id - ID del despacho
    * @param {Object|FormData} documentoData - Datos del documento
    * @param {File} documentoData.archivo - Archivo (PDF, imagen)
@@ -298,12 +291,9 @@ const despachosService = {
           }
         });
       }
-      
+
       const uploadClient = createUploadClient();
-      const response = await uploadClient.post(
-        OPERACIONES_ENDPOINTS.DOCUMENTOS(id), 
-        formData
-      );
+      const response = await uploadClient.post(OPERACIONES_ENDPOINTS.DOCUMENTOS(id), formData);
       return response; // ✅ Sin .data adicional
     } catch (error) {
       throw {
@@ -314,7 +304,7 @@ const despachosService = {
       };
     }
   },
-  
+
   /**
    * Obtener tipos de documento disponibles
    * @returns {Array} Lista de tipos de documento
@@ -327,15 +317,15 @@ const despachosService = {
     { value: 'documento_importacion', label: 'Documento de Importación' },
     { value: 'otro', label: 'Otro' },
   ],
-  
+
   // ════════════════════════════════════════════════════════════════════════
   // CIERRE
   // ════════════════════════════════════════════════════════════════════════
-  
+
   /**
    * Cerrar un despacho
    * ⚠️ Requiere que se haya subido al menos un documento de cumplido
-   * 
+   *
    * @param {number|string} id - ID del despacho
    * @param {Object} cierreData - Datos del cierre
    * @param {string} [cierreData.observaciones_cierre] - Observaciones de cierre
@@ -345,10 +335,7 @@ const despachosService = {
    */
   cerrar: async (id, cierreData = {}) => {
     try {
-      const response = await apiClient.post(
-        OPERACIONES_ENDPOINTS.CERRAR(id), 
-        cierreData
-      );
+      const response = await apiClient.post(OPERACIONES_ENDPOINTS.CERRAR(id), cierreData);
       return response; // ✅ Sin .data adicional
     } catch (error) {
       throw {
@@ -359,14 +346,14 @@ const despachosService = {
       };
     }
   },
-  
+
   // ════════════════════════════════════════════════════════════════════════
   // ESTADÍSTICAS
   // ════════════════════════════════════════════════════════════════════════
-  
+
   /**
    * Obtener estadísticas de despachos
-   * 
+   *
    * @param {Object} [params] - Parámetros de filtro
    * @param {number} [params.cliente_id] - Filtrar por cliente
    * @param {string} [params.fecha_desde] - Fecha desde
@@ -385,15 +372,15 @@ const despachosService = {
       };
     }
   },
-  
+
   // ════════════════════════════════════════════════════════════════════════
   // UTILIDADES
   // ════════════════════════════════════════════════════════════════════════
-  
+
   /**
    * Buscar despachos por término
    * Busca en número de operación, documento WMS
-   * 
+   *
    * @param {string} term - Término de búsqueda
    * @param {number} [limit=10] - Límite de resultados
    * @returns {Promise<Object>} Resultados de búsqueda
@@ -401,10 +388,10 @@ const despachosService = {
   search: async (term, limit = 10) => {
     return despachosService.getAll({ search: term, limit });
   },
-  
+
   /**
    * Obtener despachos pendientes
-   * 
+   *
    * @param {number} [clienteId] - Filtrar por cliente
    * @returns {Promise<Object>} Despachos pendientes
    */
@@ -413,10 +400,10 @@ const despachosService = {
     if (clienteId) params.cliente_id = clienteId;
     return despachosService.getAll(params);
   },
-  
+
   /**
    * Obtener despachos en proceso
-   * 
+   *
    * @param {number} [clienteId] - Filtrar por cliente
    * @returns {Promise<Object>} Despachos en proceso
    */
@@ -425,7 +412,7 @@ const despachosService = {
     if (clienteId) params.cliente_id = clienteId;
     return despachosService.getAll(params);
   },
-  
+
   /**
    * Obtener estados disponibles
    * @returns {Array} Lista de estados con colores
@@ -436,7 +423,7 @@ const despachosService = {
     { value: 'cerrado', label: 'Cerrado', color: 'emerald' },
     { value: 'anulado', label: 'Anulado', color: 'red' },
   ],
-  
+
   /**
    * Obtener tipos de despacho
    * @returns {Array} Lista de tipos

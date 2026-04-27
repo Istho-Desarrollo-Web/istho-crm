@@ -45,9 +45,10 @@ const Pagination = ({
       onClick={() => onPageChange?.(page)}
       className={`
         w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-200
-        ${currentPage === page
-          ? 'bg-orange-500 text-white shadow-sm'
-          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface'
+        ${
+          currentPage === page
+            ? 'bg-orange-500 text-white shadow-sm'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface'
         }
       `}
     >
@@ -57,7 +58,6 @@ const Pagination = ({
 
   return (
     <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 px-4 py-3 bg-white dark:bg-centhrix-card/50 border-t border-gray-100 dark:border-slate-700">
-
       {/* Info — compacta en móvil, completa en sm+ */}
       {showInfo && (
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 text-center sm:text-left whitespace-nowrap">
@@ -68,7 +68,10 @@ const Pagination = ({
             Mostrando{' '}
             <span className="font-medium text-slate-700 dark:text-slate-200">{startItem}</span> a{' '}
             <span className="font-medium text-slate-700 dark:text-slate-200">{endItem}</span> de{' '}
-            <span className="font-medium text-slate-700 dark:text-slate-200">{totalItems.toLocaleString()}</span> resultados
+            <span className="font-medium text-slate-700 dark:text-slate-200">
+              {totalItems.toLocaleString()}
+            </span>{' '}
+            resultados
           </span>
         </p>
       )}

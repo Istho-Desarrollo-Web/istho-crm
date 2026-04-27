@@ -23,7 +23,11 @@ const logger = require('../utils/logger');
 
 const defaultFrom = {
   name: process.env.SMTP_FROM_NAME || 'ISTHO CRM',
-  address: process.env.RESEND_FROM || process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'noreply@istho.com'
+  address:
+    process.env.RESEND_FROM ||
+    process.env.SMTP_FROM_EMAIL ||
+    process.env.SMTP_USER ||
+    'noreply@istho.com',
 };
 
 const smtpConfig = {
@@ -32,14 +36,14 @@ const smtpConfig = {
   secure: parseInt(process.env.SMTP_PORT) === 465,
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s/g, '') : undefined
+    pass: process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s/g, '') : undefined,
   },
   tls: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
   },
   connectionTimeout: 10000,
   greetingTimeout: 10000,
-  socketTimeout: 30000
+  socketTimeout: 30000,
 };
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -62,28 +66,34 @@ const createResendTransport = () => {
     sendMail: async (mailOptions) => {
       const payload = {
         from: mailOptions.from || `${defaultFrom.name} <${defaultFrom.address}>`,
-        to: Array.isArray(mailOptions.to) ? mailOptions.to : mailOptions.to.split(',').map(e => e.trim()),
+        to: Array.isArray(mailOptions.to)
+          ? mailOptions.to
+          : mailOptions.to.split(',').map((e) => e.trim()),
         subject: mailOptions.subject,
         html: mailOptions.html,
-        text: mailOptions.text
+        text: mailOptions.text,
       };
 
       if (mailOptions.cc) {
-        payload.cc = Array.isArray(mailOptions.cc) ? mailOptions.cc : mailOptions.cc.split(',').map(e => e.trim());
+        payload.cc = Array.isArray(mailOptions.cc)
+          ? mailOptions.cc
+          : mailOptions.cc.split(',').map((e) => e.trim());
       }
       if (mailOptions.bcc) {
-        payload.bcc = Array.isArray(mailOptions.bcc) ? mailOptions.bcc : mailOptions.bcc.split(',').map(e => e.trim());
+        payload.bcc = Array.isArray(mailOptions.bcc)
+          ? mailOptions.bcc
+          : mailOptions.bcc.split(',').map((e) => e.trim());
       }
 
       // Adjuntos
       if (mailOptions.attachments && mailOptions.attachments.length > 0) {
         const fs = require('fs');
-        payload.attachments = mailOptions.attachments.map(att => {
+        payload.attachments = mailOptions.attachments.map((att) => {
           if (att.path) {
             const content = fs.readFileSync(att.path);
             return {
               filename: att.filename,
-              content: content
+              content: content,
             };
           }
           return att;
@@ -98,7 +108,7 @@ const createResendTransport = () => {
 
       return {
         messageId: data.id,
-        accepted: payload.to
+        accepted: payload.to,
       };
     },
 
@@ -116,7 +126,7 @@ const createResendTransport = () => {
     /**
      * close compatible con nodemailer
      */
-    close: () => {}
+    close: () => {},
   };
 };
 
@@ -129,7 +139,7 @@ const createProductionTransporter = () => {
     logger.error('❌ Configuración SMTP incompleta', {
       hasUser: !!smtpConfig.auth.user,
       hasPass: !!smtpConfig.auth.pass,
-      host: smtpConfig.host
+      host: smtpConfig.host,
     });
     throw new Error('Configuración SMTP incompleta. Verifica SMTP_USER y SMTP_PASS en .env');
   }
@@ -138,7 +148,7 @@ const createProductionTransporter = () => {
     host: smtpConfig.host,
     port: smtpConfig.port,
     user: smtpConfig.auth.user,
-    secure: smtpConfig.secure
+    secure: smtpConfig.secure,
   });
 
   return nodemailer.createTransport(smtpConfig);
@@ -153,7 +163,7 @@ const createDevTransporter = async () => {
       host: 'smtp.ethereal.email',
       port: 587,
       secure: false,
-      auth: { user: testAccount.user, pass: testAccount.pass }
+      auth: { user: testAccount.user, pass: testAccount.pass },
     });
   } catch (error) {
     logger.warn('⚠️ No se pudo crear cuenta Ethereal, usando configuración SMTP', error.message);
@@ -179,9 +189,10 @@ const getTransporter = async () => {
       logger.info('📧 Usando Resend (API HTTP) como proveedor de email');
       transporter = createResendTransport();
     } else {
-      const useEthereal = process.env.NODE_ENV === 'development' &&
-                          process.env.USE_ETHEREAL === 'true' &&
-                          !process.env.SMTP_PASS;
+      const useEthereal =
+        process.env.NODE_ENV === 'development' &&
+        process.env.USE_ETHEREAL === 'true' &&
+        !process.env.SMTP_PASS;
 
       if (useEthereal) {
         transporter = await createDevTransporter();
@@ -195,11 +206,10 @@ const getTransporter = async () => {
     logger.info('✅ Proveedor de email verificado exitosamente');
 
     return transporter;
-
   } catch (error) {
     logger.error('❌ Error al configurar proveedor de email:', {
       message: error.message,
-      code: error.code
+      code: error.code,
     });
 
     if (error.message.includes('Invalid login') || error.message.includes('authentication')) {
@@ -239,5 +249,5 @@ module.exports = {
   verificarConexion,
   resetTransporter,
   defaultFrom,
-  smtpConfig
+  smtpConfig,
 };

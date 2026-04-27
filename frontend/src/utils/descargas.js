@@ -11,7 +11,7 @@ export const descargarArchivo = async (url, nombre, opciones = {}) => {
   const response = await fetch(url, {
     ...opciones,
     headers: {
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       ...(opciones.headers || {}),
     },
   });

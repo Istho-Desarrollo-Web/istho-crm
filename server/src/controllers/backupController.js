@@ -26,14 +26,7 @@ const registrarBackup = async (req, res) => {
       return res.status(401).json({ success: false, message: 'No autorizado' });
     }
 
-    const {
-      archivo,
-      tamano_bytes,
-      estado,
-      duracion_segundos,
-      error_mensaje,
-      origen,
-    } = req.body;
+    const { archivo, tamano_bytes, estado, duracion_segundos, error_mensaje, origen } = req.body;
 
     if (!['exitoso', 'fallido'].includes(estado)) {
       return res.status(400).json({ success: false, message: 'Estado inválido' });
@@ -74,12 +67,11 @@ const obtenerHistorial = async (req, res) => {
     proximoBackup.setUTCHours(7, 0, 0, 0); // 7 UTC = 2 AM Colombia
 
     // Estadísticas rápidas
-    const totalExitosos = registros.filter(r => r.estado === 'exitoso').length;
-    const totalFallidos = registros.filter(r => r.estado === 'fallido').length;
-    const tamanoPromedio = registros
-      .filter(r => r.tamano_bytes)
-      .reduce((acc, r) => acc + Number(r.tamano_bytes), 0) /
-      (registros.filter(r => r.tamano_bytes).length || 1);
+    const totalExitosos = registros.filter((r) => r.estado === 'exitoso').length;
+    const totalFallidos = registros.filter((r) => r.estado === 'fallido').length;
+    const tamanoPromedio =
+      registros.filter((r) => r.tamano_bytes).reduce((acc, r) => acc + Number(r.tamano_bytes), 0) /
+      (registros.filter((r) => r.tamano_bytes).length || 1);
 
     return success(res, {
       registros,
@@ -89,9 +81,8 @@ const obtenerHistorial = async (req, res) => {
         exitosos: totalExitosos,
         fallidos: totalFallidos,
         tamano_promedio_bytes: Math.round(tamanoPromedio),
-        tasa_exito: registros.length > 0
-          ? Math.round((totalExitosos / registros.length) * 100)
-          : 100,
+        tasa_exito:
+          registros.length > 0 ? Math.round((totalExitosos / registros.length) * 100) : 100,
       },
     });
   } catch (err) {
@@ -111,7 +102,11 @@ const ejecutarBackup = async (req, res) => {
     const { GITHUB_TOKEN_BACKUP, GITHUB_REPO } = process.env;
 
     if (!GITHUB_TOKEN_BACKUP || !GITHUB_REPO) {
-      return error(res, 'La ejecución manual de backups no está configurada. Agrega GITHUB_TOKEN_BACKUP y GITHUB_REPO en las variables de entorno.', 503);
+      return error(
+        res,
+        'La ejecución manual de backups no está configurada. Agrega GITHUB_TOKEN_BACKUP y GITHUB_REPO en las variables de entorno.',
+        503
+      );
     }
 
     const githubRes = await fetch(

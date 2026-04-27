@@ -71,7 +71,9 @@ const PlantillaCard = ({ plantilla, onEdit, onDelete, onPreview, canEdit, canDel
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-slate-800 dark:text-slate-100">{plantilla.nombre}</h3>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                  {plantilla.nombre}
+                </h3>
                 {plantilla.es_predeterminada && (
                   <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
                 )}
@@ -82,7 +84,11 @@ const PlantillaCard = ({ plantilla, onEdit, onDelete, onPreview, canEdit, canDel
                 </span>
                 {plantilla.subtipo && (
                   <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
-                    {plantilla.subtipo === 'ingreso' ? 'Entrada' : plantilla.subtipo === 'salida' ? 'Salida' : plantilla.subtipo}
+                    {plantilla.subtipo === 'ingreso'
+                      ? 'Entrada'
+                      : plantilla.subtipo === 'salida'
+                        ? 'Salida'
+                        : plantilla.subtipo}
                   </span>
                 )}
               </div>
@@ -101,7 +107,13 @@ const PlantillaCard = ({ plantilla, onEdit, onDelete, onPreview, canEdit, canDel
         </p>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" icon={Eye} onClick={() => onPreview(plantilla)} className="flex-1">
+          <Button
+            variant="outline"
+            size="sm"
+            icon={Eye}
+            onClick={() => onPreview(plantilla)}
+            className="flex-1"
+          >
             Vista Previa
           </Button>
           {canEdit && (
@@ -110,7 +122,13 @@ const PlantillaCard = ({ plantilla, onEdit, onDelete, onPreview, canEdit, canDel
             </Button>
           )}
           {canDelete && (
-            <Button variant="ghost" size="sm" icon={Trash2} onClick={() => onDelete(plantilla)} className="text-slate-400 hover:text-red-500" />
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Trash2}
+              onClick={() => onDelete(plantilla)}
+              className="text-slate-400 hover:text-red-500"
+            />
           )}
         </div>
       </div>
@@ -192,8 +210,12 @@ const PlantillasEmailList = () => {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Plantillas de Email</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-1">Gestiona las plantillas de correo electrónico del sistema</p>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+                Plantillas de Email
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-1">
+                Gestiona las plantillas de correo electrónico del sistema
+              </p>
             </div>
           </div>
 
@@ -202,7 +224,11 @@ const PlantillasEmailList = () => {
               Actualizar
             </Button>
             {canCreate && (
-              <Button variant="primary" icon={Plus} onClick={() => navigate('/plantillas-email/nueva')}>
+              <Button
+                variant="primary"
+                icon={Plus}
+                onClick={() => navigate('/plantillas-email/nueva')}
+              >
                 Nueva Plantilla
               </Button>
             )}
@@ -213,7 +239,10 @@ const PlantillasEmailList = () => {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-48 bg-gray-200 dark:bg-centhrix-surface rounded-2xl animate-pulse" />
+              <div
+                key={i}
+                className="h-48 bg-gray-200 dark:bg-centhrix-surface rounded-2xl animate-pulse"
+              />
             ))}
           </div>
         ) : plantillas.length === 0 ? (
@@ -221,9 +250,17 @@ const PlantillasEmailList = () => {
             <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Mail className="w-8 h-8 text-orange-500 dark:text-orange-400" />
             </div>
-            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">No hay plantillas</h3>
-            <p className="text-slate-500 dark:text-slate-400 mb-4">Crea tu primera plantilla de correo</p>
-            <Button variant="primary" icon={Plus} onClick={() => navigate('/plantillas-email/nueva')}>
+            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
+              No hay plantillas
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 mb-4">
+              Crea tu primera plantilla de correo
+            </p>
+            <Button
+              variant="primary"
+              icon={Plus}
+              onClick={() => navigate('/plantillas-email/nueva')}
+            >
               Crear Plantilla
             </Button>
           </div>

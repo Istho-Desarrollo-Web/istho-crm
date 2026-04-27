@@ -79,7 +79,7 @@ const listar = async (req, res) => {
       offset,
     });
 
-    const registros = rows.map(r => {
+    const registros = rows.map((r) => {
       const json = r.toJSON();
       if (!json.created_at && json.createdAt) json.created_at = json.createdAt;
       return json;
@@ -130,7 +130,11 @@ const stats = async (req, res) => {
       }),
 
       Auditoria.findAll({
-        attributes: ['usuario_id', 'usuario_nombre', [sequelize.fn('COUNT', sequelize.col('id')), 'total']],
+        attributes: [
+          'usuario_id',
+          'usuario_nombre',
+          [sequelize.fn('COUNT', sequelize.col('id')), 'total'],
+        ],
         where: { created_at: { [Op.gte]: desde }, usuario_id: { [Op.ne]: null } },
         group: ['usuario_id', 'usuario_nombre'],
         order: [[sequelize.fn('COUNT', sequelize.col('id')), 'DESC']],
@@ -163,7 +167,10 @@ const tablas = async (req, res) => {
       order: [['tabla', 'ASC']],
       raw: true,
     });
-    return success(res, result.map(r => r.tabla));
+    return success(
+      res,
+      result.map((r) => r.tabla)
+    );
   } catch (error) {
     return serverError(res, 'Error al obtener tablas', error);
   }
@@ -185,12 +192,15 @@ const exportarExcel = async (req, res) => {
     });
 
     const buffer = await excelService.exportarAuditoriaAcciones(
-      registros.map(r => r.toJSON()),
+      registros.map((r) => r.toJSON()),
       req.query
     );
 
     const fecha = new Date().toISOString().split('T')[0];
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.setHeader('Content-Disposition', `attachment; filename="auditoria_${fecha}.xlsx"`);
     res.send(buffer);
   } catch (error) {
@@ -215,7 +225,7 @@ const exportarPDF = async (req, res) => {
     });
 
     const buffer = await pdfService.generarPDFAuditoriaAcciones(
-      registros.map(r => r.toJSON()),
+      registros.map((r) => r.toJSON()),
       req.query
     );
 

@@ -21,10 +21,18 @@ const parsearPrefs = (raw) => {
   if (!raw) return {};
   let val = raw;
   if (typeof val === 'string') {
-    try { val = JSON.parse(val); } catch { return {}; }
+    try {
+      val = JSON.parse(val);
+    } catch {
+      return {};
+    }
   }
   if (typeof val === 'string') {
-    try { val = JSON.parse(val); } catch { return {}; }
+    try {
+      val = JSON.parse(val);
+    } catch {
+      return {};
+    }
   }
   if (!val || typeof val !== 'object' || Array.isArray(val)) return {};
   if ('0' in val) return {};
@@ -33,12 +41,12 @@ const parsearPrefs = (raw) => {
 
 // Mapeo tipo de notificación → clave en Usuario.preferencias
 const TIPO_A_PREFERENCIA = {
-  despacho:   'alertas_despachos',
+  despacho: 'alertas_despachos',
   inventario: 'alertas_inventario',
-  cliente:    'alertas_clientes',
-  sistema:    'alertas_viajes', // caja menor, gastos, viajes completados
-  reporte:    'alertas_reportes',
-  alerta:     null, // siempre se entrega
+  cliente: 'alertas_clientes',
+  sistema: 'alertas_viajes', // caja menor, gastos, viajes completados
+  reporte: 'alertas_reportes',
+  alerta: null, // siempre se entrega
 };
 
 /**
@@ -68,9 +76,7 @@ const filtrarPorPreferencia = async (userIds, tipo, prioridad = 'normal') => {
     attributes: ['id', 'preferencias'],
   });
 
-  return usuarios
-    .filter(u => prefHabilitada(u.preferencias, tipo, prioridad))
-    .map(u => u.id);
+  return usuarios.filter((u) => prefHabilitada(u.preferencias, tipo, prioridad)).map((u) => u.id);
 };
 
 /**
@@ -81,7 +87,7 @@ const getUsuariosPorRol = async (roles = ['admin', 'supervisor']) => {
     where: { rol: { [Op.in]: roles }, activo: true },
     attributes: ['id'],
   });
-  return usuarios.map(u => u.id);
+  return usuarios.map((u) => u.id);
 };
 
 /**
@@ -93,23 +99,29 @@ const getUsuariosPorCliente = async (clienteId, { incluirAdmins = true } = {}) =
 
   if (incluirAdmins) {
     // Usuarios del cliente + admins/supervisores
-    where[Op.or] = [
-      { cliente_id: clienteId },
-      { rol: { [Op.in]: ['admin', 'supervisor'] } },
-    ];
+    where[Op.or] = [{ cliente_id: clienteId }, { rol: { [Op.in]: ['admin', 'supervisor'] } }];
   } else {
     // Solo usuarios del cliente
     where.cliente_id = clienteId;
   }
 
   const usuarios = await Usuario.findAll({ where, attributes: ['id'] });
-  return usuarios.map(u => u.id);
+  return usuarios.map((u) => u.id);
 };
 
 /**
  * Crear notificación para un usuario específico
  */
-const notificar = async ({ usuario_id, tipo, titulo, mensaje, prioridad = 'normal', accion_url, accion_label, metadata }) => {
+const notificar = async ({
+  usuario_id,
+  tipo,
+  titulo,
+  mensaje,
+  prioridad = 'normal',
+  accion_url,
+  accion_label,
+  metadata,
+}) => {
   try {
     // Verificar preferencia del usuario antes de crear (salvo urgente)
     if (prioridad !== 'urgente') {
@@ -155,22 +167,59 @@ const notificar = async ({ usuario_id, tipo, titulo, mensaje, prioridad = 'norma
 /**
  * Notificar a usuarios vinculados a un cliente específico (+ admins/supervisores)
  */
-const notificarPorCliente = async (clienteId, { tipo, titulo, mensaje, prioridad = 'normal', accion_url, accion_label, metadata, incluirAdmins = true }) => {
+const notificarPorCliente = async (
+  clienteId,
+  {
+    tipo,
+    titulo,
+    mensaje,
+    prioridad = 'normal',
+    accion_url,
+    accion_label,
+    metadata,
+    incluirAdmins = true,
+  }
+) => {
   try {
     if (!clienteId) {
-      logger.warn('[NotificacionService] notificarPorCliente: clienteId no proporcionado, enviando a admins');
-      return notificarAdmins({ tipo, titulo, mensaje, prioridad, accion_url, accion_label, metadata });
+      logger.warn(
+        '[NotificacionService] notificarPorCliente: clienteId no proporcionado, enviando a admins'
+      );
+      return notificarAdmins({
+        tipo,
+        titulo,
+        mensaje,
+        prioridad,
+        accion_url,
+        accion_label,
+        metadata,
+      });
     }
     let ids = await getUsuariosPorCliente(clienteId, { incluirAdmins });
     ids = await filtrarPorPreferencia(ids, tipo, prioridad);
-    logger.info('[NotificacionService] notificarPorCliente:', { clienteId, usuariosEncontrados: ids.length, ids });
+    logger.info('[NotificacionService] notificarPorCliente:', {
+      clienteId,
+      usuariosEncontrados: ids.length,
+      ids,
+    });
     if (ids.length === 0) return [];
     const result = await Notificacion.notificarMultiple(ids, {
-      tipo, titulo, mensaje, prioridad, accion_url, accion_label, metadata,
+      tipo,
+      titulo,
+      mensaje,
+      prioridad,
+      accion_url,
+      accion_label,
+      metadata,
     });
     // Emitir por WebSocket a cada usuario
     socketService.emitToUsers(ids, 'notificacion:nueva', {
-      tipo, titulo, mensaje, prioridad, accion_url, accion_label,
+      tipo,
+      titulo,
+      mensaje,
+      prioridad,
+      accion_url,
+      accion_label,
       created_at: new Date(),
     });
     logger.info('[NotificacionService] Notificaciones creadas:', { cantidad: result.length });
@@ -184,17 +233,36 @@ const notificarPorCliente = async (clienteId, { tipo, titulo, mensaje, prioridad
 /**
  * Notificar a todos los admins y supervisores
  */
-const notificarAdmins = async ({ tipo, titulo, mensaje, prioridad = 'normal', accion_url, accion_label, metadata }) => {
+const notificarAdmins = async ({
+  tipo,
+  titulo,
+  mensaje,
+  prioridad = 'normal',
+  accion_url,
+  accion_label,
+  metadata,
+}) => {
   try {
     let ids = await getUsuariosPorRol(['admin', 'supervisor']);
     ids = await filtrarPorPreferencia(ids, tipo, prioridad);
     if (ids.length === 0) return [];
     const result = await Notificacion.notificarMultiple(ids, {
-      tipo, titulo, mensaje, prioridad, accion_url, accion_label, metadata,
+      tipo,
+      titulo,
+      mensaje,
+      prioridad,
+      accion_url,
+      accion_label,
+      metadata,
     });
     // Emitir por WebSocket
     socketService.emitToUsers(ids, 'notificacion:nueva', {
-      tipo, titulo, mensaje, prioridad, accion_url, accion_label,
+      tipo,
+      titulo,
+      mensaje,
+      prioridad,
+      accion_url,
+      accion_label,
       created_at: new Date(),
     });
     return result;
@@ -292,7 +360,12 @@ const notificarOperacionCerrada = async (operacion, usuario_nombre) => {
     prioridad: 'normal',
     accion_url: `/operaciones/${operacion.tipo === 'entrada' ? 'entradas' : 'salidas'}/${operacion.id}`,
     accion_label: `Ver ${tipo_op.toLowerCase()}`,
-    metadata: { operacion_id: operacion.id, tipo: operacion.tipo, documento: doc, cliente_id: operacion.cliente_id },
+    metadata: {
+      operacion_id: operacion.id,
+      tipo: operacion.tipo,
+      documento: doc,
+      cliente_id: operacion.cliente_id,
+    },
   });
 };
 
@@ -339,7 +412,11 @@ const notificarSyncWms = async ({ exitosa, mensaje, detalles }) => {
   return notificarAdmins({
     tipo: 'sistema',
     titulo: exitosa ? 'Sincronización WMS completada' : 'Error en sincronización WMS',
-    mensaje: mensaje || (exitosa ? 'La sincronización con el WMS se completó correctamente.' : 'Hubo un error durante la sincronización.'),
+    mensaje:
+      mensaje ||
+      (exitosa
+        ? 'La sincronización con el WMS se completó correctamente.'
+        : 'Hubo un error durante la sincronización.'),
     prioridad: exitosa ? 'baja' : 'alta',
     metadata: detalles,
   });
@@ -384,16 +461,35 @@ const notificarSalidaWms = async (resultado) => {
 /**
  * Notificar a admins, supervisores y financieras
  */
-const notificarFinancieros = async ({ tipo, titulo, mensaje, prioridad = 'normal', accion_url, accion_label, metadata }) => {
+const notificarFinancieros = async ({
+  tipo,
+  titulo,
+  mensaje,
+  prioridad = 'normal',
+  accion_url,
+  accion_label,
+  metadata,
+}) => {
   try {
     let ids = await getUsuariosPorRol(['admin', 'supervisor', 'financiera']);
     ids = await filtrarPorPreferencia(ids, tipo, prioridad);
     if (ids.length === 0) return [];
     const result = await Notificacion.notificarMultiple(ids, {
-      tipo, titulo, mensaje, prioridad, accion_url, accion_label, metadata,
+      tipo,
+      titulo,
+      mensaje,
+      prioridad,
+      accion_url,
+      accion_label,
+      metadata,
     });
     socketService.emitToUsers(ids, 'notificacion:nueva', {
-      tipo, titulo, mensaje, prioridad, accion_url, accion_label,
+      tipo,
+      titulo,
+      mensaje,
+      prioridad,
+      accion_url,
+      accion_label,
       created_at: new Date(),
     });
     return result;

@@ -11,7 +11,7 @@ export default function AnalisisAlineacionActualizado() {
   const [expandedSections, setExpandedSections] = useState({});
 
   const toggleSection = (key) => {
-    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
+    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -38,7 +38,7 @@ export default function AnalisisAlineacionActualizado() {
         { nombre: 'Date-fns', version: '^4.1.0', estado: 'actual' },
         { nombre: 'Recharts', version: '^3.6.0', estado: 'actual' },
         { nombre: 'Notistack', version: '^3.0.2', estado: 'actual' },
-      ]
+      ],
     },
     backend: {
       core: [
@@ -51,8 +51,8 @@ export default function AnalisisAlineacionActualizado() {
         { nombre: 'JWT', version: '-', estado: 'operativo' },
         { nombre: 'Nodemailer', version: '-', estado: 'operativo' },
         { nombre: 'Multer', version: '-', estado: 'operativo' },
-      ]
-    }
+      ],
+    },
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -61,15 +61,55 @@ export default function AnalisisAlineacionActualizado() {
 
   const estructuraFrontend = {
     directorios: [
-      { nombre: 'src/api/', descripcion: 'Servicios de API y cliente Axios', estado: 'existente', necesitaActualizacion: true },
-      { nombre: 'src/assets/', descripcion: 'Imágenes y recursos estáticos', estado: 'existente', necesitaActualizacion: false },
-      { nombre: 'src/components/', descripcion: 'Componentes reutilizables', estado: 'existente', necesitaActualizacion: true },
-      { nombre: 'src/context/', descripcion: 'Contextos de React (AuthContext)', estado: 'existente', necesitaActualizacion: true },
-      { nombre: 'src/hooks/', descripcion: 'Custom Hooks', estado: 'existente', necesitaActualizacion: true },
-      { nombre: 'src/pages/', descripcion: 'Vistas/Módulos principales', estado: 'existente', necesitaActualizacion: true },
-      { nombre: 'src/styles/', descripcion: 'Estilos globales', estado: 'existente', necesitaActualizacion: false },
-      { nombre: 'src/utils/', descripcion: 'Funciones utilitarias', estado: 'existente', necesitaActualizacion: false },
-    ]
+      {
+        nombre: 'src/api/',
+        descripcion: 'Servicios de API y cliente Axios',
+        estado: 'existente',
+        necesitaActualizacion: true,
+      },
+      {
+        nombre: 'src/assets/',
+        descripcion: 'Imágenes y recursos estáticos',
+        estado: 'existente',
+        necesitaActualizacion: false,
+      },
+      {
+        nombre: 'src/components/',
+        descripcion: 'Componentes reutilizables',
+        estado: 'existente',
+        necesitaActualizacion: true,
+      },
+      {
+        nombre: 'src/context/',
+        descripcion: 'Contextos de React (AuthContext)',
+        estado: 'existente',
+        necesitaActualizacion: true,
+      },
+      {
+        nombre: 'src/hooks/',
+        descripcion: 'Custom Hooks',
+        estado: 'existente',
+        necesitaActualizacion: true,
+      },
+      {
+        nombre: 'src/pages/',
+        descripcion: 'Vistas/Módulos principales',
+        estado: 'existente',
+        necesitaActualizacion: true,
+      },
+      {
+        nombre: 'src/styles/',
+        descripcion: 'Estilos globales',
+        estado: 'existente',
+        necesitaActualizacion: false,
+      },
+      {
+        nombre: 'src/utils/',
+        descripcion: 'Funciones utilitarias',
+        estado: 'existente',
+        necesitaActualizacion: false,
+      },
+    ],
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -77,33 +117,33 @@ export default function AnalisisAlineacionActualizado() {
   // ═══════════════════════════════════════════════════════════════════════════
 
   const roles = [
-    { 
-      codigo: 'admin', 
-      nombre: 'Administrador', 
+    {
+      codigo: 'admin',
+      nombre: 'Administrador',
       descripcion: 'Control total del sistema, gestión de usuarios y configuración',
       usuarios: 'Coordinador TI, Gerencia',
-      color: 'purple'
+      color: 'purple',
     },
-    { 
-      codigo: 'supervisor', 
-      nombre: 'Supervisor', 
+    {
+      codigo: 'supervisor',
+      nombre: 'Supervisor',
       descripcion: 'Gestión operativa completa, sin acceso a configuración del sistema',
       usuarios: 'Coordinador Logística, Jefe de Operaciones',
-      color: 'blue'
+      color: 'blue',
     },
-    { 
-      codigo: 'operador', 
-      nombre: 'Operador', 
+    {
+      codigo: 'operador',
+      nombre: 'Operador',
       descripcion: 'Operaciones del día a día, registro de eventos',
       usuarios: 'Personal de bodega, Auxiliares logísticos',
-      color: 'green'
+      color: 'green',
     },
-    { 
-      codigo: 'cliente', 
-      nombre: 'Cliente', 
+    {
+      codigo: 'cliente',
+      nombre: 'Cliente',
       descripcion: 'Solo consulta de su propia información',
       usuarios: 'Lácteos Betania, Éxito, etc.',
-      color: 'orange'
+      color: 'orange',
     },
   ];
 
@@ -115,18 +155,19 @@ export default function AnalisisAlineacionActualizado() {
     frontend: {
       modulo: 'Despachos',
       rutas: ['/despachos', '/despachos/:id'],
-      documentacion: 'ROLES_PERMISOS_MODULOS.md usa "Despachos"'
+      documentacion: 'ROLES_PERMISOS_MODULOS.md usa "Despachos"',
     },
     backend: {
       modulo: 'Operaciones',
       rutas: ['/api/v1/operaciones', '/api/v1/operaciones/:id'],
-      razon: 'Integración con WMS, flujo ingreso/salida'
+      razon: 'Integración con WMS, flujo ingreso/salida',
     },
     decision: {
       mantener: 'Despachos en Frontend',
       mapear: 'Frontend /despachos → Backend /operaciones',
-      razon: 'La documentación de permisos y la UX ya usan "Despachos". Es más intuitivo para el usuario final.'
-    }
+      razon:
+        'La documentación de permisos y la UX ya usan "Despachos". Es más intuitivo para el usuario final.',
+    },
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -139,39 +180,95 @@ export default function AnalisisAlineacionActualizado() {
       titulo: 'Capa de Servicios API',
       descripcion: 'Conectar frontend con backend',
       tareas: [
-        { tarea: 'Configurar cliente Axios con interceptores JWT', archivo: 'src/api/client.js', estado: 'pendiente' },
-        { tarea: 'Crear servicio de autenticación', archivo: 'src/api/auth.service.js', estado: 'pendiente' },
-        { tarea: 'Crear servicio de clientes', archivo: 'src/api/clientes.service.js', estado: 'pendiente' },
-        { tarea: 'Crear servicio de inventario', archivo: 'src/api/inventario.service.js', estado: 'pendiente' },
-        { tarea: 'Crear servicio de despachos (mapea a /operaciones)', archivo: 'src/api/despachos.service.js', estado: 'pendiente' },
-        { tarea: 'Crear constantes de endpoints', archivo: 'src/api/endpoints.js', estado: 'pendiente' },
+        {
+          tarea: 'Configurar cliente Axios con interceptores JWT',
+          archivo: 'src/api/client.js',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Crear servicio de autenticación',
+          archivo: 'src/api/auth.service.js',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Crear servicio de clientes',
+          archivo: 'src/api/clientes.service.js',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Crear servicio de inventario',
+          archivo: 'src/api/inventario.service.js',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Crear servicio de despachos (mapea a /operaciones)',
+          archivo: 'src/api/despachos.service.js',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Crear constantes de endpoints',
+          archivo: 'src/api/endpoints.js',
+          estado: 'pendiente',
+        },
       ],
-      prioridad: 'CRÍTICO'
+      prioridad: 'CRÍTICO',
     },
     {
       fase: 2,
       titulo: 'Contexto de Autenticación',
       descripcion: 'Sistema de login y protección de rutas',
       tareas: [
-        { tarea: 'Implementar AuthContext completo', archivo: 'src/context/AuthContext.jsx', estado: 'pendiente' },
-        { tarea: 'Crear página de Login', archivo: 'src/pages/Auth/Login.jsx', estado: 'pendiente' },
-        { tarea: 'Implementar PrivateRoute', archivo: 'src/components/auth/PrivateRoute.jsx', estado: 'pendiente' },
+        {
+          tarea: 'Implementar AuthContext completo',
+          archivo: 'src/context/AuthContext.jsx',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Crear página de Login',
+          archivo: 'src/pages/Auth/Login.jsx',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Implementar PrivateRoute',
+          archivo: 'src/components/auth/PrivateRoute.jsx',
+          estado: 'pendiente',
+        },
         { tarea: 'Implementar useAuth hook', archivo: 'src/hooks/useAuth.js', estado: 'pendiente' },
-        { tarea: 'Persistencia de sesión (localStorage)', archivo: 'src/context/AuthContext.jsx', estado: 'pendiente' },
+        {
+          tarea: 'Persistencia de sesión (localStorage)',
+          archivo: 'src/context/AuthContext.jsx',
+          estado: 'pendiente',
+        },
       ],
-      prioridad: 'CRÍTICO'
+      prioridad: 'CRÍTICO',
     },
     {
       fase: 3,
       titulo: 'Sistema de Permisos',
       descripcion: 'Implementar roles y permisos según matriz',
       tareas: [
-        { tarea: 'Implementar usePermissions hook', archivo: 'src/hooks/usePermissions.js', estado: 'pendiente' },
-        { tarea: 'Crear constantes de permisos', archivo: 'src/utils/permissions.js', estado: 'pendiente' },
-        { tarea: 'Componente ProtectedAction', archivo: 'src/components/auth/ProtectedAction.jsx', estado: 'pendiente' },
-        { tarea: 'Filtrado de menú por rol', archivo: 'src/components/layout/FloatingHeader.jsx', estado: 'pendiente' },
+        {
+          tarea: 'Implementar usePermissions hook',
+          archivo: 'src/hooks/usePermissions.js',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Crear constantes de permisos',
+          archivo: 'src/utils/permissions.js',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Componente ProtectedAction',
+          archivo: 'src/components/auth/ProtectedAction.jsx',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Filtrado de menú por rol',
+          archivo: 'src/components/layout/FloatingHeader.jsx',
+          estado: 'pendiente',
+        },
       ],
-      prioridad: 'ALTO'
+      prioridad: 'ALTO',
     },
     {
       fase: 4,
@@ -180,23 +277,43 @@ export default function AnalisisAlineacionActualizado() {
       tareas: [
         { tarea: 'useClientes hook', archivo: 'src/hooks/useClientes.js', estado: 'pendiente' },
         { tarea: 'useInventario hook', archivo: 'src/hooks/useInventario.js', estado: 'pendiente' },
-        { tarea: 'useDespachos hook (usa /operaciones)', archivo: 'src/hooks/useDespachos.js', estado: 'pendiente' },
+        {
+          tarea: 'useDespachos hook (usa /operaciones)',
+          archivo: 'src/hooks/useDespachos.js',
+          estado: 'pendiente',
+        },
         { tarea: 'useReportes hook', archivo: 'src/hooks/useReportes.js', estado: 'pendiente' },
         { tarea: 'useDashboard hook', archivo: 'src/hooks/useDashboard.js', estado: 'pendiente' },
       ],
-      prioridad: 'ALTO'
+      prioridad: 'ALTO',
     },
     {
       fase: 5,
       titulo: 'Funcionalidades WMS',
       descripcion: 'Integrar flujo de documentos WMS en despachos',
       tareas: [
-        { tarea: 'Selector de documento WMS', archivo: 'src/components/despachos/WmsDocumentoSelector.jsx', estado: 'pendiente' },
-        { tarea: 'Formulario de averías con foto', archivo: 'src/components/despachos/AveriaForm.jsx', estado: 'pendiente' },
-        { tarea: 'Upload de documento cumplido', archivo: 'src/components/despachos/DocumentoCumplidoUpload.jsx', estado: 'pendiente' },
-        { tarea: 'Modal de cierre de despacho', archivo: 'src/components/despachos/CierreDespachoModal.jsx', estado: 'pendiente' },
+        {
+          tarea: 'Selector de documento WMS',
+          archivo: 'src/components/despachos/WmsDocumentoSelector.jsx',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Formulario de averías con foto',
+          archivo: 'src/components/despachos/AveriaForm.jsx',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Upload de documento cumplido',
+          archivo: 'src/components/despachos/DocumentoCumplidoUpload.jsx',
+          estado: 'pendiente',
+        },
+        {
+          tarea: 'Modal de cierre de despacho',
+          archivo: 'src/components/despachos/CierreDespachoModal.jsx',
+          estado: 'pendiente',
+        },
       ],
-      prioridad: 'MEDIO'
+      prioridad: 'MEDIO',
     },
   ];
 
@@ -207,9 +324,26 @@ export default function AnalisisAlineacionActualizado() {
   const mapeoEndpoints = [
     { modulo: 'Auth', frontend: '/auth/*', backend: '/api/v1/auth/*', alineado: true },
     { modulo: 'Clientes', frontend: '/clientes/*', backend: '/api/v1/clientes/*', alineado: true },
-    { modulo: 'Inventario', frontend: '/inventario/*', backend: '/api/v1/inventario/*', alineado: true },
-    { modulo: 'Despachos', frontend: '/despachos/*', backend: '/api/v1/operaciones/*', alineado: false, nota: 'Mapear en servicio' },
-    { modulo: 'Dashboard', frontend: '/dashboard', backend: '/api/v1/operaciones/stats + /inventario/stats + /clientes/stats', alineado: true, nota: 'Combinar endpoints' },
+    {
+      modulo: 'Inventario',
+      frontend: '/inventario/*',
+      backend: '/api/v1/inventario/*',
+      alineado: true,
+    },
+    {
+      modulo: 'Despachos',
+      frontend: '/despachos/*',
+      backend: '/api/v1/operaciones/*',
+      alineado: false,
+      nota: 'Mapear en servicio',
+    },
+    {
+      modulo: 'Dashboard',
+      frontend: '/dashboard',
+      backend: '/api/v1/operaciones/stats + /inventario/stats + /clientes/stats',
+      alineado: true,
+      nota: 'Combinar endpoints',
+    },
   ];
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -247,7 +381,9 @@ export default function AnalisisAlineacionActualizado() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">Análisis de Alineación - ACTUALIZADO</h1>
-                <p className="text-white/80 text-sm">CRM ISTHO S.A.S. • Stack Real + Roles + Plan de Acción</p>
+                <p className="text-white/80 text-sm">
+                  CRM ISTHO S.A.S. • Stack Real + Roles + Plan de Acción
+                </p>
               </div>
             </div>
             <div className="text-right hidden md:block">
@@ -262,7 +398,7 @@ export default function AnalisisAlineacionActualizado() {
       <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-8">
           <nav className="flex gap-1 overflow-x-auto py-2">
-            {tabs.map(tab => (
+            {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -280,7 +416,6 @@ export default function AnalisisAlineacionActualizado() {
       </div>
 
       <main className="max-w-7xl mx-auto px-8 py-8">
-        
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* TAB: RESUMEN */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
@@ -291,7 +426,7 @@ export default function AnalisisAlineacionActualizado() {
               <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <span>📋</span> Estado General del Proyecto
               </h2>
-              
+
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Frontend */}
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100">
@@ -370,8 +505,9 @@ export default function AnalisisAlineacionActualizado() {
                 </div>
               </div>
               <p className="text-sm text-amber-700 mt-4">
-                <strong>Decisión:</strong> Mantener &ldquo;Despachos&rdquo; en el frontend (más intuitivo para usuarios).
-                El servicio de API hará el mapeo transparente a <code>/operaciones</code> del backend.
+                <strong>Decisión:</strong> Mantener &ldquo;Despachos&rdquo; en el frontend (más
+                intuitivo para usuarios). El servicio de API hará el mapeo transparente a{' '}
+                <code>/operaciones</code> del backend.
               </p>
             </div>
 
@@ -405,12 +541,13 @@ export default function AnalisisAlineacionActualizado() {
                 <span>🎯</span> Siguiente Paso Recomendado
               </h3>
               <p className="text-white/90 mb-4">
-                Comenzar con la <strong>Fase 1: Capa de Servicios API</strong> para establecer la conexión 
-                entre el frontend existente y el backend operativo.
+                Comenzar con la <strong>Fase 1: Capa de Servicios API</strong> para establecer la
+                conexión entre el frontend existente y el backend operativo.
               </p>
               <div className="bg-white/20 rounded-xl p-4">
                 <p className="font-mono text-sm">
-                  📁 src/api/client.js → Axios con JWT interceptor<br/>
+                  📁 src/api/client.js → Axios con JWT interceptor
+                  <br />
                   📁 src/api/despachos.service.js → Mapea a /operaciones
                 </p>
               </div>
@@ -424,7 +561,7 @@ export default function AnalisisAlineacionActualizado() {
         {activeTab === 'stack' && (
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-gray-800 mb-6">Stack Tecnológico Real</h2>
-            
+
             <div className="grid md:grid-cols-2 gap-6">
               {/* Frontend */}
               <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
@@ -438,9 +575,14 @@ export default function AnalisisAlineacionActualizado() {
                     <p className="text-sm font-medium text-gray-500 mb-2">Core Framework</p>
                     <div className="space-y-2">
                       {stackActual.frontend.core.map((tech, i) => (
-                        <div key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                        >
                           <span className="font-medium text-gray-800">{tech.nombre}</span>
-                          <code className="text-sm bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{tech.version}</code>
+                          <code className="text-sm bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                            {tech.version}
+                          </code>
                         </div>
                       ))}
                     </div>
@@ -449,9 +591,14 @@ export default function AnalisisAlineacionActualizado() {
                     <p className="text-sm font-medium text-gray-500 mb-2">Estilos & UI</p>
                     <div className="space-y-2">
                       {stackActual.frontend.estilos.map((tech, i) => (
-                        <div key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                        >
                           <span className="font-medium text-gray-800">{tech.nombre}</span>
-                          <code className="text-sm bg-purple-100 text-purple-700 px-2 py-0.5 rounded">{tech.version}</code>
+                          <code className="text-sm bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                            {tech.version}
+                          </code>
                         </div>
                       ))}
                     </div>
@@ -460,9 +607,14 @@ export default function AnalisisAlineacionActualizado() {
                     <p className="text-sm font-medium text-gray-500 mb-2">Utilidades</p>
                     <div className="space-y-2">
                       {stackActual.frontend.utilidades.map((tech, i) => (
-                        <div key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                        >
                           <span className="font-medium text-gray-800">{tech.nombre}</span>
-                          <code className="text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded">{tech.version}</code>
+                          <code className="text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                            {tech.version}
+                          </code>
                         </div>
                       ))}
                     </div>
@@ -482,9 +634,14 @@ export default function AnalisisAlineacionActualizado() {
                     <p className="text-sm font-medium text-gray-500 mb-2">Core</p>
                     <div className="space-y-2">
                       {stackActual.backend.core.map((tech, i) => (
-                        <div key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                        >
                           <span className="font-medium text-gray-800">{tech.nombre}</span>
-                          <code className="text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded">{tech.version}</code>
+                          <code className="text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                            {tech.version}
+                          </code>
                         </div>
                       ))}
                     </div>
@@ -493,9 +650,14 @@ export default function AnalisisAlineacionActualizado() {
                     <p className="text-sm font-medium text-gray-500 mb-2">Adicionales</p>
                     <div className="space-y-2">
                       {stackActual.backend.adicionales.map((tech, i) => (
-                        <div key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                        >
                           <span className="font-medium text-gray-800">{tech.nombre}</span>
-                          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">✓ Operativo</span>
+                          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">
+                            ✓ Operativo
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -511,15 +673,22 @@ export default function AnalisisAlineacionActualizado() {
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {activeTab === 'estructura' && (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">Estructura del Proyecto Frontend</h2>
-            
+            <h2 className="text-xl font-bold text-gray-800 mb-6">
+              Estructura del Proyecto Frontend
+            </h2>
+
             <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
               <div className="px-6 py-4 bg-gray-50 border-b">
-                <code className="text-sm text-gray-600">~/Documents/GitHub/istho-crm/frontend/src/</code>
+                <code className="text-sm text-gray-600">
+                  ~/Documents/GitHub/istho-crm/frontend/src/
+                </code>
               </div>
               <div className="divide-y">
                 {estructuraFrontend.directorios.map((dir, i) => (
-                  <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                  <div
+                    key={i}
+                    className="px-6 py-4 flex items-center justify-between hover:bg-gray-50"
+                  >
                     <div className="flex items-center gap-3">
                       <span className="text-xl">📁</span>
                       <div>
@@ -528,9 +697,13 @@ export default function AnalisisAlineacionActualizado() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        dir.estado === 'existente' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                      }`}>
+                      <span
+                        className={`text-xs px-2 py-1 rounded ${
+                          dir.estado === 'existente'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
                         {dir.estado}
                       </span>
                       {dir.necesitaActualizacion && (
@@ -547,7 +720,7 @@ export default function AnalisisAlineacionActualizado() {
             {/* Árbol de estructura */}
             <div className="bg-gray-900 rounded-2xl p-6 overflow-x-auto">
               <pre className="text-green-400 text-xs font-mono">
-{`frontend/
+                {`frontend/
 ├── public/              # Archivos estáticos
 ├── src/
 │   ├── api/             # 🔧 ACTUALIZAR - Servicios de API
@@ -603,7 +776,7 @@ export default function AnalisisAlineacionActualizado() {
         {activeTab === 'roles' && (
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-gray-800 mb-6">Sistema de Roles y Permisos</h2>
-            
+
             {/* Roles Cards */}
             <div className="grid md:grid-cols-2 gap-4">
               {roles.map((rol, i) => (
@@ -647,9 +820,11 @@ export default function AnalisisAlineacionActualizado() {
 
             {/* Implementación */}
             <div className="bg-gray-900 rounded-2xl p-6 overflow-x-auto">
-              <p className="text-gray-400 text-sm mb-4">{'// hooks/usePermissions.js - Implementación sugerida'}</p>
+              <p className="text-gray-400 text-sm mb-4">
+                {'// hooks/usePermissions.js - Implementación sugerida'}
+              </p>
               <pre className="text-green-400 text-xs font-mono">
-{`const PERMISSIONS = {
+                {`const PERMISSIONS = {
   admin: {
     clientes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
     despachos: ['ver', 'crear', 'editar', 'eliminar', 'confirmar', 'cancelar'],
@@ -705,8 +880,10 @@ export const usePermissions = () => {
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {activeTab === 'nomenclatura' && (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">Decisión de Nomenclatura: Despachos vs Operaciones</h2>
-            
+            <h2 className="text-xl font-bold text-gray-800 mb-6">
+              Decisión de Nomenclatura: Despachos vs Operaciones
+            </h2>
+
             {/* Comparativa */}
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6">
@@ -724,7 +901,9 @@ export const usePermissions = () => {
                   </div>
                   <div className="bg-white rounded-xl p-4">
                     <p className="text-sm text-gray-600 mb-1">Documentación</p>
-                    <p className="text-sm text-blue-700">ROLES_PERMISOS_MODULOS.md usa &ldquo;Despachos&rdquo;</p>
+                    <p className="text-sm text-blue-700">
+                      ROLES_PERMISOS_MODULOS.md usa &ldquo;Despachos&rdquo;
+                    </p>
                   </div>
                 </div>
               </div>
@@ -760,21 +939,25 @@ export const usePermissions = () => {
                   <strong>Mantener &ldquo;Despachos&rdquo; en el Frontend</strong>
                 </p>
                 <p className="text-sm text-gray-600">
-                  El servicio de API hará el mapeo transparente: el usuario nunca ve &ldquo;operaciones&rdquo;,
-                  pero internamente las peticiones van a <code>/api/v1/operaciones</code>.
+                  El servicio de API hará el mapeo transparente: el usuario nunca ve
+                  &ldquo;operaciones&rdquo;, pero internamente las peticiones van a{' '}
+                  <code>/api/v1/operaciones</code>.
                 </p>
               </div>
               <p className="text-sm text-amber-700">
-                <strong>Justificación:</strong> La documentación de permisos y toda la UX ya usan &ldquo;Despachos&rdquo;.
-                Es el término más intuitivo para usuarios de logística en Colombia.
+                <strong>Justificación:</strong> La documentación de permisos y toda la UX ya usan
+                &ldquo;Despachos&rdquo;. Es el término más intuitivo para usuarios de logística en
+                Colombia.
               </p>
             </div>
 
             {/* Mapeo en Código */}
             <div className="bg-gray-900 rounded-2xl p-6 overflow-x-auto">
-              <p className="text-gray-400 text-sm mb-4">{'// api/despachos.service.js - Mapeo transparente'}</p>
+              <p className="text-gray-400 text-sm mb-4">
+                {'// api/despachos.service.js - Mapeo transparente'}
+              </p>
               <pre className="text-green-400 text-xs font-mono">
-{`// El frontend usa "despachos", pero internamente llama a "operaciones"
+                {`// El frontend usa "despachos", pero internamente llama a "operaciones"
 import apiClient from './client';
 
 const BASE_URL = '/operaciones';  // ← Backend usa operaciones
@@ -819,13 +1002,19 @@ export default despachosService;`}
                   {mapeoEndpoints.map((ep, i) => (
                     <tr key={i} className="hover:bg-gray-50">
                       <td className="px-4 py-3 font-medium">{ep.modulo}</td>
-                      <td className="px-4 py-3"><code className="text-blue-600">{ep.frontend}</code></td>
-                      <td className="px-4 py-3"><code className="text-green-600">{ep.backend}</code></td>
+                      <td className="px-4 py-3">
+                        <code className="text-blue-600">{ep.frontend}</code>
+                      </td>
+                      <td className="px-4 py-3">
+                        <code className="text-green-600">{ep.backend}</code>
+                      </td>
                       <td className="px-4 py-3 text-center">
                         {ep.alineado ? (
                           <span className="text-green-500 text-lg">✓</span>
                         ) : (
-                          <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded">{ep.nota}</span>
+                          <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded">
+                            {ep.nota}
+                          </span>
                         )}
                       </td>
                     </tr>
@@ -842,21 +1031,32 @@ export default despachosService;`}
         {activeTab === 'plan' && (
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-gray-800 mb-6">Plan de Acción para Alineación</h2>
-            
+
             {planAccion.map((fase, faseIndex) => (
-              <div key={faseIndex} className="bg-white rounded-2xl shadow-sm border overflow-hidden">
-                <div 
+              <div
+                key={faseIndex}
+                className="bg-white rounded-2xl shadow-sm border overflow-hidden"
+              >
+                <div
                   className={`px-6 py-4 cursor-pointer flex items-center justify-between ${
-                    fase.prioridad === 'CRÍTICO' ? 'bg-red-50' :
-                    fase.prioridad === 'ALTO' ? 'bg-amber-50' : 'bg-blue-50'
+                    fase.prioridad === 'CRÍTICO'
+                      ? 'bg-red-50'
+                      : fase.prioridad === 'ALTO'
+                        ? 'bg-amber-50'
+                        : 'bg-blue-50'
                   }`}
                   onClick={() => toggleSection(`fase-${faseIndex}`)}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                      fase.prioridad === 'CRÍTICO' ? 'bg-red-500' :
-                      fase.prioridad === 'ALTO' ? 'bg-amber-500' : 'bg-blue-500'
-                    }`}>
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
+                        fase.prioridad === 'CRÍTICO'
+                          ? 'bg-red-500'
+                          : fase.prioridad === 'ALTO'
+                            ? 'bg-amber-500'
+                            : 'bg-blue-500'
+                      }`}
+                    >
                       {fase.fase}
                     </div>
                     <div>
@@ -865,27 +1065,39 @@ export default despachosService;`}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className={`text-xs font-medium px-3 py-1 rounded-full ${
-                      fase.prioridad === 'CRÍTICO' ? 'bg-red-100 text-red-700' :
-                      fase.prioridad === 'ALTO' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
-                    }`}>
+                    <span
+                      className={`text-xs font-medium px-3 py-1 rounded-full ${
+                        fase.prioridad === 'CRÍTICO'
+                          ? 'bg-red-100 text-red-700'
+                          : fase.prioridad === 'ALTO'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-blue-100 text-blue-700'
+                      }`}
+                    >
                       {fase.prioridad}
                     </span>
-                    <span className={`transform transition-transform ${expandedSections[`fase-${faseIndex}`] ? 'rotate-180' : ''}`}>
+                    <span
+                      className={`transform transition-transform ${expandedSections[`fase-${faseIndex}`] ? 'rotate-180' : ''}`}
+                    >
                       ▼
                     </span>
                   </div>
                 </div>
-                
+
                 {expandedSections[`fase-${faseIndex}`] && (
                   <div className="border-t">
                     {fase.tareas.map((tarea, tareaIndex) => (
-                      <div key={tareaIndex} className="px-6 py-3 flex items-center justify-between hover:bg-gray-50 border-b last:border-b-0">
+                      <div
+                        key={tareaIndex}
+                        className="px-6 py-3 flex items-center justify-between hover:bg-gray-50 border-b last:border-b-0"
+                      >
                         <div className="flex items-center gap-3">
                           <span className="text-gray-400">○</span>
                           <span className="text-sm text-gray-700">{tarea.tarea}</span>
                         </div>
-                        <code className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{tarea.archivo}</code>
+                        <code className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                          {tarea.archivo}
+                        </code>
                       </div>
                     ))}
                   </div>
@@ -935,7 +1147,6 @@ export default despachosService;`}
             </div>
           </div>
         )}
-
       </main>
 
       {/* Footer */}

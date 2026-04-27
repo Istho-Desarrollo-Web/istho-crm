@@ -11,7 +11,7 @@ export default function useSort(defaultField = 'created_at', defaultDir = 'DESC'
 
   const handleSort = (field) => {
     if (sortField === field) {
-      setSortDir(d => d === 'ASC' ? 'DESC' : 'ASC');
+      setSortDir((d) => (d === 'ASC' ? 'DESC' : 'ASC'));
     } else {
       setSortField(field);
       setSortDir('ASC');

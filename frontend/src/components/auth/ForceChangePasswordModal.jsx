@@ -34,24 +34,27 @@ const ForceChangePasswordModal = () => {
   if (!user?.requiere_cambio_password) return null;
 
   const handleChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
     setError('');
   };
 
   const toggleShow = (field) => {
-    setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
+    setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
   const validate = () => {
     if (!form.password_actual) return 'Ingresa tu contraseña temporal actual';
     if (!form.password_nuevo) return 'Ingresa la nueva contraseña';
-    if (form.password_nuevo.length < 8) return 'La nueva contraseña debe tener al menos 8 caracteres';
+    if (form.password_nuevo.length < 8)
+      return 'La nueva contraseña debe tener al menos 8 caracteres';
     if (!/[A-Z]/.test(form.password_nuevo)) return 'Debe contener al menos una mayúscula';
     if (!/[a-z]/.test(form.password_nuevo)) return 'Debe contener al menos una minúscula';
     if (!/[0-9]/.test(form.password_nuevo)) return 'Debe contener al menos un número';
-    if (!/[^A-Za-z0-9]/.test(form.password_nuevo)) return 'Debe contener al menos un carácter especial (!@#$%)';
+    if (!/[^A-Za-z0-9]/.test(form.password_nuevo))
+      return 'Debe contener al menos un carácter especial (!@#$%)';
     if (form.password_nuevo !== form.password_confirmar) return 'Las contraseñas no coinciden';
-    if (form.password_actual === form.password_nuevo) return 'La nueva contraseña debe ser diferente a la actual';
+    if (form.password_actual === form.password_nuevo)
+      return 'La nueva contraseña debe ser diferente a la actual';
     return null;
   };
 
@@ -135,9 +138,7 @@ const ForceChangePasswordModal = () => {
           <div className="w-10 h-10 mx-auto mb-2 bg-white/20 rounded-full flex items-center justify-center">
             <Lock className="w-5 h-5 text-white" />
           </div>
-          <h2 className="text-base font-bold text-white">
-            Cambio de contraseña requerido
-          </h2>
+          <h2 className="text-base font-bold text-white">Cambio de contraseña requerido</h2>
           <p className="text-orange-100 text-xs mt-0.5">
             {user?.password_vencida
               ? 'Tu contraseña ha vencido. Debes establecer una nueva para continuar'
@@ -174,7 +175,11 @@ const ForceChangePasswordModal = () => {
                 onClick={() => toggleShow('actual')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
               >
-                {showPasswords.actual ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPasswords.actual ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
@@ -208,15 +213,22 @@ const ForceChangePasswordModal = () => {
                     <div
                       key={i}
                       className={`h-1 flex-1 rounded-full transition-colors ${
-                        i <= strength.level ? strength.color : 'bg-slate-200 dark:bg-centhrix-surface'
+                        i <= strength.level
+                          ? strength.color
+                          : 'bg-slate-200 dark:bg-centhrix-surface'
                       }`}
                     />
                   ))}
                 </div>
-                <p className={`text-[11px] ${
-                  strength.level <= 2 ? 'text-red-500' :
-                  strength.level <= 3 ? 'text-amber-500' : 'text-emerald-500'
-                }`}>
+                <p
+                  className={`text-[11px] ${
+                    strength.level <= 2
+                      ? 'text-red-500'
+                      : strength.level <= 3
+                        ? 'text-amber-500'
+                        : 'text-emerald-500'
+                  }`}
+                >
                   Seguridad: {strength.label}
                 </p>
               </div>
@@ -241,7 +253,11 @@ const ForceChangePasswordModal = () => {
                 onClick={() => toggleShow('confirmar')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
               >
-                {showPasswords.confirmar ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPasswords.confirmar ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
             </div>
             {form.password_confirmar && form.password_nuevo !== form.password_confirmar && (
@@ -251,21 +267,34 @@ const ForceChangePasswordModal = () => {
 
           {/* Requisitos */}
           <div className="bg-slate-50 dark:bg-centhrix-surface/50 rounded-xl p-2.5 space-y-0.5">
-            <p className="text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-0.5">Requisitos:</p>
+            <p className="text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-0.5">
+              Requisitos:
+            </p>
             {[
               { ok: form.password_nuevo.length >= 8, text: 'Mínimo 8 caracteres' },
               { ok: /[A-Z]/.test(form.password_nuevo), text: 'Al menos una mayúscula' },
               { ok: /[a-z]/.test(form.password_nuevo), text: 'Al menos una minúscula' },
               { ok: /[0-9]/.test(form.password_nuevo), text: 'Al menos un número' },
-              { ok: /[^A-Za-z0-9]/.test(form.password_nuevo), text: 'Al menos un carácter especial (!@#$%)' },
+              {
+                ok: /[^A-Za-z0-9]/.test(form.password_nuevo),
+                text: 'Al menos un carácter especial (!@#$%)',
+              },
             ].map((req, i) => (
               <div key={i} className="flex items-center gap-1.5 text-[11px]">
-                <div className={`w-3 h-3 rounded-full flex items-center justify-center ${
-                  req.ok ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-centhrix-surface'
-                }`}>
+                <div
+                  className={`w-3 h-3 rounded-full flex items-center justify-center ${
+                    req.ok ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-centhrix-surface'
+                  }`}
+                >
                   {req.ok && <Check className="w-2 h-2 text-white" />}
                 </div>
-                <span className={req.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}>
+                <span
+                  className={
+                    req.ok
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }
+                >
                   {req.text}
                 </span>
               </div>

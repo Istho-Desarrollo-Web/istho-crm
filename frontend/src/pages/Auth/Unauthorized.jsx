@@ -44,8 +44,11 @@ const Unauthorized = () => {
 
         {user && (
           <p className="text-sm text-slate-400 dark:text-slate-500 mb-8">
-            Tu rol actual es <span className="font-semibold text-slate-600 dark:text-slate-300">{rolLabel[user.rol] || user.rol}</span>.
-            Contacta al administrador si necesitas acceso.
+            Tu rol actual es{' '}
+            <span className="font-semibold text-slate-600 dark:text-slate-300">
+              {rolLabel[user.rol] || user.rol}
+            </span>
+            . Contacta al administrador si necesitas acceso.
           </p>
         )}
 

@@ -3,7 +3,7 @@
  * ISTHO CRM - Servicio API de Usuarios Cliente
  * ============================================================================
  * Servicio para comunicación con el backend de usuarios de cliente.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  * @date Enero 2026
@@ -71,7 +71,7 @@ const usuarioClienteService = {
    */
   async desactivar(clienteId, usuarioId, motivo = '') {
     const response = await client.delete(`${BASE_PATH}/${clienteId}/usuarios/${usuarioId}`, {
-      data: { motivo }
+      data: { motivo },
     });
     return response;
   },
@@ -122,7 +122,7 @@ const usuarioClienteService = {
   async obtenerCatalogoPermisos() {
     const response = await client.get('/usuarios/permisos-cliente');
     return response;
-  }
+  },
 };
 
 export default usuarioClienteService;

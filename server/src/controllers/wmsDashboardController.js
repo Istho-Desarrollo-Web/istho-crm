@@ -55,9 +55,12 @@ const getStatus = async (req, res) => {
 const getEstadisticas = async (req, res) => {
   try {
     const ahora = new Date();
-    const inicioHoy = new Date(ahora); inicioHoy.setHours(0, 0, 0, 0);
-    const iniciaSemana = new Date(ahora); iniciaSemana.setDate(ahora.getDate() - 7);
-    const iniciaMes = new Date(ahora); iniciaMes.setDate(ahora.getDate() - 30);
+    const inicioHoy = new Date(ahora);
+    inicioHoy.setHours(0, 0, 0, 0);
+    const iniciaSemana = new Date(ahora);
+    iniciaSemana.setDate(ahora.getDate() - 7);
+    const iniciaMes = new Date(ahora);
+    iniciaMes.setDate(ahora.getDate() - 30);
 
     const [hoy, semana, mes, total, porTipo, porEstado, recientes] = await Promise.all([
       WmsSyncLog.count({ where: { created_at: { [Op.gte]: inicioHoy } } }),
@@ -77,15 +80,27 @@ const getEstadisticas = async (req, res) => {
       WmsSyncLog.findAll({
         order: [['created_at', 'DESC']],
         limit: 5,
-        attributes: ['id', 'tipo', 'documento_origen', 'nit', 'estado', 'error_mensaje', 'created_at'],
+        attributes: [
+          'id',
+          'tipo',
+          'documento_origen',
+          'nit',
+          'estado',
+          'error_mensaje',
+          'created_at',
+        ],
       }),
     ]);
 
     const tipoMap = { entrada: 0, salida: 0, kardex: 0, productos: 0 };
-    porTipo.forEach(r => { tipoMap[r.tipo] = parseInt(r.cantidad); });
+    porTipo.forEach((r) => {
+      tipoMap[r.tipo] = parseInt(r.cantidad);
+    });
 
     const estadoMap = { exitoso: 0, fallido: 0 };
-    porEstado.forEach(r => { estadoMap[r.estado] = parseInt(r.cantidad); });
+    porEstado.forEach((r) => {
+      estadoMap[r.estado] = parseInt(r.cantidad);
+    });
 
     return success(res, {
       resumen: { hoy, semana, mes, total },
@@ -123,7 +138,17 @@ const getHistorial = async (req, res) => {
       order: [['created_at', 'DESC']],
       limit,
       offset,
-      attributes: ['id', 'tipo', 'documento_origen', 'nit', 'estado', 'error_mensaje', 'detalles', 'ip_origen', 'created_at'],
+      attributes: [
+        'id',
+        'tipo',
+        'documento_origen',
+        'nit',
+        'estado',
+        'error_mensaje',
+        'detalles',
+        'ip_origen',
+        'created_at',
+      ],
     });
 
     return paginated(res, rows, buildPaginacion(count, page, limit));
@@ -164,17 +189,31 @@ const reejecutarUltimoSync = async (req, res) => {
     // MySQL puede devolver JSON columns como string en algunas configuraciones
     let payload = ultimo.payload;
     if (typeof payload === 'string') {
-      try { payload = JSON.parse(payload); } catch { /* usar tal cual */ }
+      try {
+        payload = JSON.parse(payload);
+      } catch {
+        /* usar tal cual */
+      }
     }
 
     let resultado;
     switch (ultimo.tipo) {
-      case 'entrada':   resultado = await wmsSyncService.syncEntrada(payload);   break;
-      case 'salida':    resultado = await wmsSyncService.syncSalida(payload);    break;
-      case 'kardex':    resultado = await wmsSyncService.syncKardex(payload);    break;
-      case 'productos': resultado = await wmsSyncService.syncProductos(payload); break;
+      case 'entrada':
+        resultado = await wmsSyncService.syncEntrada(payload);
+        break;
+      case 'salida':
+        resultado = await wmsSyncService.syncSalida(payload);
+        break;
+      case 'kardex':
+        resultado = await wmsSyncService.syncKardex(payload);
+        break;
+      case 'productos':
+        resultado = await wmsSyncService.syncProductos(payload);
+        break;
       default:
-        return res.status(400).json({ success: false, message: `Tipo de sync desconocido: ${ultimo.tipo}` });
+        return res
+          .status(400)
+          .json({ success: false, message: `Tipo de sync desconocido: ${ultimo.tipo}` });
     }
 
     await WmsSyncLog.create({
@@ -187,12 +226,16 @@ const reejecutarUltimoSync = async (req, res) => {
       ip_origen: 'dashboard-manual',
     });
 
-    return success(res, {
-      tipo: ultimo.tipo,
-      documento_origen: ultimo.documento_origen,
-      resultado,
-      log_origen_id: ultimo.id,
-    }, 'Re-ejecución completada exitosamente');
+    return success(
+      res,
+      {
+        tipo: ultimo.tipo,
+        documento_origen: ultimo.documento_origen,
+        resultado,
+        log_origen_id: ultimo.id,
+      },
+      'Re-ejecución completada exitosamente'
+    );
   } catch (error) {
     logger.error('[WMS Dashboard] Error en reejecutarUltimoSync:', { message: error.message });
 

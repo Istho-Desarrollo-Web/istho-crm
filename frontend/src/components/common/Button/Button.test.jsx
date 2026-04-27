@@ -17,7 +17,11 @@ describe('Button', () => {
 
   it('no llama onClick cuando está disabled', () => {
     const handleClick = vi.fn();
-    render(<Button disabled onClick={handleClick}>Click me</Button>);
+    render(
+      <Button disabled onClick={handleClick}>
+        Click me
+      </Button>
+    );
 
     fireEvent.click(screen.getByRole('button'));
     expect(handleClick).not.toHaveBeenCalled();
@@ -25,7 +29,11 @@ describe('Button', () => {
 
   it('no llama onClick cuando está loading', () => {
     const handleClick = vi.fn();
-    render(<Button loading onClick={handleClick}>Click me</Button>);
+    render(
+      <Button loading onClick={handleClick}>
+        Click me
+      </Button>
+    );
 
     fireEvent.click(screen.getByRole('button'));
     expect(handleClick).not.toHaveBeenCalled();

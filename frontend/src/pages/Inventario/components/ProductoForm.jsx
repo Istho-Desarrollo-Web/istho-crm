@@ -85,13 +85,7 @@ const toInputValue = (val) => {
 // COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════════════════════════════════════
 
-const ProductoForm = ({
-  isOpen,
-  onClose,
-  onSubmit,
-  producto = null,
-  loading = false,
-}) => {
+const ProductoForm = ({ isOpen, onClose, onSubmit, producto = null, loading = false }) => {
   const isEditing = !!producto;
 
   const { clientes, loading: loadingClientes, error: errorClientes } = useClientesSelector();
@@ -169,7 +163,8 @@ const ProductoForm = ({
 
   if (!isOpen) return null;
 
-  const fieldCls = (hasError) => `
+  const fieldCls = (hasError) =>
+    `
     w-full px-4 py-2.5 border rounded-xl
     focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
     dark:bg-centhrix-card/50 dark:text-slate-100
@@ -182,7 +177,6 @@ const ProductoForm = ({
 
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative bg-white dark:bg-centhrix-card rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700 sticky top-0 bg-white dark:bg-centhrix-card z-10">
             <div className="flex items-center gap-3">
@@ -203,9 +197,12 @@ const ProductoForm = ({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(submitForm)} noValidate className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+          <form
+            onSubmit={handleSubmit(submitForm)}
+            noValidate
+            className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
               {/* Nombre del producto */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
@@ -219,7 +216,8 @@ const ProductoForm = ({
                 />
                 {errors.producto && (
                   <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />{errors.producto.message}
+                    <AlertTriangle className="w-3 h-3" />
+                    {errors.producto.message}
                   </p>
                 )}
               </div>
@@ -237,7 +235,8 @@ const ProductoForm = ({
                 />
                 {errors.sku && (
                   <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />{errors.sku.message}
+                    <AlertTriangle className="w-3 h-3" />
+                    {errors.sku.message}
                   </p>
                 )}
               </div>
@@ -251,17 +250,18 @@ const ProductoForm = ({
                   {loadingClientes ? (
                     <div className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-centhrix-card/50">
                       <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
-                      <span className="text-sm text-slate-500 dark:text-slate-400">Cargando clientes...</span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">
+                        Cargando clientes...
+                      </span>
                     </div>
                   ) : errorClientes ? (
                     <div className="px-4 py-2.5 border border-red-200 rounded-xl bg-red-50">
-                      <p className="text-sm text-red-600">Error al cargar clientes: {errorClientes}</p>
+                      <p className="text-sm text-red-600">
+                        Error al cargar clientes: {errorClientes}
+                      </p>
                     </div>
                   ) : (
-                    <select
-                      {...register('cliente_id')}
-                      className={fieldCls(!!errors.cliente_id)}
-                    >
+                    <select {...register('cliente_id')} className={fieldCls(!!errors.cliente_id)}>
                       <option value="">Seleccionar cliente...</option>
                       {clientes.map((cliente) => (
                         <option key={cliente.id} value={cliente.id}>
@@ -273,7 +273,8 @@ const ProductoForm = ({
                   )}
                   {errors.cliente_id && (
                     <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" />{errors.cliente_id.message}
+                      <AlertTriangle className="w-3 h-3" />
+                      {errors.cliente_id.message}
                     </p>
                   )}
                 </div>
@@ -287,8 +288,12 @@ const ProductoForm = ({
                   </label>
                   <div className="px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-centhrix-card/50">
                     <span className="text-slate-700 dark:text-slate-300">
-                      {producto.cliente.codigo_cliente ? `${producto.cliente.codigo_cliente} - ` : ''}
-                      {producto.cliente.razon_social || producto.cliente.nombre || `Cliente ID: ${producto.cliente_id}`}
+                      {producto.cliente.codigo_cliente
+                        ? `${producto.cliente.codigo_cliente} - `
+                        : ''}
+                      {producto.cliente.razon_social ||
+                        producto.cliente.nombre ||
+                        `Cliente ID: ${producto.cliente_id}`}
                     </span>
                   </div>
                 </div>
@@ -302,7 +307,9 @@ const ProductoForm = ({
                 <select {...register('categoria')} className={fieldCls(false)}>
                   <option value="">Seleccionar categoría</option>
                   {CATEGORIAS.map((cat) => (
-                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -314,7 +321,9 @@ const ProductoForm = ({
                 </label>
                 <select {...register('unidad_medida')} className={fieldCls(false)}>
                   {UNIDADES.map((und) => (
-                    <option key={und.value} value={und.value}>{und.label}</option>
+                    <option key={und.value} value={und.value}>
+                      {und.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -365,7 +374,13 @@ const ProductoForm = ({
 
             {/* Acciones */}
             <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-slate-700">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1" disabled={loading}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="flex-1"
+                disabled={loading}
+              >
                 Cancelar
               </Button>
               <Button

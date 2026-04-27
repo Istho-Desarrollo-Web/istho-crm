@@ -6,11 +6,11 @@
  * - Interceptores de request (agrega token JWT)
  * - Interceptores de response (manejo de errores, refresh token)
  * - Configuración base para todas las peticiones
- * 
+ *
  * CORRECCIONES v1.1.0:
  * - Template literals corregidos en console.log
  * - Interceptor devuelve response.data directamente
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 1.1.0
  * @date Enero 2026
@@ -72,7 +72,7 @@ const apiClient = axios.create({
   timeout: TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
   },
 });
 
@@ -121,7 +121,10 @@ apiClient.interceptors.request.use(
       } else {
         // Registrar este como el request canónico
         let resolve, reject;
-        const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
+        const promise = new Promise((res, rej) => {
+          resolve = res;
+          reject = rej;
+        });
         _pendingGets.set(key, { promise, resolve, reject });
       }
     }
@@ -186,7 +189,7 @@ apiClient.interceptors.response.use(
     }
 
     const originalRequest = error.config;
-    
+
     // Si no hay respuesta (network error)
     if (!error.response) {
       console.error('❌ [API] Error de red:', error.message);
@@ -196,9 +199,9 @@ apiClient.interceptors.response.use(
         code: 'NETWORK_ERROR',
       });
     }
-    
+
     const { status, data } = error.response;
-    
+
     // Log del error
     if (import.meta.env.DEV) {
       console.error(`❌ [API] ${status} ${originalRequest.url}`, data);
@@ -206,12 +209,13 @@ apiClient.interceptors.response.use(
         console.error('❌ [API] Errores de validación:', data.errors);
       }
     }
-    
+
     // Manejo por código de estado
     switch (status) {
       case 401: {
-        const esLoginORefresh = originalRequest.url.includes('/auth/login') ||
-                                originalRequest.url.includes('/auth/refresh');
+        const esLoginORefresh =
+          originalRequest.url.includes('/auth/login') ||
+          originalRequest.url.includes('/auth/refresh');
 
         if (!esLoginORefresh && !originalRequest._retry) {
           originalRequest._retry = true;
@@ -221,10 +225,11 @@ apiClient.interceptors.response.use(
             if (refreshToken) {
               // Un solo refresh en vuelo: los requests simultáneos comparten la misma promesa
               if (!_refreshPromise) {
-                _refreshPromise = axios.post(
-                  `${API_BASE_URL}/auth/refresh`,
-                  { refreshToken }
-                ).finally(() => { _refreshPromise = null; });
+                _refreshPromise = axios
+                  .post(`${API_BASE_URL}/auth/refresh`, { refreshToken })
+                  .finally(() => {
+                    _refreshPromise = null;
+                  });
               }
 
               const refreshResponse = await _refreshPromise;
@@ -252,11 +257,13 @@ apiClient.interceptors.response.use(
           if (!window.location.pathname.includes('/login')) {
             window.location.href = '/login';
           }
-          setTimeout(() => { _logoutInProgress = false; }, 3000);
+          setTimeout(() => {
+            _logoutInProgress = false;
+          }, 3000);
         }
         break;
       }
-        
+
       case 403: {
         const msg403 = data?.message || '';
         // Usuario desactivado → redirigir a login con mensaje
@@ -264,39 +271,45 @@ apiClient.interceptors.response.use(
           localStorage.removeItem(TOKEN_KEY);
           localStorage.removeItem(REFRESH_TOKEN_KEY);
           localStorage.removeItem('istho_user');
-          sessionStorage.setItem('auth_mensaje_pendiente', JSON.stringify({
-            tipo: 'desactivado',
-            mensaje: 'Tu cuenta ha sido desactivada. Contacta al administrador para más información.',
-          }));
+          sessionStorage.setItem(
+            'auth_mensaje_pendiente',
+            JSON.stringify({
+              tipo: 'desactivado',
+              mensaje:
+                'Tu cuenta ha sido desactivada. Contacta al administrador para más información.',
+            })
+          );
           if (!window.location.pathname.includes('/login')) {
             window.location.href = '/login';
           }
         } else {
           // Sin permisos para la acción - emitir evento global para toast
           console.warn('⚠️ [API] Sin permisos para esta acción');
-          window.dispatchEvent(new CustomEvent('istho:permission-denied', {
-            detail: { message: msg403 || 'No tienes permiso para realizar esta acción' }
-          }));
+          window.dispatchEvent(
+            new CustomEvent('istho:permission-denied', {
+              detail: { message: msg403 || 'No tienes permiso para realizar esta acción' },
+            })
+          );
         }
         break;
       }
-        
+
       case 404:
         // Recurso no encontrado
         console.warn('⚠️ [API] Recurso no encontrado');
         break;
-        
+
       case 422:
         // Error de validación
         console.warn('⚠️ [API] Error de validación:', data.errors);
         break;
-        
+
       case 500:
         // Error interno del servidor
         console.error('❌ [API] Error interno del servidor');
         break;
     }
-    
+
     // Retornar error formateado
     return Promise.reject({
       success: false,
@@ -360,7 +373,7 @@ export const createUploadClient = () => {
     baseURL: API_BASE_URL,
     timeout: 60000, // 60 segundos para uploads
   });
-  
+
   // Agregar token
   uploadClient.interceptors.request.use((config) => {
     const token = localStorage.getItem(TOKEN_KEY);
@@ -369,17 +382,18 @@ export const createUploadClient = () => {
     }
     return config;
   });
-  
+
   // También normalizar respuesta para uploads
   uploadClient.interceptors.response.use(
     (response) => response.data,
-    (error) => Promise.reject({
-      success: false,
-      message: error.response?.data?.message || 'Error en upload',
-      status: error.response?.status,
-    })
+    (error) =>
+      Promise.reject({
+        success: false,
+        message: error.response?.data?.message || 'Error en upload',
+        status: error.response?.status,
+      })
   );
-  
+
   return uploadClient;
 };
 

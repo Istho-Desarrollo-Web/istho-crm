@@ -12,16 +12,19 @@ const db = require('../models');
     console.log('✅ Conexión a BD establecida');
 
     // 1. Agregar columna subtipo
-    await db.sequelize.getQueryInterface().addColumn('plantillas_email', 'subtipo', {
-      type: db.Sequelize.STRING(50),
-      allowNull: true,
-      defaultValue: null,
-      comment: 'Subtipo para diferenciar plantillas del mismo tipo (ej: ingreso, salida)'
-    }).catch(e => {
-      if (e.message.includes('Duplicate') || e.message.includes('already exists')) {
-        console.log('ℹ️  Columna subtipo ya existe');
-      } else throw e;
-    });
+    await db.sequelize
+      .getQueryInterface()
+      .addColumn('plantillas_email', 'subtipo', {
+        type: db.Sequelize.STRING(50),
+        allowNull: true,
+        defaultValue: null,
+        comment: 'Subtipo para diferenciar plantillas del mismo tipo (ej: ingreso, salida)',
+      })
+      .catch((e) => {
+        if (e.message.includes('Duplicate') || e.message.includes('already exists')) {
+          console.log('ℹ️  Columna subtipo ya existe');
+        } else throw e;
+      });
     console.log('✅ Columna subtipo agregada');
 
     // 2. Asignar subtipos a las plantillas existentes

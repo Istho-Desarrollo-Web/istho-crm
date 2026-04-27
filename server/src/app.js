@@ -1,6 +1,6 @@
 /**
  * ISTHO CRM - Configuración de Express
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  */
@@ -17,7 +17,7 @@ const { notFound } = require('./utils/responses');
 const {
   handleSequelizeError,
   handleValidationError,
-  handleGenericError
+  handleGenericError,
 } = require('./middleware/errorHandler');
 const { limiterGeneral } = require('./middleware/rateLimiter');
 
@@ -37,7 +37,7 @@ app.set('trust proxy', 1);
 // CORS dinámico: soporta múltiples orígenes separados por coma
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
   .split(',')
-  .map(origin => origin.trim())
+  .map((origin) => origin.trim())
   .filter(Boolean);
 
 const corsOptions = {
@@ -52,32 +52,34 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-WMS-API-Key'],
   credentials: true,
-  maxAge: 86400
+  maxAge: 86400,
 };
 
 app.use(cors(corsOptions));
 
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc:  ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://vercel.live"],
-      styleSrc:   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      imgSrc:     ["'self'", "data:", "blob:", "https://*"],
-      fontSrc:    ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https://*", "wss://*"],
-      frameSrc:   ["'self'"],
-      objectSrc:  ["'none'"],
-      upgradeInsecureRequests: [],
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://vercel.live'],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://*'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        connectSrc: ["'self'", 'https://*', 'wss://*'],
+        frameSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
     },
-  },
-  strictTransportSecurity: {
-    maxAge: 63072000,
-    includeSubDomains: true,
-    preload: true,
-  },
-}));
+    strictTransportSecurity: {
+      maxAge: 63072000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  })
+);
 
 // Rate limiting general — va DESPUÉS de CORS para que los 429 incluyan Access-Control-Allow-Origin
 // En desarrollo se omite para no bloquear con los pollers activos (SesionesActivas, notificaciones)
@@ -100,11 +102,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // ==============================================
 
 if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan('dev', {
-    stream: {
-      write: (message) => logger.http(message.trim())
-    }
-  }));
+  app.use(
+    morgan('dev', {
+      stream: {
+        write: (message) => logger.http(message.trim()),
+      },
+    })
+  );
 }
 
 // ==============================================
@@ -126,7 +130,7 @@ app.get('/', (req, res) => {
     message: 'Bienvenido a ISTHO CRM API',
     version: '1.0.0',
     documentation: '/api/v1/docs',
-    health: '/health'
+    health: '/health',
   });
 });
 

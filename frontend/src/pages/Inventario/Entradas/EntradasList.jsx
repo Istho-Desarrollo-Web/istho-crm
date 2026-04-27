@@ -4,7 +4,7 @@
  * ============================================================================
  * Lista de entradas/ingresos de inventario provenientes del WMS.
  * Flujo: Pendiente → En Proceso → Cerrado
- * 
+ *
  * @author Coordinación TI ISTHO
  * @version 1.0.0
  * @date Marzo 2026
@@ -89,7 +89,9 @@ const StatusBadge = ({ estado }) => {
   const Icon = config.icon;
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text} ${config.darkBg} ${config.darkText}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text} ${config.darkBg} ${config.darkText}`}
+    >
       <Icon className={`w-3.5 h-3.5 ${estado === 'en_proceso' ? 'animate-spin' : ''}`} />
       {config.label}
     </span>
@@ -102,7 +104,12 @@ const StatusBadge = ({ estado }) => {
 
 const ProgressBar = ({ verified, total }) => {
   const pct = total > 0 ? Math.round((verified / total) * 100) : 0;
-  const color = pct === 100 ? 'bg-emerald-500' : pct > 0 ? 'bg-blue-500' : 'bg-slate-300 dark:bg-centhrix-surface';
+  const color =
+    pct === 100
+      ? 'bg-emerald-500'
+      : pct > 0
+        ? 'bg-blue-500'
+        : 'bg-slate-300 dark:bg-centhrix-surface';
 
   return (
     <div className="flex items-center gap-2">
@@ -145,7 +152,9 @@ const RowActions = ({ entrada, onView }) => {
           elevation: 0,
           sx: {
             overflow: 'visible',
-            filter: isDark ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))' : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+            filter: isDark
+              ? 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))'
+              : 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
             mt: 0.5,
             borderRadius: '0.75rem',
             border: isDark ? '1px solid #334155' : '1px solid #f3f4f6',
@@ -161,7 +170,12 @@ const RowActions = ({ entrada, onView }) => {
           },
         }}
       >
-        <MenuItem onClick={() => { onView(entrada); setAnchorEl(null); }}>
+        <MenuItem
+          onClick={() => {
+            onView(entrada);
+            setAnchorEl(null);
+          }}
+        >
           <Eye className="w-4 h-4" />
           {entrada.estado === 'pendiente' && !esPortal ? 'Iniciar Operación' : 'Ver Operación'}
         </MenuItem>
@@ -175,7 +189,9 @@ const RowActions = ({ entrada, onView }) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 const KpiMini = ({ icon: Icon, label, value, color }) => (
-  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}>
+  <div
+    className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}
+  >
     <div className="p-2 rounded-lg bg-white/80 dark:bg-centhrix-card/80">
       <Icon className="w-5 h-5" />
     </div>
@@ -205,30 +221,35 @@ const EntradasList = () => {
   const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
 
   // Cargar datos desde API
-  const fetchEntradas = useCallback(async (page = 1) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = { page, limit: PAGE_SIZE, sort: sortField, order: sortDir };
-      if (estadoFilter !== 'todos') params.estado = estadoFilter;
-      if (searchTerm) params.search = searchTerm;
+  const fetchEntradas = useCallback(
+    async (page = 1) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = { page, limit: PAGE_SIZE, sort: sortField, order: sortDir };
+        if (estadoFilter !== 'todos') params.estado = estadoFilter;
+        if (searchTerm) params.search = searchTerm;
 
-      const response = await auditoriasService.getEntradas(params);
-      if (response.success && response.data) {
-        setEntradas(Array.isArray(response.data) ? response.data : response.data.entradas || []);
-        if (response.pagination) {
-          setPagination(response.pagination);
+        const response = await auditoriasService.getEntradas(params);
+        if (response.success && response.data) {
+          setEntradas(Array.isArray(response.data) ? response.data : response.data.entradas || []);
+          if (response.pagination) {
+            setPagination(response.pagination);
+          }
+        } else {
+          setEntradas([]);
         }
-      } else {
+      } catch {
         setEntradas([]);
+        setError(
+          'No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.'
+        );
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      setEntradas([]);
-      setError('No se pudo conectar con el servidor. Verifique que el servicio esté activo e intente nuevamente.');
-    } finally {
-      setLoading(false);
-    }
-  }, [estadoFilter, searchTerm, sortField, sortDir]);
+    },
+    [estadoFilter, searchTerm, sortField, sortDir]
+  );
 
   useEffect(() => {
     fetchEntradas(1);
@@ -273,7 +294,6 @@ const EntradasList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
-
         {/* PAGE HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -281,8 +301,12 @@ const EntradasList = () => {
               <ArrowDownCircle className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">Entradas de Inventario</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-0.5">Gestión de ingresos desde el WMS</p>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
+                Entradas de Inventario
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-0.5">
+                Gestión de ingresos desde el WMS
+              </p>
             </div>
           </div>
           {filtered.length > 0 && (
@@ -324,7 +348,12 @@ const EntradasList = () => {
         {error && (
           <div className="mb-4 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center justify-between">
             <p className="text-sm text-amber-700 dark:text-amber-300">{error}</p>
-            <button onClick={fetchEntradas} className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline">Reintentar</button>
+            <button
+              onClick={fetchEntradas}
+              className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              Reintentar
+            </button>
           </div>
         )}
 
@@ -370,7 +399,8 @@ const EntradasList = () => {
         {/* RESULTS COUNT + VIEW TOGGLE */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            {filtered.length} entrada{filtered.length !== 1 && 's'} encontrada{filtered.length !== 1 && 's'}
+            {filtered.length} entrada{filtered.length !== 1 && 's'} encontrada
+            {filtered.length !== 1 && 's'}
           </p>
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-lg p-1">
             <button
@@ -403,7 +433,9 @@ const EntradasList = () => {
               No se encontraron entradas
             </h3>
             <p className="text-slate-500 dark:text-slate-400">
-              {searchTerm ? 'Intenta ajustar el término de búsqueda' : 'No hay entradas pendientes de auditoría'}
+              {searchTerm
+                ? 'Intenta ajustar el término de búsqueda'
+                : 'No hay entradas pendientes de auditoría'}
             </p>
           </div>
         ) : viewMode === 'table' ? (
@@ -412,23 +444,49 @@ const EntradasList = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50" onClick={() => handleSort('numero_operacion')}>
-                      <span className="inline-flex items-center gap-1">Documento <SortIcon field="numero_operacion" sortField={sortField} sortDir={sortDir} /></span>
+                    <th
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
+                      onClick={() => handleSort('numero_operacion')}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Documento{' '}
+                        <SortIcon
+                          field="numero_operacion"
+                          sortField={sortField}
+                          sortDir={sortDir}
+                        />
+                      </span>
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Cliente
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50" onClick={() => handleSort('tipo')}>
-                      <span className="inline-flex items-center gap-1">Tipo Doc. <SortIcon field="tipo" sortField={sortField} sortDir={sortDir} /></span>
+                    <th
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
+                      onClick={() => handleSort('tipo')}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Tipo Doc. <SortIcon field="tipo" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50" onClick={() => handleSort('fecha_operacion')}>
-                      <span className="inline-flex items-center gap-1">Fecha Ingreso <SortIcon field="fecha_operacion" sortField={sortField} sortDir={sortDir} /></span>
+                    <th
+                      className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
+                      onClick={() => handleSort('fecha_operacion')}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Fecha Ingreso{' '}
+                        <SortIcon field="fecha_operacion" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Líneas
                     </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50" onClick={() => handleSort('estado')}>
-                      <span className="inline-flex items-center gap-1">Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} /></span>
+                    <th
+                      className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
+                      onClick={() => handleSort('estado')}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Estado <SortIcon field="estado" sortField={sortField} sortDir={sortDir} />
+                      </span>
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">
                       {/* Acciones */}
@@ -478,7 +536,10 @@ const EntradasList = () => {
                       </td>
                       <td className="py-4 px-4" onClick={(e) => e.stopPropagation()}>
                         <div className="w-32 mx-auto">
-                          <ProgressBar verified={entrada.lineas_verificadas} total={entrada.lineas} />
+                          <ProgressBar
+                            verified={entrada.lineas_verificadas}
+                            total={entrada.lineas}
+                          />
                         </div>
                       </td>
                       <td className="py-4 px-4 text-center">
@@ -521,7 +582,9 @@ const EntradasList = () => {
                         <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                           {entrada.documento_wms || entrada.documento}
                         </p>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">{entrada.documento}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
+                          {entrada.documento}
+                        </p>
                       </div>
                     </div>
                     <div onClick={(e) => e.stopPropagation()}>
@@ -533,7 +596,9 @@ const EntradasList = () => {
                   <div className="px-4 py-3 space-y-2.5">
                     <div className="flex items-center gap-2">
                       <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                      <span className="text-sm text-slate-700 dark:text-slate-200 truncate">{entrada.cliente}</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-200 truncate">
+                        {entrada.cliente}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">

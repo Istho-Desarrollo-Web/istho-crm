@@ -1,8 +1,8 @@
 /**
  * ISTHO CRM - Validadores de Cliente
- * 
+ *
  * Esquemas de validación para endpoints de clientes y contactos.
- * 
+ *
  * @author Coordinación TI - ISTHO S.A.S.
  * @version 1.0.0
  */
@@ -15,22 +15,16 @@ const { error: errorResponse } = require('../utils/responses');
  */
 const validar = (req, res, next) => {
   const errors = validationResult(req);
-  
+
   if (!errors.isEmpty()) {
-    const erroresFormateados = errors.array().map(err => ({
+    const erroresFormateados = errors.array().map((err) => ({
       field: err.path,
-      message: err.msg
+      message: err.msg,
     }));
-    
-    return errorResponse(
-      res, 
-      'Error de validación', 
-      400, 
-      erroresFormateados,
-      'VALIDATION_ERROR'
-    );
+
+    return errorResponse(res, 'Error de validación', 400, erroresFormateados, 'VALIDATION_ERROR');
   }
-  
+
   next();
 };
 
@@ -44,34 +38,42 @@ const validar = (req, res, next) => {
 const crearClienteValidator = [
   body('razon_social')
     .trim()
-    .notEmpty().withMessage('La razón social es requerida')
-    .isLength({ min: 3, max: 200 }).withMessage('La razón social debe tener entre 3 y 200 caracteres'),
-  
+    .notEmpty()
+    .withMessage('La razón social es requerida')
+    .isLength({ min: 3, max: 200 })
+    .withMessage('La razón social debe tener entre 3 y 200 caracteres'),
+
   body('nit')
     .trim()
-    .notEmpty().withMessage('El NIT es requerido')
-    .isLength({ min: 5, max: 20 }).withMessage('El NIT debe tener entre 5 y 20 caracteres'),
-  
+    .notEmpty()
+    .withMessage('El NIT es requerido')
+    .isLength({ min: 5, max: 20 })
+    .withMessage('El NIT debe tener entre 5 y 20 caracteres'),
+
   body('direccion')
     .optional()
     .trim()
-    .isLength({ max: 255 }).withMessage('La dirección no puede exceder 255 caracteres'),
-  
+    .isLength({ max: 255 })
+    .withMessage('La dirección no puede exceder 255 caracteres'),
+
   body('ciudad')
     .optional()
     .trim()
-    .isLength({ max: 100 }).withMessage('La ciudad no puede exceder 100 caracteres'),
-  
+    .isLength({ max: 100 })
+    .withMessage('La ciudad no puede exceder 100 caracteres'),
+
   body('departamento')
     .optional()
     .trim()
-    .isLength({ max: 100 }).withMessage('El departamento no puede exceder 100 caracteres'),
-  
+    .isLength({ max: 100 })
+    .withMessage('El departamento no puede exceder 100 caracteres'),
+
   body('telefono')
     .optional()
     .trim()
-    .isLength({ max: 50 }).withMessage('El teléfono no puede exceder 50 caracteres'),
-  
+    .isLength({ max: 50 })
+    .withMessage('El teléfono no puede exceder 50 caracteres'),
+
   body('email')
     .optional({ nullable: true })
     .trim()
@@ -87,8 +89,12 @@ const crearClienteValidator = [
     .trim()
     .custom((value) => {
       if (!value || value === '') return true;
-      try { new URL(value); return true; }
-      catch { throw new Error('Debe ser una URL válida'); }
+      try {
+        new URL(value);
+        return true;
+      } catch {
+        throw new Error('Debe ser una URL válida');
+      }
     }),
 
   body('tipo_cliente')
@@ -103,7 +109,8 @@ const crearClienteValidator = [
   body('sector')
     .optional()
     .trim()
-    .isLength({ max: 100 }).withMessage('El sector no puede exceder 100 caracteres'),
+    .isLength({ max: 100 })
+    .withMessage('El sector no puede exceder 100 caracteres'),
 
   body('estado')
     .optional({ nullable: true })
@@ -125,54 +132,61 @@ const crearClienteValidator = [
   body('notas')
     .optional()
     .trim()
-    .isLength({ max: 2000 }).withMessage('Las notas no pueden exceder 2000 caracteres'),
-  
-  validar
+    .isLength({ max: 2000 })
+    .withMessage('Las notas no pueden exceder 2000 caracteres'),
+
+  validar,
 ];
 
 /**
  * Validación para actualizar cliente
  */
 const actualizarClienteValidator = [
-  param('id')
-    .isInt({ min: 1 }).withMessage('ID de cliente inválido'),
-  
+  param('id').isInt({ min: 1 }).withMessage('ID de cliente inválido'),
+
   body('razon_social')
     .optional()
     .trim()
-    .isLength({ min: 3, max: 200 }).withMessage('La razón social debe tener entre 3 y 200 caracteres'),
-  
+    .isLength({ min: 3, max: 200 })
+    .withMessage('La razón social debe tener entre 3 y 200 caracteres'),
+
   body('nit')
     .optional()
     .trim()
-    .isLength({ min: 5, max: 20 }).withMessage('El NIT debe tener entre 5 y 20 caracteres'),
-  
+    .isLength({ min: 5, max: 20 })
+    .withMessage('El NIT debe tener entre 5 y 20 caracteres'),
+
   body('direccion')
     .optional()
     .trim()
-    .isLength({ max: 255 }).withMessage('La dirección no puede exceder 255 caracteres'),
-  
+    .isLength({ max: 255 })
+    .withMessage('La dirección no puede exceder 255 caracteres'),
+
   body('ciudad')
     .optional()
     .trim()
-    .isLength({ max: 100 }).withMessage('La ciudad no puede exceder 100 caracteres'),
-  
+    .isLength({ max: 100 })
+    .withMessage('La ciudad no puede exceder 100 caracteres'),
+
   body('departamento')
     .optional()
     .trim()
-    .isLength({ max: 100 }).withMessage('El departamento no puede exceder 100 caracteres'),
-  
+    .isLength({ max: 100 })
+    .withMessage('El departamento no puede exceder 100 caracteres'),
+
   body('telefono')
     .optional()
     .trim()
-    .isLength({ max: 50 }).withMessage('El teléfono no puede exceder 50 caracteres'),
-  
+    .isLength({ max: 50 })
+    .withMessage('El teléfono no puede exceder 50 caracteres'),
+
   body('email')
     .optional()
     .trim()
-    .isEmail().withMessage('Debe ser un email válido')
+    .isEmail()
+    .withMessage('Debe ser un email válido')
     .normalizeEmail(),
-  
+
   body('sitio_web')
     .optional({ nullable: true })
     .trim()
@@ -186,20 +200,23 @@ const actualizarClienteValidator = [
         throw new Error('Debe ser una URL válida');
       }
     }),
-  
+
   body('tipo_cliente')
     .optional()
-    .isIn(['corporativo', 'pyme', 'persona_natural']).withMessage('Tipo de cliente no válido'),
-  
+    .isIn(['corporativo', 'pyme', 'persona_natural'])
+    .withMessage('Tipo de cliente no válido'),
+
   body('sector')
     .optional()
     .trim()
-    .isLength({ max: 100 }).withMessage('El sector no puede exceder 100 caracteres'),
-  
+    .isLength({ max: 100 })
+    .withMessage('El sector no puede exceder 100 caracteres'),
+
   body('estado')
     .optional()
-    .isIn(['activo', 'inactivo', 'suspendido']).withMessage('Estado no válido'),
-  
+    .isIn(['activo', 'inactivo', 'suspendido'])
+    .withMessage('Estado no válido'),
+
   body('fecha_inicio_relacion')
     .optional({ nullable: true })
     .custom((value) => {
@@ -209,55 +226,53 @@ const actualizarClienteValidator = [
       }
       return true;
     }),
-  
+
   body('notas')
     .optional()
     .trim()
-    .isLength({ max: 2000 }).withMessage('Las notas no pueden exceder 2000 caracteres'),
-  
-  validar
+    .isLength({ max: 2000 })
+    .withMessage('Las notas no pueden exceder 2000 caracteres'),
+
+  validar,
 ];
 
 /**
  * Validación de parámetro ID
  */
-const idParamValidator = [
-  param('id')
-    .isInt({ min: 1 }).withMessage('ID inválido'),
-  
-  validar
-];
+const idParamValidator = [param('id').isInt({ min: 1 }).withMessage('ID inválido'), validar];
 
 /**
  * Validación de query params para listado
  */
 const listarClientesValidator = [
-  query('page')
-    .optional()
-    .isInt({ min: 1 }).withMessage('Página debe ser un número positivo'),
-  
+  query('page').optional().isInt({ min: 1 }).withMessage('Página debe ser un número positivo'),
+
   query('limit')
     .optional()
-    .isInt({ min: 1, max: 100 }).withMessage('Límite debe ser entre 1 y 100'),
-  
+    .isInt({ min: 1, max: 100 })
+    .withMessage('Límite debe ser entre 1 y 100'),
+
   query('estado')
     .optional()
-    .isIn(['activo', 'inactivo', 'suspendido', 'todos']).withMessage('Estado no válido'),
-  
+    .isIn(['activo', 'inactivo', 'suspendido', 'todos'])
+    .withMessage('Estado no válido'),
+
   query('tipo_cliente')
     .optional()
-    .isIn(['corporativo', 'pyme', 'persona_natural', 'todos']).withMessage('Tipo no válido'),
-  
+    .isIn(['corporativo', 'pyme', 'persona_natural', 'todos'])
+    .withMessage('Tipo no válido'),
+
   query('sort')
     .optional()
     .isIn(['razon_social', 'codigo_cliente', 'created_at', 'ciudad', 'estado'])
     .withMessage('Campo de ordenamiento no válido'),
-  
+
   query('order')
     .optional()
-    .isIn(['ASC', 'DESC', 'asc', 'desc']).withMessage('Orden debe ser ASC o DESC'),
-  
-  validar
+    .isIn(['ASC', 'DESC', 'asc', 'desc'])
+    .withMessage('Orden debe ser ASC o DESC'),
+
+  validar,
 ];
 
 // =============================================
@@ -268,81 +283,91 @@ const listarClientesValidator = [
  * Validación para crear contacto
  */
 const crearContactoValidator = [
-  param('id')
-    .isInt({ min: 1 }).withMessage('ID de cliente inválido'),
-  
+  param('id').isInt({ min: 1 }).withMessage('ID de cliente inválido'),
+
   body('nombre')
     .trim()
-    .notEmpty().withMessage('El nombre es requerido')
-    .isLength({ min: 2, max: 150 }).withMessage('El nombre debe tener entre 2 y 150 caracteres'),
-  
+    .notEmpty()
+    .withMessage('El nombre es requerido')
+    .isLength({ min: 2, max: 150 })
+    .withMessage('El nombre debe tener entre 2 y 150 caracteres'),
+
   body('cargo')
     .optional()
     .trim()
-    .isLength({ max: 100 }).withMessage('El cargo no puede exceder 100 caracteres'),
-  
+    .isLength({ max: 100 })
+    .withMessage('El cargo no puede exceder 100 caracteres'),
+
   body('telefono')
     .optional()
     .trim()
-    .isLength({ max: 50 }).withMessage('El teléfono no puede exceder 50 caracteres'),
-  
+    .isLength({ max: 50 })
+    .withMessage('El teléfono no puede exceder 50 caracteres'),
+
   body('celular')
     .optional()
     .trim()
-    .isLength({ max: 50 }).withMessage('El celular no puede exceder 50 caracteres'),
-  
+    .isLength({ max: 50 })
+    .withMessage('El celular no puede exceder 50 caracteres'),
+
   body('email')
     .optional()
     .trim()
-    .isEmail().withMessage('Debe ser un email válido')
+    .isEmail()
+    .withMessage('Debe ser un email válido')
     .normalizeEmail(),
-  
+
   body('es_principal')
     .optional()
-    .isBoolean().withMessage('es_principal debe ser verdadero o falso'),
-  
+    .isBoolean()
+    .withMessage('es_principal debe ser verdadero o falso'),
+
   body('recibe_notificaciones')
     .optional()
-    .isBoolean().withMessage('recibe_notificaciones debe ser verdadero o falso'),
-  
+    .isBoolean()
+    .withMessage('recibe_notificaciones debe ser verdadero o falso'),
+
   body('notas')
     .optional()
     .trim()
-    .isLength({ max: 500 }).withMessage('Las notas no pueden exceder 500 caracteres'),
-  
-  validar
+    .isLength({ max: 500 })
+    .withMessage('Las notas no pueden exceder 500 caracteres'),
+
+  validar,
 ];
 
 /**
  * Validación para actualizar contacto
  */
 const actualizarContactoValidator = [
-  param('id')
-    .isInt({ min: 1 }).withMessage('ID de cliente inválido'),
-  
-  param('contactoId')
-    .isInt({ min: 1 }).withMessage('ID de contacto inválido'),
-  
+  param('id').isInt({ min: 1 }).withMessage('ID de cliente inválido'),
+
+  param('contactoId').isInt({ min: 1 }).withMessage('ID de contacto inválido'),
+
   body('nombre')
     .optional()
     .trim()
-    .isLength({ min: 2, max: 150 }).withMessage('El nombre debe tener entre 2 y 150 caracteres'),
-  
+    .isLength({ min: 2, max: 150 })
+    .withMessage('El nombre debe tener entre 2 y 150 caracteres'),
+
   body('cargo')
     .optional()
     .trim()
-    .isLength({ max: 100 }).withMessage('El cargo no puede exceder 100 caracteres'),
-  
+    .isLength({ max: 100 })
+    .withMessage('El cargo no puede exceder 100 caracteres'),
+
   body('telefono')
     .optional()
     .trim()
-    .isLength({ max: 50 }).withMessage('El teléfono no puede exceder 50 caracteres'),
-  
+    .isLength({ max: 50 })
+    .withMessage('El teléfono no puede exceder 50 caracteres'),
+
   body('celular')
     .optional()
     .trim()
-    .isLength({ max: 50 }).withMessage('El celular no puede exceder 50 caracteres'),
-  
+    .isLength({ max: 50 })
+    .withMessage('El celular no puede exceder 50 caracteres'),
+
   body('email')
     .optional({ nullable: true })
     .trim()
@@ -355,38 +380,37 @@ const actualizarContactoValidator = [
       }
       return true;
     }),
-  
+
   body('es_principal')
     .optional()
-    .isBoolean().withMessage('es_principal debe ser verdadero o falso'),
-  
+    .isBoolean()
+    .withMessage('es_principal debe ser verdadero o falso'),
+
   body('recibe_notificaciones')
     .optional()
-    .isBoolean().withMessage('recibe_notificaciones debe ser verdadero o falso'),
-  
-  body('activo')
-    .optional()
-    .isBoolean().withMessage('activo debe ser verdadero o falso'),
-  
+    .isBoolean()
+    .withMessage('recibe_notificaciones debe ser verdadero o falso'),
+
+  body('activo').optional().isBoolean().withMessage('activo debe ser verdadero o falso'),
+
   body('notas')
     .optional()
     .trim()
-    .isLength({ max: 500 }).withMessage('Las notas no pueden exceder 500 caracteres'),
-  
-  validar
+    .isLength({ max: 500 })
+    .withMessage('Las notas no pueden exceder 500 caracteres'),
+
+  validar,
 ];
 
 /**
  * Validación de parámetros para contacto
  */
 const contactoParamsValidator = [
-  param('id')
-    .isInt({ min: 1 }).withMessage('ID de cliente inválido'),
-  
-  param('contactoId')
-    .isInt({ min: 1 }).withMessage('ID de contacto inválido'),
-  
-  validar
+  param('id').isInt({ min: 1 }).withMessage('ID de cliente inválido'),
+
+  param('contactoId').isInt({ min: 1 }).withMessage('ID de contacto inválido'),
+
+  validar,
 ];
 
 module.exports = {
@@ -399,5 +423,5 @@ module.exports = {
   // Contactos
   crearContactoValidator,
   actualizarContactoValidator,
-  contactoParamsValidator
+  contactoParamsValidator,
 };

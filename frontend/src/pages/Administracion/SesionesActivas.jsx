@@ -98,9 +98,10 @@ const SesionesActivas = () => {
     try {
       const res = await apiClient.post(ADMIN_ENDPOINTS.SESIONES_CERRAR_TODAS);
       const count = res.data?.count ?? 0;
-      success(count > 0
-        ? `${count} sesión${count !== 1 ? 'es' : ''} cerrada${count !== 1 ? 's' : ''} exitosamente`
-        : 'No había otras sesiones activas'
+      success(
+        count > 0
+          ? `${count} sesión${count !== 1 ? 'es' : ''} cerrada${count !== 1 ? 's' : ''} exitosamente`
+          : 'No había otras sesiones activas'
       );
       setCerrarTodasModal(false);
       fetchSesiones(true);
@@ -112,7 +113,7 @@ const SesionesActivas = () => {
   };
 
   // Usuarios distintos al admin actual con sesión activa
-  const otrosUsuarios = sesiones.filter(s => s.id !== user?.id);
+  const otrosUsuarios = sesiones.filter((s) => s.id !== user?.id);
 
   // ──────────────────────────────────────────────────────────────────────────
   // RENDER
@@ -201,7 +202,9 @@ const SesionesActivas = () => {
                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
                       {s.nombre_completo || s.username}
                       {isMe && (
-                        <span className="ml-2 text-xs font-normal text-emerald-600 dark:text-emerald-400">(tú)</span>
+                        <span className="ml-2 text-xs font-normal text-emerald-600 dark:text-emerald-400">
+                          (tú)
+                        </span>
                       )}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{s.email}</p>
@@ -222,7 +225,9 @@ const SesionesActivas = () => {
                     <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
                       <Shield className="w-3 h-3" /> Rol
                     </span>
-                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${rolColor}`}>
+                    <span
+                      className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${rolColor}`}
+                    >
                       {s.rol}
                     </span>
                   </div>
@@ -230,14 +235,18 @@ const SesionesActivas = () => {
                     <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
                       <User className="w-3 h-3" /> Usuario
                     </span>
-                    <span className="text-xs text-slate-700 dark:text-slate-200 font-mono">{s.username}</span>
+                    <span className="text-xs text-slate-700 dark:text-slate-200 font-mono">
+                      {s.username}
+                    </span>
                   </div>
                   {s.ultimo_acceso && (
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
                         <Clock className="w-3 h-3" /> Último acceso
                       </span>
-                      <span className="text-xs text-slate-700 dark:text-slate-200">{formatDate(s.ultimo_acceso)}</span>
+                      <span className="text-xs text-slate-700 dark:text-slate-200">
+                        {formatDate(s.ultimo_acceso)}
+                      </span>
                     </div>
                   )}
                 </div>

@@ -49,14 +49,17 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
   }, [usuario]);
 
   useEffect(() => {
-    clientesService.getAll({ limit: 100, estado: 'activo' }).then(res => {
-      // res.data es array directo de clientes (paginated response)
-      const lista = Array.isArray(res.data) ? res.data : (res.data?.clientes || []);
-      setClientes(lista);
-    }).catch(() => {});
+    clientesService
+      .getAll({ limit: 100, estado: 'activo' })
+      .then((res) => {
+        // res.data es array directo de clientes (paginated response)
+        const lista = Array.isArray(res.data) ? res.data : res.data?.clientes || [];
+        setClientes(lista);
+      })
+      .catch(() => {});
   }, []);
 
-  const selectedRol = roles.find(r => r.id === Number(form.rol_id));
+  const selectedRol = roles.find((r) => r.id === Number(form.rol_id));
   const showClienteSelector = selectedRol?.es_cliente;
 
   const handleChange = (e) => {
@@ -102,7 +105,10 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
             {isEdit ? 'Editar Usuario' : 'Nuevo Usuario'}
           </h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface"
+          >
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
@@ -118,7 +124,9 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
           <div className="grid grid-cols-2 gap-4">
             {/* Username */}
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Usuario *</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                Usuario *
+              </label>
               <input
                 name="username"
                 value={form.username}
@@ -132,7 +140,9 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
 
             {/* Email */}
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Email *</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                Email *
+              </label>
               <input
                 name="email"
                 type="email"
@@ -148,7 +158,9 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
           {/* Password (solo en creación) */}
           {!isEdit && (
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Contraseña *</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                Contraseña *
+              </label>
               <input
                 name="password"
                 type="text"
@@ -163,7 +175,9 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Nombre</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                Nombre
+              </label>
               <input
                 name="nombre"
                 value={form.nombre}
@@ -172,7 +186,9 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Apellido</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                Apellido
+              </label>
               <input
                 name="apellido"
                 value={form.apellido}
@@ -184,7 +200,9 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Teléfono</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                Teléfono
+              </label>
               <input
                 name="telefono"
                 value={form.telefono}
@@ -193,7 +211,9 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Cargo</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                Cargo
+              </label>
               <input
                 name="cargo"
                 value={form.cargo}
@@ -205,7 +225,9 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
 
           {/* Rol */}
           <div>
-            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Rol *</label>
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+              Rol *
+            </label>
             <select
               name="rol_id"
               value={form.rol_id}
@@ -214,16 +236,22 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
             >
               <option value="">Seleccionar rol...</option>
-              {roles.filter(r => r.activo).map(r => (
-                <option key={r.id} value={r.id}>{r.nombre} (Nivel {r.nivel_jerarquia})</option>
-              ))}
+              {roles
+                .filter((r) => r.activo)
+                .map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.nombre} (Nivel {r.nivel_jerarquia})
+                  </option>
+                ))}
             </select>
           </div>
 
           {/* Cliente (solo si el rol es de tipo cliente) */}
           {showClienteSelector && (
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Cliente asociado *</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                Cliente asociado *
+              </label>
               <select
                 name="cliente_id"
                 value={form.cliente_id}
@@ -232,8 +260,10 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
                 className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
               >
                 <option value="">Seleccionar cliente...</option>
-                {clientes.map(c => (
-                  <option key={c.id} value={String(c.id)}>{c.razon_social} ({c.codigo_cliente})</option>
+                {clientes.map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.razon_social} ({c.codigo_cliente})
+                  </option>
                 ))}
               </select>
             </div>
@@ -253,7 +283,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               disabled={saving}
               className="px-5 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-xl disabled:opacity-50 transition-colors"
             >
-              {saving ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Crear Usuario')}
+              {saving ? 'Guardando...' : isEdit ? 'Actualizar' : 'Crear Usuario'}
             </button>
           </div>
         </form>
