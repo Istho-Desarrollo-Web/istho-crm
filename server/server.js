@@ -6,6 +6,7 @@
  */
 
 require('dotenv').config();
+const path = require('path');
 const http = require('http');
 const app = require('./src/app');
 const db = require('./src/models');
@@ -128,8 +129,8 @@ async function initializeDatabase() {
     const { Umzug, SequelizeStorage } = require('umzug');
     
     const umzug = new Umzug({
-      migrations: { 
-        glob: 'src/migrations/*.js',
+      migrations: {
+        glob: path.join(__dirname, 'src/migrations/*.js'),
         resolve: ({ name, path, context }) => {
           const migration = require(path);
           return {
