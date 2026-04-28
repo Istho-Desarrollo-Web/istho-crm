@@ -1271,7 +1271,7 @@ const descartarTodasAlertas = async (req, res) => {
 
     await Auditoria.registrar({
       tabla: 'inventario',
-      registro_id: null,
+      registro_id: 0,
       accion: 'actualizar',
       usuario_id: req.user.id,
       usuario_nombre: req.user.nombre_completo,
@@ -1605,7 +1605,7 @@ const importarProductos = async (req, res) => {
     // Auditoría
     await Auditoria.registrar({
       tabla: 'inventario',
-      registro_id: null,
+      registro_id: 0,
       accion: 'importar',
       usuario_id: req.user.id,
       usuario_nombre: req.user.nombre_completo,

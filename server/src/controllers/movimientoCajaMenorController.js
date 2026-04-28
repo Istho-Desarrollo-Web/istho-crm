@@ -556,7 +556,7 @@ const aprobarMasivo = async (req, res) => {
 
     await Auditoria.registrar({
       tabla: 'movimientos_caja_menor',
-      registro_id: null,
+      registro_id: 0,
       accion: 'actualizar',
       usuario_id: req.user.id,
       usuario_nombre: req.user.nombre_completo,

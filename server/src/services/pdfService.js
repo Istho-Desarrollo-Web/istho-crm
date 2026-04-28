@@ -1191,6 +1191,125 @@ const generarPDFAuditoriaAcciones = async (registros, filtros = {}) => {
   });
 };
 
+/**
+ * Generar PDF de liquidación de una caja menor (detalle con todos sus movimientos)
+ */
+const generarPDFDetalleCajaMenor = async (caja) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        layout: 'landscape',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
+      const chunks = [];
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      const movimientos = caja.movimientos || [];
+      const asignado = caja.asignado?.nombre_completo || 'N/A';
+      const saldoInicial = parseFloat(caja.saldo_inicial) || 0;
+      const saldoFinal = parseFloat(caja.saldo_actual) || 0;
+      const totalEgresos = movimientos
+        .filter((m) => m.tipo_movimiento === 'egreso' && m.aprobado)
+        .reduce((s, m) => s + (parseFloat(m.valor_aprobado || m.valor) || 0), 0);
+
+      agregarEncabezado(
+        doc,
+        `LIQUIDACIÓN DE CAJA MENOR ${caja.numero || ''}`,
+        `Asignada a: ${asignado}`
+      );
+
+      agregarKpis(doc, [
+        {
+          label: 'Saldo Inicial',
+          valor: `$${saldoInicial.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,
+          subtexto: 'apertura',
+          color: COLORES.azul,
+        },
+        {
+          label: 'Total Egresos',
+          valor: `$${totalEgresos.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,
+          subtexto: 'aprobados',
+          color: COLORES.acento,
+        },
+        {
+          label: 'Saldo Final',
+          valor: `$${saldoFinal.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,
+          subtexto: 'al cierre',
+          color: COLORES.verde,
+        },
+        {
+          label: 'Movimientos',
+          valor: movimientos.length,
+          subtexto: 'registros',
+          color: COLORES.morado,
+        },
+      ]);
+
+      // Bloque de información de la caja
+      const startX = 30;
+      const secW = doc.page.width - 60;
+      const infoY = doc.y;
+      doc.rect(startX, infoY, secW, 26).fill(COLORES.kpiBg);
+
+      const campos = [
+        ['Estado:', (caja.estado || '').toUpperCase()],
+        [
+          'Apertura:',
+          caja.fecha_apertura
+            ? new Date(caja.fecha_apertura + 'T00:00:00').toLocaleDateString('es-CO')
+            : '—',
+        ],
+        [
+          'Cierre:',
+          caja.fecha_cierre
+            ? new Date(caja.fecha_cierre + 'T00:00:00').toLocaleDateString('es-CO')
+            : 'Activa',
+        ],
+      ];
+
+      const colW = secW / campos.length;
+      campos.forEach(([label, valor], i) => {
+        const cx = startX + i * colW;
+        doc.fontSize(7).fillColor(COLORES.textoSecundario).text(label, cx + 8, infoY + 5);
+        doc.fontSize(8.5).fillColor(COLORES.primario).text(valor, cx + 8, infoY + 14);
+      });
+      doc.y = infoY + 32;
+
+      // Tabla de movimientos
+      const headers = ['N°', 'Fecha', 'Tipo', 'Concepto', 'Descripción', 'Monto', 'Estado', 'Usuario'];
+      const rows = movimientos.map((m) => [
+        m.consecutivo || '',
+        m.created_at ? new Date(m.created_at).toLocaleDateString('es-CO') : '',
+        m.tipo_movimiento === 'egreso' ? 'Egreso' : 'Ingreso',
+        (m.concepto || '').replace(/_/g, ' ').substring(0, 18),
+        (m.descripcion || '—').substring(0, 28),
+        `$${(parseFloat(m.valor_aprobado || m.valor) || 0).toLocaleString('es-CO', { maximumFractionDigits: 0 })}`,
+        m.aprobado ? 'APROBADO' : m.rechazado ? 'RECHAZADO' : 'PENDIENTE',
+        (m.usuario?.nombre_completo || 'N/A').substring(0, 22),
+      ]);
+
+      const finalPage = generarTabla(doc, headers, rows, {
+        anchoColumnas: [32, 64, 50, 115, 165, 82, 72, 134],
+        alineacion: ['center', 'center', 'center', 'left', 'left', 'right', 'center', 'left'],
+        etiquetaSeccion: 'Detalle de Movimientos',
+        titulosContinuacion: `LIQUIDACIÓN ${caja.numero || ''}`,
+        paginaInicial: 1,
+      });
+
+      agregarPiePagina(doc, finalPage);
+      doc.end();
+
+      logger.info('PDF liquidación caja menor generado:', { numero: caja.numero });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 module.exports = {
   generarPDFOperaciones,
   generarPDFInventario,
@@ -1202,4 +1321,5 @@ module.exports = {
   generarPDFCajasMenores,
   generarPDFGastos,
   generarPDFAuditoriaAcciones,
+  generarPDFDetalleCajaMenor,
 };
