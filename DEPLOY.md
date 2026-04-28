@@ -1,399 +1,273 @@
-# Guía de Despliegue - ISTHO CRM
+# Guía de Despliegue - ISTHO CRM (CenthriX)
 
-## Arquitectura de Producción
-
-### Opción A — Railway (actual)
+## Arquitectura de Producción (actual)
 
 ```
-┌─────────────────┐       ┌──────────────────┐       ┌─────────────────┐
-│   Frontend      │       │    Backend        │       │   Base de Datos │
-│   (Vercel)      │──────▶│   (Railway)       │──────▶│   MySQL         │
-│                 │       │                   │       │   (Railway)     │
-│  React + Vite   │  API  │  Express + Node   │       │                 │
-│  istho.vercel   │       │  istho.railway    │       │  Servicio MySQL │
-└─────────────────┘       └──────────────────┘       └─────────────────┘
+┌─────────────────┐     ┌───────────────────┐     ┌─────────────────┐
+│   Frontend      │     │   App Runner       │     │   RDS MySQL 8.0 │
+│   (Vercel)      │────▶│   (AWS us-west-2)  │────▶│   (AWS)         │
+│                 │     │                    │ VPC │                 │
+│  React + Vite   │ API │  Express + Node 22 │priv.│  istho-crm-db   │
+│  istho-crm-six  │     │  ebsnqupa45.us-    │     │  db.t3.micro    │
+│  .vercel.app    │     │  west-2.apprunner  │     │  20 GB gp2      │
+└─────────────────┘     └────────┬───────────┘     └─────────────────┘
+                                 │
+                         ┌───────▼───────┐
+                         │  S3 us-west-2  │
+                         │ istho-crm-files│
+                         │  (archivos,   │
+                         │   avatares,   │
+                         │   soportes)   │
+                         └───────────────┘
 ```
 
-### Opción B — AWS (activo)
-
-```
-┌─────────────────┐       ┌──────────────────┐       ┌─────────────────┐
-│   Frontend      │       │   App Runner      │       │   RDS MySQL 8.0 │
-│   (Vercel)      │──────▶│   (AWS)           │──────▶│   (AWS)         │
-│                 │       │                   │  VPC  │                 │
-│  React + Vite   │  API  │  Express + Node   │ priv. │  us-east-1      │
-│  istho-crm-six  │       │  aw7pnktgbe.us-   │       │  istho-crm-db   │
-│  .vercel.app    │       │  east-1.apprunner │       │                 │
-└─────────────────┘       └──────────────────┘       └─────────────────┘
-```
-
-Variables no-sensibles en `apprunner.yaml` (raíz del repo). Variables sensibles
-(`DB_PASSWORD`, `JWT_SECRET`, `SMTP_PASS`, `CLOUDINARY_*`) configuradas en la consola.
+Variables no-sensibles en `apprunner.yaml` (raíz del repo).
+Variables sensibles (`DB_PASSWORD`, `JWT_SECRET`, `SMTP_PASS`) configuradas en la consola AWS.
 
 ---
 
-## 1. Backend en Railway (API + Base de Datos)
+## Costos mensuales estimados
 
-### Paso 1: Crear proyecto en Railway
+| Servicio | Config | Costo/mes |
+|---|---|---|
+| AWS App Runner | 0.25 vCPU / 0.5 GB, 1 instancia | ~$3 |
+| AWS RDS MySQL | db.t3.micro, 20 GB gp2, Single-AZ | ~$14.54 |
+| AWS S3 | ~2-5 GB almacenamiento + requests | ~$0.10 |
+| Vercel | Hobby plan (free) | $0 |
+| Upstash Redis | Free tier (Socket.IO adapter) | $0 |
+| SMTP Gmail | Cuenta corporativa (free) | $0 |
+| **Total** | | **~$18/mes** (~COP 78.000) |
 
-1. Ir a [railway.app](https://railway.app) e iniciar sesión con GitHub
-2. Click en **"New Project"**
-3. Seleccionar **"Deploy from GitHub repo"**
-4. Autorizar acceso al repositorio `istho-crm-p`
+> **Año 1 (AWS Free Tier):** RDS t3.micro cubierto (750 hrs/mes gratis) → total ~$3-4/mes.
 
-### Paso 2: Agregar MySQL
-
-1. En el proyecto de Railway, click en **"+ New"** → **"Database"** → **"MySQL"**
-2. Railway creará automáticamente el servicio MySQL y generará las variables:
-   - `MYSQL_URL` (la más importante - conexión completa)
-   - `MYSQLHOST`, `MYSQLPORT`, `MYSQLDATABASE`, `MYSQLUSER`, `MYSQLPASSWORD`
-
-### Paso 3: Configurar el servicio del backend
-
-1. Click en el servicio del backend (el que se conectó al repo)
-2. Ir a **Settings**:
-   - **Root Directory**: `server`  ← MUY IMPORTANTE
-   - **Build Command**: se auto-detecta (`npm install`)
-   - **Start Command**: `node server.js` (ya configurado en railway.json)
-3. Ir a **Variables** y agregar:
-
-```env
-NODE_ENV=production
-PORT=5000
-API_PREFIX=/api/v1
-
-# Railway vincula MySQL automáticamente, pero verificar que exista:
-MYSQL_URL=${{MySQL.MYSQL_URL}}
-
-# JWT (GENERAR UNO SEGURO)
-JWT_SECRET=<generar con: openssl rand -base64 64>
-JWT_EXPIRES_IN=24h
-JWT_REFRESH_EXPIRES_IN=7d
-
-# Email SMTP
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=<tu email>
-SMTP_PASS=<tu app password de Gmail>
-EMAIL_FROM=ISTHO CRM <notificaciones@istho.com.co>
-
-# CORS - URL del frontend en Vercel (actualizar después del deploy)
-CORS_ORIGIN=https://tu-app.vercel.app
-
-# Archivos
-UPLOAD_PATH=./uploads
-MAX_FILE_SIZE=10485760
-ALLOWED_EXTENSIONS=.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png
-
-# Rate limiting
-RATE_LIMIT_WINDOW=15
-RATE_LIMIT_MAX=100
-
-# Logging
-LOG_LEVEL=info
-```
-
-### Paso 4: Obtener URL del backend
-
-1. En el servicio del backend, ir a **Settings** → **Networking**
-2. Click en **"Generate Domain"** para obtener una URL pública
-3. La URL será algo como: `https://istho-crm-p-production.up.railway.app`
-4. Copiar esta URL, la necesitas para el frontend
-
-### Paso 5: Verificar deploy
-
-1. Visitar `https://TU-URL.up.railway.app/health`
-2. Debe responder con JSON: `{ "success": true, "database": "connected" }`
+**Mayor oportunidad de ahorro:** RDS Reserved Instance 1 año (sin pago inicial) baja de $12.24 a ~$7.20/mes.
 
 ---
 
-## 2. Backend en AWS App Runner + RDS MySQL
+## 1. RDS MySQL 8.0
 
-> Despliegue paralelo a Railway. Una vez verificado, actualizar `VITE_API_URL` en Vercel.
-
-### Prerrequisitos
-
-- AWS CLI instalada y configurada (`aws configure` con región `us-east-1`)
-- Usuario IAM `istho-crm-deploy` con políticas: `AWSAppRunnerFullAccess`, `AmazonRDSFullAccess`, `AmazonVPCFullAccess`
-- Generar JWT_SECRET: `openssl rand -base64 64`
-
-### Paso 1: RDS MySQL 8.0
+> Ya creado. Esta sección es referencia para recrear si fuera necesario.
 
 En la consola AWS → RDS → **Create database**:
 
 | Campo | Valor |
-|-------|-------|
+|---|---|
 | Engine | MySQL 8.0.x |
-| Template | Production |
+| Template | Free tier o Production |
 | Identifier | `istho-crm-db` |
 | Master username | `istho_admin` |
 | Instance | db.t3.micro |
 | Storage | 20 GB GP2 |
 | Public access | **NO** |
 | Initial DB name | `istho_crm` |
-| Security group | `istho-crm-rds-sg` (crear previamente, sin inbound rules) |
+| Región | us-west-2 |
+| Security group | `istho-crm-rds-sg` (sin inbound rules inicialmente) |
 
-Guardar el **Endpoint** resultante (formato `istho-crm-db.xxxx.us-east-1.rds.amazonaws.com`).
+Guardar el **Endpoint** resultante (`istho-crm-db.xxxx.us-west-2.rds.amazonaws.com`).
 
-### Paso 2: App Runner service
-
-1. Ir a [console.aws.amazon.com/apprunner](https://console.aws.amazon.com/apprunner) → **Create service**
-2. Source: **GitHub** → repo `istho-crm-p` → branch `main`
-3. Configuration: **Configure todos los ajustes aquí** ← usar este modo, NO "usar archivo de configuración"
-   - **Motivo**: el modo yaml no muestra la sección de variables de entorno durante la creación
-4. **Tiempo de ejecución**: `Nodejs 22` (es el único Node.js disponible en us-east-1)
-5. **Comando de compilación**: `cd server && npm ci --omit=dev`
-6. **Comando de inicio**: `node server/server.js` ← CRÍTICO: ver nota abajo
-7. **Puerto**: `8080`
-8. Service name: `istho-crm-backend`
-9. vCPU: 0.25 | Memory: 0.5 GB
-
-> **CRÍTICO — Comando de inicio en monorepo:** App Runner ejecuta el start command
-> directamente (sin shell), por lo que `cd server && node server.js` falla con
-> `cd: too many arguments`. Usar `node server/server.js` desde la raíz del repo.
-> El build command sí corre en shell, por eso `cd server && npm ci` funciona allí.
-
-**Networking (VPC privado para RDS):**
-- Outbound: **Custom VPC**
-- Crear nuevo VPC connector: `istho-crm-vpc-connector`, VPC default
-- Seleccionar subnets **excepto** `us-east-1e` / `use1-az3` (no soportada por App Runner)
-- Guardar el Security Group ID del conector (`sg-...`)
-
-**Conectar SG del conector a RDS:**
-- Abrir `istho-crm-rds-sg` → Inbound rules → Add rule:
-  - Type: MySQL/Aurora | Port: 3306 | Source: `sg-...` del VPC connector
-
+**Conectar SG del VPC connector a RDS:**
 ```bash
-# Alternativa vía AWS CLI
 aws ec2 authorize-security-group-ingress \
   --group-id sg-<RDS-SG-ID> \
   --protocol tcp --port 3306 \
   --source-group sg-<VPC-CONNECTOR-SG-ID> \
-  --region us-east-1
+  --region us-west-2
 ```
-
-### Paso 3: Variables de entorno en App Runner
-
-Configurar en **Variables de entorno de versión ejecutable** del servicio
-(visibles en el paso "Configurar servicio" cuando se usa el modo consola):
-
-```
-DB_HOST               = <endpoint RDS sin protocolo ni puerto>
-DB_NAME               = istho_crm
-DB_USER               = istho_admin
-DB_PASSWORD           = <contraseña RDS>
-JWT_SECRET            = <openssl rand -base64 64>
-CORS_ORIGIN           = https://istho-crm-six.vercel.app
-APP_URL               = https://istho-crm-six.vercel.app
-SMTP_HOST             = smtp.gmail.com
-SMTP_PORT             = 587
-SMTP_SECURE           = false
-SMTP_USER             = <email>
-SMTP_PASS             = <app password Gmail>
-EMAIL_FROM            = ISTHO CRM <notificaciones@istho.com.co>
-CLOUDINARY_CLOUD_NAME = dut7n03xd
-CLOUDINARY_API_KEY    = <tuyo>
-CLOUDINARY_API_SECRET = <tuyo>
-UPLOAD_PATH           = ./uploads
-```
-
-Las variables no-sensibles (NODE_ENV, API_PREFIX, DB_PORT, pool, rate limit, JWT_EXPIRES_IN, etc.)
-están en `apprunner.yaml` y no necesitan repetirse aquí.
-
-### Paso 4: Verificar deploy
-
-URL del servicio: `https://aw7pnktgbe.us-east-1.awsapprunner.com`
-
-```bash
-curl https://aw7pnktgbe.us-east-1.awsapprunner.com/health
-# { "success": true, "database": "connected" }
-```
-
-El servidor arranca **antes** de que la DB esté lista (para no fallar el healthcheck de App Runner).
-`"database": "connecting"` es normal los primeros segundos. Esperar hasta `"connected"`.
-
-### Paso 5: Actualizar frontend
-
-En Vercel → Variables de entorno:
-```
-VITE_API_URL=https://aw7pnktgbe.us-east-1.awsapprunner.com/api/v1
-```
-
-### Notas importantes App Runner
-
-- `PORT` lo inyecta App Runner automáticamente (8080) — NO configurar manualmente
-- `CORS_ORIGIN`: URL exacta de Vercel sin `/` final
-- Auto-deploy activado: cada push a `main` dispara un nuevo deploy
-- Las migraciones Umzug y los seeds se ejecutan automáticamente en cada startup
-- Socket.io (WebSocket) funciona en App Runner sin configuración adicional
-- El glob de Umzug usa `path.join(__dirname, 'src/migrations/*.js')` — si se cambia
-  el entry point, el `__dirname` de `server.js` sigue apuntando correctamente a `server/src/migrations/`
 
 ---
 
-## 3. Frontend en Vercel
+## 2. App Runner
 
-### Paso 1: Importar proyecto
+**Servicio activo:** `https://ebsnqupa45.us-west-2.awsapprunner.com`
 
-1. Ir a [vercel.com](https://vercel.com) e iniciar sesión con GitHub
-2. Click en **"Add New..."** → **"Project"**
-3. Importar el repositorio `istho-crm-p`
+### Configuración del servicio
 
-### Paso 2: Configurar proyecto
+| Campo | Valor |
+|---|---|
+| Source | GitHub → repo `istho-crm-p` → branch `main` |
+| Runtime | Node.js 22 |
+| Build command | `cd server && npm ci --omit=dev` |
+| Start command | `node server/server.js` ← ver nota crítica abajo |
+| Puerto | `8080` |
+| vCPU | 0.25 |
+| RAM | 0.5 GB |
+| Región | us-west-2 |
+| Auto-deploy | Activado (cada push a main) |
 
-1. **Framework Preset**: `Vite` (auto-detectado)
-2. **Root Directory**: `frontend`  ← MUY IMPORTANTE
-3. **Build Command**: `npm run build` (auto-detectado)
-4. **Output Directory**: `dist` (auto-detectado)
+> **CRÍTICO — Start command en monorepo:** App Runner ejecuta el start command
+> directamente sin shell — `cd server && node server.js` falla porque `cd`, `&&`
+> y `node` se pasan como argumentos literales. Usar `node server/server.js` desde la raíz.
+> El build command sí corre en shell, por eso `cd server && npm ci` funciona.
 
-### Paso 3: Variables de entorno
+### Networking (VPC para RDS)
 
-Agregar en **Environment Variables**:
+- Outbound: **Custom VPC** → VPC connector `istho-crm-vpc-connector`
+- Subnets: excluir las no soportadas por App Runner en us-west-2
+- El SG del conector necesita inbound rule 3306 en el SG de RDS
+
+### Variables de entorno sensibles (consola AWS)
+
+```
+DB_HOST        = <endpoint RDS — solo hostname, sin protocolo ni puerto>
+DB_NAME        = istho_crm
+DB_USER        = istho_admin
+DB_PASSWORD    = <contraseña RDS>
+JWT_SECRET     = <openssl rand -base64 64>
+CORS_ORIGIN    = https://istho-crm-six.vercel.app
+APP_URL        = https://istho-crm-six.vercel.app
+SMTP_HOST      = smtp.gmail.com
+SMTP_PORT      = 587
+SMTP_SECURE    = false
+SMTP_USER      = liderti@istho.com.co
+SMTP_PASS      = <app password Gmail>
+EMAIL_FROM     = ISTHO CRM <notificaciones@istho.com.co>
+AWS_S3_BUCKET  = istho-crm-files
+AWS_REGION     = us-west-2
+```
+
+Variables no-sensibles (NODE_ENV, DB_PORT, pool, rate limit, etc.) ya están en `apprunner.yaml`.
+
+> **IAM para S3:** En producción usar IAM Instance Role — NO poner `AWS_ACCESS_KEY_ID` /
+> `AWS_SECRET_ACCESS_KEY` en variables de entorno. El rol del servicio App Runner debe tener
+> una policy con `s3:GetObject`, `s3:PutObject`, `s3:DeleteObject` sobre `istho-crm-files`.
+
+---
+
+## 3. S3 — Almacenamiento de archivos
+
+**Bucket:** `istho-crm-files` (us-west-2, privado)
+
+### Estructura de carpetas
+
+```
+istho-crm-files/
+├── avatares/          # fotos de perfil de usuarios
+├── soportes/          # comprobantes de movimientos caja menor
+├── evidencias/{id}/   # evidencias de operaciones WMS
+├── averias/{id}/      # fotos de averías en operaciones
+└── branding/          # logo-email.png (URL pública para emails)
+```
+
+### Acceso
+
+- **Archivos privados:** presigned URLs con TTL de 15 minutos (generadas por `s3Service.js`)
+- **Logo email:** URL pública S3 (`/branding/logo-email.png`)
+- **Desarrollo local:** configurar `aws configure` o variables `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` en `.env` (nunca en producción)
+
+### Subir logo de email
+
+```bash
+cd server
+node scripts/subir-logo-email-s3.js
+```
+
+---
+
+## 4. Frontend en Vercel
+
+**Servicio activo:** `https://istho-crm-six.vercel.app`
+
+### Configuración
+
+| Campo | Valor |
+|---|---|
+| Root Directory | `frontend` ← NO `./frontend` |
+| Framework | Vite (auto-detectado) |
+| Node.js | 20+ |
+
+### Variables de entorno en Vercel
 
 ```env
-VITE_API_URL=https://TU-BACKEND.up.railway.app/api/v1
+VITE_API_URL=https://ebsnqupa45.us-west-2.awsapprunner.com/api/v1
 VITE_API_TIMEOUT=30000
 VITE_APP_NAME=ISTHO CRM
 VITE_APP_VERSION=1.0.0
-VITE_APP_DESCRIPTION=Sistema CRM Interno ISTHO S.A.S.
 VITE_MAX_FILE_SIZE=10485760
 VITE_ALLOWED_FILE_TYPES=.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png
 VITE_ENABLE_DARK_MODE=true
 VITE_ENABLE_NOTIFICATIONS=true
 ```
 
-### Paso 4: Deploy
+---
 
-1. Click en **"Deploy"**
-2. Vercel construirá y desplegará automáticamente
-3. Obtener la URL (ej: `https://istho-crm.vercel.app`)
+## 5. Redis — Socket.IO multi-instancia (opcional)
 
-### Paso 5: Actualizar CORS en Railway
+Redis permite que todas las instancias App Runner (si se escala a 2+) compartan el estado de Socket.IO.
 
-**IMPORTANTE**: Ahora que tienes la URL de Vercel, vuelve a Railway y actualiza:
+**Proveedor recomendado:** [Upstash](https://upstash.com) — sin VPC, gratis hasta 10K req/día.
 
-```env
-CORS_ORIGIN=https://istho-crm.vercel.app
-```
+1. Crear cuenta en Upstash → New Database → Redis → us-west-2
+2. Copiar la URL `rediss://default:<password>@<host>.upstash.io:6379`
+3. Agregar en App Runner → Variables de entorno:
+   ```
+   REDIS_URL = rediss://default:<password>@<host>.upstash.io:6379
+   ```
+4. Redesplegar → logs mostrarán `[WS] Redis adapter configurado`
 
-Si necesitas múltiples orígenes (ej: dominio personalizado + vercel):
-```env
-CORS_ORIGIN=https://istho-crm.vercel.app,https://crm.istho.com.co
-```
+Sin `REDIS_URL` el servicio funciona en modo single-instance (comportamiento actual).
 
 ---
 
-## 4. Post-Deploy
+## 6. Post-Deploy — Checklist
 
-### Inicializar datos
+### Primer deploy (base de datos nueva)
+- [ ] Verificar `/health` → `"database": "connected"` (los primeros segundos puede decir `"connecting"`)
+- [ ] Seeds se ejecutan automáticamente (roles, permisos, plantillas email, configuración WMS)
+- [ ] Login con `admin` (password: valor de `SEED_PASSWORD_ADMIN` en variables de entorno)
+- [ ] **Cambiar contraseñas de usuarios seed inmediatamente**
 
-La primera vez que el backend arranca, automáticamente:
-- Sincroniza los modelos de la base de datos
-- Crea los usuarios por defecto (admin, supervisor, operador)
+### Cada deploy (push a main)
+- [ ] App Runner muestra "Running" en la consola
+- [ ] `/health` responde 200
+- [ ] Migraciones Umzug corren automáticamente — revisar logs si hay errores
 
-Para los seeds de roles y permisos, conectarse al servicio en Railway:
+### Verificar deploy
 ```bash
-# Usando Railway CLI
-railway link
-railway run node src/scripts/seedRolesPermisos.js
-railway run node src/scripts/seedPlantillasEmail.js
+curl https://ebsnqupa45.us-west-2.awsapprunner.com/health
+# { "success": true, "database": "connected" }
 ```
 
-### Dominio personalizado (opcional)
-
-**Vercel (frontend)**:
-1. Settings → Domains → Agregar `crm.istho.com.co`
-2. Configurar DNS: CNAME `crm` → `cname.vercel-dns.com`
-
-**Railway (backend)**:
-1. Settings → Networking → Custom Domain → Agregar `api.crm.istho.com.co`
-2. Configurar DNS: CNAME `api.crm` → la URL de Railway
-
-Actualizar `CORS_ORIGIN` y `VITE_API_URL` con los dominios nuevos.
-
 ---
 
-## 5. Checklist Final
+## 7. Troubleshooting
 
-### Railway (Opción A)
-- [x] Backend desplegado en Railway
-- [x] MySQL funcionando en Railway
-- [x] Variables de entorno configuradas en Railway
-- [x] Health check respondiendo OK (`/health`)
+### 429 Too Many Requests
+- Rate limiter usa userId del JWT como clave, no IP → cada usuario tiene su cuota independiente
+- Límite: 500 req/15min por usuario (configurado en `apprunner.yaml`)
+- Socket.IO (`/socket.io`) excluido del rate limiter
 
-### AWS App Runner + RDS (Opción B)
-- [x] RDS MySQL 8.0 creado (`istho-crm-db`, sin acceso público)
-- [x] VPC connector creado (`istho-crm-vpc-connector`, sin subnet us-east-1e)
-- [x] Inbound rule 3306 en SG de RDS desde SG del VPC connector
-- [x] App Runner service creado en modo consola con comandos correctos
-- [x] Variables de entorno sensibles configuradas en App Runner
-- [x] Health check respondiendo `"database": "connected"`
-
-### Frontend (Vercel)
-- [x] Frontend desplegado en Vercel
-- [x] `VITE_API_URL` apunta al backend activo (App Runner)
-- [x] `CORS_ORIGIN` en el backend apunta a la URL de Vercel (sin `/` final)
-
-### Validación funcional
-- [ ] Login funciona con usuario admin
-- [ ] WebSocket conecta correctamente
-- [ ] Cambiar contraseñas por defecto de los usuarios
-- [ ] Seeds ejecutados (roles, permisos, plantillas email, configuración WMS)
-
----
-
-## 6. Troubleshooting
-
-### El backend no conecta a MySQL
-- Verificar que `MYSQL_URL` esté configurada en Railway
-- Revisar logs en Railway → servicio → Deployments → View Logs
+### DB no conecta (`database: "error"`)
+- Verificar SG de RDS: inbound rule 3306 desde el SG del VPC connector
+- `DB_HOST` debe ser el endpoint exacto de RDS (sin `http://` ni `:3306`)
+- `"connecting"` los primeros segundos es normal
 
 ### CORS errors en el frontend
-- Verificar que `CORS_ORIGIN` en Railway coincida exactamente con la URL de Vercel (sin trailing slash)
-- Si usas dominio personalizado, agregar ambas URLs separadas por coma
-
-### WebSocket no conecta
-- La URL de Socket.io se deriva de `VITE_API_URL`. Verificar que el backend en Railway/App Runner permita WebSocket (ambos lo soportan por defecto)
-
-### App Runner: DB no conecta (`database: "error"`)
-- Verificar que el Security Group de RDS tenga inbound rule 3306 desde el SG del VPC connector
-- Verificar que `DB_HOST` sea el endpoint exacto de RDS (sin protocolo ni puerto)
-- Verificar que `DB_PASSWORD` no tenga caracteres especiales sin escapar
+- `CORS_ORIGIN` debe coincidir exactamente con la URL de Vercel (sin `/` final)
+- Múltiples orígenes: separar con coma sin espacios
 
 ### App Runner: deploy no arranca
-- Revisar logs en App Runner → servicio → **Deployment logs**
-- Error `JWT_SECRET debe tener al menos 32 caracteres`: falta la variable en App Runner
-- Error `CORS_ORIGIN es requerido`: falta la variable en App Runner
+- `JWT_SECRET debe tener al menos 32 caracteres` → falta la variable en App Runner
+- `CORS_ORIGIN es requerido` → falta la variable en App Runner
 
-### App Runner: `cd: too many arguments` en los logs de aplicación
-- **Causa**: el start command usa `cd server && node server.js` pero App Runner lo ejecuta
-  sin shell — `cd`, `&&` y `node` se pasan como argumentos literales a `cd`
-- **Fix**: cambiar el comando de inicio a `node server/server.js` (ruta desde la raíz del repo)
-- Ver logs en CloudWatch → `/aws/apprunner/<servicio>/application`
+### App Runner: `cd: too many arguments`
+- **Causa:** Start command usa `cd server && node server.js` sin shell
+- **Fix:** cambiar start command a `node server/server.js`
 
-### App Runner: build falla con `Failed to execute 'build' command`
-- Verificar en la pestaña **Configuración** que el Comando de compilación sea
-  `cd server && npm ci --omit=dev` (el de inicio y el de compilación pueden quedar invertidos
-  si se edita el servicio sin cuidado)
-- El build command sí corre en shell; el start command NO
+### App Runner: tablas no se crean (BD nueva)
+- Verificar logs: debe aparecer `Ejecutando migración: 001_initial_schema`
+- El glob de Umzug usa `path.join(__dirname, ...)` — ruta absoluta, no depende del CWD
 
-### App Runner: `no hay migraciones pendientes` en BD nueva (tablas no se crean)
-- **Causa**: el glob de Umzug es relativo al CWD. Si el entry point es `node server/server.js`
-  desde la raíz, el CWD es `/app` y `src/migrations/*.js` busca en `/app/src/` que no existe
-- **Fix ya aplicado**: el glob usa `path.join(__dirname, 'src/migrations/*.js')` en `server.js`
-- Si se replica este problema, verificar que el glob sea absoluto
+### Vercel: build falla
+- Root Directory debe ser `frontend` (sin `./`)
+- Node.js >= 20 en Settings → General
+- Imports case-sensitive: Linux distingue `Component.jsx` de `component.jsx`
 
-### App Runner: `Table 'X' already exists` en migración initial-schema
-- **Causa**: un arranque anterior falló a mitad y dejó algunas tablas creadas pero no todas
-- **Fix ya aplicado**: la migración detecta el estado parcial, elimina las tablas huérfanas
-  con `FOREIGN_KEY_CHECKS=0` y reconstruye el schema desde el baseline
-- Es seguro en RDS nueva (sin datos reales)
+### S3: error de acceso
+- En producción: verificar que el IAM role del App Runner tenga policy para `istho-crm-files`
+- En desarrollo local: verificar `aws configure` o variables `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`
+- Presigned URLs expiran en 15 minutos — el frontend debe manejar 403 y recargar la URL
 
-### App Runner: advertencia `Error al recuperar la ACL web`
-- Es una advertencia de WAF (Web Application Firewall) — no afecta el funcionamiento
-- Para eliminarla: Configuración → Seguridad → quitar la Web ACL asociada
-
-### Build falla en Vercel
-- Verificar que el Root Directory sea `frontend` (no `./frontend`)
-- Revisar que Node.js >= 20 esté configurado en Vercel (Settings → General → Node.js Version)
+### WebSocket no conecta
+- Verificar que `VITE_API_URL` apunte al App Runner correcto
+- Socket.IO usa solo polling (no WebSocket) — funciona sin config adicional en App Runner
+- En desarrollo: `serverUrl = undefined` → usa proxy Vite (correcto para transporte polling)
