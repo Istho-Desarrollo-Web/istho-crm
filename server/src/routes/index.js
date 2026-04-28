@@ -26,6 +26,7 @@ const cajaMenorRoutes = require('./cajaMenor.routes');
 const viajeRoutes = require('./viaje.routes');
 const movimientoCajaMenorRoutes = require('./movimientoCajaMenor.routes');
 const backupRoutes = require('./backup.routes');
+const archivosRoutes = require('./archivos.routes');
 
 // Info de la API
 router.get('/', (req, res) => {
@@ -68,5 +69,6 @@ router.use('/cajas-menores', cajaMenorRoutes);
 router.use('/viajes', viajeRoutes);
 router.use('/movimientos-caja-menor', movimientoCajaMenorRoutes);
 router.use('/backup', backupRoutes);
+router.use('/archivos', archivosRoutes);
 
 module.exports = router;

@@ -825,24 +825,24 @@ const subirEvidencias = async (req, res) => {
       return errorResponse(res, 'Máximo 5 archivos PDF permitidos', 400);
     }
 
-    // Subir a Cloudinary
-    const cloudinaryService = require('../services/cloudinaryService');
-    const folder = `istho-crm/evidencias/${id}`;
-    const resultados = await cloudinaryService.subirMultiples(archivos, folder);
+    // Subir a S3
+    const s3Service = require('../services/s3Service');
+    const carpeta = `evidencias/${id}`;
+    const resultados = await s3Service.subirMultiples(archivos, carpeta);
 
     // Guardar en BD (batch insert en lugar de inserciones individuales)
     const documentosBatch = [];
     for (const resultado of resultados) {
-      if (resultado.url) {
+      if (resultado.key) {
         documentosBatch.push({
           operacion_id: id,
           tipo_documento: 'cumplido',
           nombre: `Evidencia - ${resultado.originalname}`,
           archivo_nombre: resultado.originalname,
-          archivo_url: resultado.url,
+          archivo_url: resultado.key,
           archivo_tipo: resultado.mimetype,
           archivo_tamanio: resultado.size || resultado.bytes,
-          cloudinary_public_id: resultado.public_id,
+          cloudinary_public_id: resultado.key,
           subido_por: req.user?.id,
         });
       }
@@ -851,14 +851,6 @@ const subirEvidencias = async (req, res) => {
     if (documentosBatch.length > 0) {
       documentos = await OperacionDocumento.bulkCreate(documentosBatch);
     }
-
-    // Limpiar archivos temporales de multer
-    const fs = require('fs');
-    archivos.forEach((f) => {
-      try {
-        fs.unlinkSync(f.path);
-      } catch (_) {}
-    });
 
     await Auditoria.registrar({
       tabla: 'operaciones',
@@ -900,21 +892,10 @@ const eliminarEvidencia = async (req, res) => {
       return notFound(res, 'Evidencia no encontrada');
     }
 
-    // Eliminar de Cloudinary si tiene public_id
+    // Eliminar de S3 si tiene key almacenada
     if (documento.cloudinary_public_id) {
-      const cloudinaryService = require('../services/cloudinaryService');
-      const esImagen = documento.archivo_tipo?.startsWith('image/');
-      await cloudinaryService.eliminar(documento.cloudinary_public_id, esImagen ? 'image' : 'raw');
-    } else {
-      // Fallback: eliminar archivo local si existe
-      const fs = require('fs');
-      const path = require('path');
-      if (documento.archivo_url && !documento.archivo_url.startsWith('http')) {
-        const filePath = path.join(__dirname, '../..', documento.archivo_url);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
-      }
+      const s3Service = require('../services/s3Service');
+      await s3Service.eliminar(documento.cloudinary_public_id);
     }
 
     await documento.destroy();

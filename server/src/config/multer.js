@@ -31,33 +31,8 @@ const UPLOAD_DIRS = {
 // Crear directorios
 Object.values(UPLOAD_DIRS).forEach(createDir);
 
-/**
- * Configuración de almacenamiento para averías (imágenes)
- */
-const storageAverias = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOAD_DIRS.averias);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const filename = `averia_${Date.now()}_${uuidv4()}${ext}`;
-    cb(null, filename);
-  },
-});
-
-/**
- * Configuración de almacenamiento para cumplidos (documentos)
- */
-const storageCumplidos = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOAD_DIRS.cumplidos);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const filename = `cumplido_${Date.now()}_${uuidv4()}${ext}`;
-    cb(null, filename);
-  },
-});
+// Memory storage para uploads que van directo a S3 (sin disco)
+const storageMemory = multer.memoryStorage();
 
 /**
  * Filtro para imágenes
@@ -120,10 +95,10 @@ const documentFilter = (req, file, cb) => {
 };
 
 /**
- * Upload para evidencias de averías
+ * Upload para evidencias de averías (Cloudinary vía buffer)
  */
 const uploadAveria = multer({
-  storage: storageAverias,
+  storage: storageMemory,
   fileFilter: imageFilter,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
@@ -131,35 +106,22 @@ const uploadAveria = multer({
 });
 
 /**
- * Upload para documentos de cumplido
+ * Upload para documentos de cumplido (Cloudinary vía buffer)
  */
 const uploadCumplido = multer({
-  storage: storageCumplidos,
+  storage: storageMemory,
   fileFilter: documentFilter,
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB
   },
 });
 
-/**
- * Configuración de almacenamiento para logos de clientes
- */
-const storageLogos = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOAD_DIRS.logos);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const filename = `logo_${req.params.id}_${Date.now()}${ext}`;
-    cb(null, filename);
-  },
-});
 
 /**
- * Upload para logos de clientes
+ * Upload para logos de clientes (Cloudinary vía buffer)
  */
 const uploadLogo = multer({
-  storage: storageLogos,
+  storage: storageMemory,
   fileFilter: imageFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
@@ -167,27 +129,10 @@ const uploadLogo = multer({
 });
 
 /**
- * Configuración de almacenamiento para avatares de usuarios
- */
-const AVATAR_DIR = path.join(__dirname, '../../uploads/avatars');
-createDir(AVATAR_DIR);
-
-const storageAvatars = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, AVATAR_DIR);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const filename = `avatar_${req.user.id}_${Date.now()}${ext}`;
-    cb(null, filename);
-  },
-});
-
-/**
- * Upload para avatares de usuarios
+ * Upload para avatares de usuarios (Cloudinary vía buffer)
  */
 const uploadAvatar = multer({
-  storage: storageAvatars,
+  storage: storageMemory,
   fileFilter: imageFilter,
   limits: {
     fileSize: 2 * 1024 * 1024, // 2MB
@@ -195,24 +140,10 @@ const uploadAvatar = multer({
 });
 
 /**
- * Configuración de almacenamiento para soportes de gastos (caja menor)
- */
-const storageSoportes = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOAD_DIRS.soportes);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const filename = `soporte_${Date.now()}_${uuidv4()}${ext}`;
-    cb(null, filename);
-  },
-});
-
-/**
- * Upload para soportes de gastos (facturas, recibos, fotos)
+ * Upload para soportes de gastos (Cloudinary vía buffer)
  */
 const uploadSoporte = multer({
-  storage: storageSoportes,
+  storage: storageMemory,
   fileFilter: documentFilter,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB

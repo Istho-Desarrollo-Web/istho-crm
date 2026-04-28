@@ -155,7 +155,11 @@ const obtenerPorId = async (req, res) => {
       return notFound(res, 'Movimiento no encontrado');
     }
 
-    return success(res, movimiento);
+    const s3Service = require('../services/s3Service');
+    const data = movimiento.toJSON();
+    data.soporte_url = await s3Service.resolveUrl(data.soporte_url);
+
+    return success(res, data);
   } catch (error) {
     logger.error('Error al obtener movimiento:', { message: error.message });
     return serverError(res, 'Error al obtener movimiento', error);
@@ -210,30 +214,17 @@ const crear = async (req, res) => {
 
     // Manejar archivo de soporte
     if (req.file) {
-      const cloudinaryService = require('../services/cloudinaryService');
-      const fs = require('fs');
+      const s3Service = require('../services/s3Service');
 
-      if (cloudinaryService.isConfigured()) {
-        const resultado = await cloudinaryService.subir(req.file, 'istho-crm/soportes');
-        datos.soporte_url = resultado.url;
+      if (s3Service.isConfigured()) {
+        const resultado = await s3Service.subir(req.file, 'soportes');
+        datos.soporte_url = resultado.key;
         datos.soporte_nombre = req.file.originalname;
-        try {
-          fs.unlinkSync(req.file.path);
-        } catch {
-          /* ignore */
-        }
       } else {
-        // Fallback: base64 en BD
-        const fileBuffer = fs.readFileSync(req.file.path);
-        const base64 = fileBuffer.toString('base64');
+        const base64 = req.file.buffer.toString('base64');
         const mimeType = req.file.mimetype || 'application/octet-stream';
         datos.soporte_url = `data:${mimeType};base64,${base64}`;
         datos.soporte_nombre = req.file.originalname;
-        try {
-          fs.unlinkSync(req.file.path);
-        } catch {
-          /* ignore */
-        }
       }
     }
 
@@ -349,29 +340,17 @@ const actualizar = async (req, res) => {
     }
 
     if (req.file) {
-      const cloudinaryService = require('../services/cloudinaryService');
-      const fs = require('fs');
+      const s3Service = require('../services/s3Service');
 
-      if (cloudinaryService.isConfigured()) {
-        const resultado = await cloudinaryService.subir(req.file, 'istho-crm/soportes');
-        datos.soporte_url = resultado.url;
+      if (s3Service.isConfigured()) {
+        const resultado = await s3Service.subir(req.file, 'soportes');
+        datos.soporte_url = resultado.key;
         datos.soporte_nombre = req.file.originalname;
-        try {
-          fs.unlinkSync(req.file.path);
-        } catch {
-          /* ignore */
-        }
       } else {
-        const fileBuffer = fs.readFileSync(req.file.path);
-        const base64 = fileBuffer.toString('base64');
+        const base64 = req.file.buffer.toString('base64');
         const mimeType = req.file.mimetype || 'application/octet-stream';
         datos.soporte_url = `data:${mimeType};base64,${base64}`;
         datos.soporte_nombre = req.file.originalname;
-        try {
-          fs.unlinkSync(req.file.path);
-        } catch {
-          /* ignore */
-        }
       }
     }
 

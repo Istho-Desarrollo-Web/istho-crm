@@ -406,6 +406,10 @@ const me = async (req, res) => {
     const permisosDB = usuario.rol_id ? getPermisosForRol(usuario.rol_id) : null;
     const userData = usuario.toPublicJSON(permisosDB);
 
+    // Resolver avatar_url (S3 key → presigned URL)
+    const s3Service = require('../services/s3Service');
+    userData.avatar_url = await s3Service.resolveUrl(userData.avatar_url);
+
     // Si es usuario de cliente, incluir datos del cliente
     if (usuario.rol === 'cliente' && usuario.cliente_id) {
       const cliente = await Cliente.findByPk(usuario.cliente_id, {
@@ -416,7 +420,7 @@ const me = async (req, res) => {
           id: cliente.id,
           razon_social: cliente.razon_social,
           codigo_cliente: cliente.codigo_cliente,
-          logo_url: cliente.logo_url,
+          logo_url: await s3Service.resolveUrl(cliente.logo_url),
         };
       }
     }
@@ -898,35 +902,17 @@ const subirAvatar = async (req, res) => {
       return notFound(res, 'Usuario no encontrado');
     }
 
-    const cloudinaryService = require('../services/cloudinaryService');
-    const fs = require('fs');
+    const s3Service = require('../services/s3Service');
     let avatar_url;
 
-    if (cloudinaryService.isConfigured()) {
-      // Subir a Cloudinary con compresión automática
-      const resultado = await cloudinaryService.subirImagen(req.file.path, {
-        folder: 'istho-crm/avatares',
-        publicId: `usuario_${usuario.id}`,
-      });
-      avatar_url = resultado.url;
-      // Limpiar temp
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch {
-        /* ignore */
-      }
-      logger.info('Avatar subido a Cloudinary:', { userId: usuario.id, url: avatar_url });
+    if (s3Service.isConfigured()) {
+      const resultado = await s3Service.subir(req.file, 'avatares');
+      avatar_url = resultado.key;
+      logger.info('Avatar subido a S3:', { userId: usuario.id, key: avatar_url });
     } else {
-      // Fallback: base64 en BD
-      const fileBuffer = fs.readFileSync(req.file.path);
-      const base64 = fileBuffer.toString('base64');
+      const base64 = req.file.buffer.toString('base64');
       const mimeType = req.file.mimetype || 'image/png';
       avatar_url = `data:${mimeType};base64,${base64}`;
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch {
-        /* ignore */
-      }
       logger.info('Avatar actualizado (base64 fallback):', { userId: usuario.id });
     }
 
@@ -943,7 +929,9 @@ const subirAvatar = async (req, res) => {
       descripcion: 'Foto de perfil actualizada',
     });
 
-    return successMessage(res, 'Foto de perfil actualizada', { avatar_url });
+    const s3ServiceForUrl = require('../services/s3Service');
+    const avatar_url_resolved = await s3ServiceForUrl.resolveUrl(avatar_url);
+    return successMessage(res, 'Foto de perfil actualizada', { avatar_url: avatar_url_resolved });
   } catch (error) {
     logger.error('Error al subir avatar:', { message: error.message });
     return serverError(res, 'Error al subir la foto de perfil', error);
@@ -961,10 +949,10 @@ const eliminarAvatar = async (req, res) => {
       return notFound(res, 'Usuario no encontrado');
     }
 
-    // Eliminar de Cloudinary si es URL de Cloudinary
-    if (usuario.avatar_url?.includes('cloudinary.com')) {
-      const cloudinaryService = require('../services/cloudinaryService');
-      await cloudinaryService.eliminar(`istho-crm/avatares/usuario_${usuario.id}`, 'image');
+    // Eliminar de S3 si es una key de S3 (no URL pública ni base64)
+    const s3Service = require('../services/s3Service');
+    if (s3Service.isS3Key(usuario.avatar_url)) {
+      await s3Service.eliminar(usuario.avatar_url);
     }
 
     usuario.avatar_url = null;

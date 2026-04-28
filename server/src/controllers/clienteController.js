@@ -257,9 +257,11 @@ const obtenerPorId = async (req, res) => {
 
     const totalProductos = await Inventario.count({ where: { cliente_id: id } });
 
+    const s3Service = require('../services/s3Service');
     const clienteData = cliente.toJSON();
     clienteData.operaciones_mes = operacionesMes;
     clienteData.total_productos = totalProductos;
+    clienteData.logo_url = await s3Service.resolveUrl(clienteData.logo_url);
 
     return success(res, clienteData);
   } catch (error) {
@@ -790,40 +792,25 @@ const subirLogo = async (req, res) => {
       return notFound(res, 'Cliente no encontrado');
     }
 
-    const cloudinaryService = require('../services/cloudinaryService');
-    const fs = require('fs');
+    const s3Service = require('../services/s3Service');
     let logo_url;
 
-    if (cloudinaryService.isConfigured()) {
-      // Eliminar logo anterior de Cloudinary si existe
-      if (cliente.logo_url?.includes('cloudinary.com')) {
+    if (s3Service.isConfigured()) {
+      // Eliminar logo anterior si es una key de S3
+      if (s3Service.isS3Key(cliente.logo_url)) {
         try {
-          await cloudinaryService.eliminar(`istho-crm/logos/cliente_${id}`, 'image');
+          await s3Service.eliminar(cliente.logo_url);
         } catch {
           /* ignorar si no existe */
         }
       }
-      // Subir a Cloudinary con compresión automática
-      const resultado = await cloudinaryService.subirImagen(req.file.path, {
-        folder: 'istho-crm/logos',
-        publicId: `cliente_${id}`,
-      });
-      logo_url = resultado.url;
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch {
-        /* ignore */
-      }
-      logger.info('Logo subido a Cloudinary:', { clienteId: id, url: logo_url });
+      const resultado = await s3Service.subir(req.file, 'logos');
+      logo_url = resultado.key;
+      logger.info('Logo subido a S3:', { clienteId: id, key: logo_url });
     } else {
-      // Fallback: URL local (desarrollo sin Cloudinary)
-      logo_url = `/uploads/logos/${req.file.filename}`;
-      // Eliminar logo anterior local si existe
-      if (cliente.logo_url?.startsWith('/uploads/')) {
-        const path = require('path');
-        const oldPath = path.join(__dirname, '../../', cliente.logo_url);
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-      }
+      const base64 = req.file.buffer.toString('base64');
+      const mimeType = req.file.mimetype || 'image/png';
+      logo_url = `data:${mimeType};base64,${base64}`;
     }
 
     await cliente.update({ logo_url });
@@ -841,7 +828,9 @@ const subirLogo = async (req, res) => {
 
     logger.info('Logo de cliente actualizado:', { clienteId: id });
 
-    return successMessage(res, 'Logo actualizado exitosamente', { logo_url });
+    const s3ServiceForUrl = require('../services/s3Service');
+    const logo_url_resolved = await s3ServiceForUrl.resolveUrl(logo_url);
+    return successMessage(res, 'Logo actualizado exitosamente', { logo_url: logo_url_resolved });
   } catch (error) {
     logger.error('Error al subir logo:', { message: error.message });
     return serverError(res, 'Error al subir el logo', error);

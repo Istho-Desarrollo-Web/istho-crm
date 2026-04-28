@@ -446,22 +446,19 @@ const subirLogoFirma = async (req, res) => {
     const fs = require('fs');
     const path = require('path');
 
-    // Leer archivo y convertir a base64
-    const buffer = fs.readFileSync(req.file.path);
+    const buffer = req.file.buffer;
     const base64 = buffer.toString('base64');
     const mimeType = req.file.mimetype;
     const dataUri = `data:${mimeType};base64,${base64}`;
 
     // Guardar en archivo de configuración
     const configPath = path.join(__dirname, '../../uploads/assets/logo-firma.json');
+    fs.mkdirSync(path.dirname(configPath), { recursive: true });
     fs.writeFileSync(configPath, JSON.stringify({ dataUri, updatedAt: new Date() }));
 
     // También actualizar el logo PNG para CID en emails
     const logoPath = path.join(__dirname, '../../uploads/assets/logo.png');
-    fs.copyFileSync(req.file.path, logoPath);
-
-    // Limpiar temporal
-    fs.unlinkSync(req.file.path);
+    fs.writeFileSync(logoPath, buffer);
 
     logger.info('Logo de firma actualizado');
 

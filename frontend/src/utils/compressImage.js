@@ -18,7 +18,7 @@ export async function comprimirImagen(file, opciones = {}) {
     maxSizeMB: opciones.maxSizeMB ?? 1,
     maxWidthOrHeight: opciones.maxWidthOrHeight ?? 1920,
     initialQuality: opciones.quality ?? 0.8,
-    useWebWorker: true,
+    useWebWorker: false,
     fileType: file.type,
     // Preservar nombre original
     onProgress: opciones.onProgress,

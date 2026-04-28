@@ -74,6 +74,85 @@ const subirImagen = async (filePath, options = {}) => {
 };
 
 /**
+ * Subir imagen desde buffer en memoria (sin disco) — para entornos cloud
+ * @param {Buffer} buffer - Buffer del archivo
+ * @param {Object} options - Opciones adicionales
+ */
+const subirImagenBuffer = (buffer, options = {}) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: options.folder || 'istho-crm/general',
+        public_id: options.publicId || undefined,
+        resource_type: 'image',
+        transformation: [
+          { width: 1920, crop: 'limit' },
+          { quality: 'auto:good' },
+          { fetch_format: 'auto' },
+        ],
+        overwrite: true,
+      },
+      (error, result) => {
+        if (error) {
+          logger.error('Error subiendo buffer a Cloudinary:', { message: error.message });
+          return reject(error);
+        }
+        logger.info('Imagen subida a Cloudinary (buffer):', {
+          public_id: result.public_id,
+          bytes: result.bytes,
+          url: result.secure_url,
+        });
+        resolve({
+          url: result.secure_url,
+          public_id: result.public_id,
+          format: result.format,
+          bytes: result.bytes,
+          width: result.width,
+          height: result.height,
+          original_filename: result.original_filename,
+        });
+      }
+    );
+    stream.end(buffer);
+  });
+};
+
+/**
+ * Subir archivo raw desde buffer en memoria — para entornos cloud
+ */
+const subirArchivoBuffer = (buffer, options = {}) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: options.folder || 'istho-crm/general',
+        public_id: options.publicId || undefined,
+        resource_type: 'raw',
+        overwrite: true,
+      },
+      (error, result) => {
+        if (error) {
+          logger.error('Error subiendo buffer raw a Cloudinary:', { message: error.message });
+          return reject(error);
+        }
+        logger.info('Archivo subido a Cloudinary (buffer):', {
+          public_id: result.public_id,
+          bytes: result.bytes,
+          url: result.secure_url,
+        });
+        resolve({
+          url: result.secure_url,
+          public_id: result.public_id,
+          format: result.format || options.extension || '',
+          bytes: result.bytes,
+          original_filename: result.original_filename,
+        });
+      }
+    );
+    stream.end(buffer);
+  });
+};
+
+/**
  * Subir archivo raw (PDF, ZIP, RAR, etc.)
  * @param {string} filePath - Ruta local del archivo
  * @param {Object} options - Opciones adicionales
@@ -126,12 +205,24 @@ const subir = async (file, folder = 'istho-crm/general') => {
   }
 
   const esImagen = file.mimetype && file.mimetype.startsWith('image/');
+  const extension = file.originalname?.split('.').pop() || '';
 
+  // memoryStorage: file.buffer disponible, sin path en disco
+  if (file.buffer) {
+    if (esImagen) {
+      const result = await subirImagenBuffer(file.buffer, { folder });
+      return { ...result, tipo: 'imagen' };
+    } else {
+      const result = await subirArchivoBuffer(file.buffer, { folder, extension });
+      return { ...result, tipo: 'archivo' };
+    }
+  }
+
+  // diskStorage: usar path (legacy / desarrollo local)
   if (esImagen) {
     const result = await subirImagen(file.path, { folder });
     return { ...result, tipo: 'imagen' };
   } else {
-    const extension = file.originalname?.split('.').pop() || '';
     const result = await subirArchivo(file.path, { folder, extension });
     return { ...result, tipo: 'archivo' };
   }
@@ -242,7 +333,9 @@ module.exports = {
   isConfigured,
   subir,
   subirImagen,
+  subirImagenBuffer,
   subirArchivo,
+  subirArchivoBuffer,
   subirMultiples,
   eliminar,
   eliminarMultiples,

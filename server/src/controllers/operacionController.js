@@ -975,24 +975,21 @@ const registrarAveria = async (req, res) => {
 
     let fotoData = {};
     if (req.file) {
-      const cloudinaryService = require('../services/cloudinaryService');
-      if (cloudinaryService.isConfigured()) {
-        const resultado = await cloudinaryService.subir(req.file, `istho-crm/averias/${id}`);
+      const s3Service = require('../services/s3Service');
+      if (s3Service.isConfigured()) {
+        const resultado = await s3Service.subir(req.file, `averias/${id}`);
         fotoData = {
-          foto_url: resultado.url,
+          foto_url: resultado.key,
           foto_nombre: req.file.originalname,
           foto_tipo: req.file.mimetype,
-          foto_tamanio: resultado.bytes || req.file.size,
-          cloudinary_public_id: resultado.public_id,
+          foto_tamanio: resultado.bytes,
+          cloudinary_public_id: resultado.key,
         };
-        // Limpiar archivo temporal
-        const fs = require('fs');
-        try {
-          fs.unlinkSync(req.file.path);
-        } catch (_) {}
       } else {
+        const base64 = req.file.buffer.toString('base64');
+        const mimeType = req.file.mimetype || 'image/jpeg';
         fotoData = {
-          foto_url: `/uploads/averias/${req.file.filename}`,
+          foto_url: `data:${mimeType};base64,${base64}`,
           foto_nombre: req.file.originalname,
           foto_tipo: req.file.mimetype,
           foto_tamanio: req.file.size,
@@ -1073,11 +1070,21 @@ const subirDocumento = async (req, res) => {
       return errorResponse(res, 'Debe adjuntar un archivo', 400);
     }
 
+    const s3Service = require('../services/s3Service');
+    let archivo_url;
+    if (s3Service.isConfigured()) {
+      const resultado = await s3Service.subir(req.file, `cumplidos/${id}`);
+      archivo_url = resultado.key;
+    } else {
+      const base64 = req.file.buffer.toString('base64');
+      archivo_url = `data:${req.file.mimetype};base64,${base64}`;
+    }
+
     const documento = await OperacionDocumento.create({
       operacion_id: id,
       tipo_documento: tipo_documento || 'cumplido',
       nombre: nombre || req.file.originalname,
-      archivo_url: `/uploads/cumplidos/${req.file.filename}`,
+      archivo_url,
       archivo_nombre: req.file.originalname,
       archivo_tipo: req.file.mimetype,
       archivo_tamanio: req.file.size,
@@ -1506,10 +1513,10 @@ const eliminarAveria = async (req, res) => {
       return errorResponse(res, 'Esta operación ya no se puede modificar', 400);
     }
 
-    // Eliminar foto de Cloudinary si existe
+    // Eliminar foto de S3 si existe
     if (averia.cloudinary_public_id) {
-      const cloudinaryService = require('../services/cloudinaryService');
-      await cloudinaryService.eliminar(averia.cloudinary_public_id, 'image');
+      const s3Service = require('../services/s3Service');
+      await s3Service.eliminar(averia.cloudinary_public_id);
     }
 
     // Restar cantidad del detalle
