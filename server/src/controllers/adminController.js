@@ -267,8 +267,24 @@ const actualizarUsuario = async (req, res) => {
 
     // Si cambia rol, verificar que existe
     if (rol_id && rol_id !== usuario.rol_id) {
+      // No se puede cambiar el propio rol
+      if (Number(req.user.id) === Number(usuario.id)) {
+        return badRequest(res, 'No puedes cambiar tu propio rol');
+      }
+
       const rol = await Rol.findByPk(rol_id);
       if (!rol) return badRequest(res, 'El rol especificado no existe');
+
+      // Si el usuario es admin y el nuevo rol no es admin, verificar que quede al menos un admin
+      if (usuario.rol === 'admin' && rol.codigo !== 'admin') {
+        const otrosAdmins = await Usuario.count({
+          where: { rol: 'admin', activo: true, id: { [Op.ne]: usuario.id } },
+        });
+        if (otrosAdmins === 0) {
+          return badRequest(res, 'No se puede cambiar el rol: debe quedar al menos un administrador activo');
+        }
+      }
+
       usuario.rol = rol.codigo;
       usuario.rol_id = rol.id;
       usuario.cliente_id = rol.es_cliente ? cliente_id || usuario.cliente_id : null;
