@@ -536,8 +536,8 @@
       <h1><span class="red">Centh</span>ri<span class="green">X</span> — Manual de Usuario</h1>
       <div class="subtitle">Guia completa de uso del sistema CRM de ISTHO S.A.S.</div>
       <div class="doc-meta">
-        <div class="doc-meta-item"><strong>Version:</strong> 1.0</div>
-        <div class="doc-meta-item"><strong>Fecha:</strong> Marzo 2026</div>
+        <div class="doc-meta-item"><strong>Version:</strong> 1.1.0</div>
+        <div class="doc-meta-item"><strong>Fecha:</strong> Abril 2026</div>
         <div class="doc-meta-item"><strong>Empresa:</strong> ISTHO S.A.S.</div>
         <div class="doc-meta-item"><strong>Ubicacion:</strong> Girardota, Antioquia</div>
       </div>
@@ -697,6 +697,36 @@
       <div class="info-box green">
         <strong>Buena practica:</strong> Utilice una contrasena unica que no haya usado en otros servicios.
         Combine mayusculas, minusculas, numeros y caracteres especiales para mayor seguridad.
+      </div>
+
+      <hr class="sub-divider">
+
+      <h3>1.4 Autenticacion de Dos Factores (2FA)</h3>
+      <p>
+        El 2FA agrega una capa adicional de seguridad mediante codigos TOTP (Time-based One-Time Password)
+        generados por una app autenticadora como Google Authenticator o Authy. Una vez activado,
+        el sistema solicitara el codigo de 6 digitos ademas de la contrasena al iniciar sesion.
+      </p>
+
+      <h4>Activar 2FA</h4>
+      <ol class="steps">
+        <li>Ir a <strong>Perfil</strong> → pestana <strong>"Seguridad"</strong>.</li>
+        <li>Hacer clic en <strong>"Activar autenticacion de dos factores"</strong>.</li>
+        <li>Escanear el codigo QR mostrado con la app autenticadora (Google Authenticator, Authy, etc.).</li>
+        <li>Ingresar el codigo de 6 digitos generado por la app para confirmar la activacion.</li>
+        <li><strong>Guardar los 8 codigos de respaldo</strong> en un lugar seguro — son de un solo uso y permiten recuperar el acceso si pierde el dispositivo.</li>
+      </ol>
+
+      <h4>Iniciar sesion con 2FA activo</h4>
+      <ol class="steps">
+        <li>Ingresar usuario y contrasena normalmente.</li>
+        <li>El sistema mostrara un campo adicional para el codigo de verificacion.</li>
+        <li>Abrir la app autenticadora y copiar el codigo de 6 digitos vigente.</li>
+        <li>Si no tiene acceso a la app, usar uno de los <strong>codigos de respaldo</strong> (cada codigo solo funciona una vez).</li>
+      </ol>
+
+      <div class="info-box blue">
+        <strong>Desactivar 2FA:</strong> En Perfil → Seguridad → "Desactivar 2FA". Se solicitara el codigo actual para confirmar. Esta accion elimina el secreto TOTP y los codigos de respaldo del sistema.
       </div>
     </div>
 
@@ -1712,7 +1742,7 @@
 
       <div class="info-box blue">
         <strong>Tiempo real:</strong> Las notificaciones se entregan en tiempo real gracias a la conexion
-        WebSocket. No necesita recargar la pagina para recibir nuevas notificaciones.
+        HTTP Long-polling (Socket.IO). No necesita recargar la pagina para recibir nuevas notificaciones.
       </div>
 
       <div class="info-box green">
@@ -1730,16 +1760,16 @@
         <strong><span style="color: var(--accent);">Centh</span>ri<span style="color: var(--success);">X</span></strong>
         &mdash; Sistema de Gestion Integral &mdash; ISTHO S.A.S.
       </p>
-      <p>Girardota, Antioquia, Colombia &mdash; Version 1.0 &mdash; Marzo 2026</p>
+      <p>Girardota, Antioquia, Colombia &mdash; Version 1.1.0 &mdash; Abril 2026</p>
       <p style="margin-top: 8px; font-size: 11px; color: #CFD8DC;">
         Este documento es propiedad de ISTHO S.A.S. Su distribucion no autorizada esta prohibida.
       </p>
     </div>
     <div class="info-box green">
       <strong>Almacenamiento en la nube:</strong> Todos los archivos subidos al sistema (fotos, PDFs, documentos de soporte)
-      se almacenan en Cloudinary, un servicio de almacenamiento en la nube. Esto garantiza que los archivos persisten
-      entre actualizaciones del servidor y se cargan rapidamente gracias a la red de distribucion de contenido (CDN).
-      Las imagenes se comprimen automaticamente para optimizar el almacenamiento sin perder calidad visual.
+      se almacenan en Amazon S3 (bucket privado <code>istho-crm-files</code>). El acceso se realiza mediante URLs
+      firmadas temporales (presigned URLs, 15 minutos de validez), garantizando que los archivos persisten entre
+      actualizaciones del servidor y solo son accesibles por usuarios autorizados.
     </div>
 
   </main>

@@ -358,8 +358,8 @@
       <h1>Soporte Administrativo<br>CRM Centh<span style="color:#E74C3C">ri</span><span class="green">X</span></h1>
       <p class="subtitle">Sistema integral de gestión logística, transporte y almacenamiento</p>
       <div class="doc-meta">
-        <div class="doc-meta-item"><strong>Versión:</strong> 1.0.0</div>
-        <div class="doc-meta-item"><strong>Fecha:</strong> Marzo 2026</div>
+        <div class="doc-meta-item"><strong>Versión:</strong> 1.1.0</div>
+        <div class="doc-meta-item"><strong>Fecha:</strong> Abril 2026</div>
         <div class="doc-meta-item"><strong>Empresa:</strong> ISTHO S.A.S.</div>
         <div class="doc-meta-item"><strong>Clasificación:</strong> Uso interno</div>
       </div>
@@ -372,7 +372,7 @@
         El presente documento describe el soporte administrativo del sistema <strong>CRM CenthriX</strong>, una plataforma integral de gestión logística, transporte y almacenamiento desarrollada para <strong>ISTHO S.A.S.</strong> (Centro Logístico Industrial del Norte), ubicada en Girardota, Antioquia, Colombia.
       </p>
       <p>
-        CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración bidireccional con el sistema WMS Centhrix. El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.
+        CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración con el sistema WMS Centhrix (el WMS empuja datos al CRM via API REST). El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.
       </p>
       <p>
         El CRM reemplaza procesos manuales y hojas de cálculo, proporcionando trazabilidad completa, auditoría en tiempo real y reportes automatizados para la toma de decisiones.
@@ -444,7 +444,7 @@
 
       <h3>3.8 Integración WMS</h3>
       <ul>
-        <li>Mantener sincronización bidireccional con WMS Centhrix via API REST.</li>
+        <li>Recibir sincronización desde WMS Centhrix via API REST (el WMS empuja al CRM — el CRM no inicia pulls).</li>
         <li>Validar dinámicamente estados, tipos de orden y motivos de kardex.</li>
         <li>Proporcionar panel de configuración para gestionar reglas de integración.</li>
       </ul>
@@ -486,22 +486,24 @@
           <tr><th>Sistema</th><th>Tipo</th><th>Protocolo</th><th>Descripción</th></tr>
         </thead>
         <tbody>
-          <tr><td>WMS Centhrix</td><td>Bidireccional</td><td>API REST + API Key</td><td>Sincronización de productos, entradas, salidas y kardex</td></tr>
-          <tr><td>Resend</td><td>Saliente</td><td>API HTTP</td><td>Envío de emails transaccionales y reportes</td></tr>
-          <tr><td>Socket.io</td><td>Interno</td><td>WebSocket</td><td>Notificaciones en tiempo real</td></tr>
+          <tr><td>WMS Centhrix</td><td>Entrante</td><td>API REST + API Key</td><td>WMS empuja productos, entradas, salidas y kardex al CRM</td></tr>
+          <tr><td>Gmail SMTP</td><td>Saliente</td><td>SMTP 587 (TLS)</td><td>Envío de emails transaccionales, recuperación de contraseña y reportes</td></tr>
+          <tr><td>Socket.IO</td><td>Interno</td><td>HTTP Long-polling</td><td>Notificaciones en tiempo real (conexión persistente sin WebSocket)</td></tr>
         </tbody>
       </table>
 
       <h3>4.3 Infraestructura</h3>
       <table>
         <thead>
-          <tr><th>Componente</th><th>Plataforma</th><th>Tecnología</th></tr>
+          <tr><th>Componente</th><th>Plataforma</th><th>Tecnología</th><th>Costo/mes</th></tr>
         </thead>
         <tbody>
-          <tr><td>Backend</td><td>Railway</td><td>Node.js 20, Express, Sequelize</td></tr>
-          <tr><td>Frontend</td><td>Vercel</td><td>React 19, Vite, Tailwind CSS 4</td></tr>
-          <tr><td>Base de datos</td><td>Railway</td><td>MySQL 9.6</td></tr>
-          <tr><td>Email</td><td>Resend</td><td>API HTTP</td></tr>
+          <tr><td>Backend</td><td>AWS App Runner (us-west-2)</td><td>Node.js 22, Express, Sequelize — 1 vCPU / 2 GB</td><td>~$14-15</td></tr>
+          <tr><td>Frontend</td><td>Vercel (Hobby)</td><td>React 19, Vite, Tailwind CSS 4</td><td>$0</td></tr>
+          <tr><td>Base de datos</td><td>AWS RDS MySQL 8.0 (us-west-2)</td><td>db.t3.micro, 20 GB gp2, Single-AZ</td><td>~$14.54</td></tr>
+          <tr><td>Almacenamiento</td><td>AWS S3 (us-west-2)</td><td>Bucket istho-crm-files — avatares, soportes, evidencias</td><td>~$0.10</td></tr>
+          <tr><td>Email</td><td>Gmail SMTP</td><td>Puerto 587, TLS — cuenta corporativa ISTHO</td><td>$0</td></tr>
+          <tr><td><strong>Total</strong></td><td></td><td></td><td><strong>~$30/mes</strong></td></tr>
         </tbody>
       </table>
     </div>
@@ -533,7 +535,7 @@
       </ul>
 
       <h3>5.3 Financiera <span class="badge badge-financiera">Financiera</span></h3>
-      <p><strong>Nivel jerárquico:</strong> 70</p>
+      <p><strong>Nivel jerárquico:</strong> 60</p>
       <ul>
         <li>Gestión de cajas menores (crear, editar, cerrar)</li>
         <li>Aprobación y rechazo de gastos</li>
@@ -584,10 +586,11 @@
 
       <h3>6.2 Para el Administrador del Sistema</h3>
       <ul>
-        <li>Acceso al dashboard de Railway (backend y base de datos)</li>
+        <li>Acceso a la consola AWS (App Runner, RDS, S3) — región us-west-2</li>
         <li>Acceso al dashboard de Vercel (frontend)</li>
-        <li>Acceso a Resend (configuración de email y dominio)</li>
+        <li>Acceso a la cuenta de Gmail corporativa (gestión del App Password para SMTP)</li>
         <li>Conocimiento básico de variables de entorno</li>
+        <li>Repositorio GitHub <code>istho-crm-p</code> (los pushes a <code>main</code> activan el redespliegue automático)</li>
       </ul>
     </div>
 
@@ -610,7 +613,7 @@
 
     <!-- Footer -->
     <div class="doc-footer">
-      Documento generado para CRM CenthriX v1.0.0 — ISTHO S.A.S. &copy; 2026<br>
+      Documento generado para CRM CenthriX v1.1.0 — ISTHO S.A.S. &copy; 2026<br>
       Centro Logístico Industrial del Norte — Girardota, Antioquia, Colombia
     </div>
 

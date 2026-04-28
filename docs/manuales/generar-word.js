@@ -104,7 +104,7 @@ async function generarSoporteAdministrativo() {
         new Paragraph({ children: [new TextRun({ text: 'Documento de Soporte Administrativo', font: FONT, bold: true, size: 48, color: COLORS.primary })], alignment: AlignmentType.CENTER }),
         new Paragraph({ children: [new TextRun({ text: 'CRM CenthriX', font: FONT, bold: true, size: 36, color: COLORS.accent })], alignment: AlignmentType.CENTER, spacing: { after: 100 } }),
         new Paragraph({ children: [new TextRun({ text: 'Sistema integral de gestión logística, transporte y almacenamiento', font: FONT, size: 24, color: COLORS.textSecondary })], alignment: AlignmentType.CENTER, spacing: { after: 400 } }),
-        para('Versión: 1.0.0 | Fecha: Marzo 2026', { alignment: AlignmentType.CENTER }),
+        para('Versión: 1.1.0 | Fecha: Abril 2026', { alignment: AlignmentType.CENTER }),
         para('Elaborado por: Coordinación TI — ISTHO S.A.S.', { alignment: AlignmentType.CENTER }),
         para('Clasificación: Uso interno', { alignment: AlignmentType.CENTER }),
         new Paragraph({ children: [new PageBreak()] }),
@@ -112,7 +112,7 @@ async function generarSoporteAdministrativo() {
         // 1. Introducción
         heading('1. Introducción'),
         para('El presente documento describe el soporte administrativo del sistema CRM CenthriX, una plataforma integral de gestión logística, transporte y almacenamiento desarrollada para ISTHO S.A.S. (Centro Logístico Industrial del Norte), ubicada en Girardota, Antioquia, Colombia.'),
-        para('CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración bidireccional con el sistema WMS Centhrix.'),
+        para('CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración con el sistema WMS Centhrix (el WMS empuja datos al CRM via API REST).'),
         para('El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.'),
         divider(),
 
@@ -151,7 +151,7 @@ async function generarSoporteAdministrativo() {
         bullet('Controlar acceso granular por módulo y acción mediante sistema de permisos.'),
         bullet('Registrar todas las acciones del sistema en log de auditoría.'),
         heading('3.8 Integración WMS', HeadingLevel.HEADING_3),
-        bullet('Mantener sincronización bidireccional con WMS Centhrix via API REST.'),
+        bullet('Recibir sincronización desde WMS Centhrix via API REST (el WMS empuja al CRM — el CRM no inicia pulls).'),
         bullet('Validar dinámicamente estados, tipos de orden y motivos de kardex.'),
         bullet('Proporcionar panel de configuración para gestionar reglas de integración.'),
         divider(),
@@ -181,6 +181,27 @@ async function generarSoporteAdministrativo() {
             ['17', 'Notificaciones', 'Alertas en tiempo real', 'Todos'],
           ]
         ),
+        heading('4.2 Integraciones', HeadingLevel.HEADING_3),
+        simpleTable(
+          ['Sistema', 'Tipo', 'Protocolo', 'Descripción'],
+          [
+            ['WMS Centhrix', 'Entrante', 'API REST + API Key', 'WMS empuja productos, entradas, salidas y kardex al CRM'],
+            ['Gmail SMTP', 'Saliente', 'SMTP 587 (TLS)', 'Envío de emails transaccionales, recuperación de contraseña y reportes'],
+            ['Socket.IO', 'Interno', 'HTTP Long-polling', 'Notificaciones en tiempo real (conexión persistente sin WebSocket)'],
+          ]
+        ),
+        heading('4.3 Infraestructura', HeadingLevel.HEADING_3),
+        simpleTable(
+          ['Componente', 'Plataforma', 'Tecnología', 'Costo/mes'],
+          [
+            ['Backend', 'AWS App Runner (us-west-2)', 'Node.js 22, Express, Sequelize', '~$14-15'],
+            ['Frontend', 'Vercel (Hobby)', 'React 19, Vite, Tailwind CSS 4', '$0'],
+            ['Base de datos', 'AWS RDS MySQL 8.0 (us-west-2)', 'db.t3.micro, 20 GB gp2', '~$14.54'],
+            ['Almacenamiento', 'AWS S3 (us-west-2)', 'Bucket istho-crm-files', '~$0.10'],
+            ['Email', 'Gmail SMTP', 'Puerto 587, TLS', '$0'],
+            ['Total', '', '', '~$30/mes'],
+          ]
+        ),
         divider(),
 
         // 5. Roles
@@ -205,9 +226,11 @@ async function generarSoporteAdministrativo() {
         bullet('Conexión a internet'),
         bullet('Resolución mínima: 360px (móvil) / 1024px (escritorio)'),
         heading('6.2 Para el Administrador del Sistema', HeadingLevel.HEADING_3),
-        bullet('Acceso al dashboard de Railway (backend y base de datos)'),
+        bullet('Acceso a la consola AWS (App Runner, RDS, S3) — región us-west-2'),
         bullet('Acceso al dashboard de Vercel (frontend)'),
-        bullet('Acceso a Resend (configuración de email y dominio)'),
+        bullet('Acceso a la cuenta de Gmail corporativa (gestión del App Password para SMTP)'),
+        bullet('Conocimiento básico de variables de entorno'),
+        bullet('Repositorio GitHub istho-crm-p (los pushes a main activan el redespliegue automático)'),
         divider(),
 
         // 7. Contacto
@@ -250,7 +273,7 @@ async function generarManualUsuario() {
     { title: '11. Configuración WMS', desc: 'Motivos de kardex, tipos de orden y estados válidos para procesamiento.', screenshot: 'Panel Configuración WMS' },
     { title: '12. Administración', desc: 'Usuarios, roles, permisos granulares, sesiones activas.', screenshot: 'Administración de Usuarios' },
     { title: '13. Perfil', desc: 'Datos personales, avatar, cambio de contraseña, tema oscuro/claro.', screenshot: 'Página de Perfil' },
-    { title: '14. Notificaciones', desc: 'Alertas en tiempo real via WebSocket. Filtros por tipo y prioridad.', screenshot: 'Panel de Notificaciones' },
+    { title: '14. Notificaciones', desc: 'Alertas en tiempo real via HTTP Long-polling. Filtros por tipo y prioridad.', screenshot: 'Panel de Notificaciones' },
   ];
 
   const children = [
@@ -259,7 +282,7 @@ async function generarManualUsuario() {
     new Paragraph({ children: [new TextRun({ text: 'Manual de Usuario', font: FONT, bold: true, size: 48, color: COLORS.primary })], alignment: AlignmentType.CENTER }),
     new Paragraph({ children: [new TextRun({ text: 'CRM CenthriX', font: FONT, bold: true, size: 36, color: COLORS.accent })], alignment: AlignmentType.CENTER, spacing: { after: 100 } }),
     new Paragraph({ children: [new TextRun({ text: 'Guía completa de uso del sistema', font: FONT, size: 24, color: COLORS.textSecondary })], alignment: AlignmentType.CENTER, spacing: { after: 400 } }),
-    para('Versión: 1.0.0 | Fecha: Marzo 2026', { alignment: AlignmentType.CENTER }),
+    para('Versión: 1.1.0 | Fecha: Abril 2026', { alignment: AlignmentType.CENTER }),
     para('ISTHO S.A.S. — Centro Logístico Industrial del Norte', { alignment: AlignmentType.CENTER }),
     new Paragraph({ children: [new PageBreak()] }),
 
@@ -291,6 +314,18 @@ async function generarManualUsuario() {
       children.push(numberedItem(4, 'Revisar el correo y seguir el enlace de restablecimiento.'));
       children.push(heading('Bloqueo de Cuenta', HeadingLevel.HEADING_3));
       children.push(para('Después de 5 intentos fallidos consecutivos, la cuenta se bloquea por 15 minutos. El bloqueo se levanta automáticamente.'));
+      children.push(heading('Autenticación de Dos Factores (2FA)', HeadingLevel.HEADING_3));
+      children.push(para('El 2FA agrega una capa de seguridad adicional mediante códigos TOTP generados por una app autenticadora (Google Authenticator, Authy, etc.).'));
+      children.push(heading('Activar 2FA', HeadingLevel.HEADING_4 || HeadingLevel.HEADING_3));
+      children.push(numberedItem(1, 'Ir a Perfil → pestaña "Seguridad".'));
+      children.push(numberedItem(2, 'Hacer clic en "Activar autenticación de dos factores".'));
+      children.push(numberedItem(3, 'Escanear el código QR con la app autenticadora.'));
+      children.push(numberedItem(4, 'Ingresar el código de 6 dígitos generado para confirmar.'));
+      children.push(numberedItem(5, 'Guardar los 8 códigos de respaldo en un lugar seguro (de un solo uso).'));
+      children.push(heading('Iniciar Sesión con 2FA', HeadingLevel.HEADING_3));
+      children.push(numberedItem(1, 'Ingresar usuario y contraseña normalmente.'));
+      children.push(numberedItem(2, 'Cuando se solicite, ingresar el código de 6 dígitos de la app autenticadora.'));
+      children.push(numberedItem(3, 'Si no tienes acceso a la app, usar uno de los códigos de respaldo.'));
     }
 
     if (mod.title.includes('Cajas Menores')) {
