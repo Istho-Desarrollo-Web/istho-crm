@@ -21,7 +21,7 @@ run:
     - name: DB_LOGGING
       value: "false"
     - name: DB_POOL_MAX
-      value: "10"
+      value: "20"
     - name: DB_POOL_MIN
       value: "0"
     - name: DB_POOL_ACQUIRE
@@ -31,7 +31,7 @@ run:
     - name: RATE_LIMIT_WINDOW
       value: "15"
     - name: RATE_LIMIT_MAX
-      value: "100"
+      value: "500"
     - name: JWT_EXPIRES_IN
       value: 24h
     - name: JWT_REFRESH_EXPIRES_IN

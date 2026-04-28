@@ -10,12 +10,31 @@ const mensajeError = (limite) => ({
   limite,
 });
 
-// API general: 100 req / 15 min
+// Clave por usuario autenticado (JWT decode sin verificar firma — solo para rate limit key).
+// Si no hay JWT válido, cae a IP. Esto evita que 15 usuarios en la misma red
+// compartan un único contador de rate limit.
+const keyGeneratorAutenticado = (req) => {
+  try {
+    const auth = req.headers.authorization;
+    if (auth && auth.startsWith('Bearer ')) {
+      const payload = JSON.parse(
+        Buffer.from(auth.slice(7).split('.')[1], 'base64url').toString()
+      );
+      if (payload?.id) return `user:${payload.id}`;
+    }
+  } catch {
+    // No hace nada — cae a IP
+  }
+  return req.ip;
+};
+
+// API general: 500 req / 15 min por usuario (o por IP si no está autenticado)
 const limiterGeneral = rateLimit({
   windowMs: ventana * 60 * 1000,
   max: maxGeneral,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: keyGeneratorAutenticado,
   message: mensajeError(maxGeneral),
 });
 
@@ -37,12 +56,13 @@ const limiterForgotPassword = rateLimit({
   message: mensajeError(5),
 });
 
-// Exportación de reportes: 20 req / 15 min por IP
+// Exportación de reportes: 20 req / 15 min por usuario
 const limiterExport = rateLimit({
   windowMs: ventana * 60 * 1000,
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: keyGeneratorAutenticado,
   message: mensajeError(20),
 });
 
