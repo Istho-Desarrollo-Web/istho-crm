@@ -30,17 +30,19 @@ Variables sensibles (`DB_PASSWORD`, `JWT_SECRET`, `SMTP_PASS`) configuradas en l
 
 | Servicio | Config | Costo/mes |
 |---|---|---|
-| AWS App Runner | 0.25 vCPU / 0.5 GB, 1 instancia | ~$3 |
+| AWS App Runner | 1 vCPU / 2 GB, 1 instancia | ~$14-15 |
 | AWS RDS MySQL | db.t3.micro, 20 GB gp2, Single-AZ | ~$14.54 |
 | AWS S3 | ~2-5 GB almacenamiento + requests | ~$0.10 |
 | Vercel | Hobby plan (free) | $0 |
 | Upstash Redis | Free tier (Socket.IO adapter) | $0 |
 | SMTP Gmail | Cuenta corporativa (free) | $0 |
-| **Total** | | **~$18/mes** (~COP 78.000) |
+| **Total** | | **~$30/mes** (~COP 130.000) |
 
-> **Año 1 (AWS Free Tier):** RDS t3.micro cubierto (750 hrs/mes gratis) → total ~$3-4/mes.
+> **Año 1 (AWS Free Tier):** RDS t3.micro cubierto (750 hrs/mes gratis) → total ~$15/mes.
 
-**Mayor oportunidad de ahorro:** RDS Reserved Instance 1 año (sin pago inicial) baja de $12.24 a ~$7.20/mes.
+**Mayor oportunidad de ahorro:**
+- RDS Reserved Instance 1 año: $12.24 → ~$7.20/mes (ahorra ~$60 USD/año)
+- Bajar App Runner a 0.5 vCPU / 1 GB si la carga lo permite: ~$7/mes (ahorra ~$7/mes)
 
 ---
 
@@ -89,8 +91,8 @@ aws ec2 authorize-security-group-ingress \
 | Build command | `cd server && npm ci --omit=dev` |
 | Start command | `node server/server.js` ← ver nota crítica abajo |
 | Puerto | `8080` |
-| vCPU | 0.25 |
-| RAM | 0.5 GB |
+| vCPU | 1 |
+| RAM | 2 GB |
 | Región | us-west-2 |
 | Auto-deploy | Activado (cada push a main) |
 
