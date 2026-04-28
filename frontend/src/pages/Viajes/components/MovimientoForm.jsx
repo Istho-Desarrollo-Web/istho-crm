@@ -250,12 +250,13 @@ const MovimientoForm = ({
               valor: m.valor != null ? Math.round(parseFloat(m.valor)) : '',
               descripcion: m.descripcion || '',
             });
-            if (m.soporte_url)
+            if (m.soporte_url) {
               setSoporteExistente({
                 url: m.soporte_url,
                 nombre: m.soporte_nombre || 'Archivo adjunto',
               });
-            else setSoporteExistente(null);
+              if (readOnly) setActiveTab('soporte');
+            } else setSoporteExistente(null);
           } else {
             notifyError('No se pudo cargar la información del movimiento');
             onClose();
@@ -558,10 +559,11 @@ const MovimientoForm = ({
                   !soporte &&
                   (() => {
                     const soporteUrl = getServerFileUrl(soporteExistente.url);
+                    const pathPart = (soporteExistente.url || '').split('?')[0];
                     const isImage =
                       soporteExistente.url?.startsWith('data:image/') ||
                       /\.(jpg|jpeg|png|gif|webp)$/i.test(
-                        soporteExistente.nombre || soporteExistente.url
+                        soporteExistente.nombre || pathPart
                       );
                     return (
                       <div className="space-y-2">
