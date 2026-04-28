@@ -2,7 +2,7 @@
 
 ## ISTHO S.A.S.
 
-**Version:** 1.0.0 | **Fecha:** Marzo 2026
+**Version:** 1.1.0 | **Fecha:** Abril 2026
 
 **Centro Logistico Industrial del Norte** — Girardota, Antioquia, Colombia
 
@@ -16,6 +16,7 @@
    - 1.3 Cambio de Contrasena Obligatorio
    - 1.4 Bloqueo de Cuenta
    - 1.5 Gestion de Sesion
+   - 1.6 Autenticacion de Dos Factores (2FA)
 2. [Dashboard](#2-dashboard)
    - 2.1 Dashboard Administrador / Operador
    - 2.2 Dashboard Financiera
@@ -72,7 +73,7 @@
 14. [Notificaciones](#14-notificaciones)
     - 14.1 Panel de Notificaciones
     - 14.2 Tipos de Notificaciones
-15. [Almacenamiento de Archivos (Cloudinary)](#15-almacenamiento-de-archivos-cloudinary)
+15. [Almacenamiento de Archivos (Amazon S3)](#15-almacenamiento-de-archivos-amazon-s3)
 
 ---
 
@@ -147,6 +148,34 @@ El sistema utiliza un esquema de **doble token** para una gestion de sesion flui
 - **Token de refresco:** Tiene una duracion de **7 dias**. Permite renovar el token de acceso automaticamente sin necesidad de volver a iniciar sesion.
 - Mientras el token de refresco sea valido, el sistema renovara el acceso de forma transparente. El usuario no percibira interrupciones.
 - Si ambos tokens expiran (por ejemplo, tras 7 dias sin ingresar al sistema), se le solicitara iniciar sesion nuevamente.
+
+### 1.6 Autenticacion de Dos Factores (2FA)
+
+El sistema admite autenticacion de dos factores mediante una aplicacion autenticadora (Google Authenticator, Microsoft Authenticator, Authy, etc.). Esta funcion agrega una capa adicional de seguridad.
+
+**Activar el 2FA:**
+
+1. Vaya a su perfil (icono de usuario en la esquina superior derecha) y seleccione **"Configuracion"**.
+2. En la seccion **"Seguridad"**, haga clic en **"Configurar autenticacion de dos factores"**.
+3. Aparecera un codigo QR. Escanee el codigo con su aplicacion autenticadora.
+4. Ingrese el codigo de 6 digitos generado por la aplicacion para confirmar la activacion.
+5. El sistema le mostrara **8 codigos de respaldo** de un solo uso. Guardelos en un lugar seguro: son necesarios si pierde acceso a su telefono.
+
+**Inicio de sesion con 2FA activo:**
+
+1. Ingrese su usuario y contrasena normalmente.
+2. Si el 2FA esta activo, aparecera una segunda pantalla solicitando el **codigo de verificacion**.
+3. Abra su aplicacion autenticadora y copie el codigo de 6 digitos.
+4. Ingrese el codigo y haga clic en **"Verificar"**.
+5. Si no tiene acceso a su telefono, haga clic en **"Usar codigo de respaldo"** e ingrese uno de los codigos guardados.
+
+**Desactivar el 2FA:**
+
+1. Vaya a **"Configuracion" > "Seguridad"**.
+2. Haga clic en **"Deshabilitar autenticacion de dos factores"**.
+3. Ingrese el codigo actual de su aplicacion autenticadora para confirmar.
+
+> **Nota:** Los codigos de respaldo son de un solo uso. Una vez usados no pueden volver a utilizarse. Se recomienda mantenerlos impresos o en un gestor de contrasenas seguro.
 
 ---
 
@@ -455,7 +484,7 @@ Las entradas corresponden a documentos de **recepcion** (tipo CO) del WMS.
   - **Fotos e imagenes:** Maximo **10 archivos** (JPG, PNG). Tambien se aceptan archivos comprimidos (ZIP, RAR).
   - **Documentos PDF:** Maximo **5 archivos**.
 - Las imagenes se comprimen automaticamente al subirlas para optimizar el almacenamiento.
-- Los archivos se almacenan en la **nube (Cloudinary)**, por lo que son **persistentes entre deploys** y no se pierden al reiniciar el servidor.
+- Los archivos se almacenan en la **nube (Amazon S3)**, por lo que son **persistentes entre deploys** y no se pierden al reiniciar el servidor.
 - Puede ver las evidencias ya cargadas y eliminar las que no correspondan.
 
 **c.1) Averias:**
@@ -1108,7 +1137,7 @@ Para ver y editar su perfil:
 2. Seleccione una imagen desde su computador (formatos: JPG, PNG).
 3. La imagen se subira automaticamente y se actualizara en todo el sistema.
 
-> **Nota:** Las fotos de perfil se almacenan directamente en el sistema. Se recomienda usar imagenes de tamaNo menor a 2 MB.
+> **Nota:** Las fotos de perfil se almacenan en la nube (Amazon S3). Se recomienda usar imagenes de tamano menor a 2 MB.
 
 ### 13.2 Cambiar Contrasena
 
@@ -1233,16 +1262,16 @@ El sistema genera notificaciones automaticas en los siguientes eventos:
 
 ---
 
-## 15. Almacenamiento de Archivos (Cloudinary)
+## 15. Almacenamiento de Archivos (Amazon S3)
 
-El sistema CRM CenthriX utiliza **Cloudinary** como servicio de almacenamiento en la nube para todos los archivos subidos por los usuarios.
+El sistema CRM CenthriX utiliza **Amazon S3** como servicio de almacenamiento en la nube para todos los archivos subidos por los usuarios.
 
 **Caracteristicas principales:**
 
-- **Almacenamiento en la nube:** Todos los archivos (fotos, PDFs, documentos, evidencias) se almacenan en Cloudinary, no en el servidor local.
-- **Compresion automatica de imagenes:** Las imagenes se optimizan automaticamente al momento de subirlas, reduciendo el tamano sin perder calidad visual significativa.
-- **Persistencia entre redesploys:** Los archivos **no se pierden** cuando el servidor se reinicia o se realiza un nuevo despliegue (deploy). A diferencia del almacenamiento local, los archivos en Cloudinary son permanentes.
-- **Disponibilidad continua:** No se pierden archivos al reiniciar el sistema. Los enlaces a los archivos siguen funcionando en todo momento.
+- **Almacenamiento en la nube:** Todos los archivos (fotos, PDFs, documentos, evidencias, avatares) se almacenan en Amazon S3, no en el servidor local.
+- **Acceso seguro:** Los archivos son privados. El sistema genera enlaces temporales de acceso (validos por 15 minutos) cada vez que necesita mostrar un archivo. Esto garantiza que solo usuarios autorizados puedan verlos.
+- **Persistencia entre redesploys:** Los archivos **no se pierden** cuando el servidor se reinicia o se realiza un nuevo despliegue (deploy). Los archivos en S3 son permanentes.
+- **Disponibilidad continua:** No se pierden archivos al reiniciar el sistema.
 
 **Tipos de archivos soportados:**
 
@@ -1327,5 +1356,5 @@ Si tiene preguntas o inconvenientes con el sistema, puede contactar al equipo de
 ---
 
 *ISTHO S.A.S. - ISO 9001:2015*
-*Documento generado: Marzo 2026*
-*CRM CenthriX v1.0.0*
+*Documento actualizado: Abril 2026*
+*CRM CenthriX v1.1.0*

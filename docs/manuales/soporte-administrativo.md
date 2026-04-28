@@ -1,8 +1,8 @@
 ﻿# Documento de Soporte Administrativo
 ## CRM CenthriX — ISTHO S.A.S.
 
-**Versión:** 1.0.0
-**Fecha:** Marzo 2026
+**Versión:** 1.1.0
+**Fecha:** Abril 2026
 **Elaborado por:** Coordinación TI — ISTHO S.A.S.
 **Clasificación:** Uso interno
 
@@ -12,7 +12,7 @@
 
 El presente documento describe el soporte administrativo del sistema **CRM CenthriX**, una plataforma integral de gestión logística, transporte y almacenamiento desarrollada para **ISTHO S.A.S.** (Centro Logístico Industrial del Norte), ubicada en Girardota, Antioquia, Colombia.
 
-CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración bidireccional con el sistema WMS Centhrix. El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.
+CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración con el sistema WMS Centhrix (el WMS empuja datos al CRM via API REST). El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.
 
 El CRM reemplaza procesos manuales y hojas de cálculo, proporcionando trazabilidad completa, auditoría en tiempo real y reportes automatizados para la toma de decisiones.
 
@@ -61,7 +61,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 - Registrar todas las acciones del sistema en log de auditoría.
 
 ### 3.8 Integración WMS
-- Mantener sincronización bidireccional con WMS Centhrix via API REST.
+- Recibir sincronización desde WMS Centhrix via API REST (el WMS empuja al CRM — el CRM no inicia pulls).
 - Validar dinámicamente estados, tipos de orden y motivos de kardex.
 - Proporcionar panel de configuración para gestionar reglas de integración.
 
@@ -95,18 +95,21 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 
 | Sistema | Tipo | Protocolo | Descripción |
 |---------|------|-----------|-------------|
-| WMS Centhrix | Bidireccional | API REST + API Key | Sincronización de productos, entradas, salidas y kardex |
-| Resend | Saliente | API HTTP | Envío de emails transaccionales y reportes |
-| Socket.io | Interno | WebSocket | Notificaciones en tiempo real |
+| WMS Centhrix | Entrante | API REST + API Key | WMS empuja productos, entradas, salidas y kardex al CRM |
+| Gmail SMTP | Saliente | SMTP 587 (TLS) | Envío de emails transaccionales, recuperación de contraseña y reportes |
+| Socket.IO | Interno | HTTP Long-polling | Notificaciones en tiempo real (conexión persistente sin WebSocket) |
 
 ### 4.3 Infraestructura
 
-| Componente | Plataforma | Tecnología |
-|-----------|-----------|-----------|
-| Backend | Railway | Node.js 20, Express, Sequelize |
-| Frontend | Vercel | React 19, Vite, Tailwind CSS 4 |
-| Base de datos | Railway | MySQL 9.6 |
-| Email | Resend | API HTTP |
+| Componente | Plataforma | Tecnología | Costo/mes |
+|-----------|-----------|-----------|-----------|
+| Backend | AWS App Runner (us-west-2) | Node.js 22, Express, Sequelize | ~$14-15 |
+| Frontend | Vercel (Hobby) | React 19, Vite, Tailwind CSS 4 | $0 |
+| Base de datos | AWS RDS MySQL 8.0 (us-west-2) | db.t3.micro, 20 GB gp2 | ~$14.54 |
+| Almacenamiento | AWS S3 (us-west-2) | Bucket `istho-crm-files` | ~$0.10 |
+| Email | Gmail SMTP | Puerto 587, TLS | $0 |
+| Cache/Socket | Upstash Redis (opcional) | Socket.IO multi-instancia | $0 |
+| **Total** | | | **~$30/mes** |
 
 ---
 
@@ -133,7 +136,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
   - Gestión de vehículos y viajes
 
 ### 5.3 Financiera
-- **Nivel jerárquico:** 70
+- **Nivel jerárquico:** 60
 - **Responsabilidades:**
   - Gestión de cajas menores (crear, editar, cerrar)
   - Aprobación y rechazo de gastos
@@ -178,10 +181,11 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 - Resolución mínima: 360px (móvil) / 1024px (escritorio)
 
 ### 6.2 Para el Administrador del Sistema
-- Acceso al dashboard de Railway (backend y base de datos)
+- Acceso a la consola AWS (App Runner, RDS, S3) — región us-west-2
 - Acceso al dashboard de Vercel (frontend)
-- Acceso a Resend (configuración de email y dominio)
+- Acceso a la cuenta de Gmail corporativa (gestión del App Password para SMTP)
 - Conocimiento básico de variables de entorno
+- Repositorio GitHub `istho-crm-p` (los pushes a `main` activan el redespliegue automático)
 
 ---
 
@@ -197,4 +201,4 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 
 ---
 
-*Documento generado para CRM CenthriX v1.0.0 — ISTHO S.A.S. © 2026*
+*Documento actualizado para CRM CenthriX v1.1.0 — ISTHO S.A.S. © 2026*
