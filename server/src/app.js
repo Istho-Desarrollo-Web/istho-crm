@@ -86,6 +86,8 @@ app.use(
 if (process.env.NODE_ENV === 'production') {
   app.use((req, res, next) => {
     if (req.path === '/health') return next();
+    // Socket.IO polling maneja su propio flujo — excluir de rate limit general
+    if (req.path.startsWith('/socket.io')) return next();
     return limiterGeneral(req, res, next);
   });
 }

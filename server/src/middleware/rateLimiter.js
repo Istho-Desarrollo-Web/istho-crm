@@ -1,7 +1,7 @@
 const rateLimit = require('express-rate-limit');
 
 const ventana = parseInt(process.env.RATE_LIMIT_WINDOW || '15', 10);
-const maxGeneral = parseInt(process.env.RATE_LIMIT_MAX || '100', 10);
+const maxGeneral = parseInt(process.env.RATE_LIMIT_MAX || '500', 10);
 
 const mensajeError = (limite) => ({
   success: false,
