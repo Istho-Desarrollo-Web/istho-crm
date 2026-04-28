@@ -47,8 +47,9 @@ export const SocketProvider = ({ children }) => {
       auth: { token },
       transports: ['polling'],
       reconnection: true,
-      reconnectionAttempts: 10,
+      reconnectionAttempts: Infinity,
       reconnectionDelay: 3000,
+      reconnectionDelayMax: 15000,
     });
 
     socket.on('connect', () => {
@@ -86,7 +87,16 @@ export const SocketProvider = ({ children }) => {
     socketRef.current = socket;
     setSocketInstance(socket);
 
+    // Reconectar cuando el móvil vuelve al primer plano
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && socketRef.current && !socketRef.current.connected) {
+        socketRef.current.connect();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
       socket.disconnect();
       socketRef.current = null;
       setSocketInstance(null);
