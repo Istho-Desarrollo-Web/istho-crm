@@ -2,10 +2,10 @@
  * ISTHO CRM - Servicio de WebSocket (Socket.IO)
  *
  * Gestiona conexiones WebSocket para notificaciones en tiempo real.
- * Autenticación via JWT en el handshake.
+ * Soporta Redis adapter para despliegues multi-instancia (App Runner).
  *
  * @author Coordinación TI - ISTHO S.A.S.
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 const { Server } = require('socket.io');
@@ -15,12 +15,44 @@ const logger = require('../utils/logger');
 
 let io = null;
 
-// Map: userId → Set<socketId>
+// Map local: userId → Set<socketId> (usado solo en modo single-instance como fallback)
 const userSockets = new Map();
 
-/**
- * Inicializar Socket.IO en el servidor HTTP
- */
+// ─────────────────────────────────────────────────────────────────────────────
+// REDIS ADAPTER (opcional, para multi-instancia)
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function _setupRedis() {
+  const { createAdapter } = require('@socket.io/redis-adapter');
+  const { Redis } = require('ioredis');
+
+  const pubClient = new Redis(process.env.REDIS_URL, {
+    lazyConnect: false,
+    maxRetriesPerRequest: 3,
+    connectTimeout: 5000,
+    enableOfflineQueue: false,
+  });
+  const subClient = pubClient.duplicate();
+
+  await Promise.all([
+    new Promise((resolve, reject) => {
+      pubClient.once('ready', resolve);
+      pubClient.once('error', reject);
+    }),
+    new Promise((resolve, reject) => {
+      subClient.once('ready', resolve);
+      subClient.once('error', reject);
+    }),
+  ]);
+
+  io.adapter(createAdapter(pubClient, subClient));
+  logger.info('[WS] Redis adapter configurado — modo multi-instancia activo');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INICIALIZAR
+// ─────────────────────────────────────────────────────────────────────────────
+
 const inicializar = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
@@ -34,12 +66,17 @@ const inicializar = (httpServer) => {
     pingInterval: 25000,
   });
 
+  // Conectar Redis adapter de forma no bloqueante
+  if (process.env.REDIS_URL) {
+    _setupRedis().catch((err) => {
+      logger.warn('[WS] Redis no disponible, modo single-instance:', err.message);
+    });
+  }
+
   // Middleware de autenticación
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token || socket.handshake.query?.token;
-    if (!token) {
-      return next(new Error('Token requerido'));
-    }
+    if (!token) return next(new Error('Token requerido'));
 
     try {
       const decoded = jwt.verify(token, jwtConfig.secret, {
@@ -48,6 +85,8 @@ const inicializar = (httpServer) => {
       });
       socket.userId = decoded.id;
       socket.userRol = decoded.rol;
+      // Guardar en socket.data para que fetchSockets() lo exponga entre instancias
+      socket.data.userId = decoded.id;
       next();
     } catch {
       next(new Error('Token inválido'));
@@ -58,24 +97,24 @@ const inicializar = (httpServer) => {
   io.on('connection', (socket) => {
     const userId = socket.userId;
 
-    // Registrar socket del usuario
+    // Unirse a sala personal — permite emitir al usuario desde cualquier instancia
+    socket.join(`user:${userId}`);
+
+    // Mapa local (fallback sin Redis)
     if (!userSockets.has(userId)) {
       userSockets.set(userId, new Set());
     }
     userSockets.get(userId).add(socket.id);
 
     logger.info(
-      `[WS] Usuario ${userId} conectado (socket: ${socket.id}, total: ${userSockets.get(userId).size})`
+      `[WS] Usuario ${userId} conectado (socket: ${socket.id}, total local: ${userSockets.get(userId).size})`
     );
 
-    // Desconexión
     socket.on('disconnect', () => {
       const sockets = userSockets.get(userId);
       if (sockets) {
         sockets.delete(socket.id);
-        if (sockets.size === 0) {
-          userSockets.delete(userId);
-        }
+        if (sockets.size === 0) userSockets.delete(userId);
       }
       logger.debug(`[WS] Usuario ${userId} desconectado (socket: ${socket.id})`);
     });
@@ -85,17 +124,16 @@ const inicializar = (httpServer) => {
   return io;
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// EMISIÓN DE EVENTOS
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
- * Emitir evento a un usuario específico
+ * Emitir evento a un usuario específico (funciona en multi-instancia con Redis)
  */
 const emitToUser = (userId, event, data) => {
   if (!io) return;
-  const sockets = userSockets.get(userId);
-  if (sockets && sockets.size > 0) {
-    sockets.forEach((socketId) => {
-      io.to(socketId).emit(event, data);
-    });
-  }
+  io.to(`user:${userId}`).emit(event, data);
 };
 
 /**
@@ -103,7 +141,7 @@ const emitToUser = (userId, event, data) => {
  */
 const emitToUsers = (userIds, event, data) => {
   if (!io) return;
-  userIds.forEach((userId) => emitToUser(userId, event, data));
+  userIds.forEach((userId) => io.to(`user:${userId}`).emit(event, data));
 };
 
 /**
@@ -114,39 +152,64 @@ const emitToAll = (event, data) => {
   io.emit(event, data);
 };
 
-/**
- * Obtener cantidad de usuarios conectados
- */
-const getConnectedCount = () => userSockets.size;
+// ─────────────────────────────────────────────────────────────────────────────
+// CONSULTAS DE ESTADO (async para soporte multi-instancia)
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Obtener IDs de usuarios conectados
+ * Obtener IDs de todos los usuarios conectados (incluye otras instancias si hay Redis)
+ * @returns {Promise<number[]>}
  */
-const getConnectedUserIds = () => Array.from(userSockets.keys()).map(Number);
+const getConnectedUserIds = async () => {
+  if (!io) return [];
+  try {
+    const sockets = await io.fetchSockets();
+    const ids = new Set(sockets.map((s) => s.data?.userId).filter(Boolean));
+    return Array.from(ids).map(Number);
+  } catch {
+    // Fallback al mapa local si fetchSockets falla
+    return Array.from(userSockets.keys()).map(Number);
+  }
+};
 
 /**
- * Forzar desconexión de un usuario (cierra todos sus sockets)
+ * Obtener cantidad de usuarios conectados (incluye otras instancias si hay Redis)
+ * @returns {Promise<number>}
+ */
+const getConnectedCount = async () => {
+  const ids = await getConnectedUserIds();
+  return ids.length;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DESCONEXIÓN FORZADA
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Forzar desconexión de un usuario en cualquier instancia
  * @param {number|string} userId
- * @param {object} options - { mensaje, tipo } para el evento session:cerrada
+ * @param {object} options - { mensaje, tipo }
+ * @returns {Promise<boolean>}
  */
-const disconnectUser = (userId, options = {}) => {
+const disconnectUser = async (userId, options = {}) => {
   if (!io) return false;
-  const sockets = userSockets.get(userId) || userSockets.get(String(userId));
-  if (!sockets || sockets.size === 0) return false;
 
   const payload = {
     mensaje: options.mensaje || 'Tu sesión fue cerrada por un administrador',
     tipo: options.tipo || 'admin_logout',
   };
 
-  sockets.forEach((socketId) => {
-    const socket = io.sockets.sockets.get(socketId);
-    if (socket) {
-      socket.emit('session:cerrada', payload);
-      setTimeout(() => socket.disconnect(true), 500);
-    }
-  });
+  // Notificar al usuario (funciona cross-instance con Redis)
+  io.to(`user:${userId}`).emit('session:cerrada', payload);
 
+  // Desconectar todos los sockets del usuario después de que reciban el evento
+  setTimeout(async () => {
+    try {
+      await io.in(`user:${userId}`).disconnectSockets(true);
+    } catch (_) {}
+  }, 500);
+
+  // Limpiar mapa local
   userSockets.delete(userId);
   userSockets.delete(String(userId));
   return true;
@@ -154,31 +217,61 @@ const disconnectUser = (userId, options = {}) => {
 
 /**
  * Forzar desconexión de todos los usuarios conectados (excepto uno)
- * @param {number} exceptUserId - ID del usuario a excluir (el admin que ejecuta)
- * @returns {number} cantidad de usuarios desconectados
+ * @param {number} exceptUserId
+ * @returns {Promise<number>} cantidad de usuarios desconectados
  */
-const disconnectAllUsers = (exceptUserId) => {
+const disconnectAllUsers = async (exceptUserId) => {
   if (!io) return 0;
-  let count = 0;
+
   const payload = {
     mensaje: 'Tu sesión fue cerrada por un administrador',
     tipo: 'admin_logout',
   };
 
-  const toDelete = [];
-  userSockets.forEach((sockets, userId) => {
-    if (Number(userId) === Number(exceptUserId)) return;
-    sockets.forEach((socketId) => {
-      const socket = io.sockets.sockets.get(socketId);
-      if (socket) {
-        socket.emit('session:cerrada', payload);
-        setTimeout(() => socket.disconnect(true), 500);
+  let count = 0;
+  try {
+    const sockets = await io.fetchSockets();
+    const usersToDisconnect = new Set();
+
+    sockets.forEach((socket) => {
+      const uid = socket.data?.userId;
+      if (uid && Number(uid) !== Number(exceptUserId)) {
+        usersToDisconnect.add(uid);
       }
     });
-    toDelete.push(userId);
-    count++;
-  });
-  toDelete.forEach((uid) => userSockets.delete(uid));
+
+    for (const uid of usersToDisconnect) {
+      io.to(`user:${uid}`).emit('session:cerrada', payload);
+      count++;
+    }
+
+    // Desconectar después de que los clientes reciban el evento
+    setTimeout(async () => {
+      try {
+        for (const uid of usersToDisconnect) {
+          await io.in(`user:${uid}`).disconnectSockets(true);
+          userSockets.delete(uid);
+          userSockets.delete(String(uid));
+        }
+      } catch (_) {}
+    }, 500);
+  } catch {
+    // Fallback al mapa local si fetchSockets falla
+    const toDelete = [];
+    userSockets.forEach((_, userId) => {
+      if (Number(userId) === Number(exceptUserId)) return;
+      io.to(`user:${userId}`).emit('session:cerrada', payload);
+      toDelete.push(userId);
+      count++;
+    });
+    setTimeout(() => {
+      toDelete.forEach((uid) => {
+        try { io.in(`user:${uid}`).disconnectSockets(true); } catch (_) {}
+        userSockets.delete(uid);
+      });
+    }, 500);
+  }
+
   return count;
 };
 

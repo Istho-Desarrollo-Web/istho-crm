@@ -475,11 +475,11 @@ const desactivarUsuario = async (req, res) => {
 
     await usuario.update({ activo: false });
 
-    // Forzar cierre de sesión si el usuario está conectado
+    // Forzar cierre de sesión si el usuario está conectado (fire-and-forget)
     socketService.disconnectUser(usuario.id, {
       tipo: 'desactivado',
       mensaje: 'Tu cuenta ha sido desactivada. Contacta al administrador para más información.',
-    });
+    }).catch(() => {});
 
     logger.info('Usuario desactivado:', { id: usuario.id, por: req.user.id });
     Auditoria.registrar({
@@ -1092,7 +1092,7 @@ const dashboardSeguridad = async (req, res) => {
       }),
     ]);
 
-    const sesionesActivas = socketService.getConnectedCount();
+    const sesionesActivas = await socketService.getConnectedCount();
 
     return success(res, {
       kpis: {
@@ -1205,7 +1205,7 @@ module.exports = {
  */
 async function listarSesionesActivas(req, res) {
   try {
-    const connectedIds = socketService.getConnectedUserIds();
+    const connectedIds = await socketService.getConnectedUserIds();
 
     if (connectedIds.length === 0) {
       return success(res, []);
@@ -1266,7 +1266,7 @@ async function cerrarSesion(req, res) {
       return notFound(res, 'Usuario no encontrado');
     }
 
-    const disconnected = socketService.disconnectUser(Number(id));
+    const disconnected = await socketService.disconnectUser(Number(id));
 
     await Auditoria.registrar({
       tabla: 'usuarios',
@@ -1298,7 +1298,7 @@ async function cerrarSesion(req, res) {
  */
 async function cerrarTodasSesiones(req, res) {
   try {
-    const count = socketService.disconnectAllUsers(req.user.id);
+    const count = await socketService.disconnectAllUsers(req.user.id);
 
     await Auditoria.registrar({
       tabla: 'usuarios',
