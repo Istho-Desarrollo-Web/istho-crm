@@ -980,7 +980,7 @@ const KardexAuditoria = () => {
   const lineasProgress =
     lineasActivas.length > 0
       ? Math.round((lineasVerificadas.length / lineasActivas.length) * 100)
-      : 0;
+      : 100;
   const totalPaginasLineas = Math.ceil(lineas.length / LINEAS_POR_PAGINA);
   const lineasPaginadas = lineas.slice(
     (lineaPage - 1) * LINEAS_POR_PAGINA,

@@ -822,8 +822,27 @@ const syncKardex = async (data) => {
 
       if (!inventario) {
         logger.warn(
-          `[WMS Sync] Kardex: SKU ${sku} no encontrado en inventario para ${cliente.razon_social}. Omitiendo.`
+          `[WMS Sync] Kardex: SKU ${sku} no encontrado en inventario para ${cliente.razon_social}. Línea registrada sin ajuste de stock.`
         );
+        await OperacionDetalle.create(
+          {
+            operacion_id: operacion.id,
+            sku,
+            producto: (linea.descripcion || linea.producto || 'Producto S/D').toString().trim(),
+            cantidad: Math.abs(cantidad),
+            unidad_medida: linea.unidad_medida || 'UND',
+            lote: linea.lote || null,
+            lote_externo: linea.lote_externo || null,
+            fecha_vencimiento: linea.fecha_vencimiento || null,
+            documento_asociado: motivo,
+            numero_caja: numeroCaja,
+            peso: linea.peso || null,
+            inventario_id: null,
+          },
+          { transaction }
+        );
+        lineasProcesadas++;
+        unidadesProcesadas += Math.abs(cantidad);
         continue;
       }
 
