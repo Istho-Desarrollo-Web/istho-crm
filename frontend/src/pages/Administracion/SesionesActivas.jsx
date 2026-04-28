@@ -21,6 +21,7 @@ import {
 
 import { ConfirmDialog, S3Image } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
 import { ADMIN_ENDPOINTS } from '../../api/endpoints';
 import apiClient from '../../api/client';
 import useNotification from '../../hooks/useNotification';
@@ -45,6 +46,7 @@ const ROL_COLORS = {
 
 const SesionesActivas = () => {
   const { user } = useAuth();
+  const { connected } = useSocket();
   const { success, apiError } = useNotification();
 
   const [sesiones, setSesiones] = useState([]);
@@ -76,6 +78,11 @@ const SesionesActivas = () => {
     const interval = setInterval(() => fetchSesiones(true), 15000);
     return () => clearInterval(interval);
   }, [fetchSesiones]);
+
+  // Refrescar cuando el socket se conecta (evita el delay inicial de polling)
+  useEffect(() => {
+    if (connected) fetchSesiones(true);
+  }, [connected, fetchSesiones]);
 
   const handleCerrarSesion = async () => {
     if (!cerrarModal.usuario) return;

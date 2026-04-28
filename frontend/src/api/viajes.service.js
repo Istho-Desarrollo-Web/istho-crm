@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-import apiClient from './client';
+import apiClient, { createUploadClient } from './client';
 import {
   VEHICULOS_ENDPOINTS,
   CAJAS_MENORES_ENDPOINTS,
@@ -135,11 +135,13 @@ export const movimientosService = {
     return response;
   },
   create: async (data) => {
-    const response = await apiClient.post(MOVIMIENTOS_ENDPOINTS.BASE, data);
+    const uploadClient = createUploadClient();
+    const response = await uploadClient.post(MOVIMIENTOS_ENDPOINTS.BASE, data);
     return response;
   },
   update: async (id, data) => {
-    const response = await apiClient.put(MOVIMIENTOS_ENDPOINTS.BY_ID(id), data);
+    const uploadClient = createUploadClient();
+    const response = await uploadClient.put(MOVIMIENTOS_ENDPOINTS.BY_ID(id), data);
     return response;
   },
   aprobar: async (id, data) => {

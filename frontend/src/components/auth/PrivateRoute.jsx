@@ -43,7 +43,7 @@ export function PrivateRoute(props) {
   var auth = useAuth();
   var isAuthenticated = auth.isAuthenticated;
   var user = auth.user;
-  var loading = auth.loading;
+  var loading = auth.isLoading;
   var location = useLocation();
 
   // Mostrar loading mientras se verifica autenticación

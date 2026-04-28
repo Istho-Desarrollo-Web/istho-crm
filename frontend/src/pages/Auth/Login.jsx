@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -87,8 +87,8 @@ const features = [
   { icon: Shield, text: 'Seguridad Avanzada', color: '#E74C3C', bgColor: 'rgba(231, 76, 60, 0.2)' },
 ];
 
-// Ruta destino por rol — fuera del componente para estabilidad de referencia en useEffect
-const getDestino = () => '/dashboard';
+// Ruta destino: usa state.from si viene de un redirect de PrivateRoute, si no va al dashboard
+const getDestino = (from) => (from && from !== '/login' ? from : '/dashboard');
 
 // ============================================================================
 // COMPONENTE
@@ -96,6 +96,7 @@ const getDestino = () => '/dashboard';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     login,
     validarTotp,
@@ -152,10 +153,10 @@ const LoginPage = () => {
   // Redirigir si ya está autenticado
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      const destino = getDestino(user?.rol);
+      const destino = getDestino(location.state?.from?.pathname);
       navigate(destino, { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate, user]);
+  }, [isAuthenticated, authLoading, navigate, user, location.state]);
 
   // Focus en email al montar
   useEffect(() => {
@@ -201,7 +202,7 @@ const LoginPage = () => {
 
       if (result.success) {
         localStorage.setItem('politica_aceptada', POLITICA_VERSION);
-        const destino = getDestino(result.data?.user?.rol);
+        const destino = getDestino(location.state?.from?.pathname);
         navigate(destino, { replace: true });
       } else if (result.code === 'TEMP_TOKEN_EXPIRED') {
         setPaso2FA(null);
@@ -272,7 +273,7 @@ const LoginPage = () => {
 
       if (result.success) {
         localStorage.setItem('politica_aceptada', POLITICA_VERSION);
-        const destino = getDestino(result.data?.user?.rol);
+        const destino = getDestino(location.state?.from?.pathname);
         navigate(destino, { replace: true });
       } else if (result.code === 'NETWORK_ERROR' || result.code === 'TIMEOUT') {
         // Servidor dormido — intentar despertar
@@ -286,7 +287,7 @@ const LoginPage = () => {
             const retry = await login(data.email, data.password);
             if (retry.success) {
               setServerWaking(false);
-              const destino = getDestino(retry.data?.user?.rol);
+              const destino = getDestino(location.state?.from?.pathname);
               navigate(destino, { replace: true });
               return;
             }

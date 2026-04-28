@@ -353,6 +353,7 @@ const auditoriasService = {
       formData.append('sku', data.sku);
       formData.append('cantidad', data.cantidad);
       formData.append('tipo_averia', data.tipo_averia);
+      if (data.cantidad_afectada != null) formData.append('cantidad_afectada', data.cantidad_afectada);
       if (data.descripcion) formData.append('descripcion', data.descripcion);
       if (data.foto) formData.append('foto', data.foto);
 

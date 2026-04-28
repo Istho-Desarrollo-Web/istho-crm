@@ -1008,6 +1008,18 @@ const KardexAuditoria = () => {
 
   const handleCerrarAuditoria = () => {
     if (!canClose || closing) return;
+
+    const { detalle_id, tipo_averia, cantidad_afectada } = averiaForm;
+    if (detalle_id || tipo_averia || cantidad_afectada) {
+      showAlert({
+        type: 'warning',
+        title: 'Avería sin registrar',
+        message:
+          'Tienes datos de avería pendientes. Haz clic en "Registrar Avería" para guardarla antes de completar la operación.',
+      });
+      return;
+    }
+
     setShowCierreModal(true);
   };
 

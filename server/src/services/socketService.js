@@ -28,22 +28,34 @@ async function _setupRedis() {
 
   const pubClient = new Redis(process.env.REDIS_URL, {
     lazyConnect: false,
-    maxRetriesPerRequest: 3,
+    maxRetriesPerRequest: 1,
     connectTimeout: 5000,
     enableOfflineQueue: false,
+    retryStrategy: () => null, // sin reintentos automáticos — evita flood de errores
   });
   const subClient = pubClient.duplicate();
 
-  await Promise.all([
-    new Promise((resolve, reject) => {
-      pubClient.once('ready', resolve);
-      pubClient.once('error', reject);
-    }),
-    new Promise((resolve, reject) => {
-      subClient.once('ready', resolve);
-      subClient.once('error', reject);
-    }),
-  ]);
+  // Handlers persistentes para silenciar errores post-fallo (sin estos, ioredis lanza "Unhandled error event")
+  pubClient.on('error', (err) => logger.warn('[WS] Redis pub error:', err.message));
+  subClient.on('error', (err) => logger.warn('[WS] Redis sub error:', err.message));
+
+  try {
+    await Promise.all([
+      new Promise((resolve, reject) => {
+        pubClient.once('ready', resolve);
+        pubClient.once('error', reject);
+      }),
+      new Promise((resolve, reject) => {
+        subClient.once('ready', resolve);
+        subClient.once('error', reject);
+      }),
+    ]);
+  } catch (err) {
+    // Cerrar clientes para detener reintentos
+    pubClient.disconnect();
+    subClient.disconnect();
+    throw err;
+  }
 
   io.adapter(createAdapter(pubClient, subClient));
   logger.info('[WS] Redis adapter configurado — modo multi-instancia activo');
