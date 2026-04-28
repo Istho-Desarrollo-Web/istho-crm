@@ -17,6 +17,9 @@ export { default as DataTable } from './Table/DataTable';
 export { default as AlertWidget } from './Widget/AlertWidget';
 export { default as EmptyState } from './EmptyState/EmptyState';
 
+// Media
+export { default as S3Image } from './S3Image';
+
 // Form Components
 export { default as SearchBar } from './SearchBar';
 export { default as FilterDropdown } from './FilterDropdown';

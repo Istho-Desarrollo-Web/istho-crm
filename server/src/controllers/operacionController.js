@@ -1398,7 +1398,16 @@ const listarAverias = async (req, res) => {
       order: [['created_at', 'DESC']],
     });
 
-    return success(res, averias);
+    const s3Service = require('../services/s3Service');
+    const data = await Promise.all(
+      averias.map(async (av) => {
+        const plain = av.toJSON();
+        plain.foto_url = await s3Service.resolveUrl(plain.foto_url);
+        return plain;
+      })
+    );
+
+    return success(res, data);
   } catch (error) {
     logger.error('Error al listar averías:', { message: error.message });
     return serverError(res, 'Error al obtener las averías', error);

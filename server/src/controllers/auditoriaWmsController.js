@@ -9,6 +9,7 @@
  */
 
 const { Op } = require('sequelize');
+const s3Service = require('../services/s3Service');
 const notificacionService = require('../services/notificacionService');
 const emailService = require('../services/emailService');
 const {
@@ -210,14 +211,16 @@ const obtenerEntradaPorId = async (req, res) => {
         destino: operacion.destino || '',
         observaciones: operacion.observaciones || '',
       },
-      evidencias: (operacion.documentos || []).map((doc) => ({
-        id: doc.id,
-        nombre: doc.archivo_nombre,
-        url: doc.archivo_url,
-        tipo: doc.archivo_tipo,
-        tamanio: doc.archivo_tamanio,
-        fecha: doc.created_at,
-      })),
+      evidencias: await Promise.all(
+        (operacion.documentos || []).map(async (doc) => ({
+          id: doc.id,
+          nombre: doc.archivo_nombre,
+          url: await s3Service.resolveUrl(doc.archivo_url),
+          tipo: doc.archivo_tipo,
+          tamanio: doc.archivo_tamanio,
+          fecha: doc.created_at,
+        }))
+      ),
     };
 
     return success(res, data);
@@ -403,14 +406,16 @@ const obtenerSalidaPorId = async (req, res) => {
         destino: operacion.destino || '',
         observaciones: operacion.observaciones || '',
       },
-      evidencias: (operacion.documentos || []).map((doc) => ({
-        id: doc.id,
-        nombre: doc.archivo_nombre,
-        url: doc.archivo_url,
-        tipo: doc.archivo_tipo,
-        tamanio: doc.archivo_tamanio,
-        fecha: doc.created_at,
-      })),
+      evidencias: await Promise.all(
+        (operacion.documentos || []).map(async (doc) => ({
+          id: doc.id,
+          nombre: doc.archivo_nombre,
+          url: await s3Service.resolveUrl(doc.archivo_url),
+          tipo: doc.archivo_tipo,
+          tamanio: doc.archivo_tamanio,
+          fecha: doc.created_at,
+        }))
+      ),
     };
 
     return success(res, data);
@@ -599,14 +604,16 @@ const obtenerKardexPorId = async (req, res) => {
         destino: operacion.destino || '',
         observaciones: operacion.observaciones || '',
       },
-      evidencias: (operacion.documentos || []).map((doc) => ({
-        id: doc.id,
-        nombre: doc.archivo_nombre,
-        url: doc.archivo_url,
-        tipo: doc.archivo_tipo,
-        tamanio: doc.archivo_tamanio,
-        fecha: doc.created_at,
-      })),
+      evidencias: await Promise.all(
+        (operacion.documentos || []).map(async (doc) => ({
+          id: doc.id,
+          nombre: doc.archivo_nombre,
+          url: await s3Service.resolveUrl(doc.archivo_url),
+          tipo: doc.archivo_tipo,
+          tamanio: doc.archivo_tamanio,
+          fecha: doc.created_at,
+        }))
+      ),
     };
 
     return success(res, data);
@@ -826,7 +833,6 @@ const subirEvidencias = async (req, res) => {
     }
 
     // Subir a S3
-    const s3Service = require('../services/s3Service');
     const carpeta = `evidencias/${id}`;
     const resultados = await s3Service.subirMultiples(archivos, carpeta);
 
@@ -862,13 +868,16 @@ const subirEvidencias = async (req, res) => {
       ip_address: getClientIP(req),
     });
 
-    return successMessage(res, `${documentos.length} evidencia(s) subida(s) correctamente`, {
-      archivos: documentos.map((d) => ({
+    const archivosSubidos = await Promise.all(
+      documentos.map(async (d) => ({
         id: d.id,
         nombre: d.archivo_nombre,
-        url: d.archivo_url,
+        url: await s3Service.resolveUrl(d.archivo_url),
         tipo: d.archivo_tipo,
-      })),
+      }))
+    );
+    return successMessage(res, `${documentos.length} evidencia(s) subida(s) correctamente`, {
+      archivos: archivosSubidos,
     });
   } catch (err) {
     logger.error('[AUDITORIAS] Error al subir evidencias:', err);
@@ -894,7 +903,6 @@ const eliminarEvidencia = async (req, res) => {
 
     // Eliminar de S3 si tiene key almacenada
     if (documento.cloudinary_public_id) {
-      const s3Service = require('../services/s3Service');
       await s3Service.eliminar(documento.cloudinary_public_id);
     }
 

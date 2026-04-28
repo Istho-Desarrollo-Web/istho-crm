@@ -1226,16 +1226,19 @@ async function listarSesionesActivas(req, res) {
       ],
     });
 
-    const data = usuarios.map((u) => ({
-      id: u.id,
-      username: u.username,
-      nombre_completo:
-        u.nombre_completo || `${u.nombre || ''} ${u.apellido || ''}`.trim() || u.username,
-      email: u.email,
-      rol: u.rol,
-      avatar_url: u.avatar_url,
-      ultimo_acceso: u.ultimo_acceso,
-    }));
+    const s3Service = require('../services/s3Service');
+    const data = await Promise.all(
+      usuarios.map(async (u) => ({
+        id: u.id,
+        username: u.username,
+        nombre_completo:
+          u.nombre_completo || `${u.nombre || ''} ${u.apellido || ''}`.trim() || u.username,
+        email: u.email,
+        rol: u.rol,
+        avatar_url: await s3Service.resolveUrl(u.avatar_url),
+        ultimo_acceso: u.ultimo_acceso,
+      }))
+    );
 
     return success(res, data);
   } catch (error) {

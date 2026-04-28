@@ -19,9 +19,8 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
-import { ConfirmDialog } from '../../components/common';
+import { ConfirmDialog, S3Image } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
-import { getServerFileUrl } from '../../api/client';
 import { ADMIN_ENDPOINTS } from '../../api/endpoints';
 import apiClient from '../../api/client';
 import useNotification from '../../hooks/useNotification';
@@ -187,17 +186,15 @@ const SesionesActivas = () => {
               >
                 {/* Header: avatar + nombre */}
                 <div className="flex items-center gap-3 mb-4">
-                  {s.avatar_url ? (
-                    <img
-                      src={getServerFileUrl(s.avatar_url)}
-                      alt=""
-                      className="w-12 h-12 rounded-full object-cover shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                      {(s.nombre_completo || s.username || '?')[0].toUpperCase()}
-                    </div>
-                  )}
+                  <S3Image
+                    src={s.avatar_url}
+                    className="w-12 h-12 rounded-full object-cover shadow-sm"
+                    fallback={
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                        {(s.nombre_completo || s.username || '?')[0].toUpperCase()}
+                      </div>
+                    }
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
                       {s.nombre_completo || s.username}
