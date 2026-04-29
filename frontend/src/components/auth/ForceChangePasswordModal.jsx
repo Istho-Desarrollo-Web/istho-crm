@@ -164,6 +164,7 @@ const ForceChangePasswordModal = () => {
             <div className="relative">
               <input
                 type={showPasswords.actual ? 'text' : 'password'}
+                aria-label="Contraseña temporal actual"
                 value={form.password_actual}
                 onChange={(e) => handleChange('password_actual', e.target.value)}
                 placeholder="Ingresa la contraseña que recibiste"
@@ -192,6 +193,7 @@ const ForceChangePasswordModal = () => {
             <div className="relative">
               <input
                 type={showPasswords.nuevo ? 'text' : 'password'}
+                aria-label="Nueva contraseña"
                 value={form.password_nuevo}
                 onChange={(e) => handleChange('password_nuevo', e.target.value)}
                 placeholder="Mínimo 8 caracteres"
@@ -243,6 +245,7 @@ const ForceChangePasswordModal = () => {
             <div className="relative">
               <input
                 type={showPasswords.confirmar ? 'text' : 'password'}
+                aria-label="Confirmar nueva contraseña"
                 value={form.password_confirmar}
                 onChange={(e) => handleChange('password_confirmar', e.target.value)}
                 placeholder="Repite la nueva contraseña"

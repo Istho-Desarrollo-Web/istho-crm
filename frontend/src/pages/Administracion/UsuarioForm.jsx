@@ -130,6 +130,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               </label>
               <input
                 name="username"
+                aria-label="Usuario"
                 value={form.username}
                 onChange={handleChange}
                 disabled={isEdit}
@@ -147,6 +148,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               <input
                 name="email"
                 type="email"
+                aria-label="Email"
                 value={form.email}
                 onChange={handleChange}
                 required
@@ -165,6 +167,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               <input
                 name="password"
                 type="text"
+                aria-label="Contraseña"
                 value={form.password}
                 onChange={handleChange}
                 required
@@ -181,6 +184,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               </label>
               <input
                 name="nombre"
+                aria-label="Nombre"
                 value={form.nombre}
                 onChange={handleChange}
                 className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
@@ -192,6 +196,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               </label>
               <input
                 name="apellido"
+                aria-label="Apellido"
                 value={form.apellido}
                 onChange={handleChange}
                 className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
@@ -206,6 +211,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               </label>
               <input
                 name="telefono"
+                aria-label="Teléfono"
                 value={form.telefono}
                 onChange={handleChange}
                 className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
@@ -217,6 +223,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               </label>
               <input
                 name="cargo"
+                aria-label="Cargo"
                 value={form.cargo}
                 onChange={handleChange}
                 className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"

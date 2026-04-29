@@ -370,6 +370,7 @@ const LoginPage = () => {
                 type="text"
                 inputMode="text"
                 autoComplete="one-time-code"
+                aria-label="Código de verificación"
                 placeholder="000000 o A1B2C3D4E5"
                 maxLength={10}
                 autoFocus

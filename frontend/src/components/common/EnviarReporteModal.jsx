@@ -91,6 +91,7 @@ const EnviarReporteModal = ({ isOpen, onClose, tipoReporte, onSend }) => {
             </label>
             <input
               type="text"
+              aria-label="Destinatarios"
               value={destinatarios}
               onChange={(e) => {
                 setDestinatarios(e.target.value);

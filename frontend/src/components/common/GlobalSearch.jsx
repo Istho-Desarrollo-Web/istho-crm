@@ -453,6 +453,7 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
           <input
             ref={inputRef}
             type="text"
+            aria-label="Búsqueda global"
             value={query}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}

@@ -46,6 +46,7 @@ const SearchBar = ({
 
       <input
         type="text"
+        aria-label="Buscar"
         value={localValue}
         onChange={handleChange}
         onKeyDown={handleKeyDown}

@@ -251,6 +251,7 @@ const Configuracion2FA = () => {
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
+            aria-label="Código de verificación"
             placeholder="000000"
             maxLength={6}
             autoFocus
@@ -348,6 +349,7 @@ const Configuracion2FA = () => {
               <input
                 type={showPwdDesactivar ? 'text' : 'password'}
                 autoFocus
+                aria-label="Contraseña actual"
                 placeholder="Contraseña actual"
                 value={passwordDesactivar}
                 onChange={(e) => {

@@ -93,6 +93,7 @@ const ReportFilters = ({
               </label>
               <input
                 type="date"
+                aria-label="Fecha desde"
                 value={localFilters.fecha_desde || ''}
                 onChange={(e) => handleLocalChange('fecha_desde', e.target.value)}
                 className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400"
@@ -109,6 +110,7 @@ const ReportFilters = ({
               </label>
               <input
                 type="date"
+                aria-label="Fecha hasta"
                 value={localFilters.fecha_hasta || ''}
                 onChange={(e) => handleLocalChange('fecha_hasta', e.target.value)}
                 className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400"
