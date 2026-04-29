@@ -2465,8 +2465,17 @@ const getReporteAverias = async (req, res) => {
       unidades: unidadesPorTipo[tipo] || 0,
     }));
 
+    const s3Service = require('../services/s3Service');
+    const averiasData = await Promise.all(
+      averias.map(async (a) => {
+        const plain = a.toJSON();
+        plain.foto_url = await s3Service.resolveUrl(plain.foto_url);
+        return plain;
+      })
+    );
+
     return success(res, {
-      averias,
+      averias: averiasData,
       kpis: {
         totalAverias: averias.length,
         totalUnidades,

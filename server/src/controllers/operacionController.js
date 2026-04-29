@@ -1039,7 +1039,11 @@ const registrarAveria = async (req, res) => {
 
     logger.info('Avería registrada:', { operacionId: id, averiaId: averia.id });
 
-    return created(res, 'Avería registrada exitosamente', averia);
+    const s3ServiceFinal = require('../services/s3Service');
+    const averiaData = averia.toJSON();
+    averiaData.foto_url = await s3ServiceFinal.resolveUrl(averiaData.foto_url);
+
+    return created(res, 'Avería registrada exitosamente', averiaData);
   } catch (error) {
     await transaction.rollback();
     logger.error('Error al registrar avería:', { message: error.message });
