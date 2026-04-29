@@ -119,6 +119,13 @@ const notFound = (res, message = 'Recurso no encontrado') => {
 };
 
 /**
+ * Error 400 - Solicitud inválida
+ */
+const badRequest = (res, message = 'Solicitud inválida') => {
+  return error(res, message, 400, null, 'BAD_REQUEST');
+};
+
+/**
  * Error 409 - Conflicto (duplicado)
  */
 const conflict = (res, message = 'El recurso ya existe') => {
@@ -149,6 +156,7 @@ module.exports = {
   unauthorized,
   forbidden,
   notFound,
+  badRequest,
   conflict,
   unprocessable,
   serverError,
