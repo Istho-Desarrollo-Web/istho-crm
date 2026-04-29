@@ -47,7 +47,7 @@ const PoliticaDatosModal = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" aria-hidden="true">
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div aria-hidden="true" className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
       <div

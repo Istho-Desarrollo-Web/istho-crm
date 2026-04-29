@@ -663,7 +663,7 @@ const UsuariosList = () => {
           if (!user) return null;
           return (
             <>
-              <div className="fixed inset-0 z-50" onClick={() => setMenuOpen(null)} />
+              <div aria-hidden="true" className="fixed inset-0 z-50" onClick={() => setMenuOpen(null)} />
               <div
                 className="fixed z-50 bg-white dark:bg-centhrix-card border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg py-1 min-w-[180px]"
                 style={{ top: menuPos.top, right: menuPos.right }}

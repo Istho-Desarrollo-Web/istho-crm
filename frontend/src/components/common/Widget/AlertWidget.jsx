@@ -48,7 +48,10 @@ const AlertItem = ({ alert, onClick }) => {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => onClick?.(alert)}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick?.(alert)}
       className={`
         flex items-start gap-3 p-3 rounded-xl border cursor-pointer
         transition-all duration-200 hover:shadow-sm

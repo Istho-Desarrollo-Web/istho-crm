@@ -429,6 +429,7 @@ const GlobalSearch = ({ apiClient, endpoints }) => {
     <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-[15vh]">
       {/* Overlay */}
       <div
+        aria-hidden="true"
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={() => setOpen(false)}
       />

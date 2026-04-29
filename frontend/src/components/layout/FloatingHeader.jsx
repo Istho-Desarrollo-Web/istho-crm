@@ -480,6 +480,7 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
   return (
     <>
       <div
+        aria-hidden="true"
         className="fixed inset-0 bg-black/60 dark:bg-black/80 z-[60] backdrop-blur-sm"
         onClick={onClose}
       />
@@ -821,6 +822,7 @@ const MobileMenu = ({
   return (
     <>
       <div
+        aria-hidden="true"
         className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 md:hidden transition-opacity duration-300"
         onClick={onClose}
       />
@@ -1284,8 +1286,12 @@ const FloatingHeader = () => {
               </button>
 
               <div
+                role="link"
+                tabIndex={0}
+                aria-label="Ir al inicio"
                 className="hidden sm:flex items-center gap-2 cursor-pointer"
                 onClick={() => navigate('/dashboard')}
+                onKeyDown={(e) => e.key === 'Enter' && navigate('/dashboard')}
               >
                 <img
                   src={logoBlanco}

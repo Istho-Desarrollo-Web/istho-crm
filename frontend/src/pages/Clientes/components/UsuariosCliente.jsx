@@ -152,7 +152,7 @@ const UsuarioRow = ({
 
         {menuOpen && (
           <>
-            <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+            <div aria-hidden="true" className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
             <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-centhrix-card rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 py-1 z-20">
               <button
                 onClick={() => {
