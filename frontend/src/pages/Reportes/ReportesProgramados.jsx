@@ -122,8 +122,12 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
           <h3 className="font-semibold text-slate-800 dark:text-slate-100">
             {reporte ? 'Editar Reporte Programado' : 'Nuevo Reporte Programado'}
           </h3>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded">
-            <X className="w-5 h-5" />
+          <button
+            onClick={onClose}
+            aria-label="Cerrar"
+            className="p-1 text-slate-400 hover:text-slate-600 rounded"
+          >
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 

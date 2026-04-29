@@ -238,9 +238,10 @@ const Lightbox = ({ src, alt, onClose }) => {
     >
       <button
         onClick={onClose}
+        aria-label="Cerrar imagen ampliada"
         className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
       >
-        <X className="w-6 h-6" />
+        <X className="w-6 h-6" aria-hidden="true" />
       </button>
       <img
         src={src}
@@ -328,17 +329,18 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
                     const pdfUrl = native ? URL.createObjectURL(native) : p.file.url;
                     window.open(pdfUrl, '_blank');
                   }}
+                  aria-label="Ver PDF"
                   className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                  title="Ver PDF"
                 >
-                  <Eye className="w-4 h-4" />
+                  <Eye className="w-4 h-4" aria-hidden="true" />
                 </button>
                 {!readOnly && (
                   <button
                     onClick={() => onRemoveFile(files.indexOf(p.file))}
+                    aria-label="Eliminar archivo"
                     className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-4 h-4" aria-hidden="true" />
                   </button>
                 )}
               </div>
@@ -366,18 +368,18 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center gap-2">
                   <button
                     onClick={() => setLightboxIdx(idx)}
+                    aria-label="Ver imagen ampliada"
                     className="p-2 bg-white/90 rounded-lg text-slate-700 hover:bg-white transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
-                    title="Ver imagen"
                   >
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-4 h-4" aria-hidden="true" />
                   </button>
                   {!readOnly && (
                     <button
                       onClick={() => onRemoveFile(files.indexOf(p.file))}
+                      aria-label="Eliminar imagen"
                       className="p-2 bg-red-500/90 rounded-lg text-white hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
-                      title="Eliminar"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-4 h-4" aria-hidden="true" />
                     </button>
                   )}
                 </div>
@@ -1257,6 +1259,8 @@ const SalidaAuditoria = () => {
                         !linea.eliminado && puedeEditar && handleVerificarLinea(linea.id)
                       }
                       disabled={linea.eliminado || !puedeEditar}
+                      aria-label={linea.verificado ? 'Desmarcar verificación' : 'Verificar línea'}
+                      aria-pressed={linea.verificado}
                       className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-all ${
                         linea.eliminado
                           ? 'border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 cursor-not-allowed'
@@ -1297,10 +1301,10 @@ const SalidaAuditoria = () => {
                       ) : (
                         <button
                           onClick={() => handleEliminarLinea(linea.id)}
+                          aria-label="Quitar línea (no salió)"
                           className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                          title="Quitar línea (no salió)"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </button>
                       )}
                     </div>
@@ -1652,9 +1656,10 @@ const SalidaAuditoria = () => {
                             setAveriaFoto(null);
                             setAveriaFotoPreview(null);
                           }}
+                          aria-label="Eliminar foto de avería"
                           className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-sm"
                         >
-                          &#x2715;
+                          <span aria-hidden="true">&#x2715;</span>
                         </button>
                       </div>
                     ) : (
@@ -1731,10 +1736,10 @@ const SalidaAuditoria = () => {
                       {puedeEditar && (
                         <button
                           onClick={() => handleEliminarAveria(av.id)}
+                          aria-label="Eliminar avería"
                           className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
-                          title="Eliminar avería"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                         </button>
                       )}
                     </div>

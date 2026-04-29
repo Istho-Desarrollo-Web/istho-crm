@@ -194,9 +194,14 @@ const PasswordInput = ({ label, field, value, show, onChange, onToggleShow }) =>
       <button
         type="button"
         onClick={onToggleShow}
+        aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
         className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
       >
-        {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        {show ? (
+          <EyeOff className="w-4 h-4" aria-hidden="true" />
+        ) : (
+          <Eye className="w-4 h-4" aria-hidden="true" />
+        )}
       </button>
     </div>
   </div>
@@ -755,10 +760,10 @@ const PerfilUsuario = () => {
                   {user.avatar_url && (
                     <button
                       onClick={handleAvatarDelete}
+                      aria-label="Eliminar foto de perfil"
                       className="p-2 bg-white dark:bg-centhrix-surface rounded-xl shadow-md hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-                      title="Eliminar foto"
                     >
-                      <X className="w-4 h-4 text-red-500" />
+                      <X className="w-4 h-4 text-red-500" aria-hidden="true" />
                     </button>
                   )}
                 </div>

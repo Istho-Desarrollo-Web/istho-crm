@@ -60,8 +60,12 @@ const SearchBar = ({
       />
 
       {localValue && (
-        <button onClick={handleClear} className="absolute inset-y-0 right-0 pr-3 flex items-center">
-          <X className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+        <button
+          onClick={handleClear}
+          aria-label="Limpiar búsqueda"
+          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+        >
+          <X className="h-4 w-4 text-slate-400 hover:text-slate-600" aria-hidden="true" />
         </button>
       )}
     </div>

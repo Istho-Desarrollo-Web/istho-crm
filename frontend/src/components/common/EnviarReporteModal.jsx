@@ -76,9 +76,10 @@ const EnviarReporteModal = ({ isOpen, onClose, tipoReporte, onSend }) => {
           </div>
           <button
             onClick={onClose}
+            aria-label="Cerrar"
             className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 

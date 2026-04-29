@@ -197,10 +197,10 @@ const SeccionBackup = () => {
           <button
             onClick={cargarHistorial}
             disabled={cargando}
+            aria-label="Actualizar historial"
             className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-            title="Actualizar"
           >
-            <RefreshCw className={`w-4 h-4 ${cargando ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${cargando ? 'animate-spin' : ''}`} aria-hidden="true" />
           </button>
           <Button
             variant="primary"

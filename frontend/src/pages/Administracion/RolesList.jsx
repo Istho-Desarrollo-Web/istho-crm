@@ -357,9 +357,10 @@ const RolesList = () => {
         <div className="flex gap-2">
           <button
             onClick={fetchData}
+            aria-label="Actualizar lista"
             className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="w-4 h-4" aria-hidden="true" />
           </button>
           {canCreateRol && (
             <button

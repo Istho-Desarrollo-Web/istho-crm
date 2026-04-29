@@ -502,9 +502,10 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
             </div>
             <button
               onClick={onClose}
+              aria-label="Cerrar atajos de teclado"
               className="p-2 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+              <X className="w-5 h-5 text-slate-600 dark:text-slate-300" aria-hidden="true" />
             </button>
           </div>
 
@@ -1424,10 +1425,10 @@ const FloatingHeader = () => {
                 <div ref={notifRef} className="relative">
                   <button
                     onClick={handleBellClick}
+                    aria-label="Ver notificaciones"
                     className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-card rounded-lg transition-colors relative"
-                    title="Notificaciones"
                   >
-                    <Bell className="w-5 h-5" />
+                    <Bell className="w-5 h-5" aria-hidden="true" />
                     <NotificationBadge count={notificationCount} />
                   </button>
 

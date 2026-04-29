@@ -107,9 +107,10 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
           </h3>
           <button
             onClick={onClose}
+            aria-label="Cerrar"
             className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface"
           >
-            <X className="w-5 h-5 text-slate-500" />
+            <X className="w-5 h-5 text-slate-500" aria-hidden="true" />
           </button>
         </div>
 

@@ -82,9 +82,10 @@ const Pagination = ({
         <button
           onClick={() => onPageChange?.(currentPage - 1)}
           disabled={currentPage === 1}
+          aria-label="Página anterior"
           className="p-1.5 sm:p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-surface hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent transition-colors duration-200"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" aria-hidden="true" />
         </button>
 
         {/* First page + ellipsis */}
@@ -114,9 +115,10 @@ const Pagination = ({
         <button
           onClick={() => onPageChange?.(currentPage + 1)}
           disabled={currentPage === totalPages}
+          aria-label="Página siguiente"
           className="p-1.5 sm:p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-surface hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent transition-colors duration-200"
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
     </div>
