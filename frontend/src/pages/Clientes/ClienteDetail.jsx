@@ -790,7 +790,7 @@ const ClienteDetail = () => {
               <div className="relative group flex-shrink-0">
                 {cliente.logo_url ? (
                   <img
-                    src={`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'}${cliente.logo_url}`}
+                    src={cliente.logo_url}
                     alt={cliente.razon_social}
                     className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl object-contain bg-white dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600"
                   />

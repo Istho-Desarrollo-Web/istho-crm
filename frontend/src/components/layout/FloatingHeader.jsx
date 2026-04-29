@@ -888,7 +888,7 @@ const MobileMenu = ({
             >
               {user.cliente_info.logo_url ? (
                 <img
-                  src={`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'}${user.cliente_info.logo_url}`}
+                  src={user.cliente_info.logo_url}
                   alt={user.cliente_info.razon_social}
                   className="w-10 h-10 rounded-lg object-contain bg-white border border-slate-200 dark:border-slate-600"
                 />
@@ -1316,7 +1316,7 @@ const FloatingHeader = () => {
                 >
                   {user.cliente_info.logo_url ? (
                     <img
-                      src={`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'}${user.cliente_info.logo_url}`}
+                      src={user.cliente_info.logo_url}
                       alt={user.cliente_info.razon_social}
                       className="w-7 h-7 rounded-lg object-contain bg-white border border-slate-200 dark:border-slate-600"
                     />
