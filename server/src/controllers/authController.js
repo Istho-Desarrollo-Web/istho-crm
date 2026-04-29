@@ -225,6 +225,10 @@ const completarLogin = async (
   const permisosDB = usuario.rol_id ? getPermisosForRol(usuario.rol_id) : null;
   const userData = usuario.toPublicJSON(permisosDB);
 
+  // Resolver avatar_url (S3 key → presigned URL) para que el frontend lo muestre sin recargar
+  const s3Service = require('../services/s3Service');
+  userData.avatar_url = await s3Service.resolveUrl(userData.avatar_url);
+
   if (usuario.rol === 'cliente' && usuario.cliente_id) {
     const cliente = await Cliente.findByPk(usuario.cliente_id, {
       attributes: ['id', 'razon_social', 'codigo_cliente', 'logo_url'],
@@ -234,7 +238,7 @@ const completarLogin = async (
         id: cliente.id,
         razon_social: cliente.razon_social,
         codigo_cliente: cliente.codigo_cliente,
-        logo_url: cliente.logo_url,
+        logo_url: await s3Service.resolveUrl(cliente.logo_url),
       };
     }
   }
