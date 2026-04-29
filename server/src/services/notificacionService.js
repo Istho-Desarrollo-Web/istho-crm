@@ -358,7 +358,7 @@ const notificarOperacionCerrada = async (operacion, usuario_nombre) => {
     titulo: `${tipo_op} cerrada: ${doc}`,
     mensaje: `La operación ${doc} fue cerrada por ${usuario_nombre}.`,
     prioridad: 'normal',
-    accion_url: `/operaciones/${operacion.tipo === 'entrada' ? 'entradas' : 'salidas'}/${operacion.id}`,
+    accion_url: `/operaciones/${operacion.tipo === 'ingreso' ? 'entradas' : 'salidas'}/${operacion.id}`,
     accion_label: `Ver ${tipo_op.toLowerCase()}`,
     metadata: {
       operacion_id: operacion.id,
