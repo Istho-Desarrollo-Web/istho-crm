@@ -1,4 +1,4 @@
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 
 const ventana = parseInt(process.env.RATE_LIMIT_WINDOW || '15', 10);
 const maxGeneral = parseInt(process.env.RATE_LIMIT_MAX || '500', 10);
@@ -25,7 +25,7 @@ const keyGeneratorAutenticado = (req) => {
   } catch {
     // No hace nada — cae a IP
   }
-  return req.ip;
+  return ipKeyGenerator(req);
 };
 
 // API general: 500 req / 15 min por usuario (o por IP si no está autenticado)

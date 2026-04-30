@@ -254,11 +254,52 @@ const Lightbox = ({ src, alt, onClose }) => {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
+// PDF MODAL (visor inline — no abre pestaña nueva)
+// ════════════════════════════════════════════════════════════════════════════
+
+const PdfModal = ({ url, onClose }) => {
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col bg-black/90 backdrop-blur-sm">
+      <div className="flex items-center justify-between px-4 py-3 bg-centhrix-card border-b border-slate-700">
+        <span className="text-sm text-slate-300 font-medium">Vista previa del documento</span>
+        <button
+          onClick={onClose}
+          aria-label="Cerrar vista previa del PDF"
+          className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+        >
+          <X className="w-5 h-5" aria-hidden="true" />
+        </button>
+      </div>
+      <div className="flex-1">
+        <iframe
+          src={url}
+          title="Vista previa PDF"
+          className="w-full h-full border-0"
+        />
+      </div>
+    </div>
+  );
+};
+
+// ════════════════════════════════════════════════════════════════════════════
 // FILE PREVIEW GALLERY
 // ════════════════════════════════════════════════════════════════════════════
 
 const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
   const [lightboxIdx, setLightboxIdx] = useState(null);
+  const [pdfModal, setPdfModal] = useState(null);
 
   const previews = useMemo(
     () =>
@@ -293,6 +334,9 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
 
   return (
     <div className="space-y-4">
+      {/* PDF Modal */}
+      {pdfModal && <PdfModal url={pdfModal} onClose={() => setPdfModal(null)} />}
+
       {lightboxIdx !== null && imageFiles[lightboxIdx] && (
         <Lightbox
           src={imageFiles[lightboxIdx].url}
@@ -327,7 +371,7 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
                   onClick={() => {
                     const native = p.file instanceof File ? p.file : p.file._nativeFile;
                     const pdfUrl = native ? URL.createObjectURL(native) : p.file.url;
-                    window.open(pdfUrl, '_blank');
+                    setPdfModal(pdfUrl);
                   }}
                   aria-label="Ver PDF"
                   className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
@@ -407,7 +451,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
     (f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
   );
   const imageFiles = files.filter(
-    (f) => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name)
+    (f) => /^image\/(jpeg|png|webp)$/.test(f.type) || /\.(jpg|jpeg|png|webp)$/i.test(f.name)
   );
 
   const onDrag = (type) => (e) => {
@@ -438,7 +482,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
       if (pdf && pdfFiles.length === 0) validFiles.push(pdf);
     } else {
       const photos = newFiles.filter(
-        (f) => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name)
+        (f) => /^image\/(jpeg|png|webp)$/.test(f.type) || /\.(jpg|jpeg|png|webp)$/i.test(f.name)
       );
       const remaining = maxPhotos - imageFiles.length;
       validFiles.push(...photos.slice(0, remaining));
@@ -532,7 +576,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             ref={photoInputRef}
             type="file"
             multiple
-            accept="image/*"
+            accept=".jpg,.jpeg,.png,.webp"
             onChange={(e) => handleFiles('photos', [...e.target.files])}
             className="hidden"
           />
@@ -603,6 +647,7 @@ const SalidaAuditoria = () => {
   const [averiaFotoPreview, setAveriaFotoPreview] = useState(null);
   const averiaFotoRef = useRef(null);
   const [savingAveria, setSavingAveria] = useState(false);
+  const [averiaLightboxUrl, setAveriaLightboxUrl] = useState(null);
 
   // Control de guardado intermedio
   const [savingLogistica, setSavingLogistica] = useState(false);
@@ -1142,6 +1187,15 @@ const SalidaAuditoria = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
+      {/* Lightbox de foto de avería */}
+      {averiaLightboxUrl && (
+        <Lightbox
+          src={averiaLightboxUrl}
+          alt="Foto de avería"
+          onClose={() => setAveriaLightboxUrl(null)}
+        />
+      )}
+
       <main className="pt-28 px-4 pb-32 max-w-5xl mx-auto">
         <button
           onClick={() => navigate('/operaciones/salidas')}
@@ -1632,7 +1686,7 @@ const SalidaAuditoria = () => {
                     <input
                       ref={averiaFotoRef}
                       type="file"
-                      accept="image/*"
+                      accept=".jpg,.jpeg,.png,.webp"
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
@@ -1704,17 +1758,17 @@ const SalidaAuditoria = () => {
                       className="flex items-center gap-3 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl"
                     >
                       {av.foto_url ? (
-                        <a
-                          href={getServerFileUrl(av.foto_url)}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          onClick={() => setAveriaLightboxUrl(getServerFileUrl(av.foto_url))}
+                          aria-label="Ver foto de avería"
+                          className="flex-shrink-0"
                         >
                           <img
                             src={getServerFileUrl(av.foto_url)}
                             alt="Evidencia"
-                            className="w-10 h-10 object-cover rounded-lg border border-amber-300 dark:border-amber-700 flex-shrink-0 hover:opacity-80 transition-opacity"
+                            className="w-10 h-10 object-cover rounded-lg border border-amber-300 dark:border-amber-700 hover:opacity-80 transition-opacity"
                           />
-                        </a>
+                        </button>
                       ) : (
                         <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
                       )}
