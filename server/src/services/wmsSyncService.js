@@ -200,6 +200,8 @@ const syncEntrada = async (data) => {
     estado,
     detalles,
     observaciones,
+    conductor_nombre,
+    vehiculo_placa,
   } = data;
 
   if (!documento_origen) throw new Error('documento_origen es requerido');
@@ -263,6 +265,8 @@ const syncEntrada = async (data) => {
         estado: 'pendiente',
         observaciones:
           observaciones || `Entrada sincronizada desde WMS - ${tipo_documento || 'N/A'}`,
+        ...(conductor_nombre ? { conductor_nombre } : {}),
+        ...(vehiculo_placa ? { vehiculo_placa } : {}),
       },
       { transaction }
     );

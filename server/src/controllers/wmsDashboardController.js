@@ -277,7 +277,7 @@ const getProductoUbicaciones = async (req, res) => {
   try {
     const { Inventario } = require('../models');
     const producto = await Inventario.findByPk(inventarioId, {
-      attributes: ['id', 'codigo_wms', 'wms_warehouse_id'],
+      attributes: ['id', 'codigo_wms'],
     });
 
     if (!producto) {
@@ -290,7 +290,7 @@ const getProductoUbicaciones = async (req, res) => {
       });
     }
 
-    const bodegaId = warehouseId || producto.wms_warehouse_id || null;
+    const bodegaId = warehouseId || null;
     const ubicaciones = await wmsApiService.getProductoUbicaciones(producto.codigo_wms, bodegaId);
     return success(res, { ubicaciones }, 'Ubicaciones obtenidas');
   } catch (error) {

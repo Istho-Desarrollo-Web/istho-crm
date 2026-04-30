@@ -57,6 +57,9 @@ async function _ejecutarPoll() {
               ...(orden.systemNumberOrder
                 ? [{ documento_wms: orden.systemNumberOrder.toString() }]
                 : []),
+              ...(orden.customerNumberOrder
+                ? [{ documento_wms: orden.customerNumberOrder.toString() }]
+                : []),
             ],
           },
           paranoid: false,
