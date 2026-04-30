@@ -460,6 +460,8 @@ const syncSalida = async (data) => {
     ciudad_destino,
     detalles,
     observaciones,
+    conductor_nombre,
+    vehiculo_placa,
   } = data;
 
   if (!detalles || !Array.isArray(detalles) || detalles.length === 0) {
@@ -531,6 +533,8 @@ const syncSalida = async (data) => {
         estado: 'pendiente',
         observaciones:
           observaciones || `Salida sincronizada desde WMS - Picking ${numero_picking || 'N/A'}`,
+        ...(conductor_nombre ? { conductor_nombre } : {}),
+        ...(vehiculo_placa ? { vehiculo_placa } : {}),
       },
       { transaction }
     );

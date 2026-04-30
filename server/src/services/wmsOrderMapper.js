@@ -6,11 +6,11 @@ const logger = require('../utils/logger');
  * Transforma una orden del WMS CenthriX en el payload que esperan
  * wmsSyncService.syncEntrada() o wmsSyncService.syncSalida().
  *
- * type 1 → entrada (CO)
- * type 2 → salida (PK)
+ * type 1 → entrada (CO)   — ubicacion = currentPosition (donde está guardado)
+ * type 2 → salida  (PK)   — ubicacion = originalPosition (de dónde fue tomado)
  *
- * @param {object} ordenWms    - Objeto orden del WMS (GET /orders/:id)
- * @param {Array}  itemsArr    - orderItems del WMS (incluyen pallets[])
+ * @param {object} ordenWms  - Objeto orden del WMS (GET /orders/:id)
+ * @param {Array}  itemsArr  - orderItems del WMS (incluyen pallets[])
  * @returns {{ tipo: 'entrada'|'salida', payload: object }}
  */
 async function mapearOrden(ordenWms, itemsArr) {
@@ -18,17 +18,21 @@ async function mapearOrden(ordenWms, itemsArr) {
 
   const nit = customer?.nit || customer?.taxId || customer?.identification || customer?.rut;
   if (!nit) {
-    logger.warn(`[WmsOrderMapper] Orden ${wmsId}: campos customer disponibles: ${Object.keys(customer || {}).join(', ')}`);
-    throw new Error(`Orden WMS ${wmsId}: sin NIT de cliente (customer.nit/taxId/identification faltante)`);
+    logger.warn(`[WmsOrderMapper] Orden ${wmsId}: campos customer: ${Object.keys(customer || {}).join(', ')}`);
+    throw new Error(`Orden WMS ${wmsId}: sin NIT de cliente`);
   }
 
-  // Número de documento visible: preferir el número del cliente (20260430) sobre el interno (SYS-000001)
+  // Número visible en CRM: preferir número del cliente (20260430) sobre el interno (SYS-000001)
   const docOrigen = customerNumberOrder || systemNumberOrder;
 
-  // Strip HTML de observations ("< p>Prueba</p>" → "Prueba")
+  // Strip HTML de observations
   const obsTexto = ordenWms.observations
     ? ordenWms.observations.replace(/<[^>]*>/g, '').trim()
     : '';
+
+  const bodega = warehouse?.name || '';
+  const observaciones = obsTexto || `Polling WMS${bodega ? ' - ' + bodega : ''}`;
+  const esEntrada = type === 1;
 
   // Mapear ítems → un detalle por pallet/caja
   const detalles = [];
@@ -43,6 +47,11 @@ async function mapearOrden(ordenWms, itemsArr) {
 
     if (pallets.length > 0) {
       for (const pallet of pallets) {
+        // Ubicacion: para entrada = dónde está; para salida = de dónde salió
+        const ubicacion = esEntrada
+          ? (pallet.currentPosition?.code || pallet.currentZone?.name || null)
+          : (pallet.originalPosition?.code || pallet.originalLocationLabel || null);
+
         detalles.push({
           producto: sku,
           descripcion: item.product?.name || sku,
@@ -53,6 +62,7 @@ async function mapearOrden(ordenWms, itemsArr) {
             ? (pallet.dueDate || item.dueDate).split('T')[0]
             : null,
           caja: pallet.palletCode || null,
+          ubicacion,
         });
       }
     } else {
@@ -65,6 +75,7 @@ async function mapearOrden(ordenWms, itemsArr) {
         lote: item.lot || null,
         fecha_vencimiento: item.dueDate ? item.dueDate.split('T')[0] : null,
         caja: null,
+        ubicacion: null,
       });
     }
   }
@@ -72,9 +83,6 @@ async function mapearOrden(ordenWms, itemsArr) {
   if (detalles.length === 0) {
     throw new Error(`Orden WMS ${wmsId}: todos los ítems carecen de SKU`);
   }
-
-  const bodega = warehouse?.name || '';
-  const observaciones = obsTexto || `Polling WMS${bodega ? ' - ' + bodega : ''}`;
 
   if (type === 1) {
     return {
