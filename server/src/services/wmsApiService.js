@@ -79,12 +79,14 @@ _http.interceptors.request.use(async (config) => {
 });
 
 // ─── Normalizador de envelope WMS ────────────────────────────────────────────
-// El WMS retorna: { success, message, data: { data: [], meta: {} } }
+// El WMS retorna: { success, message, data: { items: [], meta: {} } }
+// o bien paginado clásico: { success, message, data: { data: [], meta: {} } }
 // o bien con list=true: { success, message, data: [] }
 function _normalizar(responseData, expectArray = false) {
   const inner = responseData?.data;
-  if (Array.isArray(inner)) return inner;           // list=true
-  if (inner?.data !== undefined) return inner;      // paginado { data, meta }
+  if (Array.isArray(inner)) return inner;                    // list=true → array directo
+  if (Array.isArray(inner?.items)) return inner.items;       // paginado { items, meta }
+  if (inner?.data !== undefined) return inner;               // paginado { data, meta }
   if (expectArray && Array.isArray(responseData)) return responseData;
   return inner ?? responseData;
 }

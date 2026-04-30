@@ -16,8 +16,10 @@ const logger = require('../utils/logger');
 async function mapearOrden(ordenWms, itemsPallets) {
   const { id: wmsId, type, systemNumberOrder, customer, warehouse } = ordenWms;
 
-  if (!customer?.nit) {
-    throw new Error(`Orden WMS ${wmsId}: sin NIT de cliente (customer.nit faltante)`);
+  const nit = customer?.nit || customer?.taxId || customer?.identification || customer?.rut;
+  if (!nit) {
+    logger.warn(`[WmsOrderMapper] Orden ${wmsId}: campos customer disponibles: ${Object.keys(customer || {}).join(', ')}`);
+    throw new Error(`Orden WMS ${wmsId}: sin NIT de cliente (customer.nit/taxId/identification faltante)`);
   }
 
   // Mapear ítems → detalles CRM
@@ -50,7 +52,7 @@ async function mapearOrden(ordenWms, itemsPallets) {
     return {
       tipo: 'entrada',
       payload: {
-        nit: customer.nit,
+        nit,
         documento_origen: systemNumberOrder,
         tipo_orden: 'CO',
         wms_order_id: wmsId,
@@ -64,7 +66,7 @@ async function mapearOrden(ordenWms, itemsPallets) {
     return {
       tipo: 'salida',
       payload: {
-        nit: customer.nit,
+        nit,
         numero_picking: systemNumberOrder,
         tipo_orden: 'PK',
         wms_order_id: wmsId,

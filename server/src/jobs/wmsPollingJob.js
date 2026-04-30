@@ -44,8 +44,8 @@ async function _ejecutarPoll() {
       return;
     }
 
-    const ordenesCompletadas = ordenes.filter((o) => o.isCompleted === true);
-    logger.info(`[WmsPolling] ${ordenesCompletadas.length} órdenes completadas de ${ordenes.length} totales`);
+    const ordenesCompletadas = ordenes.filter((o) => o.orderStatus?.name === 'Finalizada');
+    logger.info(`[WmsPolling] ${ordenesCompletadas.length} órdenes finalizadas de ${ordenes.length} totales`);
 
     for (const orden of ordenesCompletadas) {
       try {
@@ -66,11 +66,14 @@ async function _ejecutarPoll() {
           continue;
         }
 
-        // ── Obtener ítems y mapear ────────────────────────────────────────
-        const items = await wmsApiService.getOrdenItemsPallets(orden.id);
-        const itemsArr = Array.isArray(items) ? items : (items?.data ?? []);
+        // ── Obtener detalle completo (incluye NIT y orderItems con pallets) ─
+        const detalle = await wmsApiService.getOrdenDetalle(orden.id);
+        const ordenCompleta = (detalle && typeof detalle === 'object' && !Array.isArray(detalle))
+          ? { ...orden, ...detalle }
+          : orden;
+        const itemsArr = Array.isArray(ordenCompleta.orderItems) ? ordenCompleta.orderItems : [];
 
-        const { tipo, payload } = await wmsOrderMapper.mapearOrden(orden, itemsArr);
+        const { tipo, payload } = await wmsOrderMapper.mapearOrden(ordenCompleta, itemsArr);
 
         // ── Sincronizar ───────────────────────────────────────────────────
         let resultado;
