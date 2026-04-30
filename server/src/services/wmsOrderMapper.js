@@ -30,15 +30,15 @@ async function mapearOrden(ordenWms, itemsPallets) {
       logger.warn(`[WmsOrderMapper] Ítem sin SKU en orden ${wmsId}, omitiendo`);
       continue;
     }
-    const cantidad = Array.isArray(item.pallets)
-      ? item.pallets.reduce((sum, p) => sum + (Number(p.quantity) || 0), 0)
-      : Number(item.quantity) || 0;
+    const cantidad = Number(item.quantity) || 0;
 
     detalles.push({
       producto: sku,
       descripcion: item.product?.name || sku,
       cantidad,
       unidad_medida: item.product?.unitMeasure || 'UND',
+      lote: item.lot || null,
+      fecha_vencimiento: item.dueDate ? item.dueDate.split('T')[0] : null,
     });
   }
 
