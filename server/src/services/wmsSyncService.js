@@ -320,7 +320,7 @@ const syncEntrada = async (data) => {
           producto: descripcionProducto,
           unidad_medida: linea.unidad_medida || 'UND',
           cantidad: 0,
-          codigo_wms: sku,
+          codigo_wms: linea.wms_product_id || sku,
           fecha_vencimiento: linea.fecha_vencimiento || null,
           ultima_sincronizacion_wms: new Date(),
           fecha_ingreso: new Date(),
@@ -335,8 +335,9 @@ const syncEntrada = async (data) => {
       await inventario.update(
         {
           cantidad: stockAnterior + cantidad,
+          ...(linea.wms_product_id ? { codigo_wms: linea.wms_product_id } : {}),
           ultima_sincronizacion_wms: new Date(),
-          alertas_silenciadas: null, // Limpiar alertas silenciadas al cambiar stock
+          alertas_silenciadas: null,
         },
         { transaction }
       );

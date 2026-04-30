@@ -30,8 +30,7 @@ async function mapearOrden(ordenWms, itemsArr) {
     ? ordenWms.observations.replace(/<[^>]*>/g, '').trim()
     : '';
 
-  const bodega = warehouse?.name || '';
-  const observaciones = obsTexto || `Polling WMS${bodega ? ' - ' + bodega : ''}`;
+  const observaciones = obsTexto || null;
   const esEntrada = type === 1;
 
   // Mapear ítems → un detalle por pallet/caja
@@ -55,6 +54,7 @@ async function mapearOrden(ordenWms, itemsArr) {
         detalles.push({
           producto: sku,
           descripcion: item.product?.name || sku,
+          wms_product_id: item.product?.id || null,
           cantidad: Number(pallet.quantity) || 0,
           unidad_medida: item.product?.unitMeasure || 'UND',
           lote: pallet.lot || item.lot || null,
@@ -70,6 +70,7 @@ async function mapearOrden(ordenWms, itemsArr) {
       detalles.push({
         producto: sku,
         descripcion: item.product?.name || sku,
+        wms_product_id: item.product?.id || null,
         cantidad: Number(item.quantity) || 0,
         unidad_medida: item.product?.unitMeasure || 'UND',
         lote: item.lot || null,

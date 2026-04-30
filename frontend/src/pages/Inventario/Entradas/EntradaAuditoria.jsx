@@ -1403,6 +1403,9 @@ const EntradaAuditoria = () => {
                         {linea.caja && (
                           <span className="ml-1 text-blue-500 font-bold">• Caja: {linea.caja}</span>
                         )}
+                        {linea.lote && (
+                          <span className="ml-1 text-emerald-500">• Lote: {linea.lote}</span>
+                        )}
                       </p>
                     </div>
                   </div>
