@@ -37,4 +37,16 @@ router.post(
   wmsDashboardController.reejecutarUltimoSync
 );
 
+// Ubicación física de pallets y productos en bodega (consume WMS API directamente)
+router.get(
+  '/ubicacion/pallet/:wmspalletId',
+  requierePermiso('inventario', 'ver'),
+  wmsDashboardController.getPalletUbicacion
+);
+router.get(
+  '/ubicacion/producto',
+  requierePermiso('inventario', 'ver'),
+  wmsDashboardController.getProductoUbicaciones
+);
+
 module.exports = router;

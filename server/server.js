@@ -186,6 +186,15 @@ async function initializeDatabase() {
     const reporteScheduler = require('./src/services/reporteScheduler');
     await reporteScheduler.inicializar();
 
+    // Inicializar polling WMS (modelo PULL)
+    if (process.env.WMS_URL && process.env.WMS_EMAIL) {
+      const wmsPollingJob = require('./src/jobs/wmsPollingJob');
+      wmsPollingJob.iniciarPollingWms();
+      logger.info(`✅ Polling WMS iniciado (cada ${process.env.WMS_SYNC_INTERVAL || 5} min)`);
+    } else {
+      logger.warn('⚠️  WMS_URL/WMS_EMAIL no configurados. Polling WMS desactivado.');
+    }
+
     dbReady = true;
     logger.info('✅ Base de datos inicializada correctamente');
     console.log('\n   Servidor listo para recibir peticiones\n');
@@ -266,12 +275,14 @@ const crearOperadorPorDefecto = async () => {
 
 process.on('SIGTERM', async () => {
   logger.info('🛑 Cerrando servidor (SIGTERM)...');
+  try { require('./src/jobs/wmsPollingJob').detenerPollingWms(); } catch {}
   await db.sequelize.close();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   logger.info('🛑 Cerrando servidor (Ctrl+C)...');
+  try { require('./src/jobs/wmsPollingJob').detenerPollingWms(); } catch {}
   await db.sequelize.close();
   process.exit(0);
 });

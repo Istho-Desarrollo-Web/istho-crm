@@ -11,6 +11,7 @@
 const { Op } = require('sequelize');
 const { WmsSyncLog, sequelize } = require('../models');
 const wmsSyncService = require('../services/wmsSyncService');
+const wmsApiService = require('../services/wmsApiService');
 const { success, paginated, serverError } = require('../utils/responses');
 const { parsePaginacion, buildPaginacion } = require('../utils/helpers');
 const logger = require('../utils/logger');
@@ -251,9 +252,58 @@ const reejecutarUltimoSync = async (req, res) => {
   }
 };
 
+// ============================================================================
+// UBICACIÓN DE PALLETS Y PRODUCTOS EN BODEGA (WMS API)
+// ============================================================================
+
+const getPalletUbicacion = async (req, res) => {
+  const { wmspalletId } = req.params;
+  try {
+    const datos = await wmsApiService.getPalletUbicacion(wmspalletId);
+    return success(res, datos, 'Ubicación del pallet obtenida');
+  } catch (error) {
+    logger.error('[WMS Dashboard] Error getPalletUbicacion:', { message: error.message });
+    return res.status(503).json({ success: false, message: 'WMS no disponible temporalmente' });
+  }
+};
+
+const getProductoUbicaciones = async (req, res) => {
+  const { inventarioId, warehouseId } = req.query;
+
+  if (!inventarioId) {
+    return res.status(400).json({ success: false, message: 'inventarioId es requerido' });
+  }
+
+  try {
+    const { Inventario } = require('../models');
+    const producto = await Inventario.findByPk(inventarioId, {
+      attributes: ['id', 'codigo_wms', 'wms_warehouse_id'],
+    });
+
+    if (!producto) {
+      return res.status(404).json({ success: false, message: 'Producto no encontrado' });
+    }
+    if (!producto.codigo_wms) {
+      return res.status(404).json({
+        success: false,
+        message: 'Este producto no tiene código WMS asociado',
+      });
+    }
+
+    const bodegaId = warehouseId || producto.wms_warehouse_id || null;
+    const ubicaciones = await wmsApiService.getProductoUbicaciones(producto.codigo_wms, bodegaId);
+    return success(res, { ubicaciones }, 'Ubicaciones obtenidas');
+  } catch (error) {
+    logger.error('[WMS Dashboard] Error getProductoUbicaciones:', { message: error.message });
+    return res.status(503).json({ success: false, message: 'WMS no disponible temporalmente' });
+  }
+};
+
 module.exports = {
   getStatus,
   getEstadisticas,
   getHistorial,
   reejecutarUltimoSync,
+  getPalletUbicacion,
+  getProductoUbicaciones,
 };

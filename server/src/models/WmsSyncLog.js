@@ -6,7 +6,15 @@ module.exports = (sequelize) => {
     {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
       tipo: {
-        type: DataTypes.ENUM('productos', 'entrada', 'salida', 'kardex', 'batch'),
+        type: DataTypes.ENUM(
+          'productos',
+          'entrada',
+          'salida',
+          'kardex',
+          'batch',
+          'polling_entrada',
+          'polling_salida'
+        ),
         allowNull: false,
       },
       documento_origen: { type: DataTypes.STRING(150), allowNull: true },

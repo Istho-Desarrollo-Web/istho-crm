@@ -229,6 +229,13 @@ module.exports = (sequelize) => {
         allowNull: true,
         comment: 'Ciudad de destino del WMS',
       },
+
+      // UUID del WMS para deduplicación en modelo PULL (polling)
+      wms_order_id: {
+        type: DataTypes.STRING(36),
+        allowNull: true,
+        comment: 'UUID de la orden en el WMS CenthriX (deduplicación PULL)',
+      },
     },
     {
       tableName: 'operaciones',
@@ -239,6 +246,7 @@ module.exports = (sequelize) => {
       indexes: [
         { fields: ['numero_operacion'], unique: true },
         { fields: ['documento_wms'] },
+        { fields: ['wms_order_id'], unique: true, name: 'idx_operaciones_wms_order_id' },
         { fields: ['cliente_id'] },
         { fields: ['tipo'] },
         { fields: ['estado'] },

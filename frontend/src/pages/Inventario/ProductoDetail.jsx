@@ -37,6 +37,8 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   Lock,
+  MapPin,
+  WifiOff,
 } from 'lucide-react';
 
 // Layout
@@ -59,6 +61,7 @@ import { formatDateShort } from '../../utils/formatDate';
 
 // Service
 import inventarioService from '../../api/inventario.service';
+import wmsUbicacionService from '../../api/wmsUbicacion.service';
 
 // ════════════════════════════════════════════════════════════════════════════
 // CONSTANTES
@@ -400,6 +403,9 @@ const ProductoDetail = () => {
   const [formLoading, setFormLoading] = useState(false);
   const [cajas, setCajas] = useState([]);
   const [loadingCajas, setLoadingCajas] = useState(false);
+  const [ubicacionWms, setUbicacionWms] = useState([]);
+  const [loadingUbicacion, setLoadingUbicacion] = useState(false);
+  const [errorUbicacion, setErrorUbicacion] = useState(false);
 
   // Permisos dinámicos (restringidos si el producto es gestionado por WMS)
   const esWMS = !!currentProducto?.codigo_wms;
@@ -514,8 +520,9 @@ const ProductoDetail = () => {
       { id: 'cajas', label: `Cajas (${cajas.length})` },
       { id: 'movimientos', label: `Movimientos (${(movimientos || []).length})` },
       { id: 'estadisticas', label: 'Estadísticas' },
+      ...(esWMS ? [{ id: 'ubicacion', label: 'Ubicación WMS' }] : []),
     ],
-    [movimientos, cajas]
+    [movimientos, cajas, esWMS]
   );
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -542,6 +549,17 @@ const ProductoDetail = () => {
       fetchCajas(id);
     }
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!esWMS || !id) return;
+    setLoadingUbicacion(true);
+    setErrorUbicacion(false);
+    wmsUbicacionService
+      .getProductoUbicaciones(id)
+      .then((res) => setUbicacionWms(res?.data?.ubicaciones || []))
+      .catch(() => setErrorUbicacion(true))
+      .finally(() => setLoadingUbicacion(false));
+  }, [esWMS, id]);
 
   // ──────────────────────────────────────────────────────────────────────────
   // HANDLERS
@@ -1092,6 +1110,93 @@ const ProductoDetail = () => {
                         <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
                           Los movimientos deben estar en el rango de los últimos 6 meses
                         </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Tab: Ubicación WMS */}
+                {activeTab === 'ubicacion' && (
+                  <div>
+                    {loadingUbicacion ? (
+                      <div className="space-y-3">
+                        {[1, 2, 3].map((i) => (
+                          <div
+                            key={i}
+                            className="h-12 bg-gray-100 dark:bg-centhrix-surface rounded-lg animate-pulse"
+                          />
+                        ))}
+                      </div>
+                    ) : errorUbicacion ? (
+                      <div className="py-12 text-center">
+                        <WifiOff className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">
+                          WMS no disponible temporalmente
+                        </p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                          No se pudo conectar al sistema de bodega
+                        </p>
+                      </div>
+                    ) : ubicacionWms.length === 0 ? (
+                      <div className="py-12 text-center">
+                        <BoxIcon className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">
+                          Sin ubicación asignada en bodega
+                        </p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                          Este producto aún no tiene posición registrada en el WMS
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-slate-200 dark:border-slate-700">
+                              <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                Bodega
+                              </th>
+                              <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                Zona
+                              </th>
+                              <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                Rack
+                              </th>
+                              <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                Posición
+                              </th>
+                              <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                Cantidad
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            {ubicacionWms.map((ub, idx) => (
+                              <tr
+                                key={idx}
+                                className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors"
+                              >
+                                <td className="py-3 px-3 text-slate-700 dark:text-slate-300 font-medium">
+                                  <div className="flex items-center gap-2">
+                                    <MapPin className="w-3.5 h-3.5 text-centhrix-red shrink-0" />
+                                    {ub.warehouse?.name || ub.warehouseName || '-'}
+                                  </div>
+                                </td>
+                                <td className="py-3 px-3 text-slate-600 dark:text-slate-400">
+                                  {ub.zone?.name || ub.zoneName || '-'}
+                                </td>
+                                <td className="py-3 px-3 text-slate-600 dark:text-slate-400">
+                                  {ub.rack?.name || ub.rackName || ub.rack || '-'}
+                                </td>
+                                <td className="py-3 px-3 text-slate-600 dark:text-slate-400">
+                                  {ub.position?.name || ub.positionName || ub.position || '-'}
+                                </td>
+                                <td className="py-3 px-3 text-right font-semibold text-slate-700 dark:text-slate-300">
+                                  {Number(ub.quantity ?? ub.cantidad ?? 0).toLocaleString('es-CO')}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     )}
                   </div>
