@@ -498,18 +498,10 @@ const getDashboard = async (req, res) => {
       }),
       // KPIs de auditoría
       Operacion.count({
-        where: {
-          ...clienteFilter,
-          tipo: 'ingreso',
-          estado: { [Op.in]: ['pendiente', 'en_proceso'] },
-        },
+        where: { ...clienteFilter, tipo: 'ingreso', estado: 'pendiente' },
       }),
       Operacion.count({
-        where: {
-          ...clienteFilter,
-          tipo: 'salida',
-          estado: { [Op.in]: ['pendiente', 'en_proceso'] },
-        },
+        where: { ...clienteFilter, tipo: 'salida', estado: 'pendiente' },
       }),
       Operacion.count({ where: { ...clienteFilter, estado: 'en_proceso' } }),
       Operacion.count({
