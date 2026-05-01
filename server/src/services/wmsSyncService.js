@@ -263,8 +263,7 @@ const syncEntrada = async (data) => {
         total_referencias: skusUnicos,
         total_unidades: totalUnidades,
         estado: 'pendiente',
-        observaciones:
-          observaciones || `Entrada sincronizada desde WMS - ${tipo_documento || 'N/A'}`,
+        observaciones: observaciones || null,
         ...(conductor_nombre ? { conductor_nombre } : {}),
         ...(vehiculo_placa ? { vehiculo_placa } : {}),
       },
@@ -532,8 +531,7 @@ const syncSalida = async (data) => {
         total_referencias: skusUnicos,
         total_unidades: totalUnidades,
         estado: 'pendiente',
-        observaciones:
-          observaciones || `Salida sincronizada desde WMS - Picking ${numero_picking || 'N/A'}`,
+        observaciones: observaciones || null,
         ...(conductor_nombre ? { conductor_nombre } : {}),
         ...(vehiculo_placa ? { vehiculo_placa } : {}),
       },

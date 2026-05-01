@@ -1555,7 +1555,7 @@ const SalidaAuditoria = () => {
                             .filter((l) => !l.eliminado)
                             .reduce((acc, l) => {
                               if (!acc[l.sku]) acc[l.sku] = { ...l, cantidad_esperada: 0 };
-                              acc[l.sku].cantidad_esperada += l.cantidad_esperada || 0;
+                              acc[l.sku].cantidad_esperada += Number(l.cantidad_esperada) || 0;
                               return acc;
                             }, {})
                         ).map((l) => (

@@ -113,9 +113,9 @@ async function getPalletUbicacion(palletId) {
   return _normalizar(res.data);
 }
 
-async function getProductoUbicaciones(wmsProductId) {
+async function getProductoUbicaciones(_wmsProductId) {
   const res = await _http.get('/warehouses/search-details', {
-    params: { productId: wmsProductId, limit: 100, page: 1 },
+    params: { limit: 100, page: 1 },
   });
   return _normalizar(res.data, true);
 }
@@ -130,6 +130,30 @@ async function getProgresoPickin(id) {
   return _normalizar(res.data);
 }
 
+// ─── Forklift drivers / Kardex ────────────────────────────────────────────────
+
+async function searchPalletKardex(code) {
+  const res = await _http.get('/forklift-drivers/kardex/search-pallet', { params: { code } });
+  return _normalizar(res.data);
+}
+
+async function getKardexMotives() {
+  const res = await _http.get('/forklift-drivers/kardex/motives');
+  return _normalizar(res.data, true);
+}
+
+async function getKardexHistory(palletId, params = {}) {
+  const res = await _http.get('/forklift-drivers/kardex/history', {
+    params: { palletId, ...params },
+  });
+  return _normalizar(res.data);
+}
+
+async function postKardexAdjustment(body) {
+  const res = await _http.post('/forklift-drivers/kardex', body);
+  return _normalizar(res.data);
+}
+
 module.exports = {
   getOrdenes,
   getOrdenDetalle,
@@ -138,4 +162,8 @@ module.exports = {
   getProductoUbicaciones,
   getProgresoRecepcion,
   getProgresoPickin,
+  searchPalletKardex,
+  getKardexMotives,
+  getKardexHistory,
+  postKardexAdjustment,
 };

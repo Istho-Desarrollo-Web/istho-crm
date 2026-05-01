@@ -46,6 +46,40 @@ async function seed({ standalone = true } = {}) {
         orden: 2,
       },
 
+      // Motivos del WMS CenthriX (forklift-drivers/kardex/motives)
+      {
+        categoria: 'motivo_kardex',
+        valor_wms: 'Ajuste de inventario',
+        valor_crm: 'Ajuste de inventario',
+        requiere_detalle: false,
+        descripcion: 'Ajuste general de inventario registrado por montacarguista',
+        orden: 3,
+      },
+      {
+        categoria: 'motivo_kardex',
+        valor_wms: 'Cajas averiadas',
+        valor_crm: 'Cajas averiadas',
+        requiere_detalle: false,
+        descripcion: 'Descuento por daño físico de cajas/estibas',
+        orden: 4,
+      },
+      {
+        categoria: 'motivo_kardex',
+        valor_wms: 'Referencia a picking',
+        valor_crm: 'Referencia a picking',
+        requiere_detalle: false,
+        descripcion: 'Ajuste asociado a una orden de picking',
+        orden: 5,
+      },
+      {
+        categoria: 'motivo_kardex',
+        valor_wms: 'Unificación de cajas',
+        valor_crm: 'Unificación de cajas',
+        requiere_detalle: false,
+        descripcion: 'Consolidación de cajas en una sola estiba',
+        orden: 6,
+      },
+
       // ═══════════════════════════════════════════
       // MAPEO DE TIPOS DE ORDEN (FALLBACK)
       // ═══════════════════════════════════════════
