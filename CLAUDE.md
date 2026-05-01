@@ -75,5 +75,24 @@ Colores de charts centralizados en `frontend/src/utils/chartColors.js` → expor
 ## Roles (nivel jerárquico)
 admin(100) · supervisor(75) · financiera(60) · operador(50) · conductor(30) · cliente(10)
 
+## WMS Integration (CenthriX)
+
+### Modelo dual PUSH + PULL
+- **PUSH** (WMS → CRM): `POST /wms/sync/entrada|salida|kardex` con `X-WMS-API-Key`. Permanente.
+- **PULL** (cron cada `WMS_SYNC_INTERVAL` min): `server/src/jobs/wmsPollingJob.js` — consulta WMS y sincroniza órdenes finalizadas (`orderStatus.name === 'Finalizada'`).
+- Deduplicación: `wms_order_id` (UUID WMS en tabla `operaciones`) + `documento_wms` (número de orden).
+
+### Kardex desde app WMS
+- Ajustes kardex del WMS móvil llegan vía polling de historial por pallet (`_pollKardexHistorial`).
+- `CajaInventario` tiene `wms_pallet_id` (UUID) y `wms_kardex_ultima_sync` (DATE).
+- Primera vez que se descubre un pallet: **solo marcar timestamp**, NO procesar historial (evita floods).
+- Operación WMS: `"Carga"` → cantidad positiva; `"Descarga"` → cantidad negativa.
+
+### wms_sync_logs — reglas clave
+- PUSH logs: incluyen `payload` → re-ejecutables desde dashboard.
+- PULL logs: tipos `polling_entrada`/`polling_salida`, **sin `payload`** → NO re-ejecutables.
+- KPI aggregation: normalizar `.replace('polling_', '')` al acumular conteos por tipo.
+- NIT en polling: usar `ordenCompleta.customer?.nit` (del detalle), NO `orden.customer?.nit` (el listado no trae NIT).
+
 ## Docs
 `docs/WMS_API_SPEC.md` · `docs/FLUJOS_NEGOCIO.md` · `docs/API.md` · `docs/manuales/` · `DEPLOY.md`

@@ -1003,7 +1003,7 @@ const syncKardex = async (data) => {
 
     // Notificar usuarios del cliente + admins
     notificacionService
-      .notificarEntradaWms({
+      .notificarKardexWms({
         ...resultado,
         documento_wms: documento_origen || motivo,
       })

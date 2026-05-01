@@ -41,7 +41,7 @@ async function _descubrirPalletIds() {
 
 // ─── Kardex: polling de historial de ajustes ──────────────────────────────────
 async function _pollKardexHistorial() {
-  const { CajaInventario, Inventario, Cliente } = getModels();
+  const { CajaInventario, Inventario, Cliente, WmsSyncLog } = getModels();
 
   const cajas = await CajaInventario.findAll({
     where: { wms_pallet_id: { [Op.not]: null } },
@@ -88,23 +88,49 @@ async function _pollKardexHistorial() {
 
       for (const entry of nuevos) {
         const cantidad = entry.operation === 'Carga' ? entry.quantity : -entry.quantity;
-        await syncKardex({
-          nit,
-          motivo: entry.motive?.name,
-          detalles: [
-            {
-              producto: entry.product?.sku || caja.inventario?.sku,
-              descripcion: caja.inventario?.descripcion || caja.inventario?.producto,
-              caja: entry.palletCode || caja.numero_caja,
-              cantidad,
-              lote: caja.lote || null,
-              unidad_medida: caja.inventario?.unidad_medida || 'UND',
+        const palletCode = entry.palletCode || caja.numero_caja;
+        try {
+          const resultado = await syncKardex({
+            nit,
+            motivo: entry.motive?.name,
+            detalles: [
+              {
+                producto: entry.product?.sku || caja.inventario?.sku,
+                descripcion: caja.inventario?.descripcion || caja.inventario?.producto,
+                caja: palletCode,
+                cantidad,
+                lote: caja.lote || null,
+                unidad_medida: caja.inventario?.unidad_medida || 'UND',
+              },
+            ],
+          });
+          WmsSyncLog.create({
+            tipo: 'polling_kardex',
+            documento_origen: palletCode,
+            nit,
+            estado: 'exitoso',
+            detalles: {
+              operacion_id: resultado?.operacion_id,
+              numero_operacion: resultado?.numero_operacion,
+              motivo: entry.motive?.name,
+              operacion_wms: entry.operation,
+              cantidad: entry.quantity,
             },
-          ],
-        });
-        logger.info(
-          `[WmsPolling] Kardex sincronizado: caja=${entry.palletCode}, op=${entry.operation}, qty=${entry.quantity}, motivo=${entry.motive?.name}`
-        );
+          }).catch(() => {});
+          logger.info(
+            `[WmsPolling] Kardex sincronizado: caja=${palletCode}, op=${entry.operation}, qty=${entry.quantity}, motivo=${entry.motive?.name}`
+          );
+        } catch (entryErr) {
+          WmsSyncLog.create({
+            tipo: 'polling_kardex',
+            documento_origen: palletCode,
+            nit,
+            estado: 'fallido',
+            error_mensaje: entryErr.message,
+            detalles: { motivo: entry.motive?.name, operacion_wms: entry.operation },
+          }).catch(() => {});
+          logger.error(`[WmsPolling] Error kardex entrada ${palletCode}: ${entryErr.message}`);
+        }
       }
 
       // Actualizar timestamp al más reciente procesado

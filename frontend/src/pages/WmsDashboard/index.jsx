@@ -562,13 +562,7 @@ export default function WmsDashboard() {
                     Documento
                   </th>
                   <th className="text-left px-4 py-3 text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wide">
-                    NIT
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wide">
                     Estado
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wide">
-                    Detalles
                   </th>
                   <th className="text-left px-4 py-3 text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wide">
                     Error
@@ -582,7 +576,7 @@ export default function WmsDashboard() {
                 {loadingHistorial ? (
                   Array.from({ length: 8 }).map((_, i) => (
                     <tr key={i}>
-                      {Array.from({ length: 7 }).map((__, j) => (
+                      {Array.from({ length: 5 }).map((__, j) => (
                         <td key={j} className="px-4 py-3">
                           <div
                             className="h-4 bg-slate-100 dark:bg-slate-700 rounded animate-pulse"
@@ -594,7 +588,7 @@ export default function WmsDashboard() {
                   ))
                 ) : historial.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-5 py-14 text-center">
+                    <td colSpan={5} className="px-5 py-14 text-center">
                       <Activity className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
                       <p className="text-slate-500 dark:text-slate-400">
                         Sin registros de sincronización
@@ -615,41 +609,21 @@ export default function WmsDashboard() {
                       <td className="px-5 py-3">
                         <TipoBadge tipo={log.tipo} />
                       </td>
-                      <td className="px-4 py-3 text-slate-700 dark:text-slate-300 font-mono text-xs">
-                        {log.documento_origen || '—'}
-                      </td>
-                      <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">
-                        {log.nit || '—'}
+                      <td className="px-4 py-3">
+                        <div className="font-mono text-xs text-slate-700 dark:text-slate-300">
+                          {log.documento_origen || '—'}
+                        </div>
+                        {log.detalles?.numero_operacion && (
+                          <div className="font-mono text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                            {log.detalles.numero_operacion}
+                            {log.detalles.re_ejecucion && (
+                              <span className="ml-1 text-amber-500 dark:text-amber-400">(re-ej.)</span>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <EstadoBadge estado={log.estado} />
-                      </td>
-                      <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">
-                        {log.detalles ? (
-                          <>
-                            {log.detalles.numero_operacion && (
-                              <span className="font-mono">{log.detalles.numero_operacion} </span>
-                            )}
-                            {log.detalles.total_lineas != null &&
-                              `${log.detalles.total_lineas} lín. `}
-                            {log.detalles.total_unidades != null &&
-                              `${log.detalles.total_unidades} u.`}
-                            {log.detalles.creados != null && `${log.detalles.creados} creados`}
-                            {log.detalles.re_ejecucion && (
-                              <span className="ml-1 text-amber-600 dark:text-amber-400">
-                                (re-ej.)
-                              </span>
-                            )}
-                            {!log.detalles.numero_operacion &&
-                              log.detalles.total_lineas == null &&
-                              log.detalles.total_unidades == null &&
-                              log.detalles.creados == null &&
-                              !log.detalles.re_ejecucion &&
-                              '—'}
-                          </>
-                        ) : (
-                          '—'
-                        )}
                       </td>
                       <td className="px-4 py-3 max-w-xs">
                         {log.error_mensaje ? (

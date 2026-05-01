@@ -439,6 +439,22 @@ const notificarEntradaWms = async (resultado) => {
 };
 
 /**
+ * Notificar ajuste kardex sincronizado desde WMS
+ * Solo notifica a usuarios del cliente + admins
+ */
+const notificarKardexWms = async (resultado) => {
+  return notificarPorCliente(resultado.cliente_id, {
+    tipo: 'despacho',
+    titulo: `Kardex WMS: ${resultado.numero_operacion}`,
+    mensaje: `Se sincronizó ajuste kardex ${resultado.documento_wms} para ${resultado.cliente} (${resultado.total_lineas} líneas, ${resultado.total_unidades} uds).`,
+    prioridad: 'normal',
+    accion_url: `/operaciones/kardex/${resultado.operacion_id}`,
+    accion_label: 'Ver kardex',
+    metadata: resultado,
+  });
+};
+
+/**
  * Notificar salida sincronizada desde WMS
  * Solo notifica a usuarios del cliente + admins
  */
@@ -555,6 +571,7 @@ module.exports = {
   notificarOperacionCerrada,
   notificarSyncWms,
   notificarEntradaWms,
+  notificarKardexWms,
   notificarSalidaWms,
   notificarClienteCreado,
   notificarClienteEliminado,

@@ -13,7 +13,8 @@ module.exports = (sequelize) => {
           'kardex',
           'batch',
           'polling_entrada',
-          'polling_salida'
+          'polling_salida',
+          'polling_kardex'
         ),
         allowNull: false,
       },
