@@ -94,6 +94,14 @@ async function _pollKardexHistorial() {
         const cantidad = entry.operation === 'Carga' ? entry.quantity : -entry.quantity;
         const palletCode = entry.palletCode || caja.numero_caja;
 
+        // Ignorar movimientos operacionales del WMS (generados por órdenes de picking/recepción).
+        // Esos movimientos ya son sincronizados por el polling de órdenes — no crear kardex duplicado.
+        const motivoNombre = (entry.motive?.name || '').toLowerCase();
+        if (motivoNombre.includes('picking') || motivoNombre.includes('orden de')) {
+          logger.debug(`[WmsPolling] Kardex operacional ignorado: "${entry.motive?.name}" (pallet ${palletCode})`);
+          continue;
+        }
+
         // Clave única del ajuste: palletCode + timestamp + operación + cantidad
         const entryKey = `${palletCode}::${entry.createdAt}::${entry.operation}::${entry.quantity}`.substring(0, 150);
 
@@ -103,9 +111,9 @@ async function _pollKardexHistorial() {
           continue;
         }
 
-        // Deduplicación entre ciclos (ciclos anteriores ya lo procesaron)
+        // Deduplicación entre ciclos (exitoso o fallido — no reintentar indefinidamente)
         const yaExiste = await WmsSyncLog.findOne({
-          where: { tipo: 'polling_kardex', estado: 'exitoso', documento_origen: entryKey },
+          where: { tipo: 'polling_kardex', documento_origen: entryKey },
         });
         if (yaExiste) {
           procesadasEnCiclo.add(entryKey);
