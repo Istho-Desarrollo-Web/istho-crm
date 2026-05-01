@@ -262,7 +262,15 @@ const getPalletUbicacion = async (req, res) => {
     const datos = await wmsApiService.getPalletUbicacion(wmspalletId);
     return success(res, datos, 'Ubicación del pallet obtenida');
   } catch (error) {
-    logger.error('[WMS Dashboard] Error getPalletUbicacion:', { message: error.message });
+    const wmsStatus = error.response?.status;
+    logger.error('[WMS Dashboard] Error getPalletUbicacion:', {
+      message: error.message,
+      wmsStatus,
+      wmsData: error.response?.data,
+    });
+    if (wmsStatus === 400 || wmsStatus === 404) {
+      return res.status(404).json({ success: false, message: 'Pallet no encontrado en WMS' });
+    }
     return res.status(503).json({ success: false, message: 'WMS no disponible temporalmente' });
   }
 };
@@ -302,7 +310,19 @@ const getProductoUbicaciones = async (req, res) => {
     const ubicaciones = await wmsApiService.getProductoUbicaciones(producto.codigo_wms, bodegaId);
     return success(res, { ubicaciones }, 'Ubicaciones obtenidas');
   } catch (error) {
-    logger.error('[WMS Dashboard] Error getProductoUbicaciones:', { message: error.message });
+    const wmsStatus = error.response?.status;
+    const wmsData = error.response?.data;
+    logger.error('[WMS Dashboard] Error getProductoUbicaciones:', {
+      message: error.message,
+      wmsStatus,
+      wmsData,
+    });
+    if (wmsStatus === 400 || wmsStatus === 404) {
+      return res.status(404).json({
+        success: false,
+        message: wmsData?.message || 'Ubicación no disponible en WMS para este producto',
+      });
+    }
     return res.status(503).json({ success: false, message: 'WMS no disponible temporalmente' });
   }
 };
