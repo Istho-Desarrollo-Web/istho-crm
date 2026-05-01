@@ -1579,15 +1579,21 @@ const KardexAuditoria = () => {
                         className="w-full appearance-none pl-4 pr-10 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all cursor-pointer hover:border-amber-400 dark:hover:border-amber-500/50"
                       >
                         <option value="">-- Seleccionar producto --</option>
-                        {lineas
-                          .filter((l) => !l.eliminado)
-                          .map((l) => (
-                            <option key={l.id} value={l.id}>
-                              {l.sku} — {l.producto} {l.caja ? `(${l.caja})` : ''} (
-                              {new Intl.NumberFormat('es-CO').format(l.cantidad_esperada)}{' '}
-                              {l.unidad || 'UND'})
-                            </option>
-                          ))}
+                        {Object.values(
+                          lineas
+                            .filter((l) => !l.eliminado)
+                            .reduce((acc, l) => {
+                              if (!acc[l.sku]) acc[l.sku] = { ...l, cantidad_esperada: 0 };
+                              acc[l.sku].cantidad_esperada += l.cantidad_esperada || 0;
+                              return acc;
+                            }, {})
+                        ).map((l) => (
+                          <option key={l.sku} value={l.id}>
+                            {l.sku} — {l.producto} (
+                            {new Intl.NumberFormat('es-CO').format(l.cantidad_esperada)}{' '}
+                            {l.unidad || 'UND'})
+                          </option>
+                        ))}
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>
