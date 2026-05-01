@@ -5,10 +5,118 @@ const { Op } = require('sequelize');
 const logger = require('../utils/logger');
 const wmsApiService = require('../services/wmsApiService');
 const wmsOrderMapper = require('../services/wmsOrderMapper');
-const { syncEntrada, syncSalida } = require('../services/wmsSyncService');
+const { syncEntrada, syncSalida, syncKardex } = require('../services/wmsSyncService');
 
 // Importación diferida para evitar circular en startup
 const getModels = () => require('../models');
+
+// ─── Kardex: descubrimiento de wms_pallet_id ─────────────────────────────────
+async function _descubrirPalletIds() {
+  const { CajaInventario } = getModels();
+
+  const cajas = await CajaInventario.findAll({
+    where: {
+      wms_pallet_id: null,
+      numero_caja: { [Op.not]: null },
+    },
+    limit: 10,
+  });
+
+  if (cajas.length === 0) return;
+  logger.debug(`[WmsPolling] Descubriendo wms_pallet_id para ${cajas.length} cajas...`);
+
+  for (const caja of cajas) {
+    try {
+      const pallet = await wmsApiService.searchPalletKardex(String(caja.numero_caja));
+      const palletId = pallet?.id ?? pallet?.palletId;
+      if (palletId) {
+        await caja.update({ wms_pallet_id: palletId });
+        logger.info(`[WmsPolling] wms_pallet_id guardado: caja ${caja.numero_caja} → ${palletId}`);
+      }
+    } catch {
+      // El WMS no conoce esta caja — omitir silenciosamente
+    }
+  }
+}
+
+// ─── Kardex: polling de historial de ajustes ──────────────────────────────────
+async function _pollKardexHistorial() {
+  const { CajaInventario, Inventario, Cliente } = getModels();
+
+  const cajas = await CajaInventario.findAll({
+    where: { wms_pallet_id: { [Op.not]: null } },
+    include: [
+      {
+        model: Inventario,
+        as: 'inventario',
+        include: [{ model: Cliente, as: 'cliente' }],
+      },
+    ],
+  });
+
+  if (cajas.length === 0) return;
+  logger.debug(`[WmsPolling] Revisando kardex de ${cajas.length} cajas...`);
+
+  for (const caja of cajas) {
+    try {
+      const items = await wmsApiService.getKardexHistory(caja.wms_pallet_id, {
+        limit: 50,
+        page: 1,
+      });
+      const historial = Array.isArray(items) ? items : [];
+
+      // Primera vez: sólo marcar timestamp, no procesar histórico
+      if (!caja.wms_kardex_ultima_sync) {
+        const masReciente = historial[0];
+        await caja.update({
+          wms_kardex_ultima_sync: masReciente
+            ? new Date(masReciente.createdAt)
+            : new Date(),
+        });
+        continue;
+      }
+
+      const ultimaSync = new Date(caja.wms_kardex_ultima_sync);
+      const nuevos = historial.filter((e) => new Date(e.createdAt) > ultimaSync);
+      if (nuevos.length === 0) continue;
+
+      const nit = caja.inventario?.cliente?.nit;
+      if (!nit) {
+        logger.warn(`[WmsPolling] Kardex: sin NIT para caja ${caja.numero_caja}, omitiendo`);
+        continue;
+      }
+
+      for (const entry of nuevos) {
+        const cantidad = entry.operation === 'Carga' ? entry.quantity : -entry.quantity;
+        await syncKardex({
+          nit,
+          motivo: entry.motive?.name,
+          detalles: [
+            {
+              producto: entry.product?.sku || caja.inventario?.sku,
+              descripcion: caja.inventario?.descripcion || caja.inventario?.producto,
+              caja: entry.palletCode || caja.numero_caja,
+              cantidad,
+              lote: caja.lote || null,
+              unidad_medida: caja.inventario?.unidad_medida || 'UND',
+            },
+          ],
+        });
+        logger.info(
+          `[WmsPolling] Kardex sincronizado: caja=${entry.palletCode}, op=${entry.operation}, qty=${entry.quantity}, motivo=${entry.motive?.name}`
+        );
+      }
+
+      // Actualizar timestamp al más reciente procesado
+      const masRecienteNuevo = nuevos.reduce((max, e) =>
+        new Date(e.createdAt) > new Date(max.createdAt) ? e : max
+      );
+      await caja.update({ wms_kardex_ultima_sync: new Date(masRecienteNuevo.createdAt) });
+    } catch (err) {
+      logger.error(`[WmsPolling] Error kardex caja ${caja.numero_caja}: ${err.message}`);
+    }
+  }
+}
 
 // ─── Estado interno ───────────────────────────────────────────────────────────
 let _pollingJob = null;
@@ -123,6 +231,14 @@ async function _ejecutarPoll() {
     }
 
     logger.info(`[WmsPolling] Ciclo completo — procesadas: ${procesadas}, errores: ${errores}`);
+
+    // Kardex: descubrir IDs de pallets nuevos y sincronizar ajustes recientes
+    await _descubrirPalletIds().catch((err) =>
+      logger.error('[WmsPolling] Error en descubrimiento de pallets:', err.message)
+    );
+    await _pollKardexHistorial().catch((err) =>
+      logger.error('[WmsPolling] Error en polling kardex:', err.message)
+    );
   } finally {
     _ejecutando = false;
   }

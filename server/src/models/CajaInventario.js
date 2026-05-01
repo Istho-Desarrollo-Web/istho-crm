@@ -143,6 +143,18 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
+
+      wms_pallet_id: {
+        type: DataTypes.STRING(36),
+        allowNull: true,
+        comment: 'UUID del pallet en el WMS (para polling de historial kardex)',
+      },
+
+      wms_kardex_ultima_sync: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: 'Timestamp del último ajuste kardex sincronizado desde el WMS',
+      },
     },
     {
       tableName: 'caja_inventario',
