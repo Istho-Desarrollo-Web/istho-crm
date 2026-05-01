@@ -290,6 +290,14 @@ const getProductoUbicaciones = async (req, res) => {
       });
     }
 
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE.test(producto.codigo_wms)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Código WMS pendiente de actualización en el próximo ciclo de sincronización',
+      });
+    }
+
     const bodegaId = warehouseId || null;
     const ubicaciones = await wmsApiService.getProductoUbicaciones(producto.codigo_wms, bodegaId);
     return success(res, { ubicaciones }, 'Ubicaciones obtenidas');

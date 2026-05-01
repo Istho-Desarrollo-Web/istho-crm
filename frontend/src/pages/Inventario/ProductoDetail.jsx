@@ -557,7 +557,13 @@ const ProductoDetail = () => {
     wmsUbicacionService
       .getProductoUbicaciones(id)
       .then((res) => setUbicacionWms(res?.data?.ubicaciones || []))
-      .catch(() => setErrorUbicacion(true))
+      .catch((err) => {
+        if (err?.response?.status === 404) {
+          setUbicacionWms([]);
+        } else {
+          setErrorUbicacion(true);
+        }
+      })
       .finally(() => setLoadingUbicacion(false));
   }, [esWMS, id]);
 
