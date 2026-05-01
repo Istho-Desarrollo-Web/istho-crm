@@ -207,9 +207,13 @@ async function _ejecutarPoll() {
         await WmsSyncLog.create({
           tipo: tipoLog,
           documento_origen: orden.systemNumberOrder,
-          nit: orden.customer?.nit,
+          nit: ordenCompleta.customer?.nit,
           estado: 'exitoso',
-          detalles: { wms_order_id: orden.id, operacion_id: resultado?.operacion_id },
+          detalles: {
+            wms_order_id: orden.id,
+            operacion_id: resultado?.operacion_id,
+            numero_operacion: resultado?.numero_operacion,
+          },
         });
 
         procesadas++;

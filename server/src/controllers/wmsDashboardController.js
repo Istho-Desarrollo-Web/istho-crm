@@ -95,7 +95,9 @@ const getEstadisticas = async (req, res) => {
 
     const tipoMap = { entrada: 0, salida: 0, kardex: 0, productos: 0 };
     porTipo.forEach((r) => {
-      tipoMap[r.tipo] = parseInt(r.cantidad);
+      // polling_entrada → entrada, polling_salida → salida, etc.
+      const clave = r.tipo.replace('polling_', '');
+      if (clave in tipoMap) tipoMap[clave] += parseInt(r.cantidad);
     });
 
     const estadoMap = { exitoso: 0, fallido: 0 };
@@ -167,7 +169,7 @@ const reejecutarUltimoSync = async (req, res) => {
   try {
     const { tipo } = req.body;
 
-    const where = { estado: 'exitoso' };
+    const where = { estado: 'exitoso', payload: { [Op.not]: null } };
     if (tipo) where.tipo = tipo;
 
     const ultimo = await WmsSyncLog.findOne({
@@ -175,12 +177,12 @@ const reejecutarUltimoSync = async (req, res) => {
       order: [['created_at', 'DESC']],
     });
 
-    if (!ultimo || !ultimo.payload) {
+    if (!ultimo) {
       return res.status(404).json({
         success: false,
         message: tipo
-          ? `No se encontró un sync exitoso de tipo "${tipo}" para re-ejecutar`
-          : 'No se encontró ningún sync exitoso para re-ejecutar',
+          ? `No se encontró un sync exitoso de tipo "${tipo}" con payload para re-ejecutar`
+          : 'No se encontró ningún sync con payload para re-ejecutar (los syncs de polling no son re-ejecutables)',
       });
     }
 

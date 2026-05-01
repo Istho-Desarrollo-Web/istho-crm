@@ -40,6 +40,9 @@ const TIPO_LABEL = {
   kardex: 'Kardex',
   productos: 'Productos',
   batch: 'Batch',
+  polling_entrada: 'Entrada (polling)',
+  polling_salida: 'Salida (polling)',
+  polling_kardex: 'Kardex (polling)',
 };
 
 const TIPO_COLOR = {
@@ -48,6 +51,9 @@ const TIPO_COLOR = {
   kardex: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
   productos: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
   batch: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+  polling_entrada: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+  polling_salida: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+  polling_kardex: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
 };
 
 const formatFecha = (iso) => {
@@ -503,11 +509,14 @@ export default function WmsDashboard() {
                 className={inputCls}
               >
                 <option value="">Todos los tipos</option>
-                <option value="entrada">Entrada</option>
-                <option value="salida">Salida</option>
-                <option value="kardex">Kardex</option>
+                <option value="entrada">Entrada (PUSH)</option>
+                <option value="salida">Salida (PUSH)</option>
+                <option value="kardex">Kardex (PUSH)</option>
                 <option value="productos">Productos</option>
                 <option value="batch">Batch</option>
+                <option value="polling_entrada">Entrada (polling)</option>
+                <option value="polling_salida">Salida (polling)</option>
+                <option value="polling_kardex">Kardex (polling)</option>
               </select>
               <select
                 value={filtros.estado}
@@ -618,6 +627,9 @@ export default function WmsDashboard() {
                       <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">
                         {log.detalles ? (
                           <>
+                            {log.detalles.numero_operacion && (
+                              <span className="font-mono">{log.detalles.numero_operacion} </span>
+                            )}
                             {log.detalles.total_lineas != null &&
                               `${log.detalles.total_lineas} lín. `}
                             {log.detalles.total_unidades != null &&
@@ -628,6 +640,12 @@ export default function WmsDashboard() {
                                 (re-ej.)
                               </span>
                             )}
+                            {!log.detalles.numero_operacion &&
+                              log.detalles.total_lineas == null &&
+                              log.detalles.total_unidades == null &&
+                              log.detalles.creados == null &&
+                              !log.detalles.re_ejecucion &&
+                              '—'}
                           </>
                         ) : (
                           '—'
