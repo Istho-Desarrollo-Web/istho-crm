@@ -1159,16 +1159,13 @@ const ProductoDetail = () => {
                           <thead>
                             <tr className="border-b border-slate-200 dark:border-slate-700">
                               <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                Bodega
+                                Posición en bodega
                               </th>
                               <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                 Zona
                               </th>
                               <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                Rack
-                              </th>
-                              <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                Posición
+                                Lote
                               </th>
                               <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                 Cantidad
@@ -1181,23 +1178,20 @@ const ProductoDetail = () => {
                                 key={idx}
                                 className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors"
                               >
-                                <td className="py-3 px-3 text-slate-700 dark:text-slate-300 font-medium">
+                                <td className="py-3 px-3 text-slate-700 dark:text-slate-300 font-medium font-mono">
                                   <div className="flex items-center gap-2">
                                     <MapPin className="w-3.5 h-3.5 text-centhrix-red shrink-0" />
-                                    {ub.warehouse?.name || ub.warehouseName || '-'}
+                                    {ub.coordenada || '-'}
                                   </div>
                                 </td>
                                 <td className="py-3 px-3 text-slate-600 dark:text-slate-400">
-                                  {ub.zone?.name || ub.zoneName || '-'}
+                                  {ub.zona || '-'}
                                 </td>
-                                <td className="py-3 px-3 text-slate-600 dark:text-slate-400">
-                                  {ub.rack?.name || ub.rackName || ub.rack || '-'}
-                                </td>
-                                <td className="py-3 px-3 text-slate-600 dark:text-slate-400">
-                                  {ub.position?.name || ub.positionName || ub.position || '-'}
+                                <td className="py-3 px-3 text-slate-600 dark:text-slate-400 font-mono text-xs">
+                                  {ub.lote || '-'}
                                 </td>
                                 <td className="py-3 px-3 text-right font-semibold text-slate-700 dark:text-slate-300">
-                                  {Number(ub.quantity ?? ub.cantidad ?? 0).toLocaleString('es-CO')}
+                                  {Number(ub.cantidad ?? 0).toLocaleString('es-CO')}
                                 </td>
                               </tr>
                             ))}

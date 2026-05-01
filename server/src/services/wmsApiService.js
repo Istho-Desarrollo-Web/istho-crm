@@ -113,10 +113,10 @@ async function getPalletUbicacion(palletId) {
   return _normalizar(res.data);
 }
 
-async function getProductoUbicaciones(wmsProductId, wmsWarehouseId) {
-  const params = { productId: wmsProductId };
-  if (wmsWarehouseId) params.warehouseId = wmsWarehouseId;
-  const res = await _http.get('/products/find-all-locations', { params });
+async function getProductoUbicaciones(wmsProductId) {
+  const res = await _http.get('/warehouses/search-details', {
+    params: { productId: wmsProductId, limit: 100, page: 1 },
+  });
   return _normalizar(res.data, true);
 }
 

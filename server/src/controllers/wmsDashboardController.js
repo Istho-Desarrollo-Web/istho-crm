@@ -276,7 +276,7 @@ const getPalletUbicacion = async (req, res) => {
 };
 
 const getProductoUbicaciones = async (req, res) => {
-  const { inventarioId, warehouseId } = req.query;
+  const { inventarioId } = req.query;
 
   if (!inventarioId) {
     return res.status(400).json({ success: false, message: 'inventarioId es requerido' });
@@ -306,8 +306,20 @@ const getProductoUbicaciones = async (req, res) => {
       });
     }
 
-    const bodegaId = warehouseId || null;
-    const ubicaciones = await wmsApiService.getProductoUbicaciones(producto.codigo_wms, bodegaId);
+    const pallets = await wmsApiService.getProductoUbicaciones(producto.codigo_wms);
+
+    // Filtrar por productId por si el WMS no filtra en servidor
+    const ubicaciones = pallets
+      .filter((p) => p.productId === producto.codigo_wms)
+      .map((p) => ({
+        coordenada: p.coordinate,
+        zona: p.zoneName || null,
+        posicion: p.positionName || null,
+        nivel: p.levelName || null,
+        cantidad: p.quantity,
+        lote: p.lot || null,
+      }));
+
     return success(res, { ubicaciones }, 'Ubicaciones obtenidas');
   } catch (error) {
     const wmsStatus = error.response?.status;
