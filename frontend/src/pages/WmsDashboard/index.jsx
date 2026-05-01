@@ -611,7 +611,7 @@ export default function WmsDashboard() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="font-mono text-xs text-slate-700 dark:text-slate-300">
-                          {log.documento_origen || '—'}
+                          {log.detalles?.pallet_code || log.documento_origen || '—'}
                         </div>
                         {log.detalles?.numero_operacion && (
                           <div className="font-mono text-xs text-slate-400 dark:text-slate-500 mt-0.5">

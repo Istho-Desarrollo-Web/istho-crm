@@ -57,6 +57,10 @@ async function _pollKardexHistorial() {
   if (cajas.length === 0) return;
   logger.debug(`[WmsPolling] Revisando kardex de ${cajas.length} cajas...`);
 
+  // Deduplicación dentro del ciclo: evita procesar el mismo ajuste
+  // si varias cajas CRM apuntan al mismo palletCode WMS
+  const procesadasEnCiclo = new Set();
+
   for (const caja of cajas) {
     try {
       const items = await wmsApiService.getKardexHistory(caja.wms_pallet_id, {
@@ -89,6 +93,27 @@ async function _pollKardexHistorial() {
       for (const entry of nuevos) {
         const cantidad = entry.operation === 'Carga' ? entry.quantity : -entry.quantity;
         const palletCode = entry.palletCode || caja.numero_caja;
+
+        // Clave única del ajuste: palletCode + timestamp + operación + cantidad
+        const entryKey = `${palletCode}::${entry.createdAt}::${entry.operation}::${entry.quantity}`.substring(0, 150);
+
+        // Deduplicación dentro del ciclo (múltiples cajas CRM → mismo pallet WMS)
+        if (procesadasEnCiclo.has(entryKey)) {
+          logger.debug(`[WmsPolling] Kardex duplicado (ciclo): ${entryKey}`);
+          continue;
+        }
+
+        // Deduplicación entre ciclos (ciclos anteriores ya lo procesaron)
+        const yaExiste = await WmsSyncLog.findOne({
+          where: { tipo: 'polling_kardex', estado: 'exitoso', documento_origen: entryKey },
+        });
+        if (yaExiste) {
+          procesadasEnCiclo.add(entryKey);
+          continue;
+        }
+
+        procesadasEnCiclo.add(entryKey);
+
         try {
           const resultado = await syncKardex({
             nit,
@@ -106,7 +131,7 @@ async function _pollKardexHistorial() {
           });
           WmsSyncLog.create({
             tipo: 'polling_kardex',
-            documento_origen: palletCode,
+            documento_origen: entryKey,
             nit,
             estado: 'exitoso',
             detalles: {
@@ -115,6 +140,7 @@ async function _pollKardexHistorial() {
               motivo: entry.motive?.name,
               operacion_wms: entry.operation,
               cantidad: entry.quantity,
+              pallet_code: palletCode,
             },
           }).catch(() => {});
           logger.info(
@@ -123,11 +149,11 @@ async function _pollKardexHistorial() {
         } catch (entryErr) {
           WmsSyncLog.create({
             tipo: 'polling_kardex',
-            documento_origen: palletCode,
+            documento_origen: entryKey,
             nit,
             estado: 'fallido',
             error_mensaje: entryErr.message,
-            detalles: { motivo: entry.motive?.name, operacion_wms: entry.operation },
+            detalles: { motivo: entry.motive?.name, operacion_wms: entry.operation, pallet_code: palletCode },
           }).catch(() => {});
           logger.error(`[WmsPolling] Error kardex entrada ${palletCode}: ${entryErr.message}`);
         }
