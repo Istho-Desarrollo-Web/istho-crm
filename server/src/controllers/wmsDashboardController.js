@@ -16,6 +16,9 @@ const { success, paginated, serverError } = require('../utils/responses');
 const { parsePaginacion, buildPaginacion } = require('../utils/helpers');
 const logger = require('../utils/logger');
 
+// Importación diferida para evitar circular en startup
+const getPollingJob = () => require('../jobs/wmsPollingJob');
+
 // ============================================================================
 // STATUS / ESTADO DE CONEXIÓN
 // ============================================================================
@@ -34,6 +37,13 @@ const getStatus = async (req, res) => {
       },
     });
 
+    let polling = { activo: false, ejecutando: false };
+    if (process.env.WMS_URL && process.env.WMS_EMAIL) {
+      try {
+        polling = getPollingJob().getEstadoPolling();
+      } catch { /* polling no iniciado */ }
+    }
+
     return success(res, {
       api_activa: true,
       version: '1.0.0',
@@ -41,6 +51,7 @@ const getStatus = async (req, res) => {
       ultimo_sync_exitoso: ultimoExitoso?.created_at || null,
       ultimo_tipo: ultimoSync?.tipo || null,
       fallidos_24h: totalFallidos24h,
+      polling,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
@@ -255,6 +266,47 @@ const reejecutarUltimoSync = async (req, res) => {
 };
 
 // ============================================================================
+// EJECUTAR POLLING MANUAL
+// ============================================================================
+
+const ejecutarPolling = async (req, res) => {
+  try {
+    if (!process.env.WMS_URL || !process.env.WMS_EMAIL) {
+      return res.status(503).json({
+        success: false,
+        message: 'El polling WMS no está configurado en este entorno (faltan WMS_URL / WMS_EMAIL)',
+      });
+    }
+
+    const pollingJob = getPollingJob();
+    const estado = pollingJob.getEstadoPolling();
+
+    if (estado.ejecutando) {
+      return res.status(409).json({
+        success: false,
+        message: 'El polling ya está en ejecución. Espera a que termine antes de lanzarlo nuevamente.',
+      });
+    }
+
+    logger.info('[WMS Dashboard] Polling manual solicitado desde dashboard');
+
+    // Ejecutar en segundo plano: responde de inmediato y el ciclo corre asíncronamente
+    pollingJob.ejecutarPollingManual().catch((err) =>
+      logger.error('[WMS Dashboard] Error en polling manual:', err.message)
+    );
+
+    return success(
+      res,
+      { iniciado: true },
+      'Ciclo de polling iniciado. Los resultados aparecerán en el historial en unos segundos.'
+    );
+  } catch (error) {
+    logger.error('[WMS Dashboard] Error en ejecutarPolling:', { message: error.message });
+    return serverError(res, 'Error al iniciar polling', error);
+  }
+};
+
+// ============================================================================
 // UBICACIÓN DE PALLETS Y PRODUCTOS EN BODEGA (WMS API)
 // ============================================================================
 
@@ -346,6 +398,7 @@ module.exports = {
   getEstadisticas,
   getHistorial,
   reejecutarUltimoSync,
+  ejecutarPolling,
   getPalletUbicacion,
   getProductoUbicaciones,
 };

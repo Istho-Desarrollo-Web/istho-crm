@@ -36,6 +36,11 @@ router.post(
   requierePermiso('configuracion_wms', 'ver'),
   wmsDashboardController.reejecutarUltimoSync
 );
+router.post(
+  '/polling/ejecutar',
+  requierePermiso('configuracion_wms', 'ver'),
+  wmsDashboardController.ejecutarPolling
+);
 
 // Ubicación física de pallets y productos en bodega (consume WMS API directamente)
 router.get(

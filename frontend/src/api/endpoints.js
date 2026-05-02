@@ -283,6 +283,7 @@ export const WMS_DASHBOARD_ENDPOINTS = {
   ESTADISTICAS: '/wms/dashboard/estadisticas',
   HISTORIAL: '/wms/dashboard/historial',
   REEJECUTAR: '/wms/dashboard/reejecutar',
+  POLLING_EJECUTAR: '/wms/dashboard/polling/ejecutar',
   UBICACION_PALLET: (id) => `/wms/dashboard/ubicacion/pallet/${id}`,
   UBICACION_PRODUCTO: '/wms/dashboard/ubicacion/producto',
 };

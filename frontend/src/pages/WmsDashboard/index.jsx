@@ -26,6 +26,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Zap,
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import wmsDashboardService from '@api/wmsDashboard.service';
@@ -209,6 +210,7 @@ export default function WmsDashboard() {
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingHistorial, setLoadingHistorial] = useState(true);
   const [loadingReej, setLoadingReej] = useState(false);
+  const [loadingPolling, setLoadingPolling] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [tipoReej, setTipoReej] = useState('');
   const [filtros, setFiltros] = useState({
@@ -280,6 +282,20 @@ export default function WmsDashboard() {
   const limpiarFiltros = () => {
     setFiltros({ tipo: '', estado: '', fecha_desde: '', fecha_hasta: '' });
     setPage(1);
+  };
+
+  const handleEjecutarPolling = async () => {
+    setLoadingPolling(true);
+    try {
+      const res = await wmsDashboardService.ejecutarPolling();
+      enqueueSnackbar(res.data?.message || 'Polling iniciado correctamente', { variant: 'success' });
+      setTimeout(handleRefresh, 3000);
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || 'Error al iniciar polling';
+      enqueueSnackbar(msg, { variant: 'error' });
+    } finally {
+      setLoadingPolling(false);
+    }
   };
 
   const handleReejecutar = async () => {
@@ -357,6 +373,20 @@ export default function WmsDashboard() {
             </button>
 
             <button
+              onClick={handleEjecutarPolling}
+              disabled={loadingPolling || status?.polling?.ejecutando}
+              title={status?.polling?.ejecutando ? 'El polling ya está en ejecución' : 'Ejecutar ciclo de polling ahora'}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium shadow-sm transition-colors"
+            >
+              {loadingPolling || status?.polling?.ejecutando ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Zap className="w-4 h-4" />
+              )}
+              {status?.polling?.ejecutando ? 'Polling en curso...' : 'Ejecutar polling'}
+            </button>
+
+            <button
               onClick={() => setShowModal(true)}
               className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-[#E74C3C] hover:bg-[#C0392B] text-white text-sm font-medium shadow-sm transition-colors"
             >
@@ -392,6 +422,12 @@ export default function WmsDashboard() {
                 {status.fallidos_24h}
               </strong>
             </span>
+            {status.polling?.activo && (
+              <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                <span className={`inline-block w-2 h-2 rounded-full ${status.polling.ejecutando ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
+                Polling {status.polling.ejecutando ? 'ejecutando' : 'activo'}
+              </span>
+            )}
             <span className="ml-auto text-xs text-slate-400 dark:text-slate-500">
               v{status.version}
             </span>

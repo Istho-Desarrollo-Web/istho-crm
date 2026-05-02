@@ -10,6 +10,9 @@ const wmsDashboardService = {
 
   reejecutar: (tipo = null) =>
     apiClient.post(WMS_DASHBOARD_ENDPOINTS.REEJECUTAR, tipo ? { tipo } : {}),
+
+  ejecutarPolling: () =>
+    apiClient.post(WMS_DASHBOARD_ENDPOINTS.POLLING_EJECUTAR),
 };
 
 export default wmsDashboardService;
