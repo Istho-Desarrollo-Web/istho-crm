@@ -34,8 +34,6 @@ import {
   AlertTriangle,
   FileText,
   BoxIcon,
-  ArrowDownToLine,
-  ArrowUpFromLine,
   Lock,
   MapPin,
   WifiOff,
@@ -695,33 +693,33 @@ const ProductoDetail = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
         {/* HEADER */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+          <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => navigate('/inventario')}
-              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-centhrix-surface rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-centhrix-surface rounded-xl transition-colors flex-shrink-0"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-slate-100 dark:bg-centhrix-surface rounded-2xl flex items-center justify-center">
-                <Package className="w-7 h-7 text-slate-600 dark:text-slate-300" />
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-slate-100 dark:bg-centhrix-surface rounded-2xl flex items-center justify-center flex-shrink-0">
+                <Package className="w-5 h-5 sm:w-7 sm:h-7 text-slate-600 dark:text-slate-300" />
               </div>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-slate-100 leading-tight">
                     {producto.nombre || producto.producto}
                   </h1>
                   <StatusChip status={producto.estado} />
                 </div>
-                <p className="text-slate-500 dark:text-slate-400">
+                <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
                   {producto.codigo || producto.sku} • {clienteNombre}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {esWMS && (
               <span className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-lg border border-blue-200 dark:border-blue-800">
                 <Lock className="w-3.5 h-3.5" />
@@ -835,12 +833,12 @@ const ProductoDetail = () => {
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
               <div className="border-b border-gray-100 dark:border-slate-700">
-                <nav className="flex px-6">
+                <nav className="flex px-2 sm:px-6 overflow-x-auto scrollbar-none">
                   {tabs.map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`py-4 px-4 text-sm font-medium transition-colors relative ${
+                      className={`py-4 px-3 sm:px-4 text-sm font-medium transition-colors relative whitespace-nowrap flex-shrink-0 ${
                         activeTab === tab.id
                           ? 'text-orange-600 dark:text-orange-400'
                           : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
@@ -855,7 +853,7 @@ const ProductoDetail = () => {
                 </nav>
               </div>
 
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {/* Tab: Información */}
                 {activeTab === 'info' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -970,20 +968,11 @@ const ProductoDetail = () => {
                               <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
                                 Lote
                               </th>
-                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
-                                Ubicacion
-                              </th>
                               <th className="text-right py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
                                 Cantidad
                               </th>
                               <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
-                                Tipo
-                              </th>
-                              <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
                                 Estado
-                              </th>
-                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
-                                Operacion
                               </th>
                               <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
                                 Documento
@@ -1005,24 +994,8 @@ const ProductoDetail = () => {
                                 <td className="py-3 px-2 font-mono text-slate-600 dark:text-slate-400">
                                   {caja.lote}
                                 </td>
-                                <td className="py-3 px-2 font-mono text-slate-600 dark:text-slate-400">
-                                  {caja.ubicacion || '-'}
-                                </td>
                                 <td className="py-3 px-2 text-right font-medium text-slate-800 dark:text-slate-200">
                                   {formatNumber(caja.cantidad)}
-                                </td>
-                                <td className="py-3 px-2 text-center">
-                                  {caja.tipo === 'entrada' ? (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">
-                                      <ArrowDownToLine className="w-3 h-3" />
-                                      Entrada
-                                    </span>
-                                  ) : (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-medium">
-                                      <ArrowUpFromLine className="w-3 h-3" />
-                                      Salida
-                                    </span>
-                                  )}
                                 </td>
                                 <td className="py-3 px-2 text-center">
                                   <span
@@ -1040,14 +1013,6 @@ const ProductoDetail = () => {
                                   >
                                     {caja.estado || '-'}
                                   </span>
-                                </td>
-                                <td className="py-3 px-2 text-slate-600 dark:text-slate-400 text-xs">
-                                  {caja.numero_operacion || '-'}
-                                  {caja.numero_picking && (
-                                    <span className="block text-slate-400 dark:text-slate-500">
-                                      {caja.numero_picking}
-                                    </span>
-                                  )}
                                 </td>
                                 <td className="py-3 px-2 font-mono text-xs text-slate-500 dark:text-slate-400">
                                   {caja.documento}
