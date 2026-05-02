@@ -1315,8 +1315,9 @@ const obtenerCajas = async (req, res) => {
     }
 
     // Buscar cajas del modelo CajaInventario
+    // Excluir tipo='salida': syncSalida crea ese registro Y actualiza la entrada original, generando filas duplicadas.
     const cajasDB = await CajaInventario.findAll({
-      where: { inventario_id: id },
+      where: { inventario_id: id, tipo: { [Op.ne]: 'salida' } },
       include: [
         {
           model: Operacion,
