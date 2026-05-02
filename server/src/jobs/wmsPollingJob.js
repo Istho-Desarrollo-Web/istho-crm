@@ -96,9 +96,13 @@ async function _pollKardexHistorial() {
 
         // Ignorar movimientos operacionales del WMS (generados por órdenes de picking/recepción).
         // Esos movimientos ya son sincronizados por el polling de órdenes — no crear kardex duplicado.
-        const motivoNombre = (entry.motive?.name || '').toLowerCase();
+        // entry.motive puede ser string o { name: string } según la versión del WMS.
+        const motivoRaw = typeof entry.motive === 'string'
+          ? entry.motive
+          : (entry.motive?.name || entry.motive?.motive || '');
+        const motivoNombre = motivoRaw.toLowerCase();
         if (motivoNombre.includes('picking') || motivoNombre.includes('orden de')) {
-          logger.debug(`[WmsPolling] Kardex operacional ignorado: "${entry.motive?.name}" (pallet ${palletCode})`);
+          logger.debug(`[WmsPolling] Kardex operacional ignorado: "${motivoRaw}" (pallet ${palletCode})`);
           continue;
         }
 
@@ -155,15 +159,22 @@ async function _pollKardexHistorial() {
             `[WmsPolling] Kardex sincronizado: caja=${palletCode}, op=${entry.operation}, qty=${entry.quantity}, motivo=${entry.motive?.name}`
           );
         } catch (entryErr) {
+          const esMotivoPermanente = entryErr.message?.includes('no está permitido');
+          // Siempre guardar log para que la deduplicación evite reintentos en el próximo ciclo
           WmsSyncLog.create({
             tipo: 'polling_kardex',
             documento_origen: entryKey,
             nit,
             estado: 'fallido',
             error_mensaje: entryErr.message,
-            detalles: { motivo: entry.motive?.name, operacion_wms: entry.operation, pallet_code: palletCode },
+            detalles: { motivo: motivoRaw, operacion_wms: entry.operation, pallet_code: palletCode },
           }).catch(() => {});
-          logger.error(`[WmsPolling] Error kardex entrada ${palletCode}: ${entryErr.message}`);
+          if (esMotivoPermanente) {
+            // Motivo no configurado en CRM: falla permanente, no es un error del sistema
+            logger.debug(`[WmsPolling] Kardex ignorado (motivo sin config): "${motivoRaw}" pallet=${palletCode}`);
+          } else {
+            logger.error(`[WmsPolling] Error kardex entrada ${palletCode}: ${entryErr.message}`);
+          }
         }
       }
 
