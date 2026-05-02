@@ -261,18 +261,12 @@ async function _ejecutarPoll() {
         let resultado;
         const tipoLog = tipo === 'entrada' ? 'polling_entrada' : 'polling_salida';
 
+        // wms_order_id viene en el payload desde wmsOrderMapper y se guarda
+        // dentro de la transacción en syncEntrada/syncSalida (atómico con el create)
         if (tipo === 'entrada') {
           resultado = await syncEntrada(payload);
         } else {
           resultado = await syncSalida(payload);
-        }
-
-        // ── Guardar wms_order_id en la operación creada ───────────────────
-        if (resultado?.operacion_id) {
-          await Operacion.update(
-            { wms_order_id: orden.id },
-            { where: { id: resultado.operacion_id } }
-          );
         }
 
         await WmsSyncLog.create({

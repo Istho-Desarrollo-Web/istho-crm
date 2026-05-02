@@ -202,6 +202,7 @@ const syncEntrada = async (data) => {
     observaciones,
     conductor_nombre,
     vehiculo_placa,
+    wms_order_id,
   } = data;
 
   if (!documento_origen) throw new Error('documento_origen es requerido');
@@ -264,6 +265,7 @@ const syncEntrada = async (data) => {
         total_unidades: totalUnidades,
         estado: 'pendiente',
         observaciones: observaciones || null,
+        ...(wms_order_id ? { wms_order_id } : {}),
         ...(conductor_nombre ? { conductor_nombre } : {}),
         ...(vehiculo_placa ? { vehiculo_placa } : {}),
       },
@@ -462,6 +464,7 @@ const syncSalida = async (data) => {
     observaciones,
     conductor_nombre,
     vehiculo_placa,
+    wms_order_id,
   } = data;
 
   if (!detalles || !Array.isArray(detalles) || detalles.length === 0) {
@@ -532,6 +535,7 @@ const syncSalida = async (data) => {
         total_unidades: totalUnidades,
         estado: 'pendiente',
         observaciones: observaciones || null,
+        ...(wms_order_id ? { wms_order_id } : {}),
         ...(conductor_nombre ? { conductor_nombre } : {}),
         ...(vehiculo_placa ? { vehiculo_placa } : {}),
       },
