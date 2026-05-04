@@ -138,6 +138,11 @@ async function getPalletUbicacion(palletId) {
   return _normalizar(res.data);
 }
 
+async function getPalletDetalle(palletId) {
+  const res = await _http.get(`/pallets/${palletId}`);
+  return _normalizar(res.data);
+}
+
 async function getProductoUbicaciones(_wmsProductId) {
   const res = await _http.get('/warehouses/search-details', {
     params: { limit: 100, page: 1 },
@@ -193,6 +198,7 @@ module.exports = {
   getOrdenDetalle,
   getOrdenItemsPallets,
   getPalletUbicacion,
+  getPalletDetalle,
   getProductoUbicaciones,
   getProgresoRecepcion,
   getProgresoPickin,

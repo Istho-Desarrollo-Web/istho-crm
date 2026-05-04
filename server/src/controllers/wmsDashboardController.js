@@ -363,17 +363,25 @@ const getProductoUbicaciones = async (req, res) => {
     const pallets = await wmsApiService.getProductoUbicaciones(producto.codigo_wms);
 
     // Filtrar por productId por si el WMS no filtra en servidor
-    const ubicaciones = pallets
-      .filter((p) => p.productId === producto.codigo_wms)
-      .map((p) => ({
+    const palletsFiltrados = pallets.filter((p) => p.productId === producto.codigo_wms);
+
+    // /warehouses/search-details no incluye palletCode — enriquecer con GET /pallets/:id en paralelo
+    const detalles = await Promise.allSettled(
+      palletsFiltrados.map((p) => wmsApiService.getPalletDetalle(p.palletId))
+    );
+
+    const ubicaciones = palletsFiltrados.map((p, i) => {
+      const detalle = detalles[i].status === 'fulfilled' ? detalles[i].value : null;
+      return {
         coordenada: p.coordinate,
         zona: p.zoneName || null,
         posicion: p.positionName || null,
         nivel: p.levelName || null,
         cantidad: p.quantity,
         lote: p.lot || null,
-        numero_caja: p.palletCode || p.pallet?.code || p.palletId || null,
-      }));
+        numero_caja: detalle?.palletCode || detalle?.palletNumber || null,
+      };
+    });
 
     return success(res, { ubicaciones }, 'Ubicaciones obtenidas');
   } catch (error) {
