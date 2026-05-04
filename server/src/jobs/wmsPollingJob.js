@@ -349,6 +349,11 @@ function iniciarPollingWms() {
     return;
   }
 
+  // Login proactivo al arranque: evita el primer 401 cuando el servidor inicia en frío
+  wmsApiService.calentarToken().then(() => {
+    logger.info('[WmsPolling] Token WMS listo para el primer ciclo');
+  });
+
   _pollingJob = cron.schedule(expresion, _ejecutarPoll, {
     timezone: 'America/Bogota',
   });

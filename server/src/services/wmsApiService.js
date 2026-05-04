@@ -22,7 +22,8 @@ function _expiresAt(token) {
 
 function _estaProximoAExpirar() {
   if (!_tokenData.expiresAt) return true;
-  return Date.now() >= _tokenData.expiresAt - 5 * 60 * 1000; // 5 min de margen
+  // Margen de 10 min: cubre tokens con TTL corto (15-20 min) y desfases de reloj
+  return Date.now() >= _tokenData.expiresAt - 10 * 60 * 1000;
 }
 
 // ─── Instancia axios base ─────────────────────────────────────────────────────
@@ -178,6 +179,15 @@ async function postKardexAdjustment(body) {
   return _normalizar(res.data);
 }
 
+// Llamar al arranque para tener token listo antes del primer ciclo de polling
+async function calentarToken() {
+  try {
+    await _login();
+  } catch (err) {
+    logger.warn('[WmsApiService] Calentamiento de token falló (se reintentará en el primer ciclo):', err.message);
+  }
+}
+
 module.exports = {
   getOrdenes,
   getOrdenDetalle,
@@ -190,4 +200,5 @@ module.exports = {
   getKardexMotives,
   getKardexHistory,
   postKardexAdjustment,
+  calentarToken,
 };
