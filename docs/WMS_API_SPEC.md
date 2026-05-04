@@ -485,6 +485,93 @@ Cuando se recibe un producto en entrada/salida, la descripción se resuelve en e
 
 ---
 
+---
+
+## Consultas CRM → WMS (modelo PULL)
+
+El CRM consulta periódicamente el WMS CenthriX via polling y también expone endpoints de ubicación en tiempo real. La colección Postman completa está en `docs/ISTHO_WMS_Postman_Collection.json`.
+
+**Base URL WMS:** `https://apiistho.cinnco.co/api/v1`
+
+### Endpoints usados por el CRM
+
+| Endpoint | Uso en CRM |
+|---|---|
+| `POST /auth/login` | Autenticación automática al iniciar servidor |
+| `POST /auth/refresh` | Renovación de token (10 min antes de expirar) |
+| `GET /orders?limit=50&page=1` | Polling cada `WMS_SYNC_INTERVAL` min |
+| `GET /orders/:id` | Detalle de orden con NIT del cliente |
+| `GET /orders/:id/order-items-pallets` | Ítems y pallets para mapear entrada/salida |
+| `GET /warehouses?limit=100&page=1` | Nombres de bodegas para tab Ubicación WMS |
+| `GET /warehouses/search-details?limit=100&page=1` | Ubicaciones físicas de pallets del producto |
+| `GET /pallets/:id/location` | Ubicación de un pallet específico |
+| `GET /forklift-drivers/kardex/history?palletId=` | Ajustes kardex por pallet (polling kardex) |
+| `GET /forklift-drivers/kardex/search-pallet?code=` | Descubrimiento de `wms_pallet_id` por número de caja |
+
+### Schemas de respuesta confirmados (producción)
+
+#### GET /warehouses — item
+```json
+{
+  "id": "636133b9-738e-472b-8469-83eb3893e4a9",
+  "name": "Bodega 106",
+  "code": "00000001",
+  "cityName": "GIRARDOTA",
+  "warehouseStatusName": "Activa",
+  "totalPositions": 53760,
+  "availablePositions": 53460,
+  "occupiedPositions": 300
+}
+```
+> Campo del nombre: `name`. El CRM construye `bodegaMap = { [id]: name }` con una sola llamada.
+
+#### GET /warehouses/search-details — item
+```json
+{
+  "palletId": "07a7e2e2-f299-403d-a932-b3b106e6c608",
+  "productId": "a2e660b4-8682-4621-a854-3cc69f50269e",
+  "warehouseId": "636133b9-738e-472b-8469-83eb3893e4a9",
+  "quantity": 10,
+  "lot": "L20260430ABC",
+  "zoneName": null,
+  "positionName": "P3",
+  "levelName": "N1",
+  "coordinate": "RACK-A1-M11-N1-P3"
+}
+```
+> ⚠️ `zoneName` siempre es `null`. `warehouseId` referencia a `/warehouses`. No existe campo `palletCode` — el nombre legible de caja se resuelve desde `CajaInventario.wms_pallet_id` en la BD del CRM.
+
+### Patrón de resolución — Tab Ubicación WMS
+
+El endpoint `GET /api/v1/wms/dashboard/ubicacion/producto?inventarioId=` hace **2 llamadas paralelas** al WMS (sin importar cuántos pallets haya) + **1 query a BD**:
+
+```
+Promise.all([
+  GET /warehouses/search-details   → todos los pallets
+  GET /warehouses                  → todos los nombres de bodega
+])
++ CajaInventario WHERE wms_pallet_id IN (ids) → números de caja locales
+```
+
+Respuesta del CRM al frontend:
+```json
+{
+  "ubicaciones": [
+    {
+      "numero_caja": "10",
+      "coordenada": "RACK-A1-M6-N1-P3",
+      "bodega": "Bodega 106",
+      "posicion": "P3",
+      "nivel": "N1",
+      "lote": "11/02/2026",
+      "cantidad": 100
+    }
+  ]
+}
+```
+
+---
+
 ## Ejecución del script de pruebas
 
 ```bash

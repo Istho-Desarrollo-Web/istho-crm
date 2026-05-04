@@ -12,7 +12,7 @@
 
 El presente documento describe el soporte administrativo del sistema **CRM CenthriX**, una plataforma integral de gestión logística, transporte y almacenamiento desarrollada para **ISTHO S.A.S.** (Centro Logístico Industrial del Norte), ubicada en Girardota, Antioquia, Colombia.
 
-CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración con el sistema WMS Centhrix (el WMS empuja datos al CRM via API REST). El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.
+CenthriX centraliza la gestión de clientes, inventario, operaciones de bodega, despachos, viajes, cajas menores y la integración bidireccional con el sistema WMS CenthriX. El sistema está diseñado para operar en entorno web, accesible desde navegadores de escritorio y dispositivos móviles, con soporte para modo claro y oscuro.
 
 El CRM reemplaza procesos manuales y hojas de cálculo, proporcionando trazabilidad completa, auditoría en tiempo real y reportes automatizados para la toma de decisiones.
 
@@ -61,9 +61,13 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 - Registrar todas las acciones del sistema en log de auditoría.
 
 ### 3.8 Integración WMS
-- Recibir sincronización desde WMS Centhrix via API REST (el WMS empuja al CRM — el CRM no inicia pulls).
+- **Modelo PUSH:** el WMS CenthriX empuja al CRM entradas, salidas y kardex via `POST /wms/sync/*` con API Key.
+- **Modelo PULL (polling):** el CRM consulta el WMS cada 5 minutos y sincroniza automáticamente las órdenes finalizadas (entradas CO y salidas PK). Evita dependencia de que el WMS inicie la comunicación.
+- Ajustes de kardex desde la app WMS móvil se sincronizan via polling de historial por pallet.
+- Solo se procesan ajustes de tipo **Carga** (entrada); las Descargas son generadas por el polling de órdenes de picking.
+- Deduplicación cruzada: una misma orden no puede ser procesada dos veces por PUSH y PULL simultáneamente.
 - Validar dinámicamente estados, tipos de orden y motivos de kardex.
-- Proporcionar panel de configuración para gestionar reglas de integración.
+- Proporcionar panel de configuración y dashboard de monitoreo de sincronizaciones.
 
 ---
 
@@ -95,7 +99,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 
 | Sistema | Tipo | Protocolo | Descripción |
 |---------|------|-----------|-------------|
-| WMS Centhrix | Entrante | API REST + API Key | WMS empuja productos, entradas, salidas y kardex al CRM |
+| WMS CenthriX | Bidireccional | API REST + API Key (PUSH) / JWT polling (PULL) | PUSH: WMS empuja productos, entradas, salidas y kardex. PULL: CRM consulta órdenes cada 5 min y ubicaciones en tiempo real. |
 | Gmail SMTP | Saliente | SMTP 587 (TLS) | Envío de emails transaccionales, recuperación de contraseña y reportes |
 | Socket.IO | Interno | HTTP Long-polling | Notificaciones en tiempo real (conexión persistente sin WebSocket) |
 

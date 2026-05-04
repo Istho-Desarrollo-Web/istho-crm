@@ -94,5 +94,16 @@ admin(100) · supervisor(75) · financiera(60) · operador(50) · conductor(30) 
 - KPI aggregation: normalizar `.replace('polling_', '')` al acumular conteos por tipo.
 - NIT en polling: usar `ordenCompleta.customer?.nit` (del detalle), NO `orden.customer?.nit` (el listado no trae NIT).
 
+### Kardex — filtros activos
+- **Polling** (`_pollKardexHistorial`): solo procesa `entry.operation === 'Carga'`. Las Descargas se ignoran (las genera el polling de órdenes de picking → evita duplicados).
+- **Frontend** (tab Movimientos en ProductoDetail): filtra `!(tipo==='salida' && motivo.startsWith('Kardex WMS'))` para no mostrar Descargas que ya llegan por polling de órdenes.
+
+### Tab Ubicación WMS (ProductoDetail)
+- Tabla: N° Caja · Posición en bodega · Bodega · Lote · Cantidad
+- **Bodega**: se resuelve con `GET /warehouses` (una sola llamada paralela) → `bodegaMap[warehouseId]`. Campo nombre en WMS: `name` (ej: `"Bodega 106"`).
+- **N° Caja**: se resuelve desde `CajaInventario.wms_pallet_id` en BD local (una sola query).
+- **`zoneName`** del WMS siempre es `null` — no usar. La coordenada completa viene en `coordinate` (ej: `"RACK-A1-M6-N1-P3"`).
+- Colección Postman: `docs/ISTHO_WMS_Postman_Collection.json` (57 endpoints, 14 carpetas).
+
 ## Docs
 `docs/WMS_API_SPEC.md` · `docs/FLUJOS_NEGOCIO.md` · `docs/API.md` · `docs/manuales/` · `DEPLOY.md`

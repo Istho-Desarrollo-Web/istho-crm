@@ -409,13 +409,31 @@ Para acceder al inventario:
 
 ### 4.2 Detalle de Producto
 
-Al hacer clic en un producto del listado:
+Al hacer clic en un producto del listado se abre la vista de detalle, organizada en pestanas:
 
-1. Se muestra la informacion completa del producto.
-2. **Stock actual:** Cantidad disponible con unidad de medida.
-3. **Cajas:** Listado de cajas/contenedores asociados al producto con sus cantidades.
-4. **Movimientos:** Historial de entradas, salidas y ajustes de kardex que afectaron el stock.
-5. **Lotes:** Si el producto maneja lotes, se muestran los lotes activos con fechas de vencimiento.
+**Pestana Informacion**
+- Datos basicos: nombre, SKU, cliente, categoria, unidad de medida, stock actual, stock minimo.
+- Indicadores de alerta si el stock esta por debajo del minimo o agotado.
+
+**Pestana Cajas (N)**
+- Listado de todas las cajas/estibas fisicas del producto con: numero de caja, cantidad, lote, estado, ubicacion y fechas.
+- Incluye **barra de busqueda** para filtrar por numero de caja o lote.
+- El contador del tab muestra el total de cajas activas.
+
+**Pestana Movimientos (N)**
+- Historial cronologico de entradas, salidas y ajustes de kardex que afectaron el stock.
+- Solo se muestran los movimientos de tipo **Kardex Carga** (ajustes de entrada desde el WMS). Los movimientos de Kardex Descarga no se muestran porque ya estan representados como salidas por las ordenes de picking.
+
+**Pestana Estadisticas**
+- Graficas de evolucion de stock y distribucion de movimientos por tipo.
+
+**Pestana Ubicacion WMS** *(visible solo para productos con codigo WMS asignado)*
+- Muestra la ubicacion fisica actual del producto dentro de la bodega segun el WMS CenthriX.
+- Tabla con columnas: **N° Caja** · **Posicion en bodega** · **Bodega** · **Lote** · **Cantidad**.
+- La posicion se expresa como coordenada de rack (ej: `RACK-A1-M6-N1-P3`).
+- La columna **Bodega** indica a que bodega pertenece la posicion (ej: `Bodega 106`), necesario cuando la misma nomenclatura de rack existe en varias bodegas.
+- Si el producto no tiene posicion asignada en el WMS, se muestra el mensaje "Sin ubicacion asignada en bodega".
+- Si el WMS no esta disponible temporalmente, se muestra un aviso sin interrumpir el resto de la pagina.
 
 ### 4.3 Alertas de Inventario
 
