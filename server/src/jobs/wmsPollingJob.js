@@ -214,12 +214,36 @@ async function _ejecutarPoll() {
       // getOrdenes puede retornar { data: [], meta: {} } o []
       ordenes = Array.isArray(resultado) ? resultado : (resultado?.data ?? []);
     } catch (err) {
-      logger.error('[WmsPolling] Error al consultar órdenes WMS:', err.message);
-      await WmsSyncLog.create({
-        tipo: 'polling_entrada',
-        estado: 'fallido',
-        error_mensaje: `Error de conexión al WMS: ${err.message}`,
+      const status = err.response?.status;
+      const detalle = err.response?.data?.message || err.message;
+      const mensajeErr = status ? `HTTP ${status}: ${detalle}` : detalle;
+
+      if (status === 401 || status === 403) {
+        logger.error(`[WmsPolling] Error de autenticación con el WMS (${status}) — verificar WMS_EMAIL/WMS_PASSWORD:`, detalle);
+      } else if (err.code === 'ECONNABORTED' || err.code === 'ECONNREFUSED' || err.code === 'ERR_NETWORK') {
+        logger.error('[WmsPolling] WMS no disponible (timeout/red):', mensajeErr);
+      } else {
+        logger.error('[WmsPolling] Error al consultar órdenes WMS:', mensajeErr);
+      }
+
+      // Crear log solo si no hay ya uno fallido reciente (últimos 10 min) para no acumular ruido
+      const haceUnRato = new Date(Date.now() - 10 * 60 * 1000);
+      const logReciente = await WmsSyncLog.findOne({
+        where: {
+          tipo: 'polling_entrada',
+          estado: 'fallido',
+          created_at: { [Op.gte]: haceUnRato },
+        },
+        order: [['created_at', 'DESC']],
       });
+
+      if (!logReciente) {
+        await WmsSyncLog.create({
+          tipo: 'polling_entrada',
+          estado: 'fallido',
+          error_mensaje: mensajeErr,
+        }).catch(() => {});
+      }
       return;
     }
 

@@ -71,12 +71,36 @@ async function _asegurarToken() {
   await _login();
 }
 
-// Interceptor: inyecta token en cada request
+// Interceptor de request: inyecta token antes de cada llamada
 _http.interceptors.request.use(async (config) => {
   await _asegurarToken();
   config.headers.Authorization = `Bearer ${_tokenData.accessToken}`;
   return config;
 });
+
+// Interceptor de respuesta: si el WMS rechaza el token (401), fuerza re-login y reintenta una vez.
+// Esto cubre el caso en que el token parece válido localmente (exp no expirado) pero el servidor
+// lo considera inválido (revocado, desfase de reloj, sesión cerrada en el WMS, etc.).
+_http.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const config = error.config;
+    if (error.response?.status === 401 && !config._retry) {
+      config._retry = true;
+      logger.warn('[WmsApiService] WMS rechazó el token (401) — descartando sesión y re-loginando');
+      _tokenData = { accessToken: null, refreshToken: null, expiresAt: null };
+      try {
+        await _login();
+        config.headers.Authorization = `Bearer ${_tokenData.accessToken}`;
+        return _http(config);
+      } catch (loginErr) {
+        logger.error('[WmsApiService] Re-login tras 401 falló:', loginErr.message);
+        return Promise.reject(loginErr);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // ─── Normalizador de envelope WMS ────────────────────────────────────────────
 // El WMS retorna: { success, message, data: { items: [], meta: {} } }
