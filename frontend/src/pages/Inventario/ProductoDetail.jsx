@@ -1187,7 +1187,7 @@ const ProductoDetail = () => {
                                 Posición en bodega
                               </th>
                               <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                Zona
+                                Bodega
                               </th>
                               <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                 Lote
@@ -1213,7 +1213,7 @@ const ProductoDetail = () => {
                                   </div>
                                 </td>
                                 <td className="py-3 px-3 text-slate-600 dark:text-slate-400">
-                                  {ub.zona || '-'}
+                                  {ub.bodega || '-'}
                                 </td>
                                 <td className="py-3 px-3 text-slate-600 dark:text-slate-400 font-mono text-xs">
                                   {ub.lote || '-'}

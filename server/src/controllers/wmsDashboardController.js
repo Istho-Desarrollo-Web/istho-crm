@@ -360,10 +360,19 @@ const getProductoUbicaciones = async (req, res) => {
       });
     }
 
-    const pallets = await wmsApiService.getProductoUbicaciones(producto.codigo_wms);
+    // Llamadas paralelas: ubicaciones de pallets + lista de bodegas (para resolver nombre)
+    const [pallets, bodegas] = await Promise.all([
+      wmsApiService.getProductoUbicaciones(producto.codigo_wms),
+      wmsApiService.getWarehouses().catch(() => []),
+    ]);
 
     // Filtrar por productId por si el WMS no filtra en servidor
     const palletsFiltrados = pallets.filter((p) => p.productId === producto.codigo_wms);
+
+    // Mapa warehouseId → nombre de bodega (una sola llamada, no N)
+    const bodegaMap = Object.fromEntries(
+      (Array.isArray(bodegas) ? bodegas : []).map((b) => [b.id, b.name || b.warehouseName || b.nombre || null])
+    );
 
     // Resolver número de caja desde BD local (CajaInventario.wms_pallet_id → numero_caja).
     // Una sola query en lugar de N llamadas al WMS — escala correctamente con 200+ pallets.
@@ -380,7 +389,7 @@ const getProductoUbicaciones = async (req, res) => {
 
     const ubicaciones = palletsFiltrados.map((p) => ({
       coordenada: p.coordinate,
-      zona: p.zoneName || null,
+      bodega: bodegaMap[p.warehouseId] || null,
       posicion: p.positionName || null,
       nivel: p.levelName || null,
       cantidad: p.quantity,

@@ -1,0 +1,1370 @@
+{
+  "info": {
+    "_postman_id": "istho-wms-centhrix-v1",
+    "name": "ISTHO WMS CenthriX",
+    "description": "Colección completa de la API REST ISTHO WMS CenthriX.\n\nVariables a configurar antes de usar:\n- base_url: URL base del WMS (por defecto producción)\n- wms_email / wms_password: credenciales de integración\n\nFlujo recomendado: ejecutar 'Login' primero — el script guarda access_token y refresh_token automáticamente en las variables de colección.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",      "value": "https://apiistho.cinnco.co/api/v1", "type": "string" },
+    { "key": "access_token",  "value": "", "type": "string" },
+    { "key": "refresh_token", "value": "", "type": "string" },
+    { "key": "wms_email",     "value": "admin@empresa.com", "type": "string" },
+    { "key": "wms_password",  "value": "", "type": "string" },
+    { "key": "order_id",      "value": "", "type": "string" },
+    { "key": "pallet_id",     "value": "", "type": "string" },
+    { "key": "warehouse_id",  "value": "", "type": "string" },
+    { "key": "product_id",    "value": "", "type": "string" },
+    { "key": "customer_id",   "value": "", "type": "string" },
+    { "key": "zone_id",       "value": "", "type": "string" },
+    { "key": "rack_id",       "value": "", "type": "string" },
+    { "key": "position_id",   "value": "", "type": "string" },
+    { "key": "level_id",      "value": "", "type": "string" },
+    { "key": "module_id",     "value": "", "type": "string" },
+    { "key": "label_id",      "value": "", "type": "string" },
+    { "key": "forklift_id",   "value": "", "type": "string" },
+    { "key": "pallet_code",   "value": "", "type": "string" },
+    { "key": "position_code", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+  },
+  "item": [
+
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "if (pm.response.code === 200) {",
+                "  const r = pm.response.json();",
+                "  const data = r.data || r;",
+                "  pm.collectionVariables.set('access_token', data.accessToken);",
+                "  pm.collectionVariables.set('refresh_token', data.refreshToken);",
+                "  console.log('Tokens guardados correctamente');",
+                "}"
+              ]
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{wms_email}}\",\n  \"password\": \"{{wms_password}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Público — sin JWT. Guarda access_token y refresh_token en variables de colección."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Perfil (Me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            },
+            "description": "Retorna el perfil del usuario autenticado."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "if (pm.response.code === 200) {",
+                "  const r = pm.response.json();",
+                "  const data = r.data || r;",
+                "  pm.collectionVariables.set('access_token', data.accessToken);",
+                "  pm.collectionVariables.set('refresh_token', data.refreshToken);",
+                "  console.log('Tokens renovados correctamente');",
+                "}"
+              ]
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Público. Renueva el par de tokens usando el refreshToken."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "2. Órdenes (Orders)",
+      "item": [
+        {
+          "name": "Listar Órdenes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["orders"],
+              "query": [
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "10" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "list",   "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Lista paginada de órdenes de la compañía."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle de Orden",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}"]
+            },
+            "description": "Detalle completo de una orden por UUID."
+          },
+          "response": []
+        },
+        {
+          "name": "Items y Pallets de Orden",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}/order-items-pallets",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}", "order-items-pallets"]
+            },
+            "description": "Orden con sus items y pallets de cada item."
+          },
+          "response": []
+        },
+        {
+          "name": "Progreso de Recepción",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}/reception-progress",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}", "reception-progress"]
+            },
+            "description": "Progreso actual de una orden de recepción (tipo 1)."
+          },
+          "response": []
+        },
+        {
+          "name": "Progreso de Picking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}/picking-progress",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}", "picking-progress"]
+            },
+            "description": "Progreso de una orden de picking (tipo 2)."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalles Previos al Picking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}/picking-details",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}", "picking-details"]
+            },
+            "description": "Detalles previos al inicio de picking."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalles de Validación de Picking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}/picking-validation-details",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}", "picking-validation-details"]
+            },
+            "description": "Detalles completos para validación de picking."
+          },
+          "response": []
+        },
+        {
+          "name": "Archivos Adjuntos de Orden",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}/files",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}", "files"]
+            },
+            "description": "Archivos/imágenes adjuntos a una orden."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "3. Estibas (Pallets)",
+      "item": [
+        {
+          "name": "Listar Estibas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pallets?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["pallets"],
+              "query": [
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "10" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "list",   "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Lista paginada de estibas."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle de Estiba",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pallets/{{pallet_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["pallets", "{{pallet_id}}"]
+            },
+            "description": "Detalle de una estiba por ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Ubicación de Estiba",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pallets/{{pallet_id}}/location",
+              "host": ["{{base_url}}"],
+              "path": ["pallets", "{{pallet_id}}", "location"]
+            },
+            "description": "Ubicación actual de la estiba (zona o posición)."
+          },
+          "response": []
+        },
+        {
+          "name": "Estibas por Orden",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pallets/order/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["pallets", "order", "{{order_id}}"]
+            },
+            "description": "Todas las estibas asociadas a una orden."
+          },
+          "response": []
+        },
+        {
+          "name": "Estibas en Zona de Recepción",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pallets/reception-zone/{{warehouse_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["pallets", "reception-zone", "{{warehouse_id}}"]
+            },
+            "description": "Estibas en la zona de recepción de una bodega."
+          },
+          "response": []
+        },
+        {
+          "name": "Estibas Disponibles para Picking (FIFO)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pallets/available-for-picking?productId={{product_id}}&warehouseId={{warehouse_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["pallets", "available-for-picking"],
+              "query": [
+                { "key": "productId",   "value": "{{product_id}}" },
+                { "key": "warehouseId", "value": "{{warehouse_id}}" },
+                { "key": "lot",         "value": "", "disabled": true },
+                { "key": "dueDate",     "value": "", "disabled": true }
+              ]
+            },
+            "description": "Estibas disponibles para picking FIFO. productId y warehouseId son requeridos."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "4. Etiquetas de Estiba (Pallet Labels)",
+      "item": [
+        {
+          "name": "Etiquetas de Estiba por Pallet",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pallet-labels/{{pallet_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["pallet-labels", "{{pallet_id}}"]
+            },
+            "description": "Etiquetas QR y BARCODE de una estiba."
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Etiqueta por Código",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pallet-labels/code/{{pallet_code}}",
+              "host": ["{{base_url}}"],
+              "path": ["pallet-labels", "code", "{{pallet_code}}"]
+            },
+            "description": "Búsqueda de etiqueta por código (ej. PALLET-001001)."
+          },
+          "response": []
+        },
+        {
+          "name": "Descargar PDF de Etiqueta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pallet-labels/{{label_id}}/pdf",
+              "host": ["{{base_url}}"],
+              "path": ["pallet-labels", "{{label_id}}", "pdf"]
+            },
+            "description": "Descarga el PDF de una etiqueta (Zebra ZD421: 10cm x 5.4cm)."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "5. Bodegas (Warehouses)",
+      "item": [
+        {
+          "name": "Listar Bodegas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/warehouses?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "list",  "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Lista paginada de bodegas de la compañía."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle de Bodega",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/warehouses/{{warehouse_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses", "{{warehouse_id}}"]
+            },
+            "description": "Detalle de una bodega por UUID."
+          },
+          "response": []
+        },
+        {
+          "name": "Top 10 Bodegas más Ocupadas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/warehouses/top-occupied",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses", "top-occupied"]
+            },
+            "description": "Top 10 bodegas con mayor porcentaje de ocupación."
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Referencias de Inventario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/warehouses/search-references",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses", "search-references"],
+              "query": [
+                { "key": "search", "value": "", "disabled": true }
+              ]
+            },
+            "description": "Referencias para el buscador de inventario (producto, cliente, SKU, EAN)."
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Detalles de Inventario en Bodega",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/warehouses/search-details?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses", "search-details"],
+              "query": [
+                { "key": "page",        "value": "1" },
+                { "key": "limit",       "value": "10" },
+                { "key": "productId",   "value": "", "disabled": true },
+                { "key": "warehouseId", "value": "", "disabled": true }
+              ]
+            },
+            "description": "Detalles de ubicaciones para el buscador de inventario. Retorna palletId, coordenada, zona, posición, cantidad, lote por cada estiba."
+          },
+          "response": []
+        },
+        {
+          "name": "Layout de Bodega",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/warehouses/{{warehouse_id}}/layout",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses", "{{warehouse_id}}", "layout"]
+            },
+            "description": "Mapa visual (layout) de la bodega: zonas y racks con ocupación."
+          },
+          "response": []
+        },
+        {
+          "name": "Estructura de Bodega (Jerarquía)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/warehouses/{{warehouse_id}}/structure",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses", "{{warehouse_id}}", "structure"]
+            },
+            "description": "Árbol jerárquico: Rack → Módulo → Nivel → Posición."
+          },
+          "response": []
+        },
+        {
+          "name": "Indicadores de Racks de Bodega",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/warehouses/{{warehouse_id}}/racks-indicators",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses", "{{warehouse_id}}", "racks-indicators"]
+            },
+            "description": "Indicadores de ocupación de cada rack de la bodega."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "6. Etiquetas de Posición (Warehouse Labels)",
+      "item": [
+        {
+          "name": "Posiciones con Estado de Etiqueta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/warehouse-labels/positions/{{warehouse_id}}?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["warehouse-labels", "positions", "{{warehouse_id}}"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Lista paginada de posiciones con estado de etiqueta (impresa / sin imprimir)."
+          },
+          "response": []
+        },
+        {
+          "name": "Etiquetas de Posición",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/warehouse-labels/position-labels/{{position_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["warehouse-labels", "position-labels", "{{position_id}}"]
+            },
+            "description": "Etiquetas QR y BARCODE de una posición."
+          },
+          "response": []
+        },
+        {
+          "name": "Descargar PDF de Etiqueta de Posición",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/warehouse-labels/{{label_id}}/pdf",
+              "host": ["{{base_url}}"],
+              "path": ["warehouse-labels", "{{label_id}}", "pdf"]
+            },
+            "description": "Descarga PDF de etiqueta de posición (Zebra ZD421: 10cm x 5cm). Sin autenticación."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "7. Montacarguista (Forklift Driver)",
+      "item": [
+        {
+          "name": "Dashboard Montacarguista",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "dashboard"]
+            },
+            "description": "Estadísticas y órdenes activas del montacarguista autenticado."
+          },
+          "response": []
+        },
+        {
+          "name": "Órdenes del Montacarguista",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/orders?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "orders"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "list",  "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Órdenes asignadas al montacarguista."
+          },
+          "response": []
+        },
+        {
+          "name": "Estibas Remanentes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/remanents",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "remanents"]
+            },
+            "description": "Estibas remanentes de picking (pallets parciales para reubicación)."
+          },
+          "response": []
+        },
+        {
+          "name": "Zonas de Recepción Disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/reception/zones?warehouseId={{warehouse_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "reception", "zones"],
+              "query": [
+                { "key": "warehouseId", "value": "{{warehouse_id}}" }
+              ]
+            },
+            "description": "Zonas disponibles para ubicar desde recepción. warehouseId requerido."
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Estiba para Reubicación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/relocation/search-pallet?code={{pallet_code}}",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "relocation", "search-pallet"],
+              "query": [
+                { "key": "code",        "value": "{{pallet_code}}" },
+                { "key": "warehouseId", "value": "{{warehouse_id}}", "disabled": true }
+              ]
+            },
+            "description": "Busca estiba por código de etiqueta o código numérico. code requerido."
+          },
+          "response": []
+        },
+        {
+          "name": "Zonas de Reubicación Disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/relocation/zones?warehouseId={{warehouse_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "relocation", "zones"],
+              "query": [
+                { "key": "warehouseId", "value": "{{warehouse_id}}" }
+              ]
+            },
+            "description": "Zonas disponibles para reubicación. warehouseId requerido."
+          },
+          "response": []
+        },
+        {
+          "name": "Racks para Reubicación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/relocation/racks?warehouseId={{warehouse_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "relocation", "racks"],
+              "query": [
+                { "key": "warehouseId", "value": "{{warehouse_id}}" }
+              ]
+            },
+            "description": "Racks con módulos y niveles para destino de reubicación. warehouseId requerido."
+          },
+          "response": []
+        },
+        {
+          "name": "Posiciones Disponibles de un Nivel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/relocation/positions/{{level_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "relocation", "positions", "{{level_id}}"]
+            },
+            "description": "Posiciones disponibles de un nivel para reubicación."
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Posición por Etiqueta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/relocation/search-position?code={{position_code}}&warehouseId={{warehouse_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "relocation", "search-position"],
+              "query": [
+                { "key": "code",        "value": "{{position_code}}" },
+                { "key": "warehouseId", "value": "{{warehouse_id}}" }
+              ]
+            },
+            "description": "Busca posición escaneando etiqueta física. code y warehouseId requeridos."
+          },
+          "response": []
+        },
+        {
+          "name": "Kardex — Buscar Estiba",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/kardex/search-pallet?code={{pallet_code}}",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "kardex", "search-pallet"],
+              "query": [
+                { "key": "code", "value": "{{pallet_code}}" }
+              ]
+            },
+            "description": "Busca estiba para ajuste kardex por código. code requerido."
+          },
+          "response": []
+        },
+        {
+          "name": "Kardex — Motivos de Ajuste",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/kardex/motives",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "kardex", "motives"]
+            },
+            "description": "Motivos de ajuste disponibles para Kardex."
+          },
+          "response": []
+        },
+        {
+          "name": "Kardex — Historial de Ajustes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/kardex/history?palletId={{pallet_id}}&page=1&limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "kardex", "history"],
+              "query": [
+                { "key": "palletId", "value": "{{pallet_id}}" },
+                { "key": "page",     "value": "1" },
+                { "key": "limit",    "value": "50" }
+              ]
+            },
+            "description": "Historial paginado de ajustes kardex. palletId requerido."
+          },
+          "response": []
+        },
+        {
+          "name": "Montacarguistas de una Bodega",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/warehouse/{{warehouse_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "warehouse", "{{warehouse_id}}"]
+            },
+            "description": "Asignaciones de montacarguistas a una bodega."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle de Asignación de Montacarguista",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/forklift-drivers/{{forklift_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["forklift-drivers", "{{forklift_id}}"]
+            },
+            "description": "Detalle de una asignación de montacarguista."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "8. Movimientos (Movements)",
+      "item": [
+        {
+          "name": "Movimientos por Estiba",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/movements/by-pallet/{{pallet_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["movements", "by-pallet", "{{pallet_id}}"]
+            },
+            "description": "Historial completo de movimientos de una estiba. Tipos: RECEPTION, LOCATION, PICKING, RELOCATION."
+          },
+          "response": []
+        },
+        {
+          "name": "Movimientos por Producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/movements/by-product/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["movements", "by-product", "{{product_id}}"]
+            },
+            "description": "Historial de movimientos de todas las estibas de un producto."
+          },
+          "response": []
+        },
+        {
+          "name": "Movimientos por Posición",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/movements/by-position/{{position_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["movements", "by-position", "{{position_id}}"]
+            },
+            "description": "Historial de movimientos de una posición."
+          },
+          "response": []
+        },
+        {
+          "name": "Movimientos por Zona",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/movements/by-zone/{{zone_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["movements", "by-zone", "{{zone_id}}"]
+            },
+            "description": "Historial de movimientos de una zona."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "9. Productos (Products)",
+      "item": [
+        {
+          "name": "Listar Productos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "10" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "list",   "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Lista paginada de productos."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle de Producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}"]
+            },
+            "description": "Detalle de un producto por UUID."
+          },
+          "response": []
+        },
+        {
+          "name": "Productos por Cliente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/customer/{{customer_id}}?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["products", "customer", "{{customer_id}}"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "list",  "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Productos de un cliente específico."
+          },
+          "response": []
+        },
+        {
+          "name": "Productos por Categoría",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/category/{{category_id}}?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["products", "category", "{{category_id}}"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Productos de una categoría."
+          },
+          "response": []
+        },
+        {
+          "name": "Ubicaciones de Producto en Bodega",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/find-all-locations?productId={{product_id}}&warehouseId={{warehouse_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", "find-all-locations"],
+              "query": [
+                { "key": "productId",   "value": "{{product_id}}" },
+                { "key": "warehouseId", "value": "{{warehouse_id}}" }
+              ]
+            },
+            "description": "Ubicaciones actuales del producto en bodega. productId y warehouseId requeridos."
+          },
+          "response": []
+        },
+        {
+          "name": "Todas las Ubicaciones de Producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}/locations",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}", "locations"]
+            },
+            "description": "Ubicaciones del producto sin filtro de bodega."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "10. Clientes (Customers)",
+      "item": [
+        {
+          "name": "Listar Clientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customers?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "10" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "list",   "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Lista paginada de clientes."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle de Cliente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/customers/{{customer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "{{customer_id}}"]
+            },
+            "description": "Detalle de un cliente por UUID."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "11. Zonas (Zones)",
+      "item": [
+        {
+          "name": "Listar Zonas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/zones?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["zones"],
+              "query": [
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "10" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "list",   "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Lista paginada de zonas."
+          },
+          "response": []
+        },
+        {
+          "name": "Zonas de una Bodega",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/zones/warehouse/{{warehouse_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["zones", "warehouse", "{{warehouse_id}}"]
+            },
+            "description": "Zonas de una bodega específica."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle de Zona",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/zones/{{zone_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["zones", "{{zone_id}}"]
+            },
+            "description": "Detalle de una zona por UUID."
+          },
+          "response": []
+        },
+        {
+          "name": "Estibas en una Zona",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/zones/{{zone_id}}/pallets?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["zones", "{{zone_id}}", "pallets"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Estibas actualmente en una zona."
+          },
+          "response": []
+        },
+        {
+          "name": "Movimientos de una Zona",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/zones/{{zone_id}}/movements?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["zones", "{{zone_id}}", "movements"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Historial de movimientos de una zona."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "12. Racks",
+      "item": [
+        {
+          "name": "Listar Racks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/racks?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["racks"],
+              "query": [
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "10" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "list",   "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Lista paginada de racks."
+          },
+          "response": []
+        },
+        {
+          "name": "Racks de una Bodega",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/racks/warehouse/{{warehouse_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["racks", "warehouse", "{{warehouse_id}}"],
+              "query": [
+                { "key": "list", "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Racks de una bodega específica."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle de Rack",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/racks/{{rack_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["racks", "{{rack_id}}"]
+            },
+            "description": "Detalle de un rack por UUID."
+          },
+          "response": []
+        },
+        {
+          "name": "Vista Lateral del Rack",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/racks/{{rack_id}}/lateral-view",
+              "host": ["{{base_url}}"],
+              "path": ["racks", "{{rack_id}}", "lateral-view"]
+            },
+            "description": "Vista lateral del rack con módulos y niveles (sin estado de posiciones)."
+          },
+          "response": []
+        },
+        {
+          "name": "Vista Lateral con Posiciones y Ocupación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/racks/{{rack_id}}/lateral-view-positions",
+              "host": ["{{base_url}}"],
+              "path": ["racks", "{{rack_id}}", "lateral-view-positions"]
+            },
+            "description": "Vista lateral con posiciones y estado de ocupación (occupied: true/false)."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "13. Posiciones (Positions)",
+      "item": [
+        {
+          "name": "Listar Posiciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/positions?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["positions"],
+              "query": [
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "10" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "list",   "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Lista paginada de posiciones."
+          },
+          "response": []
+        },
+        {
+          "name": "Posiciones de un Nivel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/positions/level/{{level_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["positions", "level", "{{level_id}}"]
+            },
+            "description": "Posiciones de un nivel específico."
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Posición por Código",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/positions/find-by-code?code={{position_code}}&warehouseId={{warehouse_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["positions", "find-by-code"],
+              "query": [
+                { "key": "code",        "value": "{{position_code}}" },
+                { "key": "warehouseId", "value": "{{warehouse_id}}" }
+              ]
+            },
+            "description": "Busca posición por código y valida disponibilidad. code y warehouseId requeridos."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle de Posición",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/positions/{{position_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["positions", "{{position_id}}"]
+            },
+            "description": "Detalle de una posición por UUID."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle Extendido de Posición",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/positions/{{position_id}}/detail",
+              "host": ["{{base_url}}"],
+              "path": ["positions", "{{position_id}}", "detail"]
+            },
+            "description": "Detalle extendido: pallet actual, etiqueta física, historial reciente."
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "14. Niveles (Levels)",
+      "item": [
+        {
+          "name": "Listar Niveles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/levels?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["levels"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "list",  "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Lista paginada de niveles."
+          },
+          "response": []
+        },
+        {
+          "name": "Niveles de un Módulo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/levels/module/{{module_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["levels", "module", "{{module_id}}"]
+            },
+            "description": "Niveles de un módulo específico."
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle de Nivel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/levels/{{level_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["levels", "{{level_id}}"]
+            },
+            "description": "Detalle de un nivel por UUID."
+          },
+          "response": []
+        },
+        {
+          "name": "Grid de Posiciones del Nivel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/levels/{{level_id}}/positions-grid",
+              "host": ["{{base_url}}"],
+              "path": ["levels", "{{level_id}}", "positions-grid"]
+            },
+            "description": "Grid de posiciones del nivel (renderización de estantería)."
+          },
+          "response": []
+        },
+        {
+          "name": "Indicadores de Ocupación del Nivel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/levels/{{level_id}}/indicators",
+              "host": ["{{base_url}}"],
+              "path": ["levels", "{{level_id}}", "indicators"]
+            },
+            "description": "Indicadores de ocupación: total, ocupadas, disponibles, porcentaje."
+          },
+          "response": []
+        }
+      ]
+    }
+
+  ]
+}
