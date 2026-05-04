@@ -37,6 +37,8 @@ import {
   Lock,
   MapPin,
   WifiOff,
+  Search,
+  X,
 } from 'lucide-react';
 
 // Layout
@@ -401,6 +403,7 @@ const ProductoDetail = () => {
   const [formLoading, setFormLoading] = useState(false);
   const [cajas, setCajas] = useState([]);
   const [loadingCajas, setLoadingCajas] = useState(false);
+  const [busquedaCajas, setBusquedaCajas] = useState('');
   const [ubicacionWms, setUbicacionWms] = useState([]);
   const [loadingUbicacion, setLoadingUbicacion] = useState(false);
   const [errorUbicacion, setErrorUbicacion] = useState(false);
@@ -510,6 +513,17 @@ const ProductoDetail = () => {
       };
     });
   }, [estadisticas]);
+
+  const cajasFiltradas = useMemo(() => {
+    if (!busquedaCajas.trim()) return cajas;
+    const q = busquedaCajas.toLowerCase();
+    return cajas.filter(
+      (c) =>
+        String(c.numero_caja || '').toLowerCase().includes(q) ||
+        String(c.lote || '').toLowerCase().includes(q) ||
+        String(c.documento || '').toLowerCase().includes(q)
+    );
+  }, [cajas, busquedaCajas]);
 
   // Tabs
   const tabs = useMemo(
@@ -941,6 +955,28 @@ const ProductoDetail = () => {
                 {/* Tab: Cajas */}
                 {activeTab === 'cajas' && (
                   <div>
+                    {/* Buscador */}
+                    {!loadingCajas && cajas.length > 0 && (
+                      <div className="relative mb-4">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        <input
+                          type="text"
+                          value={busquedaCajas}
+                          onChange={(e) => setBusquedaCajas(e.target.value)}
+                          placeholder="Buscar por N° caja, lote o documento..."
+                          className="w-full pl-9 pr-9 py-2 text-sm bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400 dark:focus:border-orange-500 transition-colors"
+                        />
+                        {busquedaCajas && (
+                          <button
+                            onClick={() => setBusquedaCajas('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+
                     {loadingCajas ? (
                       <div className="space-y-3">
                         {[0, 1, 2, 3].map((i) => (
@@ -955,6 +991,13 @@ const ProductoDetail = () => {
                         <BoxIcon className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
                         <p className="text-slate-500 dark:text-slate-400">
                           No hay cajas registradas para este producto
+                        </p>
+                      </div>
+                    ) : cajasFiltradas.length === 0 ? (
+                      <div className="py-10 text-center">
+                        <Search className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">
+                          Sin resultados para <span className="font-medium">"{busquedaCajas}"</span>
                         </p>
                       </div>
                     ) : (
@@ -983,7 +1026,7 @@ const ProductoDetail = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {cajas.map((caja) => (
+                            {cajasFiltradas.map((caja) => (
                               <tr
                                 key={caja.id}
                                 className="border-b border-gray-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors"
@@ -1024,6 +1067,11 @@ const ProductoDetail = () => {
                             ))}
                           </tbody>
                         </table>
+                        {busquedaCajas && (
+                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 text-right">
+                            {cajasFiltradas.length} de {cajas.length} cajas
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1124,6 +1172,9 @@ const ProductoDetail = () => {
                           <thead>
                             <tr className="border-b border-slate-200 dark:border-slate-700">
                               <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                N° Caja
+                              </th>
+                              <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                 Posición en bodega
                               </th>
                               <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -1143,6 +1194,9 @@ const ProductoDetail = () => {
                                 key={idx}
                                 className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors"
                               >
+                                <td className="py-3 px-3 font-mono text-xs text-slate-600 dark:text-slate-400">
+                                  {ub.numero_caja || '-'}
+                                </td>
                                 <td className="py-3 px-3 text-slate-700 dark:text-slate-300 font-medium font-mono">
                                   <div className="flex items-center gap-2">
                                     <MapPin className="w-3.5 h-3.5 text-centhrix-red shrink-0" />

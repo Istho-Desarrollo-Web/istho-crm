@@ -372,6 +372,7 @@ const getProductoUbicaciones = async (req, res) => {
         nivel: p.levelName || null,
         cantidad: p.quantity,
         lote: p.lot || null,
+        numero_caja: p.palletCode || p.pallet?.code || p.palletId || null,
       }));
 
     return success(res, { ubicaciones }, 'Ubicaciones obtenidas');
