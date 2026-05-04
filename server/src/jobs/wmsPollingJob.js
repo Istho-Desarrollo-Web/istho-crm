@@ -106,6 +106,13 @@ async function _pollKardexHistorial() {
           continue;
         }
 
+        // Solo sincronizar ajustes de Carga (entrada). Las Descargas generan movimientos
+        // de salida redundantes ya cubiertos por el polling de órdenes de picking.
+        if (entry.operation !== 'Carga') {
+          logger.debug(`[WmsPolling] Kardex Descarga ignorado: op="${entry.operation}" pallet=${palletCode}`);
+          continue;
+        }
+
         // Clave única del ajuste: palletCode + timestamp + operación + cantidad
         const entryKey = `${palletCode}::${entry.createdAt}::${entry.operation}::${entry.quantity}`.substring(0, 150);
 

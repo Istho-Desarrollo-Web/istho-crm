@@ -525,16 +525,25 @@ const ProductoDetail = () => {
     );
   }, [cajas, busquedaCajas]);
 
+  // Excluir movimientos de Kardex WMS Descarga (tipo salida generado por ajuste WMS)
+  const movimientosFiltrados = useMemo(
+    () =>
+      (movimientos || []).filter(
+        (m) => !(m.tipo === 'salida' && String(m.motivo || '').startsWith('Kardex WMS'))
+      ),
+    [movimientos]
+  );
+
   // Tabs
   const tabs = useMemo(
     () => [
       { id: 'info', label: 'Información' },
       { id: 'cajas', label: `Cajas (${cajas.length})` },
-      { id: 'movimientos', label: `Movimientos (${(movimientos || []).length})` },
+      { id: 'movimientos', label: `Movimientos (${movimientosFiltrados.length})` },
       { id: 'estadisticas', label: 'Estadísticas' },
       ...(esWMS ? [{ id: 'ubicacion', label: 'Ubicación WMS' }] : []),
     ],
-    [movimientos, cajas, esWMS]
+    [movimientosFiltrados, cajas, esWMS]
   );
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -1089,7 +1098,7 @@ const ProductoDetail = () => {
                           />
                         ))}
                       </div>
-                    ) : (movimientos || []).length === 0 ? (
+                    ) : movimientosFiltrados.length === 0 ? (
                       <div className="py-12 text-center">
                         <Package className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
                         <p className="text-slate-500 dark:text-slate-400">
@@ -1097,7 +1106,7 @@ const ProductoDetail = () => {
                         </p>
                       </div>
                     ) : (
-                      (movimientos || []).map((movimiento) => (
+                      movimientosFiltrados.map((movimiento) => (
                         <MovimientoItem key={movimiento.id} movimiento={movimiento} />
                       ))
                     )}
