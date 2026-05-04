@@ -365,23 +365,28 @@ const getProductoUbicaciones = async (req, res) => {
     // Filtrar por productId por si el WMS no filtra en servidor
     const palletsFiltrados = pallets.filter((p) => p.productId === producto.codigo_wms);
 
-    // /warehouses/search-details no incluye palletCode — enriquecer con GET /pallets/:id en paralelo
-    const detalles = await Promise.allSettled(
-      palletsFiltrados.map((p) => wmsApiService.getPalletDetalle(p.palletId))
-    );
+    // Resolver número de caja desde BD local (CajaInventario.wms_pallet_id → numero_caja).
+    // Una sola query en lugar de N llamadas al WMS — escala correctamente con 200+ pallets.
+    const { CajaInventario } = require('../models');
+    const palletIds = palletsFiltrados.map((p) => p.palletId).filter(Boolean);
+    const cajasLocales = palletIds.length
+      ? await CajaInventario.findAll({
+          where: { wms_pallet_id: palletIds },
+          attributes: ['wms_pallet_id', 'numero_caja'],
+          raw: true,
+        })
+      : [];
+    const cajaMap = Object.fromEntries(cajasLocales.map((c) => [c.wms_pallet_id, c.numero_caja]));
 
-    const ubicaciones = palletsFiltrados.map((p, i) => {
-      const detalle = detalles[i].status === 'fulfilled' ? detalles[i].value : null;
-      return {
-        coordenada: p.coordinate,
-        zona: p.zoneName || null,
-        posicion: p.positionName || null,
-        nivel: p.levelName || null,
-        cantidad: p.quantity,
-        lote: p.lot || null,
-        numero_caja: detalle?.palletCode || detalle?.palletNumber || null,
-      };
-    });
+    const ubicaciones = palletsFiltrados.map((p) => ({
+      coordenada: p.coordinate,
+      zona: p.zoneName || null,
+      posicion: p.positionName || null,
+      nivel: p.levelName || null,
+      cantidad: p.quantity,
+      lote: p.lot || null,
+      numero_caja: cajaMap[p.palletId] ?? null,
+    }));
 
     return success(res, { ubicaciones }, 'Ubicaciones obtenidas');
   } catch (error) {
