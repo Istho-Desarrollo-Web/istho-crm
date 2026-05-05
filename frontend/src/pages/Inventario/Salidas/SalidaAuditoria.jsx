@@ -928,11 +928,16 @@ const SalidaAuditoria = () => {
     }
 
     const cantAfectada = parseInt(cantidad_afectada);
-    if (linea && cantAfectada > linea.cantidad_esperada) {
+    const totalSku = linea
+      ? lineas
+          .filter((l) => !l.eliminado && l.sku === linea.sku)
+          .reduce((sum, l) => sum + (Number(l.cantidad_esperada) || 0), 0)
+      : 0;
+    if (linea && cantAfectada > totalSku) {
       showAlert({
         type: 'warning',
         title: 'Cantidad inválida',
-        message: `Las unidades afectadas no pueden superar la cantidad de la línea (${new Intl.NumberFormat('es-CO').format(linea.cantidad_esperada)} ${linea.unidad || 'UND'}).`,
+        message: `Las unidades afectadas no pueden superar la cantidad del producto (${new Intl.NumberFormat('es-CO').format(totalSku)} ${linea.unidad || 'UND'}).`,
       });
       return;
     }

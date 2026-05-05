@@ -20,10 +20,10 @@ const logger = require('../utils/logger');
 const APP_URL =
   process.env.APP_URL || (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',')[0].trim();
 
-// Logo para emails — Cloudinary URL (liviano, persistente, no base64)
+// Logo para emails — S3 URL pública (bucket istho-crm-files, carpeta branding/)
 const LOGO_EMAIL_URL =
   process.env.LOGO_EMAIL_URL ||
-  'https://res.cloudinary.com/dut7n03xd/image/upload/v1774472303/istho-crm/branding/logo-email.png';
+  'https://istho-crm-files.s3.us-west-2.amazonaws.com/branding/logo-email.png';
 
 // Cache de plantillas compiladas (deshabilitado en desarrollo para recargar cambios)
 const templateCache = {};
