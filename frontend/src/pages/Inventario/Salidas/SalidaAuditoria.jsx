@@ -1228,16 +1228,16 @@ const SalidaAuditoria = () => {
                 <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
                   {salidaData.documento_wms || salidaData.documento}
                 </h1>
-                <div className="flex items-center gap-3 mt-1 text-sm text-slate-500 dark:text-slate-400">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-slate-500 dark:text-slate-400">
                   <span className="font-mono text-xs">{salidaData.documento}</span>
-                  <span>•</span>
+                  <span className="hidden sm:inline">•</span>
                   <span className="flex items-center gap-1">
                     <Building2 className="w-4 h-4" />
                     {salidaData.cliente}
                   </span>
-                  <span>•</span>
+                  <span className="hidden sm:inline">•</span>
                   <span>{salidaData.tipo_documento}</span>
-                  <span>•</span>
+                  <span className="hidden sm:inline">•</span>
                   <span>{formatDateShort(salidaData.fecha_salida)}</span>
                 </div>
               </div>

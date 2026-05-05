@@ -1275,16 +1275,16 @@ const EntradaAuditoria = () => {
                 <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
                   {entradaData.documento_wms || entradaData.documento}
                 </h1>
-                <div className="flex items-center gap-3 mt-1 text-sm text-slate-500 dark:text-slate-400">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-slate-500 dark:text-slate-400">
                   <span className="font-mono text-xs">{entradaData.documento}</span>
-                  <span>•</span>
+                  <span className="hidden sm:inline">•</span>
                   <span className="flex items-center gap-1">
                     <Building2 className="w-4 h-4" />
                     {entradaData.cliente}
                   </span>
-                  <span>•</span>
+                  <span className="hidden sm:inline">•</span>
                   <span>{entradaData.tipo_documento}</span>
-                  <span>•</span>
+                  <span className="hidden sm:inline">•</span>
                   <span>{formatDateShort(entradaData.fecha_ingreso)}</span>
                 </div>
               </div>
