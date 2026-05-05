@@ -204,15 +204,15 @@ export default function PreferenciasNotificaciones() {
             {/* Categorías */}
             <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
               {CATEGORIAS.map(({ key, titulo, descripcion, icono: Icono, color, bg }) => (
-                <div key={key} className="flex items-center gap-4 px-5 py-4">
+                <div key={key} className="flex items-center gap-3 px-4 py-4">
                   <div
                     className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center shrink-0`}
                   >
                     <Icono className={`w-4 h-4 ${color}`} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{titulo}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{descripcion}</p>
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate" title={titulo}>{titulo}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{descripcion}</p>
                   </div>
                   <Toggle
                     checked={prefs[key] !== false}
@@ -225,7 +225,7 @@ export default function PreferenciasNotificaciones() {
 
             {/* Sonido */}
             <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-100 dark:border-gray-800">
-              <div className="flex items-center gap-4 px-5 py-4">
+              <div className="flex items-center gap-3 px-4 py-4">
                 <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
                   {prefs.notificaciones_sonido ? (
                     <Volume2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />

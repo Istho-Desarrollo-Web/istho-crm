@@ -45,7 +45,7 @@ const Administracion = () => {
 
         {/* Tabs */}
         <div className="border-b border-gray-200 dark:border-slate-700 mb-6">
-          <div className="flex gap-0">
+          <div className="flex gap-0 overflow-x-auto">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -54,7 +54,7 @@ const Administracion = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`
-                    flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors
+                    flex items-center gap-2 px-3 sm:px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0
                     ${
                       isActive
                         ? 'border-orange-500 text-orange-600 dark:text-orange-400'

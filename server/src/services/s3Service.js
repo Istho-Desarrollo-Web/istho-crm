@@ -103,6 +103,21 @@ const resolveUrl = async (urlOrKey, expiresIn = 3600) => {
 };
 
 /**
+ * Descargar un archivo de S3 como Buffer (para adjuntos de email, etc.)
+ * @param {string} key - S3 object key
+ * @returns {Promise<Buffer>}
+ */
+const getBuffer = async (key) => {
+  if (!key || !isConfigured()) return null;
+  const response = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+  const chunks = [];
+  for await (const chunk of response.Body) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+};
+
+/**
  * Eliminar un archivo de S3
  * @param {string} key - S3 object key
  */
@@ -124,5 +139,6 @@ module.exports = {
   subirMultiples,
   getUrl,
   resolveUrl,
+  getBuffer,
   eliminar,
 };

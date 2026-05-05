@@ -403,16 +403,16 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
 // DROPZONE COMPONENT (Improved with type separation)
 // ════════════════════════════════════════════════════════════════════════════
 
-const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) => {
+const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 10, maxPdfs = 5 }) => {
   const [dragActive, setDragActive] = useState({ pdf: false, photos: false });
   const pdfInputRef = useRef(null);
   const photoInputRef = useRef(null);
 
   const pdfFiles = files.filter(
-    (f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+    (f) => f.type === 'application/pdf' || f.name?.toLowerCase().endsWith('.pdf')
   );
   const imageFiles = files.filter(
-    (f) => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name)
+    (f) => /^image\/(jpeg|png|webp)$/.test(f.type) || /\.(jpg|jpeg|png|webp|zip|rar)$/i.test(f.name)
   );
 
   const onDrag = (type) => (e) => {
@@ -437,13 +437,14 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
   const handleFiles = (type, newFiles) => {
     const validFiles = [];
     if (type === 'pdf') {
-      const pdf = newFiles.find(
-        (f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+      const pdfs = newFiles.filter(
+        (f) => f.type === 'application/pdf' || f.name?.toLowerCase().endsWith('.pdf')
       );
-      if (pdf && pdfFiles.length === 0) validFiles.push(pdf);
+      const remainingPdf = maxPdfs - pdfFiles.length;
+      validFiles.push(...pdfs.slice(0, remainingPdf));
     } else {
       const photos = newFiles.filter(
-        (f) => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp)$/i.test(f.name)
+        (f) => /^image\/(jpeg|png|webp)$/.test(f.type) || /\.(jpg|jpeg|png|webp|zip|rar)$/i.test(f.name)
       );
       const remaining = maxPhotos - imageFiles.length;
       validFiles.push(...photos.slice(0, remaining));
@@ -458,7 +459,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
       <div className="space-y-3">
         <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <FileText className="w-4 h-4 text-purple-500" />
-          Documento Soporte (PDF)
+          Documentos PDF ({pdfFiles.length}/{maxPdfs})
         </label>
 
         <div
@@ -466,7 +467,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
           onDragLeave={onDrag('pdf')}
           onDragOver={onDrag('pdf')}
           onDrop={onDrop('pdf')}
-          onClick={() => pdfFiles.length === 0 && pdfInputRef.current?.click()}
+          onClick={() => pdfFiles.length < maxPdfs && pdfInputRef.current?.click()}
           className={`relative h-40 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center transition-all duration-300 ${
             pdfFiles.length > 0
               ? 'border-purple-500 bg-purple-50/30 dark:bg-purple-900/10'
@@ -479,6 +480,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             ref={pdfInputRef}
             type="file"
             accept=".pdf"
+            multiple
             onChange={(e) => handleFiles('pdf', [...e.target.files])}
             className="hidden"
           />
@@ -505,7 +507,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             <>
               <Upload className="w-8 h-8 text-slate-400 mb-2" />
               <p className="text-xs text-slate-500 dark:text-slate-400 text-center px-4">
-                Sube el cumplido o planilla (1 archivo)
+                Sube documentos PDF (máx. {maxPdfs})
               </p>
             </>
           )}
@@ -516,7 +518,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
       <div className="space-y-3">
         <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <Image className="w-4 h-4 text-blue-500" />
-          Fotos de la Carga ({imageFiles.length}/{maxPhotos})
+          Fotos y Comprimidos ({imageFiles.length}/{maxPhotos})
         </label>
 
         <div
@@ -537,7 +539,7 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
             ref={photoInputRef}
             type="file"
             multiple
-            accept="image/*"
+            accept=".jpg,.jpeg,.png,.webp,.zip,.rar"
             onChange={(e) => handleFiles('photos', [...e.target.files])}
             className="hidden"
           />
@@ -547,12 +549,12 @@ const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 5 }) =>
           />
           <p className="text-xs text-slate-500 dark:text-slate-400 text-center px-4">
             {imageFiles.length >= maxPhotos
-              ? 'Limite de fotos alcanzado'
-              : 'Sube fotos del sellado, placa y carga'}
+              ? 'Límite de fotos alcanzado'
+              : 'Sube fotos del sellado, placa y carga (JPG, PNG, ZIP, RAR)'}
           </p>
           {imageFiles.length > 0 && imageFiles.length < maxPhotos && (
             <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-1 font-medium">
-              Puedes subir {maxPhotos - imageFiles.length} mas
+              Puedes subir {maxPhotos - imageFiles.length} más
             </p>
           )}
         </div>
@@ -1892,7 +1894,8 @@ const KardexAuditoria = () => {
                 files={files}
                 onAddFiles={handleAddFiles}
                 onRemoveFile={handleRemoveFile}
-                maxPhotos={5}
+                maxPhotos={10}
+                maxPdfs={5}
               />
             )}
           </Section>

@@ -62,7 +62,7 @@ export const TODOS_CONCEPTOS = [...new Set([...CONCEPTOS_EGRESO, ...CONCEPTOS_IN
 // REGEX REUTILIZABLES
 // ─────────────────────────────────────────────────────────────────────────────
 
-const REGEX_PLACA = /^[A-Za-z0-9]+$/;
+const REGEX_PLACA = /^[A-Z]{3}[0-9]{2}[A-Z0-9]$/;
 const REGEX_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const REGEX_PASSWORD = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])/;
 
@@ -121,9 +121,9 @@ export const vehiculoSchema = yup.object({
   placa: yup
     .string()
     .required('La placa es requerida')
-    .min(4, 'La placa debe tener entre 4 y 10 caracteres')
-    .max(10, 'La placa debe tener entre 4 y 10 caracteres')
-    .matches(REGEX_PLACA, 'La placa solo puede contener letras y números'),
+    .min(6, 'Mínimo 6 caracteres')
+    .max(6, 'La placa debe tener exactamente 6 caracteres')
+    .matches(REGEX_PLACA, 'Formato inválido (ej: ABC123 o ABC12D)'),
   tipo_vehiculo: yup
     .string()
     .required('El tipo de vehículo es requerido')
@@ -262,7 +262,7 @@ export const cajaMenorSchema = yup.object({
   observaciones: yup
     .string()
     .nullable()
-    .max(2000, 'Las observaciones no pueden exceder 2000 caracteres'),
+    .max(500, 'Las observaciones no pueden exceder 500 caracteres'),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -300,7 +300,7 @@ export const movimientoSchema = yup.object({
     .number()
     .nullable()
     .transform((v, o) => (o === '' ? null : v)),
-  descripcion: yup.string().nullable().max(2000, 'La descripción no puede exceder 2000 caracteres'),
+  descripcion: yup.string().nullable().max(500, 'La descripción no puede exceder 500 caracteres'),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

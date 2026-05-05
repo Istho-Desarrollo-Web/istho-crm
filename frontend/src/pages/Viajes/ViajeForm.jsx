@@ -26,6 +26,7 @@ import {
   ChevronUp,
   Wallet,
   Loader2,
+  X,
 } from 'lucide-react';
 import { viajesService, vehiculosService, cajasMenoresService } from '../../api/viajes.service';
 import clientesService from '../../api/clientes.service';
@@ -357,21 +358,26 @@ const ViajeForm = () => {
                   type="button"
                   onClick={() => navigate('/viajes/viajes')}
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-centhrix-surface rounded-xl hover:bg-slate-200 dark:hover:bg-centhrix-card transition-colors disabled:opacity-50"
+                  title="Cancelar"
+                  className="flex items-center gap-2 px-2 sm:px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-centhrix-surface rounded-xl hover:bg-slate-200 dark:hover:bg-centhrix-card transition-colors disabled:opacity-50"
                 >
-                  Cancelar
+                  <X className="w-4 h-4 sm:hidden" />
+                  <span className="hidden sm:inline">Cancelar</span>
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                  title={isEditing ? 'Guardar Cambios' : 'Crear Viaje'}
+                  className="flex items-center gap-2 px-2 sm:px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Save className="w-4 h-4" />
                   )}
-                  {isEditing ? 'Guardar Cambios' : 'Crear Viaje'}
+                  <span className="hidden sm:inline">
+                    {isEditing ? 'Guardar Cambios' : 'Crear Viaje'}
+                  </span>
                 </button>
               </div>
             </div>

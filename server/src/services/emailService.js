@@ -120,8 +120,8 @@ const enviarCorreo = async ({
     // Adjuntos
     if (adjuntos.length > 0) {
       mailOptions.attachments = adjuntos.map((adj) => ({
-        filename: adj.nombre || path.basename(adj.path),
-        path: adj.path,
+        filename: adj.nombre || (adj.path ? path.basename(adj.path) : 'adjunto'),
+        ...(adj.content ? { content: adj.content } : { path: adj.path }),
         contentType: adj.tipo,
       }));
     }
@@ -235,36 +235,84 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
       }),
     };
 
-    // Preparar enlaces a evidencias (Cloudinary URLs o locales)
+    // Recopilar documentos y fotos de averías para adjuntar individualmente
     const adjuntos = [];
-    const evidenciasLinks = [];
+    const archivosParaAdjuntar = [];
+
     if (operacion.documentos && operacion.documentos.length > 0) {
       for (const doc of operacion.documentos) {
-        if (doc.archivo_url?.startsWith('http')) {
-          // Archivo en Cloudinary — incluir como enlace en el email
-          evidenciasLinks.push({
-            nombre: doc.archivo_nombre,
-            url: doc.archivo_url,
-            tipo: doc.archivo_tipo,
-            tamanio: doc.archivo_tamanio,
-          });
-        } else {
-          // Archivo local (legacy) — intentar adjuntar si existe
-          const filePath = path.join(__dirname, '../../', doc.archivo_url);
+        const key = doc.cloudinary_public_id || doc.archivo_url;
+        if (key && !key.startsWith('http') && !key.startsWith('data:')) {
+          archivosParaAdjuntar.push({ key, nombre: doc.archivo_nombre || `soporte_${doc.id}`, tipo: doc.archivo_tipo });
+        } else if (key && !key.startsWith('http')) {
+          const filePath = path.join(__dirname, '../../', key);
           if (fs.existsSync(filePath)) {
-            adjuntos.push({
-              nombre: doc.archivo_nombre,
-              path: filePath,
-              tipo: doc.archivo_tipo,
-            });
+            archivosParaAdjuntar.push({ filePath, nombre: doc.archivo_nombre, tipo: doc.archivo_tipo });
           }
         }
       }
     }
 
-    // Agregar enlaces a los datos de la plantilla
-    datos.evidenciasLinks = evidenciasLinks;
-    datos.tieneEvidencias = evidenciasLinks.length > 0;
+    if (operacion.averias && operacion.averias.length > 0) {
+      for (const av of operacion.averias) {
+        const key = av.cloudinary_public_id || av.foto_url;
+        if (key && !key.startsWith('http') && !key.startsWith('data:')) {
+          archivosParaAdjuntar.push({ key, nombre: av.foto_nombre || `averia_${av.id}.jpg`, tipo: av.foto_tipo || 'image/jpeg' });
+        }
+      }
+    }
+
+    if (archivosParaAdjuntar.length > 0) {
+      const s3Svc = require('./s3Service');
+      const LIMITE_TOTAL_MB = 20;
+      let bytesTotales = 0;
+
+      for (const archivo of archivosParaAdjuntar) {
+        try {
+          let buffer;
+          if (archivo.key) buffer = await s3Svc.getBuffer(archivo.key);
+          else if (archivo.filePath) buffer = fs.readFileSync(archivo.filePath);
+          if (!buffer) continue;
+
+          let bufferFinal = buffer;
+          let tipoFinal = archivo.tipo;
+          let nombreFinal = archivo.nombre;
+
+          // Comprimir imágenes con sharp (calidad 75%) → ahorra ~50–70% de peso
+          if (tipoFinal && tipoFinal.startsWith('image/')) {
+            try {
+              const sharp = require('sharp');
+              bufferFinal = await sharp(buffer).jpeg({ quality: 75 }).toBuffer();
+              tipoFinal = 'image/jpeg';
+              if (nombreFinal && !/\.(jpg|jpeg)$/i.test(nombreFinal)) {
+                nombreFinal = nombreFinal.replace(/\.[^.]+$/, '.jpg');
+              }
+            } catch (sharpErr) {
+              logger.warn(`Compresión imagen ${archivo.nombre}: ${sharpErr.message} — adjuntando original`);
+              bufferFinal = buffer;
+            }
+          }
+
+          if (bytesTotales + bufferFinal.length > LIMITE_TOTAL_MB * 1024 * 1024) {
+            logger.warn(`Adjunto "${nombreFinal}" omitido — límite total de ${LIMITE_TOTAL_MB} MB alcanzado`);
+            continue;
+          }
+
+          bytesTotales += bufferFinal.length;
+          adjuntos.push({ nombre: nombreFinal, content: bufferFinal, tipo: tipoFinal });
+          logger.info(`Adjunto: ${nombreFinal} (${(bufferFinal.length / 1024).toFixed(1)} KB)`);
+        } catch (err) {
+          logger.warn(`Error adjuntando ${archivo.nombre}: ${err.message}`);
+        }
+      }
+
+      if (adjuntos.length > 0) {
+        logger.info(`Adjuntos cierre: ${adjuntos.length} archivo(s), ${(bytesTotales / 1024).toFixed(1)} KB total`);
+      }
+    }
+
+    datos.evidenciasLinks = [];
+    datos.tieneEvidencias = false;
 
     // Parsear correos
     const correos = correosDestino
@@ -347,8 +395,8 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
 
         if (adjuntos.length > 0) {
           mailOptions.attachments = adjuntos.map((adj) => ({
-            filename: adj.nombre || path.basename(adj.path),
-            path: adj.path,
+            filename: adj.nombre || (adj.path ? path.basename(adj.path) : 'adjunto'),
+            ...(adj.content ? { content: adj.content } : { path: adj.path }),
             contentType: adj.tipo,
           }));
         }

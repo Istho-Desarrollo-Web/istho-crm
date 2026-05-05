@@ -399,10 +399,17 @@ export default function WmsDashboard() {
         {status && (
           <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm px-5 py-3 flex flex-wrap items-center gap-6 text-sm">
             <span className="text-slate-500 dark:text-slate-400">
-              Último sync:{' '}
+              Último sync exitoso:{' '}
               <strong className="text-slate-800 dark:text-slate-100">
-                {tiempoRelativo(status.ultimo_sync)}
+                {status.ultimo_sync_exitoso
+                  ? formatFecha(status.ultimo_sync_exitoso)
+                  : 'Nunca'}
               </strong>
+              {status.ultimo_sync_exitoso && (
+                <span className="text-xs text-slate-400 dark:text-slate-500 ml-1">
+                  ({tiempoRelativo(status.ultimo_sync_exitoso)})
+                </span>
+              )}
             </span>
             <span className="text-slate-500 dark:text-slate-400">
               Tipo:{' '}

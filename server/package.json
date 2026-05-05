@@ -36,6 +36,7 @@
     "@aws-sdk/client-s3": "^3.1038.0",
     "@aws-sdk/s3-request-presigner": "^3.1038.0",
     "@socket.io/redis-adapter": "^8.3.0",
+    "archiver": "^7.0.1",
     "axios": "^1.15.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -58,6 +59,7 @@
     "qrcode": "^1.5.4",
     "resend": "^6.9.4",
     "sequelize": "^6.35.2",
+    "sharp": "^0.34.5",
     "socket.io": "^4.8.3",
     "umzug": "^3.8.2",
     "uuid": "^9.0.1"

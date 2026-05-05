@@ -233,9 +233,9 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                       {...register('placa')}
                       type="text"
                       placeholder="ABC123"
-                      maxLength={10}
+                      maxLength={6}
                       disabled={readOnly}
-                      onChange={makeSanitizeHandler(setValue, 'placa', SANITIZE.ALFANUM_UPPER, 10)}
+                      onChange={makeSanitizeHandler(setValue, 'placa', SANITIZE.ALFANUM_UPPER, 6)}
                       className={`${inputClasses(true, !!errors.placa)} uppercase`}
                     />
                   </InputField>
@@ -460,7 +460,9 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                         {...register('descripcion')}
                         placeholder="Notas adicionales sobre el vehículo..."
                         rows={3}
+                        maxLength={2000}
                         disabled={readOnly}
+                        onChange={makeSanitizeHandler(setValue, 'descripcion', SANITIZE.TEXTO_LIBRE, 2000)}
                         className={inputClasses(false, !!errors.descripcion)}
                       />
                     </InputField>

@@ -198,6 +198,22 @@ body.dark,
 }
 
 /* ══════════════════════════════════════════════
+   INPUT DATE — Normalización global
+   ══════════════════════════════════════════════ */
+
+/* Evita que los campos de fecha expandan el layout en móvil */
+input[type='date'] {
+  min-width: 0;
+  max-width: 100%;
+  /* Evita el color azul del texto del placeholder en iOS */
+  color-scheme: light;
+}
+
+.dark input[type='date'] {
+  color-scheme: dark;
+}
+
+/* ══════════════════════════════════════════════
    SCROLLBAR — Light mode
    ══════════════════════════════════════════════ */
 * {

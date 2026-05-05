@@ -769,12 +769,14 @@ const MobileMenu = ({
   }, [isOpen]);
 
   const getInitials = (name) => {
-    if (!name) return 'U';
-    const parts = name.split(' ');
+    if (!name || typeof name !== 'string') return 'U';
+    const trimmed = name.trim();
+    if (!trimmed) return 'U';
+    const parts = trimmed.split(/\s+/);
     if (parts.length >= 2) {
       return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     }
-    return name.substring(0, 2).toUpperCase();
+    return trimmed.substring(0, 2).toUpperCase();
   };
 
   const roleConfig = {
@@ -857,8 +859,10 @@ const MobileMenu = ({
                 className="w-12 h-12 rounded-full object-cover flex-shrink-0 shadow-md"
               />
             ) : (
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-                <span className="text-white font-bold">{getInitials(user?.nombre_completo)}</span>
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md overflow-hidden">
+                <span className="text-white font-bold text-sm">
+                  {getInitials(user?.nombre_completo || user?.username)}
+                </span>
               </div>
             )}
             <div className="flex-1 min-w-0">
