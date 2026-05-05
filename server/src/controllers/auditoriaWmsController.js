@@ -31,9 +31,11 @@ const {
   notFound,
   serverError,
 } = require('../utils/responses');
-const { parsePaginacion, getClientIP } = require('../utils/helpers');
+const { parsePaginacion, parseOrdenamiento, getClientIP } = require('../utils/helpers');
 const excelService = require('../services/excelService');
 const logger = require('../utils/logger');
+
+const CAMPOS_ORDENAMIENTO = ['numero_operacion', 'fecha_operacion', 'tipo', 'estado', 'created_at'];
 
 // ════════════════════════════════════════════════════════════════════════════
 // ENTRADAS (Ingresos)
@@ -46,6 +48,7 @@ const logger = require('../utils/logger');
 const listarEntradas = async (req, res) => {
   try {
     const { page, limit, offset } = parsePaginacion(req.query);
+    const order = parseOrdenamiento(req.query, CAMPOS_ORDENAMIENTO, 'created_at', 'DESC');
     const { estado, search, cliente_id } = req.query;
 
     const where = { tipo: 'ingreso' };
@@ -73,7 +76,7 @@ const listarEntradas = async (req, res) => {
       where,
       attributes: ['id'],
       include: needsClienteJoin ? [{ model: Cliente, as: 'cliente', attributes: [] }] : [],
-      order: [['created_at', 'DESC']],
+      order,
       limit,
       offset,
       distinct: true,
@@ -101,7 +104,7 @@ const listarEntradas = async (req, res) => {
             ],
           },
         ],
-        order: [['created_at', 'DESC']],
+        order,
       });
     }
 
@@ -241,6 +244,7 @@ const obtenerEntradaPorId = async (req, res) => {
 const listarSalidas = async (req, res) => {
   try {
     const { page, limit, offset } = parsePaginacion(req.query);
+    const order = parseOrdenamiento(req.query, CAMPOS_ORDENAMIENTO, 'created_at', 'DESC');
     const { estado, search, cliente_id } = req.query;
 
     const where = { tipo: 'salida' };
@@ -268,7 +272,7 @@ const listarSalidas = async (req, res) => {
       where,
       attributes: ['id'],
       include: needsClienteJoin ? [{ model: Cliente, as: 'cliente', attributes: [] }] : [],
-      order: [['created_at', 'DESC']],
+      order,
       limit,
       offset,
       distinct: true,
@@ -296,7 +300,7 @@ const listarSalidas = async (req, res) => {
             ],
           },
         ],
-        order: [['created_at', 'DESC']],
+        order,
       });
     }
 
@@ -435,6 +439,7 @@ const obtenerSalidaPorId = async (req, res) => {
  */
 const listarKardex = async (req, res) => {
   try {
+    const order = parseOrdenamiento(req.query, CAMPOS_ORDENAMIENTO, 'created_at', 'DESC');
     const { page, limit, offset } = parsePaginacion(req.query);
     const { estado, search, cliente_id } = req.query;
 
@@ -462,7 +467,7 @@ const listarKardex = async (req, res) => {
       where,
       attributes: ['id'],
       include: needsClienteJoin ? [{ model: Cliente, as: 'cliente', attributes: [] }] : [],
-      order: [['created_at', 'DESC']],
+      order,
       limit,
       offset,
       distinct: true,
@@ -489,7 +494,7 @@ const listarKardex = async (req, res) => {
             ],
           },
         ],
-        order: [['created_at', 'DESC']],
+        order,
       });
     }
 
