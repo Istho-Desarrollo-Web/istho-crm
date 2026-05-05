@@ -18,6 +18,7 @@ const FilterDropdown = ({
   placeholder = 'Seleccionar',
   multiple = false,
   icon: Icon,
+  compact = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -78,46 +79,49 @@ const FilterDropdown = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="
+        className={`
           flex items-center justify-between gap-2 w-full
-          px-4 py-2.5 bg-white border border-slate-200 rounded-xl
-          text-sm text-slate-700
+          bg-white border border-slate-200
+          text-slate-700
           hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
           transition-all duration-200
-        "
+          ${compact ? 'px-2.5 py-1.5 rounded-lg text-xs' : 'px-4 py-2.5 rounded-xl text-sm'}
+        `}
       >
         <div className="flex items-center gap-2">
-          {Icon && <Icon className="w-4 h-4 text-slate-400" />}
+          {Icon && <Icon className={compact ? 'w-3 h-3 text-slate-400' : 'w-4 h-4 text-slate-400'} />}
           <span className={value ? 'text-slate-800' : 'text-slate-400'}>{getDisplayValue()}</span>
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${compact ? 'w-3 h-3' : 'w-4 h-4'}`}
         />
       </button>
 
       {/* Dropdown */}
       {isOpen && (
         <div
-          className="
-          absolute z-50 w-full mt-2
-          bg-white border border-slate-200 rounded-xl shadow-lg
+          className={`
+          absolute z-50 w-full mt-1.5
+          bg-white border border-slate-200 shadow-lg
           max-h-60 overflow-y-auto
           animate-fadeIn
-        "
+          ${compact ? 'rounded-lg' : 'rounded-xl'}
+        `}
         >
           {options.map((option) => (
             <button
               key={option.value}
               type="button"
               onClick={() => handleSelect(option.value)}
-              className="
-                flex items-center justify-between w-full px-4 py-2.5
-                text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600
+              className={`
+                flex items-center justify-between w-full
+                text-slate-700 hover:bg-orange-50 hover:text-orange-600
                 transition-colors duration-150
-              "
+                ${compact ? 'px-3 py-2 text-xs' : 'px-4 py-2.5 text-sm'}
+              `}
             >
               <span>{option.label}</span>
-              {isSelected(option.value) && <Check className="w-4 h-4 text-orange-500" />}
+              {isSelected(option.value) && <Check className={compact ? 'w-3 h-3 text-orange-500' : 'w-4 h-4 text-orange-500'} />}
             </button>
           ))}
 
@@ -143,6 +147,7 @@ FilterDropdown.propTypes = {
   placeholder: PropTypes.string,
   multiple: PropTypes.bool,
   icon: PropTypes.elementType,
+  compact: PropTypes.bool,
 };
 
 export default FilterDropdown;

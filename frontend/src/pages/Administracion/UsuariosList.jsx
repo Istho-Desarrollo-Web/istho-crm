@@ -31,6 +31,7 @@ import SortIcon from '@components/common/SortIcon';
 import UsuarioForm from './UsuarioForm';
 import UsuarioPermisos from './UsuarioPermisos';
 import { useAuth } from '../../context/AuthContext';
+import { FilterDropdown } from '../../components/common';
 
 const UsuariosList = () => {
   const { hasPermission } = useAuth();
@@ -181,35 +182,37 @@ const UsuariosList = () => {
         </div>
 
         {/* Filtro Rol */}
-        <select
-          value={filtroRol}
-          onChange={(e) => {
-            setFiltroRol(e.target.value);
-            setPagination((prev) => ({ ...prev, page: 1 }));
-          }}
-          className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-card text-slate-700 dark:text-slate-200"
-        >
-          <option value="">Todos los roles</option>
-          {roles.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.nombre}
-            </option>
-          ))}
-        </select>
+        <div className="w-44">
+          <FilterDropdown
+            options={[
+              { value: '', label: 'Todos los roles' },
+              ...roles.map((r) => ({ value: String(r.id), label: r.nombre })),
+            ]}
+            value={filtroRol}
+            onChange={(v) => {
+              setFiltroRol(v);
+              setPagination((prev) => ({ ...prev, page: 1 }));
+            }}
+            placeholder="Todos los roles"
+          />
+        </div>
 
         {/* Filtro Estado */}
-        <select
-          value={filtroActivo}
-          onChange={(e) => {
-            setFiltroActivo(e.target.value);
-            setPagination((prev) => ({ ...prev, page: 1 }));
-          }}
-          className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-card text-slate-700 dark:text-slate-200"
-        >
-          <option value="">Todos</option>
-          <option value="true">Activos</option>
-          <option value="false">Inactivos</option>
-        </select>
+        <div className="w-36">
+          <FilterDropdown
+            options={[
+              { value: '', label: 'Todos' },
+              { value: 'true', label: 'Activos' },
+              { value: 'false', label: 'Inactivos' },
+            ]}
+            value={filtroActivo}
+            onChange={(v) => {
+              setFiltroActivo(v);
+              setPagination((prev) => ({ ...prev, page: 1 }));
+            }}
+            placeholder="Todos"
+          />
+        </div>
 
         <button
           onClick={() => fetchUsuarios()}

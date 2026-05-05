@@ -38,10 +38,9 @@ import {
   Filter,
   X,
   ChevronDown,
-  Users,
 } from 'lucide-react';
 import clientesService from '../../../api/clientes.service';
-import { Pagination } from '../../../components/common';
+import { Pagination, FilterDropdown } from '../../../components/common';
 import { formatDate } from '../../../utils/formatDate';
 import PageFooter from '@components/common/PageFooter';
 
@@ -227,7 +226,7 @@ const SalidasList = () => {
     if (!esPortal) {
       setLoadingClientes(true);
       clientesService
-        .getAll({ limit: 200, estado: 'activo' })
+        .getAll({ limit: 100, estado: 'activo' })
         .then((res) => {
           const list = Array.isArray(res?.data) ? res.data : res?.data?.rows || [];
           setClientes(list);
@@ -475,23 +474,19 @@ const SalidasList = () => {
                 {/* Cliente — solo para usuarios internos */}
                 {!esPortal && (
                   <div>
-                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                      <Users className="w-3 h-3 inline mr-1" />
-                      Cliente
-                    </label>
-                    <select
+                    <FilterDropdown
+                      label="Cliente"
+                      options={[
+                        { value: '', label: 'Todos los clientes' },
+                        ...clientes.map((c) => ({
+                          value: String(c.id),
+                          label: c.razon_social || c.nombre || '',
+                        })),
+                      ]}
                       value={filtrosDraft.cliente_id}
-                      onChange={(e) => setFiltrosDraft((p) => ({ ...p, cliente_id: e.target.value }))}
-                      disabled={loadingClientes}
-                      className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 disabled:opacity-50"
-                    >
-                      <option value="">Todos los clientes</option>
-                      {clientes.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.razon_social || c.nombre}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(v) => setFiltrosDraft((p) => ({ ...p, cliente_id: v }))}
+                      placeholder={loadingClientes ? 'Cargando clientes...' : 'Todos los clientes'}
+                    />
                   </div>
                 )}
               </div>

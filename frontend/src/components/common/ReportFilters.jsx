@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import { Calendar, Users, Filter, X, Search, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import clientesService from '../../api/clientes.service';
+import FilterDropdown from './FilterDropdown';
 
 // ============================================
 // REPORT FILTERS
@@ -125,19 +126,18 @@ const ReportFilters = ({
                 <Users className="w-3 h-3 inline mr-1" />
                 Cliente
               </label>
-              <select
+              <FilterDropdown
+                options={[
+                  { value: '', label: 'Todos los clientes' },
+                  ...clientes.map((c) => ({
+                    value: String(c.id),
+                    label: c.razon_social || c.nombre || '',
+                  })),
+                ]}
                 value={localFilters.cliente_id || ''}
-                onChange={(e) => handleLocalChange('cliente_id', e.target.value)}
-                disabled={loadingClientes}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400 disabled:opacity-50"
-              >
-                <option value="">Todos los clientes</option>
-                {clientes.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.razon_social || c.nombre}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => handleLocalChange('cliente_id', v)}
+                placeholder={loadingClientes ? 'Cargando clientes...' : 'Todos los clientes'}
+              />
             </div>
           )}
 

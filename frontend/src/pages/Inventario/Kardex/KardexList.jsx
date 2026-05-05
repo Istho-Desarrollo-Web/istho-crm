@@ -35,8 +35,12 @@ import {
   RefreshCw,
   List,
   LayoutGrid,
+  Filter,
+  X,
+  ChevronDown,
 } from 'lucide-react';
-import { Pagination } from '../../../components/common';
+import { Pagination, FilterDropdown } from '../../../components/common';
+import clientesService from '../../../api/clientes.service';
 import { formatDate } from '../../../utils/formatDate';
 import PageFooter from '@components/common/PageFooter';
 
@@ -182,6 +186,8 @@ const KpiMini = ({ icon: Icon, label, value, color }) => (
 const KardexList = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const esPortal = user?.rol === 'cliente';
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [estadoFilter, setEstadoFilter] = useState('todos');
   const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
@@ -190,6 +196,25 @@ const KardexList = () => {
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [error, setError] = useState(null);
   const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
+  const [showFiltros, setShowFiltros] = useState(false);
+  const [filtrosDraft, setFiltrosDraft] = useState({ fecha_desde: '', fecha_hasta: '', cliente_id: '' });
+  const [filtros, setFiltros] = useState({ fecha_desde: '', fecha_hasta: '', cliente_id: '' });
+  const [clientes, setClientes] = useState([]);
+  const [loadingClientes, setLoadingClientes] = useState(false);
+
+  useEffect(() => {
+    if (!esPortal) {
+      setLoadingClientes(true);
+      clientesService
+        .getAll({ limit: 100, estado: 'activo' })
+        .then((res) => {
+          const list = Array.isArray(res?.data) ? res.data : res?.data?.rows || [];
+          setClientes(list);
+        })
+        .catch(() => setClientes([]))
+        .finally(() => setLoadingClientes(false));
+    }
+  }, [esPortal]);
 
   const fetchKardex = useCallback(
     async (page = 1) => {
@@ -199,6 +224,9 @@ const KardexList = () => {
         const params = { page, limit: 20, sort: sortField, order: sortDir };
         if (estadoFilter !== 'todos') params.estado = estadoFilter;
         if (searchTerm) params.search = searchTerm;
+        if (filtros.fecha_desde) params.fecha_desde = filtros.fecha_desde;
+        if (filtros.fecha_hasta) params.fecha_hasta = filtros.fecha_hasta;
+        if (filtros.cliente_id) params.cliente_id = filtros.cliente_id;
 
         const response = await auditoriasService.getKardex(params);
         if (response.success && response.data) {
@@ -216,7 +244,7 @@ const KardexList = () => {
         setLoading(false);
       }
     },
-    [estadoFilter, searchTerm, sortField, sortDir]
+    [estadoFilter, searchTerm, sortField, sortDir, filtros]
   );
 
   useEffect(() => {
@@ -224,6 +252,14 @@ const KardexList = () => {
   }, [fetchKardex]);
 
   const handlePageChange = (page) => fetchKardex(page);
+
+  const activeFiltrosCount = [filtros.fecha_desde, filtros.fecha_hasta, filtros.cliente_id].filter(Boolean).length;
+  const aplicarFiltros = () => setFiltros({ ...filtrosDraft });
+  const limpiarFiltros = () => {
+    const empty = { fecha_desde: '', fecha_hasta: '', cliente_id: '' };
+    setFiltrosDraft(empty);
+    setFiltros(empty);
+  };
 
   const filtered = items;
 
@@ -243,6 +279,9 @@ const KardexList = () => {
       const params = new URLSearchParams();
       if (estadoFilter !== 'todos') params.set('estado', estadoFilter);
       if (searchTerm) params.set('search', searchTerm);
+      if (filtros.fecha_desde) params.set('fecha_desde', filtros.fecha_desde);
+      if (filtros.fecha_hasta) params.set('fecha_hasta', filtros.fecha_hasta);
+      if (filtros.cliente_id) params.set('cliente_id', filtros.cliente_id);
       const url = `${baseUrl}/auditorias/kardex/excel?${params.toString()}`;
       await descargarArchivo(url, `kardex-${fechaDescarga()}.xlsx`);
       notify.success('Archivo descargado correctamente');
@@ -351,7 +390,94 @@ const KardexList = () => {
                 </button>
               ))}
             </div>
+
+            {/* Botón Filtros */}
+            <button
+              onClick={() => setShowFiltros((v) => !v)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors shrink-0 ${
+                activeFiltrosCount > 0 || showFiltros
+                  ? 'bg-purple-50 border-purple-200 text-purple-700 dark:bg-purple-900/20 dark:border-purple-800 dark:text-purple-300'
+                  : 'bg-white dark:bg-centhrix-card border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-surface'
+              }`}
+            >
+              <Filter className="w-4 h-4" />
+              Filtros
+              {activeFiltrosCount > 0 && (
+                <span className="w-5 h-5 rounded-full bg-purple-500 text-white text-xs flex items-center justify-center font-bold">
+                  {activeFiltrosCount}
+                </span>
+              )}
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showFiltros ? 'rotate-180' : ''}`} />
+            </button>
           </div>
+
+          {/* Panel de filtros avanzados */}
+          {showFiltros && (
+            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700 animate-fadeIn">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                    <Calendar className="w-3 h-3 inline mr-1" />
+                    Fecha desde
+                  </label>
+                  <input
+                    type="date"
+                    value={filtrosDraft.fecha_desde}
+                    onChange={(e) => setFiltrosDraft((p) => ({ ...p, fecha_desde: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                    <Calendar className="w-3 h-3 inline mr-1" />
+                    Fecha hasta
+                  </label>
+                  <input
+                    type="date"
+                    value={filtrosDraft.fecha_hasta}
+                    onChange={(e) => setFiltrosDraft((p) => ({ ...p, fecha_hasta: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400"
+                  />
+                </div>
+                {!esPortal && (
+                  <div>
+                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Cliente
+                    </label>
+                    <FilterDropdown
+                      options={[
+                        { value: '', label: 'Todos los clientes' },
+                        ...clientes.map((c) => ({
+                          value: String(c.id),
+                          label: c.razon_social || c.nombre || '',
+                        })),
+                      ]}
+                      value={filtrosDraft.cliente_id}
+                      onChange={(v) => setFiltrosDraft((p) => ({ ...p, cliente_id: v }))}
+                      placeholder={loadingClientes ? 'Cargando clientes...' : 'Todos los clientes'}
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center justify-between mt-3">
+                <button
+                  onClick={limpiarFiltros}
+                  className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Limpiar filtros
+                </button>
+                <button
+                  onClick={aplicarFiltros}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl bg-purple-500 hover:bg-purple-600 text-white transition-colors"
+                >
+                  <Search className="w-4 h-4" />
+                  Aplicar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
         </div>
 
         {/* RESULTS COUNT + VIEW TOGGLE */}

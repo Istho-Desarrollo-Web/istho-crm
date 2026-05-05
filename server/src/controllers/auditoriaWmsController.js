@@ -453,7 +453,7 @@ const listarKardex = async (req, res) => {
   try {
     const order = parseOrdenamiento(req.query, CAMPOS_ORDENAMIENTO, 'created_at', 'DESC');
     const { page, limit, offset } = parsePaginacion(req.query);
-    const { estado, search, cliente_id } = req.query;
+    const { estado, search, cliente_id, fecha_desde, fecha_hasta } = req.query;
 
     const where = { tipo: 'kardex' };
 
@@ -463,6 +463,12 @@ const listarKardex = async (req, res) => {
 
     if (estado && estado !== 'todos') {
       where.estado = estado;
+    }
+
+    if (fecha_desde || fecha_hasta) {
+      where.fecha_operacion = {};
+      if (fecha_desde) where.fecha_operacion[Op.gte] = new Date(fecha_desde + 'T00:00:00');
+      if (fecha_hasta) where.fecha_operacion[Op.lte] = new Date(fecha_hasta + 'T23:59:59');
     }
 
     if (search) {

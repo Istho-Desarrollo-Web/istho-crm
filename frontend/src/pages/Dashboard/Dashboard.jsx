@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 
 // Common Components
-import { KpiCard, AlertWidget } from '../../components/common';
+import { KpiCard, AlertWidget, FilterDropdown } from '../../components/common';
 import { formatDateShort } from '../../utils/formatDate';
 
 // Charts
@@ -581,28 +581,24 @@ const Dashboard = () => {
             size={180}
             headerActions={
               <div className="flex items-center gap-1.5">
-                <select
-                  value={mesFiltro}
-                  onChange={(e) => setMesFiltro(Number(e.target.value))}
-                  className="text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:focus:ring-blue-500 cursor-pointer"
-                >
-                  {mesesDisponibles.map(({ value, label }) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={anioFiltro}
-                  onChange={(e) => setAnioFiltro(Number(e.target.value))}
-                  className="text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:focus:ring-blue-500 cursor-pointer"
-                >
-                  {aniosDisponibles.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
+                <div className="w-28">
+                  <FilterDropdown
+                    compact
+                    options={mesesDisponibles}
+                    value={String(mesFiltro)}
+                    onChange={(v) => setMesFiltro(Number(v))}
+                    placeholder="Mes"
+                  />
+                </div>
+                <div className="w-20">
+                  <FilterDropdown
+                    compact
+                    options={aniosDisponibles.map((a) => ({ value: String(a), label: String(a) }))}
+                    value={String(anioFiltro)}
+                    onChange={(v) => setAnioFiltro(Number(v))}
+                    placeholder="Año"
+                  />
+                </div>
               </div>
             }
           />

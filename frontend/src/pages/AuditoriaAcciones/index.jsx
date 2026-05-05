@@ -29,6 +29,7 @@ import {
 import useNotification from '@hooks/useNotification';
 import auditoriaAccionesService from '../../api/auditoriaAcciones.service';
 import PageFooter from '@components/common/PageFooter';
+import { FilterDropdown } from '../../components/common';
 
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -337,46 +338,44 @@ const AuditoriaAcciones = () => {
           {showFilters && (
             <div className="border-t border-gray-200 dark:border-slate-700 px-4 py-3">
               <div className="flex flex-wrap items-end gap-3">
-                <div>
-                  <label className="block text-[11px] font-medium text-slate-500 mb-1">
+                <div className="w-40">
+                  <label className="block text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-1">
                     Acción
                   </label>
-                  <select
+                  <FilterDropdown
+                    options={[
+                      { value: '', label: 'Todas' },
+                      { value: 'crear', label: 'Crear' },
+                      { value: 'actualizar', label: 'Actualizar' },
+                      { value: 'eliminar', label: 'Eliminar' },
+                      { value: 'login', label: 'Login' },
+                      { value: 'logout', label: 'Logout' },
+                    ]}
                     value={filtroAccion}
-                    onChange={(e) => {
-                      setFiltroAccion(e.target.value);
+                    onChange={(v) => {
+                      setFiltroAccion(v);
                       setPagination((p) => ({ ...p, page: 1 }));
                     }}
-                    className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
-                  >
-                    <option value="">Todas</option>
-                    <option value="crear">Crear</option>
-                    <option value="actualizar">Actualizar</option>
-                    <option value="eliminar">Eliminar</option>
-                    <option value="login">Login</option>
-                    <option value="logout">Logout</option>
-                  </select>
+                    placeholder="Todas"
+                  />
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-medium text-slate-500 mb-1">
+                <div className="w-48">
+                  <label className="block text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-1">
                     Módulo/Tabla
                   </label>
-                  <select
+                  <FilterDropdown
+                    options={[
+                      { value: '', label: 'Todas' },
+                      ...tablas.map((t) => ({ value: t, label: TABLA_LABELS[t] || t })),
+                    ]}
                     value={filtroTabla}
-                    onChange={(e) => {
-                      setFiltroTabla(e.target.value);
+                    onChange={(v) => {
+                      setFiltroTabla(v);
                       setPagination((p) => ({ ...p, page: 1 }));
                     }}
-                    className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
-                  >
-                    <option value="">Todas</option>
-                    {tablas.map((t) => (
-                      <option key={t} value={t}>
-                        {TABLA_LABELS[t] || t}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Todas"
+                  />
                 </div>
 
                 <div>
