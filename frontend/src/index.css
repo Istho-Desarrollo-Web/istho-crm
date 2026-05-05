@@ -201,12 +201,18 @@ body.dark,
    INPUT DATE — Normalización global
    ══════════════════════════════════════════════ */
 
-/* Evita que los campos de fecha expandan el layout en móvil */
+/* Normaliza input[type=date] en todos los navegadores, especialmente iOS Safari */
 input[type='date'] {
   min-width: 0;
   max-width: 100%;
-  /* Evita el color azul del texto del placeholder en iOS */
   color-scheme: light;
+  /* iOS Safari usa altura nativa (44pt) ignorando el padding CSS.
+     appearance: none la reemplaza por renderizado CSS normal
+     sin perder el date picker nativo al hacer tap. */
+  -webkit-appearance: none;
+  appearance: none;
+  /* Alinea el texto verticalmente igual que un input de texto */
+  line-height: normal;
 }
 
 .dark input[type='date'] {

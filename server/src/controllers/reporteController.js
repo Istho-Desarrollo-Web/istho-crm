@@ -496,16 +496,16 @@ const getDashboard = async (req, res) => {
         group: ['estado'],
         raw: true,
       }),
-      // KPIs de auditoría
+      // KPIs de auditoría — filtrados por el mismo rango de mes que el gráfico
       Operacion.count({
-        where: { ...clienteFilter, tipo: 'ingreso', estado: 'pendiente' },
+        where: { ...clienteFilter, tipo: 'ingreso', estado: 'pendiente', created_at: { [Op.between]: [inicioMes, finMes] } },
       }),
       Operacion.count({
-        where: { ...clienteFilter, tipo: 'salida', estado: 'pendiente' },
+        where: { ...clienteFilter, tipo: 'salida', estado: 'pendiente', created_at: { [Op.between]: [inicioMes, finMes] } },
       }),
-      Operacion.count({ where: { ...clienteFilter, estado: 'en_proceso' } }),
+      Operacion.count({ where: { ...clienteFilter, estado: 'en_proceso', created_at: { [Op.between]: [inicioMes, finMes] } } }),
       Operacion.count({
-        where: { ...clienteFilter, estado: 'cerrado', created_at: { [Op.gte]: inicioMes } },
+        where: { ...clienteFilter, estado: 'cerrado', created_at: { [Op.between]: [inicioMes, finMes] } },
       }),
     ]);
 
