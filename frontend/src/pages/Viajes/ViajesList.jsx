@@ -10,9 +10,11 @@
  * @date Marzo 2026
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Menu, MenuItem, IconButton } from '@mui/material';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
 import { useThemeContext } from '../../context/ThemeContext';
 import { viajesService } from '../../api/viajes.service';
 import { formatDateShort } from '../../utils/formatDate';
@@ -265,6 +267,15 @@ const ViajesList = () => {
 
   const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
+  const searchTimerRef = useRef(null);
+  useEffect(() => () => clearTimeout(searchTimerRef.current), []);
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setSearchTerm(value), 300);
+  };
   const [estadoFilter, setEstadoFilter] = useState('todos');
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
@@ -530,8 +541,8 @@ const ViajesList = () => {
               <input
                 type="text"
                 placeholder="Buscar por número, destino, cliente o documento..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchInput}
+                onChange={handleSearchChange}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>

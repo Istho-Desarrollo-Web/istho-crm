@@ -13,7 +13,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Chip, IconButton, Tabs, Tab, Tooltip } from '@mui/material';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Tooltip from '@mui/material/Tooltip';
 import {
   ArrowLeft,
   Pencil,

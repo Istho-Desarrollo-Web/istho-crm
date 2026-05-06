@@ -9,7 +9,7 @@
  * @date Enero 2026
  */
 
-import { useState, useEffect, useRef, useId } from 'react';
+import { useState, useEffect, useRef, useId, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import {
@@ -1174,7 +1174,7 @@ const FloatingHeader = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   // Menú filtrado por rol y permisos de portal
-  const menuConfig = getMenuForRole(user?.rol, hasPermission);
+  const menuConfig = useMemo(() => getMenuForRole(user?.rol, hasPermission), [user?.rol, hasPermission]);
 
   // Estados locales
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -1264,7 +1264,7 @@ const FloatingHeader = () => {
     <>
       <header
         className={`
-          fixed z-40 transition-all duration-500 ease-in-out
+          fixed z-40 transition-[transform,box-shadow] duration-500 ease-in-out
           left-4 right-4 md:left-8 md:right-8 lg:left-1/2 lg:w-full lg:max-w-7xl lg:-translate-x-1/2
           ${isVisible ? 'top-4 translate-y-0' : '-top-24 -translate-y-full'}
           bg-white dark:bg-centhrix-bg rounded-2xl border border-gray-100 dark:border-slate-700

@@ -11,7 +11,7 @@
  * @date Marzo 2026
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Users,
@@ -375,11 +375,10 @@ const Dashboard = () => {
   };
 
   // ── CHART DATA ──
-  const barData =
-    chartData.despachosPorEstado?.map((item) => ({
-      label: item.name,
-      value1: item.value,
-    })) || [];
+  const barData = useMemo(
+    () => chartData.despachosPorEstado?.map((item) => ({ label: item.name, value1: item.value })) || [],
+    [chartData.despachosPorEstado]
+  );
 
   const pieData = chartData.ingresosVsSalidas || [];
 
@@ -422,7 +421,7 @@ const Dashboard = () => {
   const mesNombre = `${MESES[mesFiltro - 1]} ${anioFiltro}`;
 
   // ── ALERTS FORMAT (desde alertas reales del backend) ──
-  const formattedAlertas = realAlertas.slice(0, 5).map((alerta) => ({
+  const formattedAlertas = useMemo(() => realAlertas.slice(0, 5).map((alerta) => ({
     id: alerta.id,
     type: alerta.tipo === 'vencimiento' ? 'vencimiento' : 'inventario',
     title:
@@ -439,7 +438,7 @@ const Dashboard = () => {
       ? `Vence: ${formatDateShort(alerta.fecha_vencimiento)}`
       : alerta.cliente_nombre || alerta.cliente || '',
     originalData: alerta,
-  }));
+  })), [realAlertas]);
 
   // ── RENDER ──
   return (

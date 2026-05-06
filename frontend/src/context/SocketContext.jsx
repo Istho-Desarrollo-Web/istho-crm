@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
@@ -109,7 +109,7 @@ export const SocketProvider = ({ children }) => {
    * @param {string} event - Nombre del evento
    * @param {Function} callback - Handler
    */
-  const on = (event, callback) => {
+  const on = useCallback((event, callback) => {
     if (socketRef.current) {
       socketRef.current.on(event, callback);
     }
@@ -118,20 +118,25 @@ export const SocketProvider = ({ children }) => {
       listenersRef.current.set(event, new Set());
     }
     listenersRef.current.get(event).add(callback);
-  };
+  }, []);
 
   /**
    * Desuscribirse de un evento
    */
-  const off = (event, callback) => {
+  const off = useCallback((event, callback) => {
     if (socketRef.current) {
       socketRef.current.off(event, callback);
     }
     listenersRef.current.get(event)?.delete(callback);
-  };
+  }, []);
+
+  const ctxValue = useMemo(
+    () => ({ connected, on, off, socket: socketInstance }),
+    [connected, on, off, socketInstance]
+  );
 
   return (
-    <SocketContext.Provider value={{ connected, on, off, socket: socketInstance }}>
+    <SocketContext.Provider value={ctxValue}>
       {children}
     </SocketContext.Provider>
   );

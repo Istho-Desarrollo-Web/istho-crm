@@ -11,8 +11,10 @@
  * @date Enero 2026
  */
 
-import { useState, useRef } from 'react';
-import { Menu, MenuItem, IconButton } from '@mui/material';
+import { useState, useRef, useEffect } from 'react';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { useThemeContext } from '../../context/ThemeContext';
 import {
@@ -393,9 +395,13 @@ const ClientesList = () => {
   // HANDLERS DE BÚSQUEDA Y FILTROS
   // ──────────────────────────────────────────────────────────────────────────
 
+  const searchTimerRef = useRef(null);
+  useEffect(() => () => clearTimeout(searchTimerRef.current), []);
+
   const handleSearch = (value) => {
     setSearchTerm(value);
-    search(value);
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => search(value), 300);
   };
 
   const handleFilterChange = (key, value) => {

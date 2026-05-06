@@ -16,7 +16,7 @@
  * @date Marzo 2026
  */
 
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { useSocket } from './SocketContext';
 import notificacionesService from '../api/notificacionesService';
@@ -49,9 +49,18 @@ const unlockAudio = () => {
   }
 };
 if (typeof window !== 'undefined') {
-  window.addEventListener('click', unlockAudio, { once: false, capture: true });
-  window.addEventListener('keydown', unlockAudio, { once: false, capture: true });
-  window.addEventListener('touchstart', unlockAudio, { once: false, capture: true });
+  const removeUnlockListeners = () => {
+    window.removeEventListener('click', onUnlock, { capture: true });
+    window.removeEventListener('keydown', onUnlock, { capture: true });
+    window.removeEventListener('touchstart', onUnlock, { capture: true });
+  };
+  const onUnlock = () => {
+    unlockAudio();
+    removeUnlockListeners();
+  };
+  window.addEventListener('click', onUnlock, { capture: true });
+  window.addEventListener('keydown', onUnlock, { capture: true });
+  window.addEventListener('touchstart', onUnlock, { capture: true });
 }
 
 /**
@@ -315,20 +324,23 @@ export const NotificacionesProvider = ({ children }) => {
     };
   }, [socket, socketConnected]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const ctxValue = useMemo(
+    () => ({
+      unreadCount,
+      notificaciones,
+      loading,
+      ultimaNotificacion,
+      fetchCount,
+      fetchRecientes,
+      marcarLeida,
+      marcarTodasLeidas,
+      refresh,
+    }),
+    [unreadCount, notificaciones, loading, ultimaNotificacion, fetchCount, fetchRecientes, marcarLeida, marcarTodasLeidas, refresh]
+  );
+
   return (
-    <NotificacionesContext.Provider
-      value={{
-        unreadCount,
-        notificaciones,
-        loading,
-        ultimaNotificacion,
-        fetchCount,
-        fetchRecientes,
-        marcarLeida,
-        marcarTodasLeidas,
-        refresh,
-      }}
-    >
+    <NotificacionesContext.Provider value={ctxValue}>
       {children}
     </NotificacionesContext.Provider>
   );

@@ -7,7 +7,7 @@
  * @date Marzo 2026
  */
 
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import CustomAlert from '../components/common/SweetAlert/CustomAlert';
 
 const AlertContext = createContext();
@@ -96,8 +96,10 @@ export const AlertProvider = ({ children }) => {
     []
   );
 
+  const value = useMemo(() => ({ showAlert, showConfirm }), [showAlert, showConfirm]);
+
   return (
-    <AlertContext.Provider value={{ showAlert, showConfirm }}>
+    <AlertContext.Provider value={value}>
       {children}
       <CustomAlert
         {...alertState}

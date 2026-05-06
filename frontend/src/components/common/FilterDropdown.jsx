@@ -6,7 +6,7 @@
  * @date Enero 2026
  */
 
-import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { ChevronDown, Check } from 'lucide-react';
 
@@ -27,17 +27,22 @@ const FilterDropdown = ({
   const panelRef = useRef(null);
 
   // Calcular posición fixed al abrir para escapar del stacking context del modal
-  useLayoutEffect(() => {
+  // useEffect en lugar de useLayoutEffect evita el forced-reflow sincrónico que bloquea el INP
+  useEffect(() => {
     if (!isOpen || !buttonRef.current) return;
-    const rect = buttonRef.current.getBoundingClientRect();
-    const left = Math.max(4, Math.min(rect.left, window.innerWidth - rect.width - 4));
-    setPanelStyle({
-      position: 'fixed',
-      top: rect.bottom + 6,
-      left,
-      width: rect.width,
-      zIndex: 9999,
+    const raf = requestAnimationFrame(() => {
+      if (!buttonRef.current) return;
+      const rect = buttonRef.current.getBoundingClientRect();
+      const left = Math.max(4, Math.min(rect.left, window.innerWidth - rect.width - 4));
+      setPanelStyle({
+        position: 'fixed',
+        top: rect.bottom + 6,
+        left,
+        width: rect.width,
+        zIndex: 9999,
+      });
     });
+    return () => cancelAnimationFrame(raf);
   }, [isOpen]);
 
   // Cerrar al hacer click fuera

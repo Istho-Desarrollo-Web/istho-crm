@@ -12,7 +12,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Menu, MenuItem, IconButton, Checkbox } from '@mui/material';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
+import Checkbox from '@mui/material/Checkbox';
 import { useThemeContext } from '../../context/ThemeContext';
 import { movimientosService } from '../../api/viajes.service';
 import { formatDate } from '../../utils/formatDate';

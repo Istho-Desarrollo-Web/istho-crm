@@ -16,7 +16,9 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { Menu, MenuItem, IconButton } from '@mui/material';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Plus,
@@ -408,9 +410,13 @@ const InventarioList = () => {
   // HANDLERS
   // ──────────────────────────────────────────────────────────────────────────
 
+  const searchTimerRef = useRef(null);
+  useEffect(() => () => clearTimeout(searchTimerRef.current), []);
+
   const handleSearch = (value) => {
     setSearchTerm(value);
-    hookSearch(value);
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => hookSearch(value), 300);
   };
 
   const handleFilterChange = (key, value) => {

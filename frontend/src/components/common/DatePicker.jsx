@@ -6,7 +6,7 @@
  * @date Mayo 2026
  */
 
-import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { DayPicker } from 'react-day-picker';
 import { es } from 'react-day-picker/locale';
@@ -96,15 +96,20 @@ const DatePicker = ({
   }, [view]);
 
   // Calcular posición fixed al abrir
-  useLayoutEffect(() => {
+  // useEffect en lugar de useLayoutEffect evita el forced-reflow sincrónico que bloquea el INP
+  useEffect(() => {
     if (!isOpen || !buttonRef.current) return;
-    const rect = buttonRef.current.getBoundingClientRect();
-    const PANEL_W = 288; // w-72
-    const calendarHeight = 360;
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const top = spaceBelow >= calendarHeight ? rect.bottom + 6 : rect.top - calendarHeight - 6;
-    const left = Math.max(4, Math.min(rect.left, window.innerWidth - PANEL_W - 4));
-    setPanelStyle({ position: 'fixed', top, left, zIndex: 9999 });
+    const raf = requestAnimationFrame(() => {
+      if (!buttonRef.current) return;
+      const rect = buttonRef.current.getBoundingClientRect();
+      const PANEL_W = 288; // w-72
+      const calendarHeight = 360;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const top = spaceBelow >= calendarHeight ? rect.bottom + 6 : rect.top - calendarHeight - 6;
+      const left = Math.max(4, Math.min(rect.left, window.innerWidth - PANEL_W - 4));
+      setPanelStyle({ position: 'fixed', top, left, zIndex: 9999 });
+    });
+    return () => cancelAnimationFrame(raf);
   }, [isOpen]);
 
   // Cerrar al click fuera

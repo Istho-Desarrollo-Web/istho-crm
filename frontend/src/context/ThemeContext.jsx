@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { lightTheme, darkTheme } from '../styles/theme';
 
@@ -30,9 +30,10 @@ export const AppThemeProvider = ({ children }) => {
   }, [isDark]);
 
   const toggleDark = useCallback(() => setIsDark((prev) => !prev), []);
+  const value = useMemo(() => ({ isDark, toggleDark }), [isDark, toggleDark]);
 
   return (
-    <ThemeContext.Provider value={{ isDark, toggleDark }}>
+    <ThemeContext.Provider value={value}>
       <ThemeProvider theme={isDark ? darkTheme : lightTheme}>{children}</ThemeProvider>
     </ThemeContext.Provider>
   );
