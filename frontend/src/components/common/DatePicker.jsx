@@ -6,7 +6,7 @@
  * @date Mayo 2026
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import PropTypes from 'prop-types';
 import { DayPicker } from 'react-day-picker';
 import { es } from 'react-day-picker/locale';
@@ -44,8 +44,28 @@ const DatePicker = ({
   clearable = true,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [panelStyle, setPanelStyle] = useState({});
   const ref = useRef(null);
+  const buttonRef = useRef(null);
   const selected = parseDate(value);
+
+  // Calcular posición fixed al abrir para escapar del stacking context del modal
+  useLayoutEffect(() => {
+    if (!isOpen || !buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    // Verificar si hay espacio suficiente abajo; si no, abrir hacia arriba
+    const calendarHeight = 320;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const top = spaceBelow >= calendarHeight
+      ? rect.bottom + 6
+      : rect.top - calendarHeight - 6;
+    setPanelStyle({
+      position: 'fixed',
+      top,
+      left: rect.left,
+      zIndex: 9999,
+    });
+  }, [isOpen]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -54,6 +74,14 @@ const DatePicker = ({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  // Cerrar al hacer scroll (evita panel flotando desalineado)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleScroll = () => setIsOpen(false);
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [isOpen]);
 
   const handleSelect = (date) => {
     onChange?.(formatToIso(date) || '');
@@ -74,6 +102,7 @@ const DatePicker = ({
       )}
 
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen((v) => !v)}
         className="flex items-center justify-between gap-2 w-full bg-white dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 px-4 py-2.5 rounded-xl text-sm"
@@ -101,8 +130,12 @@ const DatePicker = ({
         </div>
       </button>
 
+      {/* Panel con fixed positioning para escapar del stacking context */}
       {isOpen && (
-        <div className="absolute z-50 mt-1.5 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl animate-fadeIn">
+        <div
+          style={panelStyle}
+          className="bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl animate-fadeIn"
+        >
           <DayPicker
             mode="single"
             selected={selected}

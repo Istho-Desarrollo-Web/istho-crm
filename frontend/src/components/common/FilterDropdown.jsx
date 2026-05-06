@@ -6,7 +6,7 @@
  * @date Enero 2026
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import PropTypes from 'prop-types';
 import { ChevronDown, Check } from 'lucide-react';
 
@@ -21,19 +21,41 @@ const FilterDropdown = ({
   compact = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [panelStyle, setPanelStyle] = useState({});
+  const containerRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  // Calcular posición fixed al abrir para escapar del stacking context del modal
+  useLayoutEffect(() => {
+    if (!isOpen || !buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    setPanelStyle({
+      position: 'fixed',
+      top: rect.bottom + 6,
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
+    });
+  }, [isOpen]);
 
   // Cerrar al hacer click fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Cerrar al hacer scroll (evita panel flotando desalineado)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleScroll = () => setIsOpen(false);
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [isOpen]);
 
   const handleSelect = (optionValue) => {
     if (multiple) {
@@ -73,10 +95,11 @@ const FilterDropdown = ({
   };
 
   return (
-    <div ref={dropdownRef} className="relative">
+    <div ref={containerRef} className="relative">
       {label && <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{label}</label>}
 
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`
@@ -96,16 +119,15 @@ const FilterDropdown = ({
         />
       </button>
 
-      {/* Dropdown */}
+      {/* Panel con fixed positioning para escapar del stacking context */}
       {isOpen && (
         <div
+          style={panelStyle}
           className={`
-          absolute z-50 w-full mt-1.5
-          bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 shadow-lg dark:shadow-slate-900/50
-          max-h-60 overflow-y-auto
-          animate-fadeIn
-          ${compact ? 'rounded-lg' : 'rounded-xl'}
-        `}
+            bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 shadow-lg dark:shadow-slate-900/50
+            max-h-60 overflow-y-auto animate-fadeIn
+            ${compact ? 'rounded-lg' : 'rounded-xl'}
+          `}
         >
           {options.map((option) => (
             <button
