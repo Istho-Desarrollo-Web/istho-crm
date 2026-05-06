@@ -11,10 +11,10 @@
  */
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { X, Package, AlertTriangle, Loader2 } from 'lucide-react';
-import { Button } from '../../../components/common';
+import { Button, FilterDropdown } from '../../../components/common';
 import { useClientesSelector } from '../../../hooks/useClientes';
 import { productoSchema } from '../../../utils/validationSchemas';
 
@@ -95,6 +95,7 @@ const ProductoForm = ({ isOpen, onClose, onSubmit, producto = null, loading = fa
     handleSubmit,
     reset,
     setError,
+    control,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(productoSchema),
@@ -262,15 +263,23 @@ const ProductoForm = ({ isOpen, onClose, onSubmit, producto = null, loading = fa
                       </p>
                     </div>
                   ) : (
-                    <select {...register('cliente_id')} className={fieldCls(!!errors.cliente_id)}>
-                      <option value="">Seleccionar cliente...</option>
-                      {clientes.map((cliente) => (
-                        <option key={cliente.id} value={cliente.id}>
-                          {cliente.codigo_cliente ? `${cliente.codigo_cliente} - ` : ''}
-                          {cliente.razon_social || cliente.nombre}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      name="cliente_id"
+                      control={control}
+                      render={({ field }) => (
+                        <FilterDropdown
+                          options={[
+                            { value: '', label: 'Seleccionar cliente...' },
+                            ...clientes.map((c) => ({
+                              value: String(c.id),
+                              label: `${c.codigo_cliente ? c.codigo_cliente + ' - ' : ''}${c.razon_social || c.nombre}`,
+                            })),
+                          ]}
+                          value={String(field.value || '')}
+                          onChange={(v) => field.onChange(v)}
+                        />
+                      )}
+                    />
                   )}
                   {errors.cliente_id && (
                     <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
@@ -305,14 +314,20 @@ const ProductoForm = ({ isOpen, onClose, onSubmit, producto = null, loading = fa
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Categoría
                 </label>
-                <select {...register('categoria')} className={fieldCls(false)}>
-                  <option value="">Seleccionar categoría</option>
-                  {CATEGORIAS.map((cat) => (
-                    <option key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
+                <Controller
+                  name="categoria"
+                  control={control}
+                  render={({ field }) => (
+                    <FilterDropdown
+                      options={[
+                        { value: '', label: 'Seleccionar categoría' },
+                        ...CATEGORIAS,
+                      ]}
+                      value={field.value || ''}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
               </div>
 
               {/* Unidad de medida */}
@@ -320,13 +335,17 @@ const ProductoForm = ({ isOpen, onClose, onSubmit, producto = null, loading = fa
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Unidad de Medida
                 </label>
-                <select {...register('unidad_medida')} className={fieldCls(false)}>
-                  {UNIDADES.map((und) => (
-                    <option key={und.value} value={und.value}>
-                      {und.label}
-                    </option>
-                  ))}
-                </select>
+                <Controller
+                  name="unidad_medida"
+                  control={control}
+                  render={({ field }) => (
+                    <FilterDropdown
+                      options={UNIDADES}
+                      value={field.value || ''}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
               </div>
 
               {/* Stock mínimo */}
