@@ -47,6 +47,7 @@ const DatePicker = ({
   const [panelStyle, setPanelStyle] = useState({});
   const ref = useRef(null);
   const buttonRef = useRef(null);
+  const panelRef = useRef(null);
   const selected = parseDate(value);
 
   // Calcular posición fixed al abrir para escapar del stacking context del modal
@@ -75,10 +76,13 @@ const DatePicker = ({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Cerrar al hacer scroll (evita panel flotando desalineado)
+  // Cerrar al hacer scroll externo (evita panel flotando desalineado)
   useEffect(() => {
     if (!isOpen) return;
-    const handleScroll = () => setIsOpen(false);
+    const handleScroll = (e) => {
+      if (panelRef.current && panelRef.current.contains(e.target)) return;
+      setIsOpen(false);
+    };
     window.addEventListener('scroll', handleScroll, true);
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, [isOpen]);
@@ -133,6 +137,7 @@ const DatePicker = ({
       {/* Panel con fixed positioning para escapar del stacking context */}
       {isOpen && (
         <div
+          ref={panelRef}
           style={panelStyle}
           className="bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl animate-fadeIn"
         >

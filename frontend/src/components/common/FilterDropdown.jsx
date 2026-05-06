@@ -24,6 +24,7 @@ const FilterDropdown = ({
   const [panelStyle, setPanelStyle] = useState({});
   const containerRef = useRef(null);
   const buttonRef = useRef(null);
+  const panelRef = useRef(null);
 
   // Calcular posición fixed al abrir para escapar del stacking context del modal
   useLayoutEffect(() => {
@@ -49,10 +50,13 @@ const FilterDropdown = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Cerrar al hacer scroll (evita panel flotando desalineado)
+  // Cerrar al hacer scroll externo (evita panel flotando desalineado)
   useEffect(() => {
     if (!isOpen) return;
-    const handleScroll = () => setIsOpen(false);
+    const handleScroll = (e) => {
+      if (panelRef.current && panelRef.current.contains(e.target)) return;
+      setIsOpen(false);
+    };
     window.addEventListener('scroll', handleScroll, true);
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, [isOpen]);
@@ -122,6 +126,7 @@ const FilterDropdown = ({
       {/* Panel con fixed positioning para escapar del stacking context */}
       {isOpen && (
         <div
+          ref={panelRef}
           style={panelStyle}
           className={`
             bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 shadow-lg dark:shadow-slate-900/50
