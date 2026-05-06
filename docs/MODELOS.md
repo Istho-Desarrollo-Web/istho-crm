@@ -246,8 +246,10 @@
 | `fecha_vencimiento` | DATE | | |
 | `fecha_movimiento` | DATE | | |
 | `observaciones` | TEXT | | |
+| `wms_pallet_id` | STRING(36) | UNIQUE, nullable | UUID del pallet en el WMS CenthriX |
+| `wms_kardex_ultima_sync` | DATE | | Fecha de última sincronización de kardex desde WMS |
 
-**Índices:** inventario_id, operacion_id, operacion_detalle_id, numero_caja, lote, tipo, estado, ubicacion, (inventario_id + tipo + estado)
+**Índices:** inventario_id, operacion_id, operacion_detalle_id, numero_caja, lote, tipo, estado, ubicacion, (inventario_id + tipo + estado), wms_pallet_id
 
 **Estados y transiciones:**
 ```
@@ -332,6 +334,7 @@ despachada → disponible (suma en kardex, reactivación/devolución)
 | `motivo_kardex` | STRING(200) | | Motivo del ajuste (solo kardex) |
 | `sucursal_entrega` | STRING(100) | | Solo salidas |
 | `ciudad_destino` | STRING(100) | | Solo salidas |
+| `wms_order_id` | STRING(36) | UNIQUE, nullable | UUID de la orden en el WMS (deduplicación polling PULL) |
 
 **Paranoid:** Soft delete habilitado (campo `deletedAt`)
 

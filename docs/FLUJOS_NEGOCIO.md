@@ -169,6 +169,71 @@ WMS Centhrix                              ISTHO CRM
 5. **Stock mínimo 0:** El stock nunca puede ser negativo (`Math.max(0, resultado)`)
 6. **alertas_silenciadas** se limpia a NULL en cada cambio de stock
 
+### 1.5 Flujo PULL — Polling periódico (CRM → WMS)
+
+Complementa el modelo PUSH. El CRM consulta la API del WMS cada `WMS_SYNC_INTERVAL` minutos (default 5) y sincroniza órdenes finalizadas.
+
+```
+ISTHO CRM (job cron)                        WMS CenthriX API
+     │                                            │
+     │  [Cada N minutos]                          │
+     │                                            │
+     │  POST /auth/login  (si token expirado)     │
+     │ ─────────────────────────────────────────> │
+     │  ← { accessToken, refreshToken }           │
+     │                                            │
+     │  GET /orders?limit=50&page=1               │
+     │ ─────────────────────────────────────────> │
+     │  ← { data: [ { id, systemNumberOrder,      │
+     │       orderStatus, customer, type } ] }    │
+     │                                            │
+     │  Para cada orden con                       │
+     │  orderStatus.name === "Finalizada":        │
+     │                                            │
+     │  ┌── DEDUPLICACIÓN ───────────────────┐   │
+     │  │  Operacion.findOne({               │   │
+     │  │    wms_order_id: orden.id  OR      │   │
+     │  │    documento_wms: systemNumberOrder│   │
+     │  │  })                                │   │
+     │  │  Si existe → SKIP                  │   │
+     │  └────────────────────────────────────┘   │
+     │                                            │
+     │  GET /orders/{id}/order-items-pallets      │
+     │ ─────────────────────────────────────────> │
+     │  ← { items con pallets y productos }       │
+     │                                            │
+     │  ┌── MAPEO Y SINCRONIZACIÓN ──────────┐   │
+     │  │  type=1 → syncEntrada()            │   │
+     │  │  type=2 → syncSalida()             │   │
+     │  │  NIT: orden.customer?.nit          │   │
+     │  │  (del detalle, no del listado)     │   │
+     │  └────────────────────────────────────┘   │
+     │                                            │
+     │  Operacion.update({ wms_order_id })        │
+     │  WmsSyncLog.create({ tipo: polling_* })    │
+```
+
+**Reglas del polling:**
+1. Solo procesa órdenes con `orderStatus.name === 'Finalizada'`
+2. Deduplicación por `wms_order_id` (UUID) **y** `documento_wms` (número de orden) — evita duplicados PUSH↔PULL
+3. Si una orden falla individualmente → log `fallido` y continúa con la siguiente (nunca aborta el ciclo)
+4. Mutex en memoria (`_ejecutando`) evita ejecuciones solapadas si el ciclo tarda más que el intervalo
+5. Requiere `WMS_URL` + `WMS_EMAIL` configurados — si no están, el job no arranca (silenciosamente)
+6. NIT del cliente: se obtiene del detalle de la orden (`ordenCompleta.customer?.nit`), NO del listado
+7. Logs tipo `polling_entrada`/`polling_salida` no incluyen `payload` → no son re-ejecutables desde el dashboard
+8. KPI aggregation: normalizar con `.replace('polling_', '')` al acumular conteos por tipo en el dashboard
+
+**Kardex desde app WMS (pallet tracking):**
+- El polling también consulta el historial kardex por pallet (`_pollKardexHistorial`)
+- `CajaInventario` tiene `wms_pallet_id` (UUID) y `wms_kardex_ultima_sync` (DATE)
+- Primera vez que se descubre un pallet: **solo marcar timestamp** → NO procesar historial (evita flood inicial)
+- Operación `"Carga"` → cantidad positiva · `"Descarga"` → ignorada en polling (las genera el flujo de órdenes PK)
+
+**Archivos clave:**
+- `server/src/jobs/wmsPollingJob.js` — job cron, mutex, `iniciarPollingWms()` / `detenerPollingWms()` / `ejecutarPollingManual()`
+- `server/src/services/wmsApiService.js` — cliente REST del WMS con auto-refresh de JWT
+- `server/src/services/wmsOrderMapper.js` — transforma orden WMS → payload CRM
+
 ---
 
 ## 2. Flujo de Auditoría WMS
@@ -210,7 +275,7 @@ Las auditorías son el proceso de verificación humana de las operaciones sincro
        ├── Indicar cantidad dañada
        ├── Campo cantidad_afectada (opcional)
        ├── Tipo de avería
-       ├── Subir foto de evidencia (almacenada en Cloudinary)
+       ├── Subir foto de evidencia (almacenada en Amazon S3)
        └── Botón eliminar avería
 
 4. DATOS LOGÍSTICOS

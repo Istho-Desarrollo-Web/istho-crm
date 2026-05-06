@@ -583,6 +583,24 @@ const enviarReseteoPassword = async ({
   }
 };
 
+/**
+ * Enviar email de recuperación de contraseña (self-service, forgot-password)
+ * Envía un enlace de un solo uso a /reset-password?token=<token>
+ */
+const enviarRecuperacionPassword = async ({ email, nombre, username, urlReset }) => {
+  try {
+    return await enviarCorreo({
+      para: email,
+      asunto: '[ISTHO] Recuperación de Contraseña',
+      templateName: 'recuperacion-password',
+      datos: { nombre, username, urlReset },
+    });
+  } catch (error) {
+    logger.error('Error al enviar recuperación de password:', { message: error.message });
+    return { success: false, error: error.message };
+  }
+};
+
 // ════════════════════════════════════════════════════════════════════════════
 // EXPORTS
 // ════════════════════════════════════════════════════════════════════════════
@@ -595,4 +613,5 @@ module.exports = {
   enviarBienvenida,
   enviarBienvenidaUsuarioCliente,
   enviarReseteoPassword,
+  enviarRecuperacionPassword,
 };

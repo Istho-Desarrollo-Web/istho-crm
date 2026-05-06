@@ -10,11 +10,11 @@
 |------|-----------|
 | **Frontend** | React 19 + Vite + Tailwind CSS 4 + MUI 7 + Lucide Icons |
 | **Backend** | Node.js + Express 4.18 + Sequelize 6 (ORM) |
-| **Base de Datos** | MySQL (XAMPP local / Railway producción) |
+| **Base de Datos** | MySQL (XAMPP local / AWS RDS 8.0 producción) |
 | **Autenticación** | JWT con refresh tokens (HS256) |
-| **Email** | Nodemailer + Handlebars templates |
+| **Email** | Resend API + Nodemailer + Handlebars templates |
 | **Exportaciones** | ExcelJS (Excel) + PDFKit (PDF) |
-| **Archivos** | Multer (uploads de fotos, PDFs, documentos) |
+| **Archivos** | Multer + Amazon S3 (presigned URLs, bucket `istho-crm-files`) |
 
 ## Módulos del Sistema
 
@@ -25,7 +25,7 @@
 - Sistema de permisos dual: Rol→Permiso (N:M) + override por usuario
 - Bloqueo de cuenta tras 5 intentos fallidos (15 min)
 - Forzar cambio de contraseña en primer login (modal compacto)
-- Recuperación de contraseña por email
+- Recuperación de contraseña por email (enlace de un solo uso válido 1 hora → `/reset-password?token=…`)
 - **Foto de perfil** (avatar) con upload/eliminación
 
 ### 2. Portal Cliente
@@ -41,14 +41,14 @@
 - Estadísticas mensuales para gráficos
 - **Restricción WMS**: Productos con `codigo_wms` no permiten editar/eliminar/entrada/salida manual
 
-### 4. Integración WMS (Copérnico)
-- API autenticada con `X-WMS-API-Key`
-- **syncProductos**: Sincronización de catálogo de SKUs
-- **syncEntrada** (CO): Recepción de mercancía → Operación + Cajas + Stock
-- **syncSalida** (PK): Picking/Despacho → Operación + Cajas despachadas
-- **syncKardex** (CR): Ajustes de inventario con máquina de estados de cajas
+### 4. Integración WMS (CenthriX)
+**Modelo dual PUSH + PULL:**
+- **PUSH** (WMS → CRM): API autenticada con `X-WMS-API-Key`. Sincroniza productos, entradas (CO), salidas (PK) y kardex (CR)
+- **PULL** (CRM → WMS): Polling periódico (`wmsPollingJob.js`) que consulta el WMS cada N minutos y sincroniza órdenes finalizadas
+- Deduplicación cruzada PUSH↔PULL por `documento_wms` + `wms_order_id` (UUID del WMS)
+- **Tab Ubicación WMS** en ProductoDetail: posición física del producto en la bodega vía API WMS
+- Kardex desde app WMS móvil: sincronización por pallet (`wms_pallet_id` + `wms_kardex_ultima_sync`)
 - Auto-generación de números de caja `CJ-XXXXXX`
-- Verificación de duplicados por documento de origen
 
 ### 5. Auditorías WMS (Entradas, Salidas, Kardex)
 - **Entradas** (verde): Verificación de líneas, logística obligatoria, evidencias
@@ -61,6 +61,7 @@
 
 ### 6. Plantillas de Email
 - 3 plantillas predeterminadas (entrada, salida, kardex) + plantilla general
+- Plantillas de sistema (no editables): bienvenida, reseteo de contraseña admin, **recuperación de contraseña** (enlace)
 - Variables Handlebars dinámicas
 - Firma configurable por plantilla con **logo de empresa** (upload → base64)
 - Editor CRUD con preview en tiempo real
@@ -198,7 +199,8 @@ cd frontend && npm run dev        # Frontend en :5173
 ## Despliegue
 
 - **Local**: XAMPP (MySQL) + Node.js
-- **Producción**: Railway (MySQL + Node.js)
+- **Producción**: AWS App Runner (backend) · AWS RDS MySQL 8.0 · Vercel (frontend) · Amazon S3 (archivos)
+- Ver [SERVICIOS_EXTERNOS.md](SERVICIOS_EXTERNOS.md) y [DEPLOY.md](../DEPLOY.md) para configuración completa
 
 ## Licencia
 

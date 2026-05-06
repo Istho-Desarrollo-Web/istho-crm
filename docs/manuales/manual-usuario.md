@@ -2,7 +2,7 @@
 
 ## ISTHO S.A.S.
 
-**Version:** 1.1.0 | **Fecha:** Abril 2026
+**Version:** 1.2.0 | **Fecha:** Mayo 2026
 
 **Centro Logistico Industrial del Norte** — Girardota, Antioquia, Colombia
 
@@ -546,7 +546,7 @@ Los movimientos de Kardex corresponden a ajustes y correcciones (tipo CR) del WM
 4. La auditoria incluye un campo adicional: **Motivo del Kardex** que se muestra de forma destacada.
 5. El flujo de verificacion y cierre es el mismo que para entradas y salidas.
 
-> **Nota:** Los documentos del WMS se sincronizan automaticamente. No es posible crear documentos de auditoria manualmente; estos llegan unicamente desde Copernico.
+> **Nota:** Los documentos del WMS se sincronizan automaticamente (via PUSH desde el WMS o via polling periodico del CRM). No es posible crear documentos de auditoria manualmente.
 
 ---
 
@@ -1350,7 +1350,7 @@ Desde la pantalla de detalle de su empresa puede consultar:
 
 | Termino | Definicion |
 |---------|-----------|
-| WMS | Warehouse Management System (Sistema de Gestion de Almacen). En ISTHO se usa Copernico |
+| WMS | Warehouse Management System (Sistema de Gestion de Almacen). En ISTHO se usa el WMS CenthriX |
 | CO | Codigo de documento de recepcion (entrada) en el WMS |
 | PK | Codigo de documento de picking (salida/despacho) en el WMS |
 | CR | Codigo de documento de kardex (ajuste/correccion) en el WMS |
@@ -1374,5 +1374,5 @@ Si tiene preguntas o inconvenientes con el sistema, puede contactar al equipo de
 ---
 
 *ISTHO S.A.S. - ISO 9001:2015*
-*Documento actualizado: Abril 2026*
-*CRM CenthriX v1.1.0*
+*Documento actualizado: Mayo 2026*
+*CRM CenthriX v1.2.0*

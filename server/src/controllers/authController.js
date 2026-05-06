@@ -694,12 +694,15 @@ const forgotPassword = async (req, res) => {
     usuario.reset_token_expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
     await usuario.save();
 
-    // Enviar email con token
-    await emailService.enviarReseteoPassword({
+    const frontendUrl =
+      process.env.APP_URL ||
+      (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',')[0].trim();
+
+    await emailService.enviarRecuperacionPassword({
       email: usuario.email,
       nombre: usuario.nombre_completo || usuario.username,
       username: usuario.username,
-      passwordTemporal: resetToken, // Usamos este campo para pasar el token en la plantilla actual
+      urlReset: `${frontendUrl}/reset-password?token=${resetToken}`,
     });
 
     logger.info('Token de recuperación generado:', { email });
