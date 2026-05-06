@@ -25,6 +25,59 @@ Flujo: Routes → `verifyToken → cargarCachePermisos → requierePermiso` → 
 - `formatDate` singleton: `setPreferencias(prefs)` desde AuthContext. `useIdleTimer` montado en ProtectedLayout.
 - Aliases: `@`→`src/`, `@components`, `@pages`, `@hooks`, `@context`, `@api`, `@utils`, `@styles`, `@assets`
 
+## Componentes de Formulario (Crítico)
+
+**Regla:** NO usar `<select>` ni `<input type="date">` nativos en ningún formulario nuevo. Usar siempre los componentes custom.
+
+### FilterDropdown — reemplaza `<select>`
+```jsx
+import { FilterDropdown } from '../../../components/common';
+
+// Pattern A — estado local (sin React Hook Form)
+<FilterDropdown
+  options={[{ value: '', label: 'Todos' }, { value: 'activo', label: 'Activo' }]}
+  value={filtro}
+  onChange={(v) => setFiltro(v)}
+/>
+
+// Pattern B — React Hook Form con Controller
+<Controller
+  name="campo"
+  control={control}
+  render={({ field }) => (
+    <FilterDropdown
+      options={[{ value: '', label: 'Seleccionar...' }, ...opciones]}
+      value={String(field.value || '')}   // IDs numéricos de BD: SIEMPRE String()
+      onChange={(v) => field.onChange(v)}
+    />
+  )}
+/>
+```
+- `compact` prop para barras de filtros (tablas, dashboards)
+- Sin prop `disabled` — deshabilitar con: `<div className={cond ? 'pointer-events-none opacity-60' : ''}>`
+- Si el formulario aún no tenía `Controller`: agregar a import de RHF y destructurar `control` del `useForm()`
+
+### DatePicker — reemplaza `<input type="date">`
+```jsx
+import { DatePicker } from '../../../components/common';
+// Construido sobre react-day-picker@9.14.0 (ya instalado)
+
+// Pattern A — estado local
+<DatePicker value={fechaStr} onChange={(v) => setFecha(v)} />
+
+// Pattern C — React Hook Form con Controller
+<Controller
+  name="fecha"
+  control={control}
+  render={({ field }) => (
+    <DatePicker value={field.value || ''} onChange={(v) => field.onChange(v)} />
+  )}
+/>
+```
+- El valor es siempre `YYYY-MM-DD` (string, nunca Date object)
+- Para parsear en frontend: `new Date(value + 'T00:00:00')` (evita desfase de zona horaria)
+- Sin prop `disabled` — mismo patrón wrapper que FilterDropdown
+
 ## Permisos (Crítico)
 - Rutas: siempre `PermissionRoute(module, action)`. Solo `AdminRoute` para `/administracion`, `/auditoria-acciones`, `/configuracion-wms`
 - **Clientes portal** (`rol=cliente`): usan `permisos_cliente` JSON + `getPermisos()` en `Usuario.js` — sistema SEPARADO de permisos por rol. Seeds NO afectan clientes portal. Módulos forzados en `getPermisos()`: `clientes/operaciones/configuracion/perfil`
