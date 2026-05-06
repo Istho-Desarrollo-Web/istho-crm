@@ -6,10 +6,10 @@
  */
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Truck, FileText, User, Calendar, Shield, Cog } from 'lucide-react';
-import { Button, Modal } from '../../../components/common/index';
+import { Button, Modal, FilterDropdown, DatePicker } from '../../../components/common/index';
 import { vehiculosService } from '../../../api/viajes.service';
 import useNotification from '../../../hooks/useNotification';
 import { vehiculoSchema, TIPOS_VEHICULO, ESTADOS_VEHICULO } from '../../../utils/validationSchemas';
@@ -66,6 +66,7 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
     handleSubmit,
     reset,
     setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(vehiculoSchema),
@@ -245,18 +246,25 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                     required
                     error={errors.tipo_vehiculo?.message}
                   >
-                    <select
-                      {...register('tipo_vehiculo')}
-                      disabled={readOnly}
-                      className={inputClasses(false, !!errors.tipo_vehiculo)}
-                    >
-                      <option value="">Seleccionar...</option>
-                      {TIPOS_VEHICULO.map((t) => (
-                        <option key={t} value={t}>
-                          {t.charAt(0).toUpperCase() + t.slice(1)}
-                        </option>
-                      ))}
-                    </select>
+                    <div className={readOnly ? 'pointer-events-none opacity-60' : ''}>
+                      <Controller
+                        name="tipo_vehiculo"
+                        control={control}
+                        render={({ field }) => (
+                          <FilterDropdown
+                            options={[
+                              { value: '', label: 'Seleccionar...' },
+                              ...TIPOS_VEHICULO.map((t) => ({
+                                value: t,
+                                label: t.charAt(0).toUpperCase() + t.slice(1),
+                              })),
+                            ]}
+                            value={field.value || ''}
+                            onChange={(v) => field.onChange(v)}
+                          />
+                        )}
+                      />
+                    </div>
                   </InputField>
 
                   <InputField label="Capacidad (Toneladas)" error={errors.capacidad_ton?.message}>
@@ -341,11 +349,15 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                     icon={Calendar}
                     error={errors.vencimiento_soat?.message}
                   >
-                    <input
-                      {...register('vencimiento_soat')}
-                      type="date"
-                      disabled={readOnly}
-                      className={`${inputClasses(true, !!errors.vencimiento_soat)} min-w-0`}
+                    <Controller
+                      name="vencimiento_soat"
+                      control={control}
+                      render={({ field }) => (
+                        <DatePicker
+                          value={field.value || ''}
+                          onChange={(v) => field.onChange(v)}
+                        />
+                      )}
                     />
                   </InputField>
 
@@ -354,11 +366,15 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                     icon={Calendar}
                     error={errors.vencimiento_tecnicomecanica?.message}
                   >
-                    <input
-                      {...register('vencimiento_tecnicomecanica')}
-                      type="date"
-                      disabled={readOnly}
-                      className={`${inputClasses(true, !!errors.vencimiento_tecnicomecanica)} min-w-0`}
+                    <Controller
+                      name="vencimiento_tecnicomecanica"
+                      control={control}
+                      render={({ field }) => (
+                        <DatePicker
+                          value={field.value || ''}
+                          onChange={(v) => field.onChange(v)}
+                        />
+                      )}
                     />
                   </InputField>
 
