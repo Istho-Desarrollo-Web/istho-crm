@@ -1,6 +1,6 @@
 /**
  * ISTHO CRM - DatePicker Component
- * Selector de fecha personalizado con calendario desplegable
+ * Selector de fecha con navegación rápida por mes y año.
  *
  * @author Coordinación TI ISTHO
  * @date Mayo 2026
@@ -10,7 +10,16 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import PropTypes from 'prop-types';
 import { DayPicker } from 'react-day-picker';
 import { es } from 'react-day-picker/locale';
-import { Calendar, ChevronDown, X } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight, X } from 'lucide-react';
+
+const MONTHS_ES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+];
+
+const YEAR_START = 1950;
+const YEAR_END = new Date().getFullYear() + 15;
+const ALL_YEARS = Array.from({ length: YEAR_END - YEAR_START + 1 }, (_, i) => YEAR_START + i);
 
 const parseDate = (str) => {
   if (!str) return undefined;
@@ -36,6 +45,16 @@ const formatDisplay = (date) => {
   ].join('/');
 };
 
+const NavBtn = ({ onClick, children, className = '' }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface text-slate-500 dark:text-slate-400 transition-colors ${className}`}
+  >
+    {children}
+  </button>
+);
+
 const DatePicker = ({
   value,
   onChange,
@@ -45,29 +64,48 @@ const DatePicker = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [panelStyle, setPanelStyle] = useState({});
+  const [view, setView] = useState('days');
+  const [displayMonth, setDisplayMonth] = useState(() => parseDate(value) || new Date());
+
   const ref = useRef(null);
   const buttonRef = useRef(null);
   const panelRef = useRef(null);
+  const yearsRef = useRef(null);
   const selected = parseDate(value);
 
-  // Calcular posición fixed al abrir para escapar del stacking context del modal
+  const currentYear = displayMonth.getFullYear();
+  const currentMonth = displayMonth.getMonth();
+
+  // Sincronizar displayMonth con value externo
+  useEffect(() => {
+    const d = parseDate(value);
+    if (d) setDisplayMonth(d);
+  }, [value]);
+
+  // Reset view al cerrar
+  useEffect(() => {
+    if (!isOpen) setView('days');
+  }, [isOpen]);
+
+  // Scroll automático al año actual en vista de años
+  useEffect(() => {
+    if (view === 'years' && yearsRef.current) {
+      const btn = yearsRef.current.querySelector('[data-current="true"]');
+      if (btn) btn.scrollIntoView({ block: 'center' });
+    }
+  }, [view]);
+
+  // Calcular posición fixed al abrir
   useLayoutEffect(() => {
     if (!isOpen || !buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
-    // Verificar si hay espacio suficiente abajo; si no, abrir hacia arriba
-    const calendarHeight = 320;
+    const calendarHeight = 360;
     const spaceBelow = window.innerHeight - rect.bottom;
-    const top = spaceBelow >= calendarHeight
-      ? rect.bottom + 6
-      : rect.top - calendarHeight - 6;
-    setPanelStyle({
-      position: 'fixed',
-      top,
-      left: rect.left,
-      zIndex: 9999,
-    });
+    const top = spaceBelow >= calendarHeight ? rect.bottom + 6 : rect.top - calendarHeight - 6;
+    setPanelStyle({ position: 'fixed', top, left: rect.left, zIndex: 9999 });
   }, [isOpen]);
 
+  // Cerrar al click fuera
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setIsOpen(false);
@@ -76,7 +114,7 @@ const DatePicker = ({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Cerrar al hacer scroll externo (evita panel flotando desalineado)
+  // Cerrar al scroll externo
   useEffect(() => {
     if (!isOpen) return;
     const handleScroll = (e) => {
@@ -96,6 +134,11 @@ const DatePicker = ({
     e.stopPropagation();
     onChange?.('');
   };
+
+  const prevMonth = () => setDisplayMonth(new Date(currentYear, currentMonth - 1));
+  const nextMonth = () => setDisplayMonth(new Date(currentYear, currentMonth + 1));
+
+  const btnCaption = 'px-2 py-1 rounded-lg text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-centhrix-surface transition-colors';
 
   return (
     <div ref={ref} className="relative">
@@ -134,40 +177,121 @@ const DatePicker = ({
         </div>
       </button>
 
-      {/* Panel con fixed positioning para escapar del stacking context */}
       {isOpen && (
         <div
           ref={panelRef}
           style={panelStyle}
-          className="bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl animate-fadeIn"
+          className="bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl animate-fadeIn overflow-hidden w-72"
         >
-          <DayPicker
-            mode="single"
-            selected={selected}
-            onSelect={handleSelect}
-            locale={es}
-            classNames={{
-              root: 'p-3 w-72',
-              months: '',
-              month: '',
-              month_caption: 'flex items-center justify-between mb-3 px-1',
-              caption_label: 'text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize',
-              nav: 'flex items-center gap-1',
-              button_previous: 'p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface text-slate-500 dark:text-slate-400 transition-colors [&_svg]:w-4 [&_svg]:h-4',
-              button_next: 'p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface text-slate-500 dark:text-slate-400 transition-colors [&_svg]:w-4 [&_svg]:h-4',
-              month_grid: 'w-full border-collapse',
-              weekdays: '',
-              weekday: 'w-9 h-8 text-center text-xs font-medium text-slate-400 dark:text-slate-500',
-              weeks: '',
-              week: '',
-              day: 'p-0 text-center',
-              day_button: 'w-9 h-9 rounded-lg text-sm text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-150 mx-auto',
-              selected: '[&>button]:bg-orange-500 [&>button]:text-white [&>button]:hover:bg-orange-600',
-              today: '[&>button]:font-bold [&>button]:ring-1 [&>button]:ring-orange-400',
-              outside: '[&>button]:text-slate-300 dark:[&>button]:text-slate-600 [&>button]:hover:bg-transparent',
-              disabled: '[&>button]:opacity-30 [&>button]:cursor-not-allowed [&>button]:hover:bg-transparent',
-            }}
-          />
+          {/* ── Vista días ── */}
+          {view === 'days' && (
+            <>
+              <div className="flex items-center justify-between px-3 pt-3 pb-1">
+                <NavBtn onClick={prevMonth}>
+                  <ChevronLeft className="w-4 h-4" />
+                </NavBtn>
+                <div className="flex items-center gap-0.5">
+                  <button type="button" onClick={() => setView('months')} className={btnCaption}>
+                    {MONTHS_ES[currentMonth]}
+                  </button>
+                  <button type="button" onClick={() => setView('years')} className={btnCaption}>
+                    {currentYear}
+                  </button>
+                </div>
+                <NavBtn onClick={nextMonth}>
+                  <ChevronRight className="w-4 h-4" />
+                </NavBtn>
+              </div>
+              <DayPicker
+                mode="single"
+                selected={selected}
+                onSelect={handleSelect}
+                month={displayMonth}
+                onMonthChange={setDisplayMonth}
+                locale={es}
+                classNames={{
+                  root: 'px-3 pb-3',
+                  months: '',
+                  month: '',
+                  month_caption: 'hidden',
+                  caption_label: 'hidden',
+                  nav: 'hidden',
+                  month_grid: 'w-full border-collapse',
+                  weekdays: '',
+                  weekday: 'w-9 h-8 text-center text-xs font-medium text-slate-400 dark:text-slate-500',
+                  weeks: '',
+                  week: '',
+                  day: 'p-0 text-center',
+                  day_button: 'w-9 h-9 rounded-lg text-sm text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-150 mx-auto',
+                  selected: '[&>button]:bg-orange-500 [&>button]:text-white [&>button]:hover:bg-orange-600',
+                  today: '[&>button]:font-bold [&>button]:ring-1 [&>button]:ring-orange-400',
+                  outside: '[&>button]:text-slate-300 dark:[&>button]:text-slate-600 [&>button]:hover:bg-transparent',
+                  disabled: '[&>button]:opacity-30 [&>button]:cursor-not-allowed [&>button]:hover:bg-transparent',
+                }}
+              />
+            </>
+          )}
+
+          {/* ── Vista meses ── */}
+          {view === 'months' && (
+            <div className="p-3">
+              <div className="flex items-center justify-between mb-3">
+                <button type="button" onClick={() => setView('days')} className={`flex items-center gap-1 ${btnCaption}`}>
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  Volver
+                </button>
+                <button type="button" onClick={() => setView('years')} className={btnCaption}>
+                  {currentYear}
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-1">
+                {MONTHS_ES.map((m, i) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => { setDisplayMonth(new Date(currentYear, i)); setView('days'); }}
+                    className={`py-2 rounded-lg text-sm transition-colors ${
+                      i === currentMonth
+                        ? 'bg-orange-500 text-white font-semibold'
+                        : 'text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400'
+                    }`}
+                  >
+                    {m.slice(0, 3)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Vista años ── */}
+          {view === 'years' && (
+            <div className="p-3">
+              <div className="flex items-center justify-between mb-3">
+                <button type="button" onClick={() => setView('months')} className={`flex items-center gap-1 ${btnCaption}`}>
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  Volver
+                </button>
+                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Seleccionar año</span>
+              </div>
+              <div ref={yearsRef} className="grid grid-cols-4 gap-1 max-h-44 overflow-y-auto">
+                {ALL_YEARS.map((y) => (
+                  <button
+                    key={y}
+                    type="button"
+                    data-current={y === currentYear ? 'true' : undefined}
+                    onClick={() => { setDisplayMonth(new Date(y, currentMonth)); setView('months'); }}
+                    className={`py-2 rounded-lg text-sm transition-colors ${
+                      y === currentYear
+                        ? 'bg-orange-500 text-white font-semibold'
+                        : 'text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400'
+                    }`}
+                  >
+                    {y}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
