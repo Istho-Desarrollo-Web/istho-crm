@@ -26,7 +26,7 @@ import {
   Loader2,
 } from 'lucide-react';
 
-import { Button } from '../../components/common';
+import { Button, FilterDropdown } from '../../components/common';
 import useNotification from '../../hooks/useNotification';
 import plantillasEmailService from '../../api/plantillasEmail.service';
 import PageFooter from '@components/common/PageFooter';
@@ -323,17 +323,11 @@ const PlantillaEmailEditor = () => {
                 </div>
                 <div>
                   <label className={labelClass}>Tipo *</label>
-                  <select
+                  <FilterDropdown
+                    options={TIPO_OPTIONS}
                     value={formData.tipo}
-                    onChange={(e) => handleChange('tipo', e.target.value)}
-                    className={inputClass}
-                  >
-                    {TIPO_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(v) => handleChange('tipo', v)}
+                  />
                 </div>
               </div>
 
@@ -341,17 +335,11 @@ const PlantillaEmailEditor = () => {
               {SUBTIPO_OPTIONS[formData.tipo] && (
                 <div className="mb-4">
                   <label className={labelClass}>Aplica a</label>
-                  <select
+                  <FilterDropdown
+                    options={SUBTIPO_OPTIONS[formData.tipo] || []}
                     value={formData.subtipo}
-                    onChange={(e) => handleChange('subtipo', e.target.value)}
-                    className={inputClass}
-                  >
-                    {SUBTIPO_OPTIONS[formData.tipo].map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(v) => handleChange('subtipo', v)}
+                  />
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                     Define a qué tipo de operación aplica esta plantilla
                   </p>
