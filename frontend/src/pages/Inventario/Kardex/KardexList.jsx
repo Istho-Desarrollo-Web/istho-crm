@@ -478,7 +478,6 @@ const KardexList = () => {
             </div>
           )}
         </div>
-        </div>
 
         {/* RESULTS COUNT + VIEW TOGGLE */}
         <div className="mb-4 flex items-center justify-between">
