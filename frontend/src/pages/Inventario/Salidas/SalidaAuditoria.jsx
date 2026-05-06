@@ -46,6 +46,7 @@ import auditoriasService from '../../../api/auditorias.service';
 import { useAlert } from '../../../context/AlertContext';
 import { useAuth } from '../../../context/AuthContext';
 import CierreAuditoriaModal from '../../../components/common/CierreAuditoriaModal';
+import { FilterDropdown } from '../../../components/common';
 import { formatDateShort } from '../../../utils/formatDate';
 import { getServerFileUrl } from '../../../api/client';
 import { comprimirImagen, COMPRESS_PRESETS } from '../../../utils/compressImage';
@@ -1553,16 +1554,10 @@ const SalidaAuditoria = () => {
                         Producto afectado <span className="text-red-500">*</span>
                       </div>
                     </label>
-                    <div className="relative">
-                      <select
-                        value={averiaForm.detalle_id}
-                        onChange={(e) =>
-                          setAveriaForm((prev) => ({ ...prev, detalle_id: e.target.value }))
-                        }
-                        className="w-full appearance-none pl-4 pr-10 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all cursor-pointer hover:border-amber-400 dark:hover:border-amber-500/50"
-                      >
-                        <option value="">-- Seleccionar producto --</option>
-                        {Object.values(
+                    <FilterDropdown
+                      options={[
+                        { value: '', label: '-- Seleccionar producto --' },
+                        ...Object.values(
                           lineas
                             .filter((l) => !l.eliminado)
                             .reduce((acc, l) => {
@@ -1570,16 +1565,14 @@ const SalidaAuditoria = () => {
                               acc[l.sku].cantidad_esperada += Number(l.cantidad_esperada) || 0;
                               return acc;
                             }, {})
-                        ).map((l) => (
-                          <option key={l.sku} value={l.id}>
-                            {l.sku} — {l.producto} (
-                            {new Intl.NumberFormat('es-CO').format(l.cantidad_esperada)}{' '}
-                            {l.unidad || 'UND'})
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
+                        ).map((l) => ({
+                          value: String(l.id),
+                          label: `${l.sku} — ${l.producto} (${new Intl.NumberFormat('es-CO').format(l.cantidad_esperada)} ${l.unidad || 'UND'})`,
+                        })),
+                      ]}
+                      value={String(averiaForm.detalle_id || '')}
+                      onChange={(v) => setAveriaForm((prev) => ({ ...prev, detalle_id: v }))}
+                    />
                     {/* Preview del producto seleccionado */}
                     {averiaForm.detalle_id &&
                       (() => {
@@ -1613,27 +1606,20 @@ const SalidaAuditoria = () => {
                         Causa de la avería <span className="text-red-500">*</span>
                       </div>
                     </label>
-                    <div className="relative">
-                      <select
-                        value={averiaForm.tipo_averia}
-                        onChange={(e) =>
-                          setAveriaForm((prev) => ({
-                            ...prev,
-                            tipo_averia: e.target.value,
-                            descripcion_custom: '',
-                          }))
-                        }
-                        className="w-full appearance-none pl-4 pr-10 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all cursor-pointer hover:border-amber-400 dark:hover:border-amber-500/50"
-                      >
-                        <option value="">-- Seleccionar causa --</option>
-                        {TIPOS_AVERIA.map((t) => (
-                          <option key={t} value={t}>
-                            {t}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
+                    <FilterDropdown
+                      options={[
+                        { value: '', label: '-- Seleccionar causa --' },
+                        ...TIPOS_AVERIA.map((t) => ({ value: t, label: t })),
+                      ]}
+                      value={averiaForm.tipo_averia || ''}
+                      onChange={(v) =>
+                        setAveriaForm((prev) => ({
+                          ...prev,
+                          tipo_averia: v,
+                          descripcion_custom: '',
+                        }))
+                      }
+                    />
                     {/* Indicador de tipo seleccionado */}
                     {averiaForm.tipo_averia && averiaForm.tipo_averia !== 'Otra' && (
                       <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/15 border border-amber-200/60 dark:border-amber-700/30 rounded-lg">
