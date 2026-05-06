@@ -11,12 +11,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { makeSanitizeHandler, SANITIZE } from '../../../utils/sanitizeForms';
 import PropTypes from 'prop-types';
 import { Building2, FileText, MapPin, Phone, Mail, Globe, Calendar } from 'lucide-react';
-import { Button, Modal } from '../../../components/common/index';
+import { Button, Modal, FilterDropdown, DatePicker } from '../../../components/common/index';
 import { clienteSchema } from '../../../utils/validationSchemas';
 
 // ============================================================================
@@ -94,6 +94,7 @@ const ClienteForm = ({ isOpen, onClose, onSubmit, cliente = null, loading = fals
     handleSubmit,
     reset,
     setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(clienteSchema),
@@ -233,28 +234,37 @@ const ClienteForm = ({ isOpen, onClose, onSubmit, cliente = null, loading = fals
               </InputField>
 
               <InputField label="Tipo de Cliente" error={errors.tipo_cliente?.message}>
-                <select
-                  {...register('tipo_cliente')}
-                  className={inputCls(false, !!errors.tipo_cliente)}
-                >
-                  <option value="">Seleccionar...</option>
-                  {TIPOS_CLIENTE.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
+                <Controller
+                  name="tipo_cliente"
+                  control={control}
+                  render={({ field }) => (
+                    <FilterDropdown
+                      options={[
+                        { value: '', label: 'Seleccionar...' },
+                        ...TIPOS_CLIENTE,
+                      ]}
+                      value={field.value || ''}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
               </InputField>
 
               <InputField label="Sector" error={errors.sector?.message}>
-                <select {...register('sector')} className={inputCls(false, !!errors.sector)}>
-                  <option value="">Seleccionar...</option>
-                  {SECTORES.map((s) => (
-                    <option key={s.value} value={s.value}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
+                <Controller
+                  name="sector"
+                  control={control}
+                  render={({ field }) => (
+                    <FilterDropdown
+                      options={[
+                        { value: '', label: 'Seleccionar...' },
+                        ...SECTORES,
+                      ]}
+                      value={field.value || ''}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
               </InputField>
 
               <InputField
@@ -262,10 +272,15 @@ const ClienteForm = ({ isOpen, onClose, onSubmit, cliente = null, loading = fals
                 icon={Calendar}
                 error={errors.fecha_inicio_relacion?.message}
               >
-                <input
-                  {...register('fecha_inicio_relacion')}
-                  type="date"
-                  className={`${inputCls(true, !!errors.fecha_inicio_relacion)} min-w-0`}
+                <Controller
+                  name="fecha_inicio_relacion"
+                  control={control}
+                  render={({ field }) => (
+                    <DatePicker
+                      value={field.value || ''}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
                 />
               </InputField>
 
