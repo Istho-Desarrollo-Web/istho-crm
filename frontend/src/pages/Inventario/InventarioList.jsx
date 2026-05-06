@@ -259,7 +259,7 @@ const StockIndicator = ({ actual, minimo }) => {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="w-20 h-2 bg-slate-200 dark:bg-centhrix-surface rounded-full overflow-hidden">
+      <div className="w-16 sm:w-20 h-2 bg-slate-200 dark:bg-centhrix-surface rounded-full overflow-hidden">
         <div
           className={`h-full transition-all duration-300 ${colorClass}`}
           style={{ width: `${porcentaje}%` }}
@@ -885,7 +885,7 @@ const InventarioList = () => {
                         <SortIcon field="producto" sortField={sortField} sortDir={sortDir} />
                       </span>
                     </th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <th className="hidden sm:table-cell text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Cliente
                     </th>
                     <th
@@ -941,7 +941,7 @@ const InventarioList = () => {
                             </div>
                           </div>
                         </td>
-                        <td className="py-4 px-4 text-sm text-slate-600 dark:text-slate-300">
+                        <td className="hidden sm:table-cell py-4 px-4 text-sm text-slate-600 dark:text-slate-300">
                           {producto.cliente_nombre || '-'}
                         </td>
                         <td className="py-4 px-4">

@@ -192,7 +192,7 @@ const StockGauge = ({ actual, minimo, maximo, onUpdateLimits, canEdit }) => {
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-100 dark:border-slate-700">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-100 dark:border-slate-700">
         <div className="text-center">
           <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">
             {formatNumber(actualNum)}
@@ -368,7 +368,7 @@ const MovimientoItem = ({ movimiento }) => {
 /**
  * Encabezado de columna ordenable para la tabla de cajas
  */
-const SortTh = ({ campo, actual, dir, onClick, children, right = false, center = false }) => {
+const SortTh = ({ campo, actual, dir, onClick, children, right = false, center = false, className = '' }) => {
   const activo = actual === campo;
   const Icon = activo ? (dir === 'asc' ? ChevronUp : ChevronDown) : ChevronsUpDown;
   const alignClass = right ? 'text-right' : center ? 'text-center' : 'text-left';
@@ -376,7 +376,7 @@ const SortTh = ({ campo, actual, dir, onClick, children, right = false, center =
   return (
     <th
       onClick={() => onClick(campo)}
-      className={`py-3 px-2 font-medium text-slate-500 dark:text-slate-400 cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors ${alignClass}`}
+      className={`py-3 px-2 font-medium text-slate-500 dark:text-slate-400 cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors ${alignClass} ${className}`}
     >
       <span className={`inline-flex items-center gap-1 ${flexClass}`}>
         {children}
@@ -1012,7 +1012,7 @@ const ProductoDetail = () => {
                           <Lock className="w-4 h-4 text-blue-500" />
                           Datos en WMS
                         </h4>
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 rounded-xl p-3">
                             <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Categoría</p>
                             <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
@@ -1098,14 +1098,14 @@ const ProductoDetail = () => {
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-sm min-w-[480px]">
                           <thead>
                             <tr className="border-b border-gray-200 dark:border-slate-600">
                               <SortTh campo="numero_caja" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas}>Caja</SortTh>
                               <SortTh campo="lote" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas}>Lote</SortTh>
                               <SortTh campo="cantidad" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas} right>Cantidad</SortTh>
                               <SortTh campo="estado" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas} center>Estado</SortTh>
-                              <SortTh campo="documento" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas}>Documento</SortTh>
+                              <SortTh campo="documento" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas} className="hidden sm:table-cell">Doc.</SortTh>
                               <SortTh campo="fecha" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas}>Fecha</SortTh>
                             </tr>
                           </thead>
@@ -1141,7 +1141,7 @@ const ProductoDetail = () => {
                                     {caja.estado || '-'}
                                   </span>
                                 </td>
-                                <td className="py-3 px-2 font-mono text-xs text-slate-500 dark:text-slate-400">
+                                <td className="hidden sm:table-cell py-3 px-2 font-mono text-xs text-slate-500 dark:text-slate-400">
                                   {caja.documento}
                                 </td>
                                 <td className="py-3 px-2 text-xs text-slate-500 dark:text-slate-400">
@@ -1252,19 +1252,19 @@ const ProductoDetail = () => {
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-sm min-w-[320px]">
                           <thead>
                             <tr className="border-b border-slate-200 dark:border-slate-700">
                               <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                 N° Caja
                               </th>
                               <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                Posición en bodega
+                                Posición
                               </th>
-                              <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                              <th className="hidden sm:table-cell text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                 Bodega
                               </th>
-                              <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                              <th className="hidden sm:table-cell text-left py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                 Lote
                               </th>
                               <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -1287,10 +1287,10 @@ const ProductoDetail = () => {
                                     {ub.coordenada || '-'}
                                   </div>
                                 </td>
-                                <td className="py-3 px-3 text-slate-600 dark:text-slate-400">
+                                <td className="hidden sm:table-cell py-3 px-3 text-slate-600 dark:text-slate-400">
                                   {ub.bodega || '-'}
                                 </td>
-                                <td className="py-3 px-3 text-slate-600 dark:text-slate-400 font-mono text-xs">
+                                <td className="hidden sm:table-cell py-3 px-3 text-slate-600 dark:text-slate-400 font-mono text-xs">
                                   {ub.lote || '-'}
                                 </td>
                                 <td className="py-3 px-3 text-right font-semibold text-slate-700 dark:text-slate-300">
