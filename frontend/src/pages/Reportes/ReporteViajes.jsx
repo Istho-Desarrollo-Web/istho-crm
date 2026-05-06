@@ -6,7 +6,6 @@ import {
   DollarSign,
   FileSpreadsheet,
   FileText,
-  Calendar,
   ArrowLeft,
   RefreshCw,
   Mail,
@@ -16,7 +15,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
-import { KpiCard, AccionesDropdown } from '../../components/common';
+import { KpiCard, AccionesDropdown, DatePicker } from '../../components/common';
 import { BarChart, PieChart } from '../../components/charts';
 import reportesService from '../../api/reportes.service';
 import EnviarReporteModal from '../../components/common/EnviarReporteModal';
@@ -142,26 +141,20 @@ const ReporteViajes = () => {
             <div className="flex-1 flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                  <Calendar className="w-3 h-3 inline mr-1" />
                   Desde
                 </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={inputDesde}
-                  onChange={(e) => setInputDesde(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400"
+                  onChange={(v) => setInputDesde(v)}
                 />
               </div>
               <div className="flex-1">
                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                  <Calendar className="w-3 h-3 inline mr-1" />
                   Hasta
                 </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={inputHasta}
-                  onChange={(e) => setInputHasta(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400"
+                  onChange={(v) => setInputHasta(v)}
                 />
               </div>
             </div>

@@ -8,10 +8,11 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Calendar, Users, Filter, X, Search, Loader2 } from 'lucide-react';
+import { Users, Filter, X, Search, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import clientesService from '../../api/clientes.service';
 import FilterDropdown from './FilterDropdown';
+import DatePicker from './DatePicker';
 
 // ============================================
 // REPORT FILTERS
@@ -89,15 +90,11 @@ const ReportFilters = ({
           {showDateRange && (
             <div>
               <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                <Calendar className="w-3 h-3 inline mr-1" />
                 Desde
               </label>
-              <input
-                type="date"
-                aria-label="Fecha desde"
+              <DatePicker
                 value={localFilters.fecha_desde || ''}
-                onChange={(e) => handleLocalChange('fecha_desde', e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400"
+                onChange={(v) => handleLocalChange('fecha_desde', v)}
               />
             </div>
           )}
@@ -106,15 +103,11 @@ const ReportFilters = ({
           {showDateRange && (
             <div>
               <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                <Calendar className="w-3 h-3 inline mr-1" />
                 Hasta
               </label>
-              <input
-                type="date"
-                aria-label="Fecha hasta"
+              <DatePicker
                 value={localFilters.fecha_hasta || ''}
-                onChange={(e) => handleLocalChange('fecha_hasta', e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400/50 focus:border-orange-400"
+                onChange={(v) => handleLocalChange('fecha_hasta', v)}
               />
             </div>
           )}

@@ -39,7 +39,7 @@ import {
   X,
   ChevronDown,
 } from 'lucide-react';
-import { Pagination, FilterDropdown } from '../../../components/common';
+import { Pagination, FilterDropdown, DatePicker } from '../../../components/common';
 import clientesService from '../../../api/clientes.service';
 import { formatDate } from '../../../utils/formatDate';
 import PageFooter from '@components/common/PageFooter';
@@ -417,26 +417,20 @@ const KardexList = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                    <Calendar className="w-3 h-3 inline mr-1" />
                     Fecha desde
                   </label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={filtrosDraft.fecha_desde}
-                    onChange={(e) => setFiltrosDraft((p) => ({ ...p, fecha_desde: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400"
+                    onChange={(v) => setFiltrosDraft((p) => ({ ...p, fecha_desde: v }))}
                   />
                 </div>
                 <div>
                   <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                    <Calendar className="w-3 h-3 inline mr-1" />
                     Fecha hasta
                   </label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={filtrosDraft.fecha_hasta}
-                    onChange={(e) => setFiltrosDraft((p) => ({ ...p, fecha_hasta: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-slate-50 dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400"
+                    onChange={(v) => setFiltrosDraft((p) => ({ ...p, fecha_hasta: v }))}
                   />
                 </div>
                 {!esPortal && (

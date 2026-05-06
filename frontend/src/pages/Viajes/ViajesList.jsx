@@ -32,7 +32,6 @@ import {
   Pencil,
   Trash2,
   Truck,
-  Calendar,
   Building2,
   CheckCircle2,
   XCircle,
@@ -43,7 +42,7 @@ import {
   LayoutList,
   RefreshCw,
 } from 'lucide-react';
-import { Pagination, ConfirmDialog } from '../../components/common';
+import { Pagination, ConfirmDialog, DatePicker } from '../../components/common';
 import PageFooter from '@components/common/PageFooter';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -561,25 +560,19 @@ const ViajesList = () => {
 
             {/* Date Range */}
             <div className="flex items-center gap-2 min-w-0">
-              <div className="relative flex-1 min-w-0">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="date"
+              <div className="flex-1 min-w-0">
+                <DatePicker
                   value={fechaDesde}
-                  onChange={(e) => setFechaDesde(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  title="Fecha desde"
+                  onChange={(v) => setFechaDesde(v)}
+                  placeholder="Fecha desde"
                 />
               </div>
               <span className="text-slate-400 dark:text-slate-500 text-sm shrink-0">—</span>
-              <div className="relative flex-1 min-w-0">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="date"
+              <div className="flex-1 min-w-0">
+                <DatePicker
                   value={fechaHasta}
-                  onChange={(e) => setFechaHasta(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  title="Fecha hasta"
+                  onChange={(v) => setFechaHasta(v)}
+                  placeholder="Fecha hasta"
                 />
               </div>
             </div>

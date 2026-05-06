@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import wmsDashboardService from '@api/wmsDashboard.service';
+import { DatePicker } from '../../components/common';
 
 // ════════════════════════════════════════════════════════════════
 // HELPERS
@@ -570,17 +571,13 @@ export default function WmsDashboard() {
                 <option value="exitoso">Exitoso</option>
                 <option value="fallido">Fallido</option>
               </select>
-              <input
-                type="date"
+              <DatePicker
                 value={filtros.fecha_desde}
-                onChange={(e) => handleFiltro('fecha_desde', e.target.value)}
-                className={inputCls}
+                onChange={(v) => handleFiltro('fecha_desde', v)}
               />
-              <input
-                type="date"
+              <DatePicker
                 value={filtros.fecha_hasta}
-                onChange={(e) => handleFiltro('fecha_hasta', e.target.value)}
-                className={inputCls}
+                onChange={(v) => handleFiltro('fecha_hasta', v)}
               />
               {hayFiltros && (
                 <button

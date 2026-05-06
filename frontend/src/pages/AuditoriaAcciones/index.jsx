@@ -29,7 +29,7 @@ import {
 import useNotification from '@hooks/useNotification';
 import auditoriaAccionesService from '../../api/auditoriaAcciones.service';
 import PageFooter from '@components/common/PageFooter';
-import { FilterDropdown } from '../../components/common';
+import { FilterDropdown, DatePicker } from '../../components/common';
 
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -380,27 +380,23 @@ const AuditoriaAcciones = () => {
 
                 <div>
                   <label className="block text-[11px] font-medium text-slate-500 mb-1">Desde</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={fechaDesde}
-                    onChange={(e) => {
-                      setFechaDesde(e.target.value);
+                    onChange={(v) => {
+                      setFechaDesde(v);
                       setPagination((p) => ({ ...p, page: 1 }));
                     }}
-                    className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-medium text-slate-500 mb-1">Hasta</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={fechaHasta}
-                    onChange={(e) => {
-                      setFechaHasta(e.target.value);
+                    onChange={(v) => {
+                      setFechaHasta(v);
                       setPagination((p) => ({ ...p, page: 1 }));
                     }}
-                    className="px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                   />
                 </div>
 
