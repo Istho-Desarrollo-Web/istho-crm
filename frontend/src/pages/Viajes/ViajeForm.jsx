@@ -34,6 +34,7 @@ import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
 import { viajeSchema } from '../../utils/validationSchemas';
 import { makeSanitizeHandler, SANITIZE } from '../../utils/sanitizeForms';
+import { FilterDropdown, DatePicker } from '../../components/common';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -387,10 +388,15 @@ const ViajeForm = () => {
           <Section icon={MapPin} title="Datos Básicos" color="blue">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField label="Fecha" icon={Calendar} required error={errors.fecha?.message}>
-                <input
-                  {...register('fecha')}
-                  type="date"
-                  className={`${inputCls(true, !!errors.fecha)} min-w-0`}
+                <Controller
+                  name="fecha"
+                  control={control}
+                  render={({ field }) => (
+                    <DatePicker
+                      value={field.value || ''}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
                 />
               </FormField>
 
@@ -399,19 +405,17 @@ const ViajeForm = () => {
                   name="vehiculo_id"
                   control={control}
                   render={({ field }) => (
-                    <select
-                      value={field.value}
-                      onChange={(e) => handleVehiculoChange(e.target.value)}
-                      className={selectCls(true, !!errors.vehiculo_id)}
-                    >
-                      <option value="">Seleccionar vehículo...</option>
-                      {vehiculos.map((v) => (
-                        <option key={v.id} value={v.id}>
-                          {v.placa} - {v.tipo_vehiculo}
-                          {v.conductor?.nombre_completo ? ` (${v.conductor.nombre_completo})` : ''}
-                        </option>
-                      ))}
-                    </select>
+                    <FilterDropdown
+                      options={[
+                        { value: '', label: 'Seleccionar vehículo...' },
+                        ...vehiculos.map((v) => ({
+                          value: String(v.id),
+                          label: `${v.placa} - ${v.tipo_vehiculo}${v.conductor?.nombre_completo ? ` (${v.conductor.nombre_completo})` : ''}`,
+                        })),
+                      ]}
+                      value={String(field.value || '')}
+                      onChange={(v) => handleVehiculoChange(v)}
+                    />
                   )}
                 />
               </FormField>
@@ -422,18 +426,25 @@ const ViajeForm = () => {
                 required
                 error={errors.conductor_id?.message}
               >
-                <select
-                  {...register('conductor_id')}
-                  disabled={esConductor}
-                  className={`${selectCls(true, !!errors.conductor_id)} ${esConductor ? 'opacity-60' : ''}`}
-                >
-                  <option value="">Seleccionar conductor...</option>
-                  {conductores.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nombre_completo || c.username}
-                    </option>
-                  ))}
-                </select>
+                <Controller
+                  name="conductor_id"
+                  control={control}
+                  render={({ field }) => (
+                    <div className={esConductor ? 'pointer-events-none opacity-60' : ''}>
+                      <FilterDropdown
+                        options={[
+                          { value: '', label: 'Seleccionar conductor...' },
+                          ...conductores.map((c) => ({
+                            value: String(c.id),
+                            label: c.nombre_completo || c.username,
+                          })),
+                        ]}
+                        value={String(field.value || '')}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    </div>
+                  )}
+                />
               </FormField>
 
               <FormField label="Cliente" icon={Building2}>
@@ -442,22 +453,20 @@ const ViajeForm = () => {
                   control={control}
                   defaultValue=""
                   render={({ field }) => (
-                    <select
-                      value={field.value}
-                      onChange={(e) => {
-                        field.onChange(e.target.value);
-                        handleClienteChange(e.target.value);
+                    <FilterDropdown
+                      options={[
+                        { value: '', label: 'Seleccionar cliente...' },
+                        ...clientes.map((c) => ({
+                          value: String(c.id),
+                          label: `${c.nombre || c.razon_social}${c.documento || c.nit ? ` - ${c.documento || c.nit}` : ''}`,
+                        })),
+                      ]}
+                      value={String(field.value || '')}
+                      onChange={(v) => {
+                        field.onChange(v);
+                        handleClienteChange(v);
                       }}
-                      className={selectCls(true)}
-                    >
-                      <option value="">Seleccionar cliente...</option>
-                      {clientes.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.nombre || c.razon_social}{' '}
-                          {c.documento || c.nit ? `- ${c.documento || c.nit}` : ''}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   )}
                 />
               </FormField>
@@ -504,17 +513,23 @@ const ViajeForm = () => {
               </FormField>
 
               <FormField label="Caja Menor" icon={Wallet} error={errors.caja_menor_id?.message}>
-                <select
-                  {...register('caja_menor_id')}
-                  className={selectCls(true, !!errors.caja_menor_id)}
-                >
-                  <option value="">Sin caja menor</option>
-                  {cajasMenores.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.numero} - {c.asignado?.nombre_completo || c.asignado?.username || ''}
-                    </option>
-                  ))}
-                </select>
+                <Controller
+                  name="caja_menor_id"
+                  control={control}
+                  render={({ field }) => (
+                    <FilterDropdown
+                      options={[
+                        { value: '', label: 'Sin caja menor' },
+                        ...cajasMenores.map((c) => ({
+                          value: String(c.id),
+                          label: `${c.numero} - ${c.asignado?.nombre_completo || c.asignado?.username || ''}`,
+                        })),
+                      ]}
+                      value={String(field.value || '')}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
               </FormField>
 
               <FormField
