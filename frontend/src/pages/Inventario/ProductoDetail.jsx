@@ -432,6 +432,7 @@ const ProductoDetail = () => {
   const [ubicacionWms, setUbicacionWms] = useState([]);
   const [loadingUbicacion, setLoadingUbicacion] = useState(false);
   const [errorUbicacion, setErrorUbicacion] = useState(false);
+  const [infoWms, setInfoWms] = useState(null);
 
   // Permisos dinámicos (restringidos si el producto es gestionado por WMS)
   const esWMS = !!currentProducto?.codigo_wms;
@@ -620,17 +621,21 @@ const ProductoDetail = () => {
     if (!esWMS || !id) return;
     setLoadingUbicacion(true);
     setErrorUbicacion(false);
-    wmsUbicacionService
-      .getProductoUbicaciones(id)
-      .then((res) => setUbicacionWms(res?.data?.ubicaciones || []))
-      .catch((err) => {
-        if (err?.response?.status === 404) {
-          setUbicacionWms([]);
-        } else {
-          setErrorUbicacion(true);
-        }
-      })
-      .finally(() => setLoadingUbicacion(false));
+
+    Promise.allSettled([
+      wmsUbicacionService.getProductoUbicaciones(id),
+      wmsUbicacionService.getProductoInfoWms(id),
+    ]).then(([ubicResult, infoResult]) => {
+      if (ubicResult.status === 'fulfilled') {
+        setUbicacionWms(ubicResult.value?.data?.ubicaciones || []);
+      } else if (ubicResult.reason?.response?.status !== 404) {
+        setErrorUbicacion(true);
+      }
+
+      if (infoResult.status === 'fulfilled') {
+        setInfoWms(infoResult.value?.data || null);
+      }
+    }).finally(() => setLoadingUbicacion(false));
   }, [esWMS, id]);
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -1000,6 +1005,35 @@ const ProductoDetail = () => {
                         </div>
                       </div>
                     </div>
+
+                    {esWMS && infoWms && (
+                      <div className="space-y-3 md:col-span-2">
+                        <h4 className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                          <Lock className="w-4 h-4 text-blue-500" />
+                          Datos en WMS
+                        </h4>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 rounded-xl p-3">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Categoría</p>
+                            <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                              {infoWms.categoria || '-'}
+                            </p>
+                          </div>
+                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 rounded-xl p-3">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Costo Unit.</p>
+                            <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                              {formatCurrency(infoWms.costo_unitario)}
+                            </p>
+                          </div>
+                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 rounded-xl p-3">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Precio Venta</p>
+                            <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                              {formatCurrency(infoWms.precio_venta)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {producto.descripcion && (
                       <div className="space-y-4 md:col-span-2">

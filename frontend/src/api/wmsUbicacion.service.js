@@ -10,6 +10,9 @@ const wmsUbicacionService = {
 
   getPalletUbicacion: (palletId) =>
     apiClient.get(WMS_DASHBOARD_ENDPOINTS.UBICACION_PALLET(palletId)),
+
+  getProductoInfoWms: (inventarioId) =>
+    apiClient.get(WMS_DASHBOARD_ENDPOINTS.PRODUCTO_WMS_INFO, { params: { inventarioId } }),
 };
 
 export default wmsUbicacionService;

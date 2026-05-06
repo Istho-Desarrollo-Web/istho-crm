@@ -148,6 +148,11 @@ async function getWarehouses() {
   return _normalizar(res.data, true);
 }
 
+async function getProductoDetalle(wmsProductId) {
+  const res = await _http.get(`/products/${wmsProductId}`);
+  return _normalizar(res.data);
+}
+
 async function getProductoUbicaciones(_wmsProductId) {
   const res = await _http.get('/warehouses/search-details', {
     params: { limit: 100, page: 1 },
@@ -205,6 +210,7 @@ module.exports = {
   getPalletUbicacion,
   getPalletDetalle,
   getWarehouses,
+  getProductoDetalle,
   getProductoUbicaciones,
   getProgresoRecepcion,
   getProgresoPickin,

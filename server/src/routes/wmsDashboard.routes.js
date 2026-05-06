@@ -53,5 +53,10 @@ router.get(
   requierePermiso('inventario', 'ver'),
   wmsDashboardController.getProductoUbicaciones
 );
+router.get(
+  '/producto-info',
+  requierePermiso('inventario', 'ver'),
+  wmsDashboardController.getProductoInfoWms
+);
 
 module.exports = router;

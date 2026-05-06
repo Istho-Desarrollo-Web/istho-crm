@@ -416,6 +416,46 @@ const getProductoUbicaciones = async (req, res) => {
   }
 };
 
+const getProductoInfoWms = async (req, res) => {
+  const { inventarioId } = req.query;
+
+  if (!inventarioId) {
+    return res.status(400).json({ success: false, message: 'inventarioId es requerido' });
+  }
+
+  try {
+    const { Inventario } = require('../models');
+    const producto = await Inventario.findByPk(inventarioId, { attributes: ['id', 'codigo_wms'] });
+
+    if (!producto) {
+      return res.status(404).json({ success: false, message: 'Producto no encontrado' });
+    }
+    if (!producto.codigo_wms) {
+      return res.status(404).json({ success: false, message: 'Producto sin código WMS' });
+    }
+
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE.test(producto.codigo_wms)) {
+      return res.status(404).json({ success: false, message: 'Código WMS inválido' });
+    }
+
+    const data = await wmsApiService.getProductoDetalle(producto.codigo_wms);
+
+    return success(res, {
+      categoria: data?.productCategory?.name || null,
+      costo_unitario: data?.unitPrice ?? 0,
+      precio_venta: data?.cost ?? 0,
+    });
+  } catch (error) {
+    const wmsStatus = error.response?.status;
+    logger.error('[WMS Dashboard] Error getProductoInfoWms:', { message: error.message, wmsStatus });
+    if (wmsStatus === 404) {
+      return res.status(404).json({ success: false, message: 'Producto no encontrado en WMS' });
+    }
+    return res.status(503).json({ success: false, message: 'WMS no disponible temporalmente' });
+  }
+};
+
 module.exports = {
   getStatus,
   getEstadisticas,
@@ -424,4 +464,5 @@ module.exports = {
   ejecutarPolling,
   getPalletUbicacion,
   getProductoUbicaciones,
+  getProductoInfoWms,
 };
