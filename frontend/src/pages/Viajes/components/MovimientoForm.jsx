@@ -14,7 +14,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Receipt, Wallet, MapPin, DollarSign, FileText, Upload, ArrowUpDown } from 'lucide-react';
-import { Button, Modal } from '../../../components/common/index';
+import { Button, Modal, FilterDropdown } from '../../../components/common/index';
 import {
   movimientosService,
   cajasMenoresService,
@@ -413,17 +413,23 @@ const MovimientoForm = ({
                   required
                   error={errors.caja_menor_id?.message}
                 >
-                  <select
-                    {...register('caja_menor_id')}
-                    className={inputCls(true, !!errors.caja_menor_id)}
-                  >
-                    <option value="">Seleccionar...</option>
-                    {cajas.map((caja) => (
-                      <option key={caja.id} value={caja.id}>
-                        {caja.numero || `Caja #${caja.id}`}
-                      </option>
-                    ))}
-                  </select>
+                  <Controller
+                    name="caja_menor_id"
+                    control={control}
+                    render={({ field }) => (
+                      <FilterDropdown
+                        options={[
+                          { value: '', label: 'Seleccionar...' },
+                          ...cajas.map((caja) => ({
+                            value: String(caja.id),
+                            label: caja.numero || `Caja #${caja.id}`,
+                          })),
+                        ]}
+                        value={String(field.value || '')}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    )}
+                  />
                 </InputField>
 
                 {/* Viaje (solo si el asignado es conductor) */}
@@ -433,19 +439,25 @@ const MovimientoForm = ({
                     icon={MapPin}
                     error={errors.viaje_id?.message}
                   >
-                    <select
-                      {...register('viaje_id')}
-                      disabled={!watchCajaId}
-                      className={inputCls(true, !!errors.viaje_id)}
-                    >
-                      <option value="">Sin viaje asociado</option>
-                      {viajes.map((viaje) => (
-                        <option key={viaje.id} value={viaje.id}>
-                          {viaje.numero || `Viaje #${viaje.id}`}
-                          {viaje.destino ? ` - ${viaje.destino}` : ''}
-                        </option>
-                      ))}
-                    </select>
+                    <div className={!watchCajaId ? 'opacity-50 pointer-events-none' : ''}>
+                      <Controller
+                        name="viaje_id"
+                        control={control}
+                        render={({ field }) => (
+                          <FilterDropdown
+                            options={[
+                              { value: '', label: 'Sin viaje asociado' },
+                              ...viajes.map((v) => ({
+                                value: String(v.id),
+                                label: `${v.numero || `Viaje #${v.id}`}${v.destino ? ` - ${v.destino}` : ''}`,
+                              })),
+                            ]}
+                            value={String(field.value || '')}
+                            onChange={(v) => field.onChange(v)}
+                          />
+                        )}
+                      />
+                    </div>
                   </InputField>
                 )}
 
@@ -456,17 +468,20 @@ const MovimientoForm = ({
                   required
                   error={errors.tipo_movimiento?.message}
                 >
-                  <select
-                    {...register('tipo_movimiento')}
-                    className={inputCls(true, !!errors.tipo_movimiento)}
-                  >
-                    <option value="">Seleccionar...</option>
-                    {TIPOS_MOVIMIENTO.map((tipo) => (
-                      <option key={tipo.value} value={tipo.value}>
-                        {tipo.label}
-                      </option>
-                    ))}
-                  </select>
+                  <Controller
+                    name="tipo_movimiento"
+                    control={control}
+                    render={({ field }) => (
+                      <FilterDropdown
+                        options={[
+                          { value: '', label: 'Seleccionar...' },
+                          ...TIPOS_MOVIMIENTO,
+                        ]}
+                        value={field.value || ''}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    )}
+                  />
                 </InputField>
 
                 {/* Concepto */}
@@ -476,18 +491,22 @@ const MovimientoForm = ({
                   required
                   error={errors.concepto?.message}
                 >
-                  <select
-                    {...register('concepto')}
-                    disabled={!watchTipo}
-                    className={inputCls(true, !!errors.concepto)}
-                  >
-                    <option value="">Seleccionar...</option>
-                    {conceptosDisponibles.map((c) => (
-                      <option key={c.value} value={c.value}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className={!watchTipo ? 'opacity-50 pointer-events-none' : ''}>
+                    <Controller
+                      name="concepto"
+                      control={control}
+                      render={({ field }) => (
+                        <FilterDropdown
+                          options={[
+                            { value: '', label: 'Seleccionar...' },
+                            ...conceptosDisponibles,
+                          ]}
+                          value={field.value || ''}
+                          onChange={(v) => field.onChange(v)}
+                        />
+                      )}
+                    />
+                  </div>
                 </InputField>
 
                 {/* Concepto Otro */}
