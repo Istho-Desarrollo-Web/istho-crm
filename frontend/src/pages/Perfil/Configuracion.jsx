@@ -26,7 +26,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
-import { Button } from '../../components/common';
+import { Button, FilterDropdown } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeContext } from '../../context/ThemeContext';
 import usuarioService from '../../api/usuarioService';
@@ -57,24 +57,6 @@ const ToggleSwitch = ({ enabled, onChange, disabled = false }) => (
       `}
     />
   </button>
-);
-
-// ════════════════════════════════════════════════════════════════════════════
-// SELECT FIELD
-// ════════════════════════════════════════════════════════════════════════════
-
-const SelectField = ({ value, onChange, options }) => (
-  <select
-    value={value}
-    onChange={(e) => onChange(e.target.value)}
-    className="px-3 py-2 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all min-w-[180px]"
-  >
-    {options.map((opt) => (
-      <option key={opt.value} value={opt.value}>
-        {opt.label}
-      </option>
-    ))}
-  </select>
 );
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -535,31 +517,35 @@ const Configuracion = () => {
               title="Zona Horaria"
               description="Zona horaria para fechas y reportes"
             >
-              <SelectField
-                value={prefs.zona_horaria}
-                onChange={(v) => handleChange('zona_horaria', v)}
-                options={[
-                  { value: 'America/Bogota', label: 'Bogotá (GMT-5)' },
-                  { value: 'America/Mexico_City', label: 'México (GMT-6)' },
-                  { value: 'America/Lima', label: 'Lima (GMT-5)' },
-                  { value: 'America/Argentina/Buenos_Aires', label: 'Buenos Aires (GMT-3)' },
-                ]}
-              />
+              <div className="w-[180px]">
+                <FilterDropdown
+                  value={prefs.zona_horaria}
+                  onChange={(v) => handleChange('zona_horaria', v)}
+                  options={[
+                    { value: 'America/Bogota', label: 'Bogotá (GMT-5)' },
+                    { value: 'America/Mexico_City', label: 'México (GMT-6)' },
+                    { value: 'America/Lima', label: 'Lima (GMT-5)' },
+                    { value: 'America/Argentina/Buenos_Aires', label: 'Buenos Aires (GMT-3)' },
+                  ]}
+                />
+              </div>
             </SettingRow>
             <SettingRow
               icon={Calendar}
               title="Formato de Fecha"
               description="Formato para mostrar fechas en el sistema"
             >
-              <SelectField
-                value={prefs.formato_fecha}
-                onChange={(v) => handleChange('formato_fecha', v)}
-                options={[
-                  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
-                  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
-                  { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
-                ]}
-              />
+              <div className="w-[180px]">
+                <FilterDropdown
+                  value={prefs.formato_fecha}
+                  onChange={(v) => handleChange('formato_fecha', v)}
+                  options={[
+                    { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+                    { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+                    { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
+                  ]}
+                />
+              </div>
             </SettingRow>
           </SectionCard>
 
@@ -570,17 +556,19 @@ const Configuracion = () => {
               title="Tiempo de Sesión"
               description="Cerrar sesión automáticamente después de inactividad"
             >
-              <SelectField
-                value={prefs.tiempo_sesion}
-                onChange={(v) => handleChange('tiempo_sesion', Number(v))}
-                options={[
-                  { value: 15, label: '15 minutos' },
-                  { value: 30, label: '30 minutos' },
-                  { value: 60, label: '1 hora' },
-                  { value: 120, label: '2 horas' },
-                  { value: 0, label: 'Nunca' },
-                ]}
-              />
+              <div className="w-[180px]">
+                <FilterDropdown
+                  value={String(prefs.tiempo_sesion)}
+                  onChange={(v) => handleChange('tiempo_sesion', Number(v))}
+                  options={[
+                    { value: '15', label: '15 minutos' },
+                    { value: '30', label: '30 minutos' },
+                    { value: '60', label: '1 hora' },
+                    { value: '120', label: '2 horas' },
+                    { value: '0', label: 'Nunca' },
+                  ]}
+                />
+              </div>
             </SettingRow>
 
             {/* 2FA */}
