@@ -7,6 +7,7 @@
  * @date Marzo 2026
  */
 
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { AlertTriangle, FileWarning, Package, Clock, ChevronRight, Bell } from 'lucide-react';
 
@@ -172,4 +173,4 @@ AlertWidget.propTypes = {
   emptyMessage: PropTypes.string,
 };
 
-export default AlertWidget;
+export default memo(AlertWidget);
