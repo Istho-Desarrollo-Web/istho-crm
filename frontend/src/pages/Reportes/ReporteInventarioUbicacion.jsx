@@ -22,7 +22,7 @@ import {
   Search,
   X,
 } from 'lucide-react';
-import { KpiCard, AccionesDropdown } from '../../components/common';
+import { KpiCard, AccionesDropdown, FilterDropdown } from '../../components/common';
 import EnviarReporteModal from '../../components/common/EnviarReporteModal';
 import PageFooter from '@components/common/PageFooter';
 import reportesService from '../../api/reportes.service';
@@ -186,18 +186,14 @@ const ReporteInventarioUbicacion = () => {
                   <Package className="w-3 h-3 inline mr-1" />
                   Cliente
                 </label>
-                <select
-                  value={clienteId}
-                  onChange={(e) => handleClienteChange(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-400/50 focus:border-teal-400"
-                >
-                  <option value="">Seleccionar cliente...</option>
-                  {clientes.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.razon_social}
-                    </option>
-                  ))}
-                </select>
+                <FilterDropdown
+                  options={[
+                    { value: '', label: 'Seleccionar cliente...' },
+                    ...clientes.map((c) => ({ value: String(c.id), label: c.razon_social })),
+                  ]}
+                  value={String(clienteId)}
+                  onChange={(v) => handleClienteChange(v)}
+                />
               </div>
             </div>
           </div>

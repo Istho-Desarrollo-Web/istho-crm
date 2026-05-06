@@ -26,6 +26,7 @@ import {
   X,
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';
+import { FilterDropdown } from '../../components/common';
 import reportesService from '../../api/reportes.service';
 import { formatDateShort } from '../../utils/formatDate';
 
@@ -151,31 +152,25 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Tipo de Reporte
               </label>
-              <select
+              <FilterDropdown
+                options={TIPOS}
                 value={form.tipo_reporte}
-                onChange={(e) => setForm((p) => ({ ...p, tipo_reporte: e.target.value }))}
-                className={inputCls}
-              >
-                {TIPOS.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => setForm((p) => ({ ...p, tipo_reporte: v }))}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Formato
               </label>
-              <select
+              <FilterDropdown
+                options={[
+                  { value: 'excel', label: 'Excel' },
+                  { value: 'pdf', label: 'PDF' },
+                  { value: 'ambos', label: 'Excel + PDF' },
+                ]}
                 value={form.formato}
-                onChange={(e) => setForm((p) => ({ ...p, formato: e.target.value }))}
-                className={inputCls}
-              >
-                <option value="excel">Excel</option>
-                <option value="pdf">PDF</option>
-                <option value="ambos">Excel + PDF</option>
-              </select>
+                onChange={(v) => setForm((p) => ({ ...p, formato: v }))}
+              />
             </div>
           </div>
 
