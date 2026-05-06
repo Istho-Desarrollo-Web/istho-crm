@@ -99,10 +99,12 @@ const DatePicker = ({
   useLayoutEffect(() => {
     if (!isOpen || !buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
+    const PANEL_W = 288; // w-72
     const calendarHeight = 360;
     const spaceBelow = window.innerHeight - rect.bottom;
     const top = spaceBelow >= calendarHeight ? rect.bottom + 6 : rect.top - calendarHeight - 6;
-    setPanelStyle({ position: 'fixed', top, left: rect.left, zIndex: 9999 });
+    const left = Math.max(4, Math.min(rect.left, window.innerWidth - PANEL_W - 4));
+    setPanelStyle({ position: 'fixed', top, left, zIndex: 9999 });
   }, [isOpen]);
 
   // Cerrar al click fuera

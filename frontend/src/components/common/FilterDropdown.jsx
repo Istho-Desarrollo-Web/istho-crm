@@ -30,10 +30,11 @@ const FilterDropdown = ({
   useLayoutEffect(() => {
     if (!isOpen || !buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
+    const left = Math.max(4, Math.min(rect.left, window.innerWidth - rect.width - 4));
     setPanelStyle({
       position: 'fixed',
       top: rect.bottom + 6,
-      left: rect.left,
+      left,
       width: rect.width,
       zIndex: 9999,
     });

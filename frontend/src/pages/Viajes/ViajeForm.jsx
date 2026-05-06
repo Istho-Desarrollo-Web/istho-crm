@@ -118,16 +118,12 @@ const Section = ({
 
 const FormField = ({ label, icon: Icon, required, error, children, className = '' }) => (
   <div className={className}>
-    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
+    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
+      {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
       {label}
-      {required && <span className="text-red-500 ml-1">*</span>}
+      {required && <span className="text-red-500">*</span>}
     </label>
-    <div className="relative">
-      {Icon && (
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-          <Icon className="h-4 w-4 text-slate-400" />
-        </div>
-      )}
+    <div>
       {children}
     </div>
     {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
@@ -487,7 +483,7 @@ const ViajeForm = () => {
                     SANITIZE.ALFANUM_UPPER,
                     50
                   )}
-                  className={inputCls(true, !!errors.documento_cliente)}
+                  className={inputCls(false, !!errors.documento_cliente)}
                 />
               </FormField>
 
@@ -497,7 +493,7 @@ const ViajeForm = () => {
                   type="text"
                   maxLength={100}
                   onChange={makeSanitizeHandler(setValue, 'origen', SANITIZE.TEXTO_UPPER, 100)}
-                  className={inputCls(true, !!errors.origen)}
+                  className={inputCls(false, !!errors.origen)}
                 />
               </FormField>
 
@@ -508,7 +504,7 @@ const ViajeForm = () => {
                   placeholder="Ciudad destino"
                   maxLength={100}
                   onChange={makeSanitizeHandler(setValue, 'destino', SANITIZE.TEXTO_UPPER, 100)}
-                  className={inputCls(true, !!errors.destino)}
+                  className={inputCls(false, !!errors.destino)}
                 />
               </FormField>
 
@@ -564,7 +560,7 @@ const ViajeForm = () => {
                   min={0}
                   step={0.01}
                   placeholder="0.00"
-                  className={inputCls(true, !!errors.peso)}
+                  className={inputCls(false, !!errors.peso)}
                 />
               </FormField>
 
@@ -582,7 +578,7 @@ const ViajeForm = () => {
                       value={formatThousands(field.value)}
                       onChange={(e) => field.onChange(parseThousands(e.target.value))}
                       placeholder="0"
-                      className={inputCls(true, !!errors.valor_descargue)}
+                      className={inputCls(false, !!errors.valor_descargue)}
                     />
                   )}
                 />
@@ -595,7 +591,7 @@ const ViajeForm = () => {
                   min={0}
                   step={1}
                   placeholder="0"
-                  className={inputCls(true, !!errors.num_personas)}
+                  className={inputCls(false, !!errors.num_personas)}
                 />
               </FormField>
             </div>
@@ -618,7 +614,7 @@ const ViajeForm = () => {
                   placeholder="Número de factura"
                   maxLength={50}
                   onChange={makeSanitizeHandler(setValue, 'no_factura', SANITIZE.ALFANUM_UPPER, 50)}
-                  className={inputCls(true, !!errors.no_factura)}
+                  className={inputCls(false, !!errors.no_factura)}
                 />
               </FormField>
 
@@ -636,7 +632,7 @@ const ViajeForm = () => {
                       value={formatThousands(field.value)}
                       onChange={(e) => field.onChange(parseThousands(e.target.value))}
                       placeholder="0"
-                      className={inputCls(true, !!errors.valor_viaje)}
+                      className={inputCls(false, !!errors.valor_viaje)}
                     />
                   )}
                 />
