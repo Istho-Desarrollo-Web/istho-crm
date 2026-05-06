@@ -63,6 +63,7 @@ async function mapearOrden(ordenWms, itemsArr) {
             : null,
           caja: pallet.palletCode || null,
           ubicacion,
+          wms_pallet_id: pallet.id || pallet.palletId || null,
         });
       }
     } else {

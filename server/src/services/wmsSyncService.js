@@ -274,7 +274,7 @@ const syncEntrada = async (data) => {
 
     // Crear detalles y actualizar inventario
     for (const linea of detalles) {
-      if (!linea.producto || !linea.cantidad) continue;
+      if (!linea.producto) continue;
 
       const sku = linea.producto.toString().trim();
       const cantidad = parseFloat(linea.cantidad) || 0;
@@ -374,10 +374,11 @@ const syncEntrada = async (data) => {
           peso: linea.peso || null,
           unidad_medida: linea.unidad_medida || 'UND',
           tipo: 'entrada',
-          estado: 'disponible',
+          estado: cantidad === 0 ? 'despachada' : 'disponible',
           documento_asociado: linea.documento_asociado || null,
           fecha_vencimiento: linea.fecha_vencimiento || null,
           fecha_movimiento: new Date(),
+          wms_pallet_id: linea.wms_pallet_id || null,
         },
         { transaction }
       );
