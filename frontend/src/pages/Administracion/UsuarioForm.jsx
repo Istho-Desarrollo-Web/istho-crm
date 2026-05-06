@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import adminService from '../../api/admin.service';
 import clientesService from '../../api/clientes.service';
+import { FilterDropdown } from '../../components/common';
 
 const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
   const isEdit = !!usuario;
@@ -236,22 +237,22 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
             <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
               Rol *
             </label>
-            <select
-              name="rol_id"
-              value={form.rol_id}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
-            >
-              <option value="">Seleccionar rol...</option>
-              {roles
-                .filter((r) => r.activo)
-                .map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.nombre} (Nivel {r.nivel_jerarquia})
-                  </option>
-                ))}
-            </select>
+            <FilterDropdown
+              options={[
+                { value: '', label: 'Seleccionar rol...' },
+                ...roles
+                  .filter((r) => r.activo)
+                  .map((r) => ({
+                    value: String(r.id),
+                    label: `${r.nombre} (Nivel ${r.nivel_jerarquia})`,
+                  })),
+              ]}
+              value={String(form.rol_id || '')}
+              onChange={(v) => {
+                setForm((prev) => ({ ...prev, rol_id: v }));
+                setError('');
+              }}
+            />
           </div>
 
           {/* Cliente (solo si el rol es de tipo cliente) */}
@@ -260,20 +261,20 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
               <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                 Cliente asociado *
               </label>
-              <select
-                name="cliente_id"
-                value={form.cliente_id}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
-              >
-                <option value="">Seleccionar cliente...</option>
-                {clientes.map((c) => (
-                  <option key={c.id} value={String(c.id)}>
-                    {c.razon_social} ({c.codigo_cliente})
-                  </option>
-                ))}
-              </select>
+              <FilterDropdown
+                options={[
+                  { value: '', label: 'Seleccionar cliente...' },
+                  ...clientes.map((c) => ({
+                    value: String(c.id),
+                    label: `${c.razon_social} (${c.codigo_cliente})`,
+                  })),
+                ]}
+                value={String(form.cliente_id || '')}
+                onChange={(v) => {
+                  setForm((prev) => ({ ...prev, cliente_id: v }));
+                  setError('');
+                }}
+              />
             </div>
           )}
 
