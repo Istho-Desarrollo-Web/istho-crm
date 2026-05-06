@@ -39,6 +39,9 @@ import {
   WifiOff,
   Search,
   X,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
 } from 'lucide-react';
 
 // Layout
@@ -362,6 +365,27 @@ const MovimientoItem = ({ movimiento }) => {
   );
 };
 
+/**
+ * Encabezado de columna ordenable para la tabla de cajas
+ */
+const SortTh = ({ campo, actual, dir, onClick, children, right = false, center = false }) => {
+  const activo = actual === campo;
+  const Icon = activo ? (dir === 'asc' ? ChevronUp : ChevronDown) : ChevronsUpDown;
+  const alignClass = right ? 'text-right' : center ? 'text-center' : 'text-left';
+  const flexClass = right ? 'justify-end' : center ? 'justify-center' : '';
+  return (
+    <th
+      onClick={() => onClick(campo)}
+      className={`py-3 px-2 font-medium text-slate-500 dark:text-slate-400 cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors ${alignClass}`}
+    >
+      <span className={`inline-flex items-center gap-1 ${flexClass}`}>
+        {children}
+        <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${activo ? 'text-orange-500' : 'opacity-40'}`} />
+      </span>
+    </th>
+  );
+};
+
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════════════════════════════════════
@@ -404,6 +428,7 @@ const ProductoDetail = () => {
   const [cajas, setCajas] = useState([]);
   const [loadingCajas, setLoadingCajas] = useState(false);
   const [busquedaCajas, setBusquedaCajas] = useState('');
+  const [sortCajas, setSortCajas] = useState({ campo: 'fecha', dir: 'desc' });
   const [ubicacionWms, setUbicacionWms] = useState([]);
   const [loadingUbicacion, setLoadingUbicacion] = useState(false);
   const [errorUbicacion, setErrorUbicacion] = useState(false);
@@ -515,15 +540,35 @@ const ProductoDetail = () => {
   }, [estadisticas]);
 
   const cajasFiltradas = useMemo(() => {
-    if (!busquedaCajas.trim()) return cajas;
-    const q = busquedaCajas.toLowerCase();
-    return cajas.filter(
-      (c) =>
-        String(c.numero_caja || '').toLowerCase().includes(q) ||
-        String(c.lote || '').toLowerCase().includes(q) ||
-        String(c.documento || '').toLowerCase().includes(q)
-    );
-  }, [cajas, busquedaCajas]);
+    let lista = cajas;
+    if (busquedaCajas.trim()) {
+      const q = busquedaCajas.toLowerCase();
+      lista = cajas.filter(
+        (c) =>
+          String(c.numero_caja || '').toLowerCase().includes(q) ||
+          String(c.lote || '').toLowerCase().includes(q) ||
+          String(c.documento || '').toLowerCase().includes(q)
+      );
+    }
+    const { campo, dir } = sortCajas;
+    return [...lista].sort((a, b) => {
+      if (campo === 'numero_caja' || campo === 'cantidad') {
+        const va = parseFloat(a[campo]) || 0;
+        const vb = parseFloat(b[campo]) || 0;
+        return dir === 'asc' ? va - vb : vb - va;
+      }
+      if (campo === 'fecha') {
+        const va = new Date(a[campo] || 0).getTime();
+        const vb = new Date(b[campo] || 0).getTime();
+        return dir === 'asc' ? va - vb : vb - va;
+      }
+      const va = String(a[campo] || '').toLowerCase();
+      const vb = String(b[campo] || '').toLowerCase();
+      if (va < vb) return dir === 'asc' ? -1 : 1;
+      if (va > vb) return dir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [cajas, busquedaCajas, sortCajas]);
 
   // Excluir movimientos de Kardex WMS Descarga (tipo salida generado por ajuste WMS)
   const movimientosFiltrados = useMemo(
@@ -591,6 +636,14 @@ const ProductoDetail = () => {
   // ──────────────────────────────────────────────────────────────────────────
   // HANDLERS
   // ──────────────────────────────────────────────────────────────────────────
+
+  const handleSortCajas = (campo) => {
+    setSortCajas((prev) =>
+      prev.campo === campo
+        ? { campo, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+        : { campo, dir: 'asc' }
+    );
+  };
 
   const handleUpdateLimits = async (data) => {
     try {
@@ -1014,24 +1067,12 @@ const ProductoDetail = () => {
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-gray-200 dark:border-slate-600">
-                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
-                                Caja
-                              </th>
-                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
-                                Lote
-                              </th>
-                              <th className="text-right py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
-                                Cantidad
-                              </th>
-                              <th className="text-center py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
-                                Estado
-                              </th>
-                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
-                                Documento
-                              </th>
-                              <th className="text-left py-3 px-2 font-medium text-slate-500 dark:text-slate-400">
-                                Fecha
-                              </th>
+                              <SortTh campo="numero_caja" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas}>Caja</SortTh>
+                              <SortTh campo="lote" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas}>Lote</SortTh>
+                              <SortTh campo="cantidad" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas} right>Cantidad</SortTh>
+                              <SortTh campo="estado" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas} center>Estado</SortTh>
+                              <SortTh campo="documento" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas}>Documento</SortTh>
+                              <SortTh campo="fecha" actual={sortCajas.campo} dir={sortCajas.dir} onClick={handleSortCajas}>Fecha</SortTh>
                             </tr>
                           </thead>
                           <tbody>
