@@ -951,15 +951,6 @@ const ProductoDetail = () => {
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
-                          <Layers className="w-5 h-5 text-slate-400" />
-                          <span className="text-slate-500 dark:text-slate-400 w-28">
-                            Categoría:
-                          </span>
-                          <span className="text-slate-800 dark:text-slate-200 capitalize">
-                            {producto.categoria || '-'}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm">
                           <Package className="w-5 h-5 text-slate-400" />
                           <span className="text-slate-500 dark:text-slate-400 w-28">Unidad:</span>
                           <span className="text-slate-800 dark:text-slate-200 capitalize">
@@ -977,30 +968,6 @@ const ProductoDetail = () => {
                           <span className="text-slate-500 dark:text-slate-400 w-28">Cliente:</span>
                           <span className="text-slate-800 dark:text-slate-200">
                             {clienteNombre}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h4 className="font-semibold text-slate-800 dark:text-slate-100">Costos</h4>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3 text-sm">
-                          <DollarSign className="w-5 h-5 text-slate-400" />
-                          <span className="text-slate-500 dark:text-slate-400 w-28">
-                            Costo Unit.:
-                          </span>
-                          <span className="text-slate-800 dark:text-slate-200 font-medium">
-                            {formatCurrency(costoUnitario)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm">
-                          <DollarSign className="w-5 h-5 text-slate-400" />
-                          <span className="text-slate-500 dark:text-slate-400 w-28">
-                            Precio Venta:
-                          </span>
-                          <span className="text-slate-800 dark:text-slate-200 font-medium">
-                            {formatCurrency(precioVenta)}
                           </span>
                         </div>
                       </div>
