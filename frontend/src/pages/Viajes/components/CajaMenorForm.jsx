@@ -16,7 +16,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import PropTypes from 'prop-types';
 import { Wallet, User, DollarSign, FileText, ArrowLeftRight, Info } from 'lucide-react';
-import { Button, Modal } from '../../../components/common/index';
+import { Button, Modal, FilterDropdown } from '../../../components/common/index';
 import { cajasMenoresService } from '../../../api/viajes.service';
 import useNotification from '../../../hooks/useNotification';
 import { cajaMenorSchema } from '../../../utils/validationSchemas';
@@ -270,20 +270,28 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
               required
               error={errors.asignado_a?.message}
             >
-              <select
-                {...register('asignado_a')}
-                disabled={loadingData}
-                className={inputClasses(true, !!errors.asignado_a)}
-              >
-                <option value="">Seleccionar usuario...</option>
-                {usuarios.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.nombre_completo ||
-                      `${u.nombre || ''} ${u.apellido || ''}`.trim() ||
-                      u.username}
-                  </option>
-                ))}
-              </select>
+              <div className={loadingData ? 'pointer-events-none opacity-60' : ''}>
+                <Controller
+                  name="asignado_a"
+                  control={control}
+                  render={({ field }) => (
+                    <FilterDropdown
+                      options={[
+                        { value: '', label: 'Seleccionar usuario...' },
+                        ...usuarios.map((u) => ({
+                          value: String(u.id),
+                          label:
+                            u.nombre_completo ||
+                            `${u.nombre || ''} ${u.apellido || ''}`.trim() ||
+                            u.username,
+                        })),
+                      ]}
+                      value={String(field.value || '')}
+                      onChange={(v) => field.onChange(v)}
+                    />
+                  )}
+                />
+              </div>
             </InputField>
 
             {/* Saldo Inicial — input con formato miles */}
@@ -324,26 +332,31 @@ const CajaMenorForm = ({ open, onClose, onSuccess, cajaId }) => {
                 icon={ArrowLeftRight}
                 error={null}
               >
-                <select
-                  {...register('caja_anterior_id')}
-                  disabled={loadingData}
-                  className={inputClasses(true, false)}
-                >
-                  <option value="">Sin traslado (opcional)</option>
-                  {cajasCerradas
-                    .filter(
-                      (c) =>
-                        parseFloat(c.saldo_actual) > 0 &&
-                        (!watchAsignado || String(c.asignado_a) === String(watchAsignado))
-                    )
-                    .map((c) => (
-                      <option key={c.id} value={c.id}>
-                        Caja #{c.numero || c.id} -{' '}
-                        {c.asignado_nombre || c.asignado?.nombre_completo || 'Sin asignar'} -{' '}
-                        {formatMoney(c.saldo_actual)}
-                      </option>
-                    ))}
-                </select>
+                <div className={loadingData ? 'pointer-events-none opacity-60' : ''}>
+                  <Controller
+                    name="caja_anterior_id"
+                    control={control}
+                    render={({ field }) => (
+                      <FilterDropdown
+                        options={[
+                          { value: '', label: 'Sin traslado (opcional)' },
+                          ...cajasCerradas
+                            .filter(
+                              (c) =>
+                                parseFloat(c.saldo_actual) > 0 &&
+                                (!watchAsignado || String(c.asignado_a) === String(watchAsignado))
+                            )
+                            .map((c) => ({
+                              value: String(c.id),
+                              label: `Caja #${c.numero || c.id} - ${c.asignado_nombre || c.asignado?.nombre_completo || 'Sin asignar'} - ${formatMoney(c.saldo_actual)}`,
+                            })),
+                        ]}
+                        value={String(field.value || '')}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    )}
+                  />
+                </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   Opcional. Seleccione una caja cerrada para trasladar su saldo.
                 </p>
