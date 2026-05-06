@@ -451,20 +451,28 @@ const VehiculoForm = ({ open, onClose, onSuccess, vehiculoId, readOnly = false }
                     icon={User}
                     error={errors.conductor_id?.message}
                   >
-                    <select
-                      {...register('conductor_id')}
-                      disabled={readOnly}
-                      className={inputClasses(true, !!errors.conductor_id)}
-                    >
-                      <option value="">Sin asignar</option>
-                      {conductores.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.nombre_completo ||
-                            `${c.nombre || ''} ${c.apellido || ''}`.trim() ||
-                            c.username}
-                        </option>
-                      ))}
-                    </select>
+                    <div className={readOnly ? 'pointer-events-none opacity-60' : ''}>
+                      <Controller
+                        name="conductor_id"
+                        control={control}
+                        render={({ field }) => (
+                          <FilterDropdown
+                            options={[
+                              { value: '', label: 'Sin asignar' },
+                              ...conductores.map((c) => ({
+                                value: String(c.id),
+                                label:
+                                  c.nombre_completo ||
+                                  `${c.nombre || ''} ${c.apellido || ''}`.trim() ||
+                                  c.username,
+                              })),
+                            ]}
+                            value={String(field.value || '')}
+                            onChange={(v) => field.onChange(v)}
+                          />
+                        )}
+                      />
+                    </div>
                   </InputField>
 
                   <div className="md:col-span-2">

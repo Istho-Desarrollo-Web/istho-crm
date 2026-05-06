@@ -74,26 +74,25 @@ const FilterDropdown = ({
 
   return (
     <div ref={dropdownRef} className="relative">
-      {label && <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>}
+      {label && <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{label}</label>}
 
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`
           flex items-center justify-between gap-2 w-full
-          bg-white border border-slate-200
-          text-slate-700
-          hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
+          bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600
+          hover:border-slate-300 dark:hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
           transition-all duration-200
           ${compact ? 'px-2.5 py-1.5 rounded-lg text-xs' : 'px-4 py-2.5 rounded-xl text-sm'}
         `}
       >
         <div className="flex items-center gap-2">
           {Icon && <Icon className={compact ? 'w-3 h-3 text-slate-400' : 'w-4 h-4 text-slate-400'} />}
-          <span className={value ? 'text-slate-800' : 'text-slate-400'}>{getDisplayValue()}</span>
+          <span className={value ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'}>{getDisplayValue()}</span>
         </div>
         <ChevronDown
-          className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${compact ? 'w-3 h-3' : 'w-4 h-4'}`}
+          className={`text-slate-400 dark:text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${compact ? 'w-3 h-3' : 'w-4 h-4'}`}
         />
       </button>
 
@@ -102,7 +101,7 @@ const FilterDropdown = ({
         <div
           className={`
           absolute z-50 w-full mt-1.5
-          bg-white border border-slate-200 shadow-lg
+          bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 shadow-lg dark:shadow-slate-900/50
           max-h-60 overflow-y-auto
           animate-fadeIn
           ${compact ? 'rounded-lg' : 'rounded-xl'}
@@ -115,7 +114,7 @@ const FilterDropdown = ({
               onClick={() => handleSelect(option.value)}
               className={`
                 flex items-center justify-between w-full
-                text-slate-700 hover:bg-orange-50 hover:text-orange-600
+                text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400
                 transition-colors duration-150
                 ${compact ? 'px-3 py-2 text-xs' : 'px-4 py-2.5 text-sm'}
               `}
@@ -126,7 +125,7 @@ const FilterDropdown = ({
           ))}
 
           {options.length === 0 && (
-            <div className="px-4 py-3 text-sm text-slate-500 text-center">No hay opciones</div>
+            <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 text-center">No hay opciones</div>
           )}
         </div>
       )}

@@ -155,18 +155,18 @@ const ModalReejecutar = ({ isOpen, onClose, onConfirm, loading, tipo, setTipo })
           <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">
             Filtrar por tipo (opcional)
           </label>
-          <select
+          <FilterDropdown
+            options={[
+              { value: '', label: 'Cualquier tipo (el más reciente)' },
+              { value: 'entrada', label: 'Entrada' },
+              { value: 'salida', label: 'Salida' },
+              { value: 'kardex', label: 'Kardex' },
+              { value: 'productos', label: 'Productos' },
+              { value: 'batch', label: 'Batch' },
+            ]}
             value={tipo}
-            onChange={(e) => setTipo(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C] outline-none"
-          >
-            <option value="">Cualquier tipo (el más reciente)</option>
-            <option value="entrada">Entrada</option>
-            <option value="salida">Salida</option>
-            <option value="kardex">Kardex</option>
-            <option value="productos">Productos</option>
-            <option value="batch">Batch</option>
-          </select>
+            onChange={(v) => setTipo(v)}
+          />
         </div>
 
         <div className="flex gap-3">
@@ -322,8 +322,6 @@ export default function WmsDashboard() {
   const apiOnline = status?.api_activa && !loadingStatus;
   const hayFiltros = Object.values(filtros).some(Boolean);
 
-  const inputCls =
-    'bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-[#E74C3C]/20 focus:border-[#E74C3C] outline-none';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
@@ -547,30 +545,32 @@ export default function WmsDashboard() {
 
             {/* Filtros */}
             <div className="flex flex-wrap items-center gap-2">
-              <select
+              <FilterDropdown
+                compact
+                options={[
+                  { value: '', label: 'Todos los tipos' },
+                  { value: 'entrada', label: 'Entrada (PUSH)' },
+                  { value: 'salida', label: 'Salida (PUSH)' },
+                  { value: 'kardex', label: 'Kardex (PUSH)' },
+                  { value: 'productos', label: 'Productos' },
+                  { value: 'batch', label: 'Batch' },
+                  { value: 'polling_entrada', label: 'Entrada (polling)' },
+                  { value: 'polling_salida', label: 'Salida (polling)' },
+                  { value: 'polling_kardex', label: 'Kardex (polling)' },
+                ]}
                 value={filtros.tipo}
-                onChange={(e) => handleFiltro('tipo', e.target.value)}
-                className={inputCls}
-              >
-                <option value="">Todos los tipos</option>
-                <option value="entrada">Entrada (PUSH)</option>
-                <option value="salida">Salida (PUSH)</option>
-                <option value="kardex">Kardex (PUSH)</option>
-                <option value="productos">Productos</option>
-                <option value="batch">Batch</option>
-                <option value="polling_entrada">Entrada (polling)</option>
-                <option value="polling_salida">Salida (polling)</option>
-                <option value="polling_kardex">Kardex (polling)</option>
-              </select>
-              <select
+                onChange={(v) => handleFiltro('tipo', v)}
+              />
+              <FilterDropdown
+                compact
+                options={[
+                  { value: '', label: 'Todos los estados' },
+                  { value: 'exitoso', label: 'Exitoso' },
+                  { value: 'fallido', label: 'Fallido' },
+                ]}
                 value={filtros.estado}
-                onChange={(e) => handleFiltro('estado', e.target.value)}
-                className={inputCls}
-              >
-                <option value="">Todos los estados</option>
-                <option value="exitoso">Exitoso</option>
-                <option value="fallido">Fallido</option>
-              </select>
+                onChange={(v) => handleFiltro('estado', v)}
+              />
               <DatePicker
                 value={filtros.fecha_desde}
                 onChange={(v) => handleFiltro('fecha_desde', v)}

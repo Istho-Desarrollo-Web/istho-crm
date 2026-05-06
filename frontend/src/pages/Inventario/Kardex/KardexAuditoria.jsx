@@ -867,10 +867,10 @@ const KardexAuditoria = () => {
     'Producto mojado',
     'Producto roto',
     'Producto vencido',
-    'Empaque danado',
+    'Empaque dañado',
     'Producto faltante',
     'Producto sobrante',
-    'Contaminacion',
+    'Contaminación',
     'Etiqueta ilegible',
     'Otra',
   ];

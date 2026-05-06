@@ -11,10 +11,10 @@
  */
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { X, PackagePlus, PackageMinus, Layers, AlertTriangle } from 'lucide-react';
-import { Button } from '../../../components/common';
+import { Button, FilterDropdown } from '../../../components/common';
 import { movimientoInventarioSchema } from '../../../utils/validationSchemas';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -95,6 +95,7 @@ const MovimientoForm = ({
     setValue,
     watch,
     setError,
+    control,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(movimientoInventarioSchema),
@@ -245,21 +246,20 @@ const MovimientoForm = ({
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                 Motivo *
               </label>
-              <select
-                {...register('motivo')}
-                className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:bg-centhrix-card/50 dark:text-slate-100 ${
-                  errors.motivo
-                    ? 'border-red-300 bg-red-50 dark:bg-red-900/10'
-                    : 'border-gray-200 dark:border-slate-700'
-                }`}
-              >
-                <option value="">Seleccionar motivo...</option>
-                {motivos.map((motivo) => (
-                  <option key={motivo} value={motivo}>
-                    {motivo}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                name="motivo"
+                control={control}
+                render={({ field }) => (
+                  <FilterDropdown
+                    options={[
+                      { value: '', label: 'Seleccionar motivo...' },
+                      ...motivos.map((m) => ({ value: m, label: m })),
+                    ]}
+                    value={field.value || ''}
+                    onChange={(v) => field.onChange(v)}
+                  />
+                )}
+              />
               {errors.motivo && (
                 <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3" />
