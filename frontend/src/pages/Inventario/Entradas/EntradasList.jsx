@@ -364,6 +364,7 @@ const EntradasList = () => {
           {filtered.length > 0 && (
             <div className="flex items-center gap-2">
               <button
+                id="tour-ops-exportar"
                 onClick={handleExportExcel}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
               >
@@ -410,7 +411,7 @@ const EntradasList = () => {
         )}
 
         {/* FILTERS BAR */}
-        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div id="tour-ops-filtros" className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
@@ -573,7 +574,7 @@ const EntradasList = () => {
           </div>
         ) : viewMode === 'table' ? (
           <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-            <div className="overflow-x-auto">
+            <div id="tour-ops-tabla" className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
