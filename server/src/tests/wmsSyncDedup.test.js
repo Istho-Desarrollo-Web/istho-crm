@@ -9,7 +9,7 @@
 
 process.env.NODE_ENV = 'test';
 
-const { Cliente, Inventario, Operacion } = require('../../src/models');
+const { Cliente, Inventario, Operacion, Notificacion } = require('../../src/models');
 const { syncEntrada, syncSalida } = require('../../src/services/wmsSyncService');
 
 // ─────────────────────────────────────────────
@@ -18,6 +18,7 @@ const { syncEntrada, syncSalida } = require('../../src/services/wmsSyncService')
 const NIT_TEST = '999999999';
 const SKU_TEST = 'SKU-TEST-DEDUP';
 const DOC_WMS_TEST = 'CO-TEST-DEDUP-001';
+const DOC_WMS_TEST_2 = 'CO-TEST-DEDUP-002';
 const DOC_WMS_SALIDA = 'PK-TEST-DEDUP-001';
 
 let clienteTest;
@@ -51,8 +52,33 @@ beforeAll(async () => {
 
 afterAll(async () => {
   // Limpiar en orden correcto por FK
+
+  // Primero, obtener IDs de operaciones para limpiar sus notificaciones
+  const operacionesTest = await Operacion.findAll({
+    where: { documento_wms: [DOC_WMS_TEST, DOC_WMS_TEST_2, DOC_WMS_SALIDA] },
+    paranoid: false,
+  });
+
+  const operacionIds = operacionesTest.map((op) => op.id);
+
+  // Eliminar notificaciones asociadas a las operaciones de test
+  // (Las notificaciones creadas por syncEntrada/syncSalida pueden tener accion_url
+  //  con /operaciones/:id, o simplemente fueron generadas durante estos tests)
+  if (operacionIds.length > 0) {
+    await Notificacion.destroy({
+      where: {
+        accion_url: {
+          [require('sequelize').Op.in]: operacionIds.map((id) => `/operaciones/${id}`),
+        },
+      },
+    });
+  }
+
+  // Las notificaciones sin accion_url específica o sin vincular directamente se aceptan
+  // como datos de prueba inofensivos que no afectan otros tests
+
   await Operacion.destroy({
-    where: { documento_wms: [DOC_WMS_TEST, DOC_WMS_SALIDA] },
+    where: { documento_wms: [DOC_WMS_TEST, DOC_WMS_TEST_2, DOC_WMS_SALIDA] },
     force: true,
   });
   await Inventario.destroy({
@@ -81,7 +107,11 @@ describe('wmsSyncService.syncEntrada — deduplicación', () => {
   });
 
   afterEach(async () => {
-    await Operacion.destroy({ where: { documento_wms: DOC_WMS_TEST }, force: true });
+    // Limpiar ambos documentos: el principal y el de diferente documento_wms
+    await Operacion.destroy({
+      where: { documento_wms: [DOC_WMS_TEST, DOC_WMS_TEST_2] },
+      force: true,
+    });
   });
 
   test('crea la operación correctamente en el primer llamado', async () => {
@@ -111,16 +141,15 @@ describe('wmsSyncService.syncEntrada — deduplicación', () => {
   test('permite crear con un documento_wms diferente', async () => {
     const payloadDistinto = {
       ...payloadEntrada(),
-      documento_origen: 'CO-TEST-DEDUP-002',
+      documento_origen: DOC_WMS_TEST_2,
     };
 
     const resultado = await syncEntrada(payloadDistinto);
 
     expect(resultado).toHaveProperty('operacion_id');
-    expect(resultado.documento_wms).toBe('CO-TEST-DEDUP-002');
+    expect(resultado.documento_wms).toBe(DOC_WMS_TEST_2);
 
-    // Limpiar la operación extra creada en este test
-    await Operacion.destroy({ where: { documento_wms: 'CO-TEST-DEDUP-002' }, force: true });
+    // La limpieza se hace en afterEach
   });
 });
 
