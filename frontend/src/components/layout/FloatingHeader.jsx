@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect, useRef, useId, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import {
   ChevronDown,
@@ -48,12 +48,15 @@ import {
   CarFront,
   Download,
   Upload,
+  HelpCircle,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import { useSnackbar } from 'notistack';
 import { useNotificaciones } from '../../context/NotificacionesContext';
 import { formatDateShort as formatDateSafe } from '../../utils/formatDate';
+import { RUTAS_CON_TOUR } from '../../utils/tutorialConfig';
+import useTutorial from '../../hooks/useTutorial';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -1173,6 +1176,21 @@ const FloatingHeader = () => {
   const { isVisible, isAtTop } = useScrollBehavior();
   const { enqueueSnackbar } = useSnackbar();
 
+  const { pathname } = useLocation();
+  const { iniciarTour, haTomadoTour } = useTutorial();
+  const rol = user?.rol;
+
+  const moduloActivo = useMemo(() => {
+    if (RUTAS_CON_TOUR[pathname] === 'dashboard') {
+      return rol === 'conductor'
+        ? 'dashboard_conductor'
+        : rol === 'financiera'
+          ? 'dashboard_financiera'
+          : 'dashboard_operaciones';
+    }
+    return RUTAS_CON_TOUR[pathname] ?? null;
+  }, [pathname, rol]);
+
   // Menú filtrado por rol y permisos de portal
   const menuConfig = useMemo(() => getMenuForRole(user?.rol, hasPermission), [user?.rol, hasPermission]);
 
@@ -1417,6 +1435,23 @@ const FloatingHeader = () => {
               >
                 <Search className="w-5 h-5" aria-hidden="true" />
               </button>
+
+              {/* Tutorial del módulo */}
+              {moduloActivo && (
+                <div className="relative">
+                  <button
+                    onClick={() => iniciarTour(moduloActivo)}
+                    title="Tutorial del módulo (ayuda)"
+                    aria-label="Abrir tutorial del módulo"
+                    className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-card rounded-lg transition-colors"
+                  >
+                    <HelpCircle className="w-5 h-5" aria-hidden="true" />
+                  </button>
+                  {!haTomadoTour(moduloActivo) && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full pointer-events-none" />
+                  )}
+                </div>
+              )}
 
               <div className="flex items-center gap-1 sm:gap-2 border-l border-gray-200 dark:border-slate-700 pl-2 sm:pl-4">
                 <button
