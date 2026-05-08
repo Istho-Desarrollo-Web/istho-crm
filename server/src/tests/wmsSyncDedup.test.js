@@ -147,8 +147,10 @@ describe('wmsSyncService.syncSalida — deduplicación', () => {
   });
 
   test('lanza error en el segundo llamado con el mismo numero_picking', async () => {
-    // Primer llamado — debe pasar
-    await syncSalida(payloadSalida());
+    // Primer llamado — debe crear
+    const resultado = await syncSalida(payloadSalida());
+    expect(resultado).toBeDefined();
+    expect(resultado.operacion_id).toBeDefined();
 
     // Segundo llamado con el mismo picking — debe lanzar error
     await expect(syncSalida(payloadSalida())).rejects.toThrow(
