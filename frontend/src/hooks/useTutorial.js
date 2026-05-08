@@ -12,6 +12,13 @@ export default function useTutorial() {
     const config = TUTORIALES[modulo];
     if (!config) return;
 
+    const pasosValidos = config.pasos.filter((paso) => {
+      if (!paso.element) return true;
+      return document.querySelector(paso.element) !== null;
+    });
+
+    if (pasosValidos.length === 0) return;
+
     const driverObj = driver({
       animate: true,
       overlayColor: 'rgba(15, 16, 35, 0.85)',
@@ -22,7 +29,7 @@ export default function useTutorial() {
       doneBtnText: 'Entendido ✓',
       stagePadding: 8,
       stageRadius: 8,
-      steps: config.pasos,
+      steps: pasosValidos,
       onDestroyStarted: () => {
         localStorage.setItem(`${STORAGE_PREFIX}${modulo}`, 'true');
         driverObj.destroy();
