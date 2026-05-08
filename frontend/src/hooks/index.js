@@ -32,6 +32,9 @@ export { default as useDashboard, useDashboardAlertas, useDashboardKpis } from '
 // Notificaciones
 export { default as useNotification } from './useNotification.js';
 
+// Tutorial
+export { default as useTutorial } from './useTutorial';
+
 // ════════════════════════════════════════════════════════════════════════════
 // RE-EXPORTS DE AUTENTICACIÓN
 // (Para imports centralizados desde @/hooks)
