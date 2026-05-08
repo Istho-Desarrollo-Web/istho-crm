@@ -107,7 +107,12 @@ describe('mapearOrden — type=1 (entrada CO)', () => {
 // ─── Suite 2: type=2 (salida PK) ──────────────────────────────────────────────
 
 describe('mapearOrden — type=2 (salida PK)', () => {
-  const ordenSalida = { ...ordenBase, type: 2 };
+  const ordenSalida = {
+    ...ordenBase,
+    customer: { ...ordenBase.customer },
+    warehouse: { ...ordenBase.warehouse },
+    type: 2,
+  };
 
   test('1. retorna tipo="salida" con payload correcto (tipo_orden="PK", numero_picking)', async () => {
     const result = await mapearOrden(ordenSalida, itemsConPallets);
@@ -183,6 +188,6 @@ describe('mapearOrden — casos de error', () => {
     const ordenTipoDesconocido = { ...ordenBase, type: 3 };
 
     await expect(mapearOrden(ordenTipoDesconocido, itemsConPallets))
-      .rejects.toThrow(/tipo desconocido/);
+      .rejects.toThrow(/tipo desconocido.*3/);
   });
 });
