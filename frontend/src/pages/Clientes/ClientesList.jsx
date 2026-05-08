@@ -518,15 +518,17 @@ const ClientesList = () => {
             />
 
             <ProtectedAction module="clientes" action="exportar">
-              <Button
-                variant="outline"
-                icon={Download}
-                size="md"
-                onClick={handleExport}
-                title="Exportar"
-              >
-                <span className="hidden sm:inline">Exportar</span>
-              </Button>
+              <div id="tour-clientes-exportar">
+                <Button
+                  variant="outline"
+                  icon={Download}
+                  size="md"
+                  onClick={handleExport}
+                  title="Exportar"
+                >
+                  <span className="hidden sm:inline">Exportar</span>
+                </Button>
+              </div>
             </ProtectedAction>
 
             <ProtectedAction module="clientes" action="importar">
@@ -555,7 +557,7 @@ const ClientesList = () => {
         )}
 
         {/* SEARCH & FILTERS BAR */}
-        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div id="tour-clientes-filtros" className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <SearchBar
@@ -580,10 +582,12 @@ const ClientesList = () => {
             </Button>
 
             <ProtectedAction module="clientes" action="crear">
-              <Button variant="primary" icon={Plus} onClick={handleCreate}>
-                <span className="hidden sm:inline">Nuevo Cliente</span>
-                <span className="sm:hidden">Nuevo</span>
-              </Button>
+              <div id="tour-clientes-nuevo">
+                <Button variant="primary" icon={Plus} onClick={handleCreate}>
+                  <span className="hidden sm:inline">Nuevo Cliente</span>
+                  <span className="sm:hidden">Nuevo</span>
+                </Button>
+              </div>
             </ProtectedAction>
           </div>
 
@@ -685,7 +689,7 @@ const ClientesList = () => {
             )}
           </div>
         ) : viewMode === 'table' ? (
-          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+          <div id="tour-clientes-tabla" className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>

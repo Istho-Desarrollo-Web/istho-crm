@@ -664,7 +664,7 @@ const InventarioList = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* KPIs */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        <div id="tour-inventario-kpis" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <KpiCard
             title="Total Productos"
             value={displayKpis.total}
@@ -719,7 +719,7 @@ const InventarioList = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* SEARCH & FILTERS */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div id="tour-inventario-buscar" className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <SearchBar
@@ -871,7 +871,7 @@ const InventarioList = () => {
             )}
           </div>
         ) : viewMode === 'table' ? (
-          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+          <div id="tour-inventario-tabla" className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
