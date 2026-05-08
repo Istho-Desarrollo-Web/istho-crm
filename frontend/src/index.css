@@ -286,3 +286,55 @@ input[type='date'] {
 .dark {
   --toggle-off: #374151;
 }
+
+/* ── Driver.js Tour ───────────────────────────────────────────── */
+.driver-popover {
+  background: #1A1B3A !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+}
+
+.driver-popover-title {
+  color: #f1f5f9 !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+}
+
+.driver-popover-description {
+  color: #94a3b8 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+}
+
+.driver-popover-next-btn {
+  background: #E74C3C !important;
+  border: none !important;
+  border-radius: 8px !important;
+  color: white !important;
+}
+
+.driver-popover-next-btn:hover {
+  background: #C0392B !important;
+}
+
+.driver-popover-prev-btn {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 8px !important;
+  color: #94a3b8 !important;
+}
+
+.driver-popover-progress-text {
+  color: #64748b !important;
+  font-size: 0.75rem !important;
+}
+
+.driver-popover-close-btn {
+  color: #94a3b8 !important;
+}
+
+.driver-popover-close-btn:hover {
+  color: #f1f5f9 !important;
+}
