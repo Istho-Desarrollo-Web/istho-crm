@@ -495,7 +495,7 @@ const Dashboard = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* KPI CARDS */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div id="tour-dash-kpis" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {KPI_CONFIG.map((kpiConfig) => {
             let value = kpis[kpiConfig.kpiKey] ?? kpiConfig.fallback ?? '-';
             if (kpiConfig.suffix && value !== '-') {
@@ -563,7 +563,7 @@ const Dashboard = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* CHARTS ROW */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div id="tour-dash-grafico" className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <BarChart
             title="Operaciones por Estado"
             subtitle="Distribución actual de operaciones"
@@ -702,7 +702,7 @@ const Dashboard = () => {
           </div>
 
           {/* Alertas Widget */}
-          <div className="lg:col-span-1">
+          <div id="tour-dash-alertas" className="lg:col-span-1">
             <AlertWidget
               title="Alertas de Inventario"
               alerts={formattedAlertas}

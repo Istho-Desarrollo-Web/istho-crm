@@ -460,7 +460,7 @@ const DashboardFinanciera = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* KPI CARDS */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div id="tour-dash-resumen" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {KPI_CONFIG.map((kpi) => {
             const rawValue = kpiValues[kpi.key] ?? kpi.fallback;
             const value = kpi.isCurrency ? formatCOP(rawValue) : rawValue;
@@ -516,7 +516,7 @@ const DashboardFinanciera = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* CONTENIDO PRINCIPAL */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+        <div id="tour-dash-pendientes" className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
           {/* ─── GASTOS PENDIENTES DE APROBACION (2/3) ─── */}
           <div className="xl:col-span-2 bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-700">

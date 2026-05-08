@@ -340,6 +340,7 @@ const DashboardConductor = () => {
           2. CAJA MENOR ACTIVA
           ═══════════════════════════════════════════════════════════════════ */}
         <div
+          id="tour-dash-caja"
           className={`rounded-2xl p-5 shadow-sm border transition-colors ${
             cajaActiva
               ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 cursor-pointer active:bg-gray-50 dark:active:bg-gray-750'
@@ -404,6 +405,7 @@ const DashboardConductor = () => {
 
             {/* Registrar Gasto */}
             <button
+              id="tour-dash-registrar"
               onClick={() => navigate('/viajes/movimientos?nuevo=1')}
               className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30 active:scale-95 transition-all min-h-[100px]"
             >
