@@ -11,7 +11,7 @@
 
 ## 1. Contexto del Negocio
 
-ISTHO S.A.S. es una empresa de logística, transporte y almacenamiento que opera un centro bodega en Girardota (Antioquia). Sus servicios incluyen recepción de mercancía, almacenamiento, picking, despacho y transporte de carga. Para gestionar estas operaciones se usa el sistema WMS externo **CenthriX**, que registra y controla los movimientos físicos en bodega.
+ISTHO S.A.S. es una empresa de logística, transporte y almacenamiento que opera un centro bodega en Girardota (Antioquia). Sus servicios incluyen recepción de mercancía, almacenamiento, picking y transporte de carga. Para gestionar estas operaciones se usa el sistema WMS externo **CenthriX**, que registra y controla los movimientos físicos en bodega.
 
 **Situación anterior:** La empresa contaba con un CRM donde ya se manejaba la información operativa, financiera y de clientes. Sin embargo, el sistema presentaba las siguientes deficiencias que motivaron el proceso de mejora:
 
@@ -64,7 +64,7 @@ El levantamiento identificó las brechas del sistema existente y las funcionalid
 | REQ-AUD-04 | Adjuntar evidencias fotográficas y PDF a cada auditoría | 🔧 Mejora | Media |
 | REQ-AUD-05 | Notificación por email al cerrar una auditoría | 🔧 Mejora | Alta |
 | REQ-AUD-06 | Registro de averías con evidencia fotográfica y reporte | ✨ Nueva | Media |
-| REQ-AUD-07 | Exportación de listados de auditoría a CSV y Excel | ✨ Nueva | Media |
+| REQ-AUD-07 | Exportación de listados de auditoría a Excel | ✨ Nueva | Media |
 | REQ-AUD-08 | Búsqueda por número de documento WMS en los 3 módulos | ✨ Nueva | Alta |
 
 ### 2.4 Requerimientos de Clientes y Contratos
@@ -234,7 +234,7 @@ El levantamiento identificó las brechas del sistema existente y las funcionalid
 - **Salidas** (azul): datos de despacho, picking, sucursal y ciudad destino
 - **Kardex** (púrpura): flujo simplificado, logística opcional
 - Cada auditoría tiene stepper de estado, KPIs de avance y cierre con selección de plantilla de email
-- Exportación a CSV y Excel desde cada listado
+- Exportación a Excel desde cada listado
 - Búsqueda por número de documento WMS
 - Paginación de 20 registros por página
 
