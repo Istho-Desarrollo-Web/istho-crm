@@ -81,17 +81,22 @@ const ReporteCajasMenores = () => {
               </div>
             </div>
           </div>
-          <AccionesDropdown
-            acciones={[
-              { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
-              { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel') },
-              { label: 'PDF', icon: FileText, onClick: () => handleExport('pdf') },
-              { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true) },
-            ]}
-          />
+          <div id="tour-reportes-cajas-menores-exportar">
+            <AccionesDropdown
+              acciones={[
+                { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+                { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel') },
+                { label: 'PDF', icon: FileText, onClick: () => handleExport('pdf') },
+                { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true) },
+              ]}
+            />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* Filtros */}
+        <div id="tour-reportes-cajas-menores-filtros" />
+
+        <div id="tour-reportes-cajas-menores-kpis" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <KpiCard
             title="Total Cajas"
             value={kpis.total ?? '-'}

@@ -192,30 +192,32 @@ const ReporteClientes = () => {
             </div>
           </div>
 
-          <AccionesDropdown
-            acciones={[
-              { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
-              {
-                label: 'Enviar',
-                icon: Mail,
-                onClick: () => setEmailModal(true),
-                hidden: !canDownload,
-              },
-              {
-                label: 'Excel',
-                icon: FileSpreadsheet,
-                onClick: () => handleExport('excel'),
-                hidden: !canDownload,
-              },
-              {
-                label: 'PDF',
-                icon: Download,
-                onClick: () => handleExport('pdf'),
-                variant: 'primary',
-                hidden: !canDownload,
-              },
-            ]}
-          />
+          <div id="tour-reportes-clientes-exportar">
+            <AccionesDropdown
+              acciones={[
+                { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+                {
+                  label: 'Enviar',
+                  icon: Mail,
+                  onClick: () => setEmailModal(true),
+                  hidden: !canDownload,
+                },
+                {
+                  label: 'Excel',
+                  icon: FileSpreadsheet,
+                  onClick: () => handleExport('excel'),
+                  hidden: !canDownload,
+                },
+                {
+                  label: 'PDF',
+                  icon: Download,
+                  onClick: () => handleExport('pdf'),
+                  variant: 'primary',
+                  hidden: !canDownload,
+                },
+              ]}
+            />
+          </div>
         </div>
 
         {error && (
@@ -225,15 +227,17 @@ const ReporteClientes = () => {
         )}
 
         {/* Filtros */}
-        <ReportFilters
-          filters={filters}
-          onChange={handleFiltersChange}
-          loading={loading}
-          showCliente={false}
-        />
+        <div id="tour-reportes-clientes-filtros">
+          <ReportFilters
+            filters={filters}
+            onChange={handleFiltersChange}
+            loading={loading}
+            showCliente={false}
+          />
+        </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div id="tour-reportes-clientes-kpis" className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <KpiCard
             title="Total Clientes"
             value={cl.total || 0}

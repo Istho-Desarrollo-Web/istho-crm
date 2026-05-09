@@ -137,34 +137,36 @@ const ReporteInventarioUbicacion = () => {
               </div>
             </div>
           </div>
-          <AccionesDropdown
-            acciones={[
-              { label: 'Actualizar', icon: RefreshCw, onClick: fetchData, disabled: !clienteId },
-              {
-                label: 'Excel',
-                icon: FileSpreadsheet,
-                onClick: () => handleExport('excel'),
-                disabled: !clienteId,
-              },
-              {
-                label: 'PDF',
-                icon: FileText,
-                onClick: () => handleExport('pdf'),
-                disabled: !clienteId,
-              },
-              {
-                label: 'Enviar',
-                icon: Mail,
-                onClick: () => setEmailModal(true),
-                disabled: !clienteId,
-              },
-            ]}
-          />
+          <div id="tour-reportes-inventario-ubicacion-exportar">
+            <AccionesDropdown
+              acciones={[
+                { label: 'Actualizar', icon: RefreshCw, onClick: fetchData, disabled: !clienteId },
+                {
+                  label: 'Excel',
+                  icon: FileSpreadsheet,
+                  onClick: () => handleExport('excel'),
+                  disabled: !clienteId,
+                },
+                {
+                  label: 'PDF',
+                  icon: FileText,
+                  onClick: () => handleExport('pdf'),
+                  disabled: !clienteId,
+                },
+                {
+                  label: 'Enviar',
+                  icon: Mail,
+                  onClick: () => setEmailModal(true),
+                  disabled: !clienteId,
+                },
+              ]}
+            />
+          </div>
         </div>
 
         {/* Filtro de cliente */}
         {!esPortal && (
-          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+          <div id="tour-reportes-inventario-ubicacion-filtros" className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
             <div className="flex items-center gap-2 mb-3">
               <Filter className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -219,7 +221,7 @@ const ReporteInventarioUbicacion = () => {
         {/* KPIs */}
         {!loading && clienteId && data && (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div id="tour-reportes-inventario-ubicacion-kpis" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <KpiCard
                 title="Total Cajas"
                 value={kpis.totalCajas ?? '-'}

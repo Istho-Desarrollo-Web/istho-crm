@@ -169,30 +169,32 @@ const ReporteAverias = () => {
             </div>
           </div>
 
-          <AccionesDropdown
-            acciones={[
-              { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
-              {
-                label: 'Enviar',
-                icon: Mail,
-                onClick: () => setEmailModal(true),
-                hidden: !canDownload,
-              },
-              {
-                label: 'Excel',
-                icon: FileSpreadsheet,
-                onClick: () => handleExport('excel'),
-                hidden: !canDownload,
-              },
-              {
-                label: 'PDF',
-                icon: Download,
-                onClick: () => handleExport('pdf'),
-                hidden: !canDownload,
-                variant: 'primary',
-              },
-            ]}
-          />
+          <div id="tour-reportes-averias-exportar">
+            <AccionesDropdown
+              acciones={[
+                { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+                {
+                  label: 'Enviar',
+                  icon: Mail,
+                  onClick: () => setEmailModal(true),
+                  hidden: !canDownload,
+                },
+                {
+                  label: 'Excel',
+                  icon: FileSpreadsheet,
+                  onClick: () => handleExport('excel'),
+                  hidden: !canDownload,
+                },
+                {
+                  label: 'PDF',
+                  icon: Download,
+                  onClick: () => handleExport('pdf'),
+                  hidden: !canDownload,
+                  variant: 'primary',
+                },
+              ]}
+            />
+          </div>
         </div>
 
         {error && (
@@ -202,10 +204,12 @@ const ReporteAverias = () => {
         )}
 
         {/* Filtros */}
-        <ReportFilters filters={filters} onChange={handleFiltersChange} loading={loading} />
+        <div id="tour-reportes-averias-filtros">
+          <ReportFilters filters={filters} onChange={handleFiltersChange} loading={loading} />
+        </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div id="tour-reportes-averias-kpis" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <KpiCard
             title="Total Averías"
             value={kpis?.totalAverias || 0}

@@ -273,30 +273,32 @@ const ReporteInventario = () => {
             </div>
           </div>
 
-          <AccionesDropdown
-            acciones={[
-              { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
-              {
-                label: 'Enviar',
-                icon: Mail,
-                onClick: () => setEmailModal(true),
-                hidden: !canDownload,
-              },
-              {
-                label: 'Excel',
-                icon: FileSpreadsheet,
-                onClick: () => handleExport('excel'),
-                hidden: !canDownload,
-              },
-              {
-                label: 'PDF',
-                icon: Download,
-                onClick: () => handleExport('pdf'),
-                variant: 'primary',
-                hidden: !canDownload,
-              },
-            ]}
-          />
+          <div id="tour-reportes-inventario-exportar">
+            <AccionesDropdown
+              acciones={[
+                { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+                {
+                  label: 'Enviar',
+                  icon: Mail,
+                  onClick: () => setEmailModal(true),
+                  hidden: !canDownload,
+                },
+                {
+                  label: 'Excel',
+                  icon: FileSpreadsheet,
+                  onClick: () => handleExport('excel'),
+                  hidden: !canDownload,
+                },
+                {
+                  label: 'PDF',
+                  icon: Download,
+                  onClick: () => handleExport('pdf'),
+                  variant: 'primary',
+                  hidden: !canDownload,
+                },
+              ]}
+            />
+          </div>
         </div>
 
         {error && (
@@ -306,10 +308,12 @@ const ReporteInventario = () => {
         )}
 
         {/* Filtros */}
-        <ReportFilters filters={filters} onChange={handleFiltersChange} loading={loading} />
+        <div id="tour-reportes-inventario-filtros">
+          <ReportFilters filters={filters} onChange={handleFiltersChange} loading={loading} />
+        </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div id="tour-reportes-inventario-kpis" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <KpiCard
             title="Total Productos"
             value={inv.totalItems || 0}

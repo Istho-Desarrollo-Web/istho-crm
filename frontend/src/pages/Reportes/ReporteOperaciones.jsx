@@ -180,30 +180,32 @@ const ReporteDespachos = () => {
             </div>
           </div>
 
-          <AccionesDropdown
-            acciones={[
-              { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
-              {
-                label: 'Enviar',
-                icon: Mail,
-                onClick: () => setEmailModal(true),
-                hidden: !canDownload,
-              },
-              {
-                label: 'Excel',
-                icon: FileSpreadsheet,
-                onClick: () => handleExport('excel'),
-                hidden: !canDownload,
-              },
-              {
-                label: 'PDF',
-                icon: Download,
-                onClick: () => handleExport('pdf'),
-                variant: 'primary',
-                hidden: !canDownload,
-              },
-            ]}
-          />
+          <div id="tour-reportes-operaciones-exportar">
+            <AccionesDropdown
+              acciones={[
+                { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+                {
+                  label: 'Enviar',
+                  icon: Mail,
+                  onClick: () => setEmailModal(true),
+                  hidden: !canDownload,
+                },
+                {
+                  label: 'Excel',
+                  icon: FileSpreadsheet,
+                  onClick: () => handleExport('excel'),
+                  hidden: !canDownload,
+                },
+                {
+                  label: 'PDF',
+                  icon: Download,
+                  onClick: () => handleExport('pdf'),
+                  variant: 'primary',
+                  hidden: !canDownload,
+                },
+              ]}
+            />
+          </div>
         </div>
 
         {error && (
@@ -213,10 +215,12 @@ const ReporteDespachos = () => {
         )}
 
         {/* Filtros */}
-        <ReportFilters filters={filters} onChange={handleFiltersChange} loading={loading} />
+        <div id="tour-reportes-operaciones-filtros">
+          <ReportFilters filters={filters} onChange={handleFiltersChange} loading={loading} />
+        </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div id="tour-reportes-operaciones-kpis" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <KpiCard
             title="Total Operaciones"
             value={operaciones.total || 0}
