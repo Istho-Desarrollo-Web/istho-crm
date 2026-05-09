@@ -1176,7 +1176,7 @@ const FloatingHeader = () => {
   const { isVisible, isAtTop } = useScrollBehavior();
   const { enqueueSnackbar } = useSnackbar();
 
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { iniciarTour, haTomadoTour } = useTutorial();
   const rol = user?.rol;
 
@@ -1188,12 +1188,16 @@ const FloatingHeader = () => {
           ? 'dashboard_financiera'
           : 'dashboard_operaciones';
     }
+    if (pathname === '/administracion') {
+      const tab = new URLSearchParams(search).get('tab') || 'usuarios';
+      return `administracion_${tab}`;
+    }
     if (RUTAS_CON_TOUR[pathname]) return RUTAS_CON_TOUR[pathname];
     if (/^\/operaciones\/(entradas|salidas|kardex)\/\d+/.test(pathname)) return 'operacion_detalle';
     if (/^\/inventario\/productos\/\d+/.test(pathname)) return 'producto_detalle';
     if (/^\/clientes\/\d+/.test(pathname)) return 'cliente_detalle';
     return null;
-  }, [pathname, rol]);
+  }, [pathname, search, rol]);
 
   // Menú filtrado por rol y permisos de portal
   const menuConfig = useMemo(() => getMenuForRole(user?.rol, hasPermission), [user?.rol, hasPermission]);

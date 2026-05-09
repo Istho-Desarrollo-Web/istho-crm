@@ -7,7 +7,7 @@
  * @version 1.1.0
  */
 
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Users, Shield, Settings, Wifi, ShieldAlert } from 'lucide-react';
 import UsuariosList from './UsuariosList';
 import RolesList from './RolesList';
@@ -23,7 +23,8 @@ const TABS = [
 ];
 
 const Administracion = () => {
-  const [activeTab, setActiveTab] = useState('usuarios');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'usuarios';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
@@ -52,7 +53,7 @@ const Administracion = () => {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => setSearchParams({ tab: tab.id })}
                   className={`
                     flex items-center gap-2 px-3 sm:px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0
                     ${

@@ -543,13 +543,6 @@ export const TUTORIALES = {
     modulo: 'reportes_cajas_menores',
     pasos: [
       {
-        element: '#tour-reportes-cajas-menores-filtros',
-        popover: {
-          title: 'Filtros',
-          description: 'Filtra movimientos de caja menor por fecha y responsable.',
-        },
-      },
-      {
         element: '#tour-reportes-cajas-menores-kpis',
         popover: {
           title: 'Indicadores',
@@ -640,8 +633,8 @@ export const TUTORIALES = {
     ],
   },
 
-  administracion: {
-    modulo: 'administracion',
+  administracion_usuarios: {
+    modulo: 'administracion_usuarios',
     pasos: [
       {
         element: '#tour-admin-usuarios-tabla',
@@ -657,6 +650,12 @@ export const TUTORIALES = {
           description: 'Crea un usuario nuevo asignándole rol, contraseña temporal y permisos.',
         },
       },
+    ],
+  },
+
+  administracion_roles: {
+    modulo: 'administracion_roles',
+    pasos: [
       {
         element: '#tour-admin-roles-tabla',
         popover: {
@@ -671,6 +670,12 @@ export const TUTORIALES = {
           description: 'Crea un rol personalizado con nombre, nivel jerárquico y permisos granulares.',
         },
       },
+    ],
+  },
+
+  administracion_sesiones: {
+    modulo: 'administracion_sesiones',
+    pasos: [
       {
         element: '#tour-admin-sesiones-tabla',
         popover: {
@@ -678,6 +683,12 @@ export const TUTORIALES = {
           description: 'Usuarios conectados en este momento. Puedes cerrar sesiones forzosamente.',
         },
       },
+    ],
+  },
+
+  administracion_seguridad: {
+    modulo: 'administracion_seguridad',
+    pasos: [
       {
         element: '#tour-admin-seguridad-panel',
         popover: {
@@ -710,5 +721,4 @@ export const RUTAS_CON_TOUR = {
   '/reportes/gastos': 'reportes_gastos',
   '/reportes/averias': 'reportes_averias',
   '/reportes/programados': 'reportes_programados',
-  '/administracion': 'administracion',
 };
