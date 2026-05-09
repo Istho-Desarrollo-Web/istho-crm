@@ -383,6 +383,310 @@ export const TUTORIALES = {
       },
     ],
   },
+
+  reportes: {
+    modulo: 'reportes',
+    pasos: [
+      {
+        element: '#tour-reportes-header',
+        popover: {
+          title: 'Reportes',
+          description: 'Acceso centralizado a todos los informes del sistema.',
+        },
+      },
+      {
+        element: '#tour-reportes-cards',
+        popover: {
+          title: 'Tipos de reporte',
+          description: 'Cada card abre el reporte con sus filtros y opciones de exportación.',
+        },
+      },
+    ],
+  },
+
+  reportes_operaciones: {
+    modulo: 'reportes_operaciones',
+    pasos: [
+      {
+        element: '#tour-reportes-operaciones-filtros',
+        popover: {
+          title: 'Filtros',
+          description: 'Filtra por rango de fechas y cliente para acotar el análisis.',
+        },
+      },
+      {
+        element: '#tour-reportes-operaciones-kpis',
+        popover: {
+          title: 'Indicadores',
+          description: 'Indicadores clave del período: total de operaciones, entradas, salidas y kardex.',
+        },
+      },
+      {
+        element: '#tour-reportes-operaciones-exportar',
+        popover: {
+          title: 'Exportar',
+          description: 'Descarga el reporte en Excel o PDF, o envíalo directamente por correo.',
+        },
+      },
+    ],
+  },
+
+  reportes_inventario: {
+    modulo: 'reportes_inventario',
+    pasos: [
+      {
+        element: '#tour-reportes-inventario-filtros',
+        popover: {
+          title: 'Filtros',
+          description: 'Filtra por cliente y fechas para ver el estado del inventario.',
+        },
+      },
+      {
+        element: '#tour-reportes-inventario-kpis',
+        popover: {
+          title: 'Indicadores',
+          description: 'Indicadores de stock: productos activos, valor total y alertas de bajo inventario.',
+        },
+      },
+      {
+        element: '#tour-reportes-inventario-exportar',
+        popover: {
+          title: 'Exportar',
+          description: 'Exporta el inventario completo en Excel o PDF.',
+        },
+      },
+    ],
+  },
+
+  reportes_inventario_ubicacion: {
+    modulo: 'reportes_inventario_ubicacion',
+    pasos: [
+      {
+        element: '#tour-reportes-inventario-ubicacion-filtros',
+        popover: {
+          title: 'Filtros',
+          description: 'Filtra por cliente o bodega para ver la distribución por ubicación.',
+        },
+      },
+      {
+        element: '#tour-reportes-inventario-ubicacion-kpis',
+        popover: {
+          title: 'Resumen',
+          description: 'Resumen de cajas y posiciones ocupadas en bodega.',
+        },
+      },
+      {
+        element: '#tour-reportes-inventario-ubicacion-exportar',
+        popover: {
+          title: 'Exportar',
+          description: 'Exporta el detalle de ubicaciones en Excel o PDF.',
+        },
+      },
+    ],
+  },
+
+  reportes_clientes: {
+    modulo: 'reportes_clientes',
+    pasos: [
+      {
+        element: '#tour-reportes-clientes-filtros',
+        popover: {
+          title: 'Filtros',
+          description: 'Filtra clientes por estado o rango de fechas de registro.',
+        },
+      },
+      {
+        element: '#tour-reportes-clientes-kpis',
+        popover: {
+          title: 'Indicadores',
+          description: 'Total de clientes activos, inactivos y nuevos en el período.',
+        },
+      },
+      {
+        element: '#tour-reportes-clientes-exportar',
+        popover: {
+          title: 'Exportar',
+          description: 'Exporta el listado de clientes con toda su información de contacto.',
+        },
+      },
+    ],
+  },
+
+  reportes_viajes: {
+    modulo: 'reportes_viajes',
+    pasos: [
+      {
+        element: '#tour-reportes-viajes-filtros',
+        popover: {
+          title: 'Filtros',
+          description: 'Filtra viajes por conductor, vehículo o rango de fechas.',
+        },
+      },
+      {
+        element: '#tour-reportes-viajes-kpis',
+        popover: {
+          title: 'Indicadores',
+          description: 'Indicadores de viajes: completados, en curso y cancelados.',
+        },
+      },
+      {
+        element: '#tour-reportes-viajes-exportar',
+        popover: {
+          title: 'Exportar',
+          description: 'Descarga el reporte de viajes en Excel o PDF.',
+        },
+      },
+    ],
+  },
+
+  reportes_cajas_menores: {
+    modulo: 'reportes_cajas_menores',
+    pasos: [
+      {
+        element: '#tour-reportes-cajas-menores-filtros',
+        popover: {
+          title: 'Filtros',
+          description: 'Filtra movimientos de caja menor por fecha y responsable.',
+        },
+      },
+      {
+        element: '#tour-reportes-cajas-menores-kpis',
+        popover: {
+          title: 'Indicadores',
+          description: 'Saldo actual, total de ingresos y egresos del período.',
+        },
+      },
+      {
+        element: '#tour-reportes-cajas-menores-exportar',
+        popover: {
+          title: 'Exportar',
+          description: 'Exporta el movimiento de caja menor en Excel o PDF.',
+        },
+      },
+    ],
+  },
+
+  reportes_gastos: {
+    modulo: 'reportes_gastos',
+    pasos: [
+      {
+        element: '#tour-reportes-gastos-filtros',
+        popover: {
+          title: 'Filtros',
+          description: 'Filtra gastos por fecha, categoría o viaje asociado.',
+        },
+      },
+      {
+        element: '#tour-reportes-gastos-kpis',
+        popover: {
+          title: 'Indicadores',
+          description: 'Total de gastos del período agrupados por categoría.',
+        },
+      },
+      {
+        element: '#tour-reportes-gastos-exportar',
+        popover: {
+          title: 'Exportar',
+          description: 'Descarga el reporte de gastos en Excel o PDF.',
+        },
+      },
+    ],
+  },
+
+  reportes_averias: {
+    modulo: 'reportes_averias',
+    pasos: [
+      {
+        element: '#tour-reportes-averias-filtros',
+        popover: {
+          title: 'Filtros',
+          description: 'Filtra averías por operación, cliente o rango de fechas.',
+        },
+      },
+      {
+        element: '#tour-reportes-averias-kpis',
+        popover: {
+          title: 'Indicadores',
+          description: 'Total de averías registradas y su impacto económico.',
+        },
+      },
+      {
+        element: '#tour-reportes-averias-exportar',
+        popover: {
+          title: 'Exportar',
+          description: 'Exporta el registro de averías en Excel o PDF.',
+        },
+      },
+    ],
+  },
+
+  reportes_programados: {
+    modulo: 'reportes_programados',
+    pasos: [
+      {
+        element: '#tour-reportes-programados-tabla',
+        popover: {
+          title: 'Reportes programados',
+          description: 'Tus reportes automáticos configurados con su frecuencia y próximo envío.',
+        },
+      },
+      {
+        element: '#tour-reportes-programados-nuevo',
+        popover: {
+          title: 'Nuevo reporte programado',
+          description: 'Crea un nuevo reporte automático: elige tipo, frecuencia, formato y destinatarios.',
+        },
+      },
+    ],
+  },
+
+  administracion: {
+    modulo: 'administracion',
+    pasos: [
+      {
+        element: '#tour-admin-usuarios-tabla',
+        popover: {
+          title: 'Usuarios del sistema',
+          description: 'Lista de usuarios con su rol, estado y último acceso.',
+        },
+      },
+      {
+        element: '#tour-admin-usuarios-nuevo',
+        popover: {
+          title: 'Nuevo usuario',
+          description: 'Crea un usuario nuevo asignándole rol, contraseña temporal y permisos.',
+        },
+      },
+      {
+        element: '#tour-admin-roles-tabla',
+        popover: {
+          title: 'Matriz de permisos',
+          description: 'Roles disponibles con sus permisos configurados por módulo.',
+        },
+      },
+      {
+        element: '#tour-admin-roles-nuevo',
+        popover: {
+          title: 'Nuevo rol',
+          description: 'Crea un rol personalizado con nombre, nivel jerárquico y permisos granulares.',
+        },
+      },
+      {
+        element: '#tour-admin-sesiones-tabla',
+        popover: {
+          title: 'Sesiones activas',
+          description: 'Usuarios conectados en este momento. Puedes cerrar sesiones forzosamente.',
+        },
+      },
+      {
+        element: '#tour-admin-seguridad-panel',
+        popover: {
+          title: 'Dashboard de seguridad',
+          description: 'Métricas de seguridad: intentos fallidos, usuarios bloqueados y actividad reciente.',
+        },
+      },
+    ],
+  },
 };
 
 export const RUTAS_CON_TOUR = {
@@ -396,4 +700,15 @@ export const RUTAS_CON_TOUR = {
   '/viajes/vehiculos': 'vehiculos',
   '/viajes/cajas-menores': 'cajas_menores',
   '/viajes/movimientos': 'movimientos',
+  '/reportes': 'reportes',
+  '/reportes/operaciones': 'reportes_operaciones',
+  '/reportes/inventario': 'reportes_inventario',
+  '/reportes/inventario-ubicacion': 'reportes_inventario_ubicacion',
+  '/reportes/clientes': 'reportes_clientes',
+  '/reportes/viajes': 'reportes_viajes',
+  '/reportes/cajas-menores': 'reportes_cajas_menores',
+  '/reportes/gastos': 'reportes_gastos',
+  '/reportes/averias': 'reportes_averias',
+  '/reportes/programados': 'reportes_programados',
+  '/administracion': 'administracion',
 };
