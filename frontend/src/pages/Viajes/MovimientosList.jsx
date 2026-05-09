@@ -817,15 +817,17 @@ const MovimientosList = () => {
             </div>
 
             {/* Botón crear */}
-            <ProtectedAction module="movimientos" action="crear">
-              <button
-                onClick={handleCreate}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#E74C3C] hover:bg-[#C0392B] rounded-xl shadow-sm transition-colors whitespace-nowrap"
-              >
-                <Plus className="w-4 h-4" />
-                Nuevo Movimiento
-              </button>
-            </ProtectedAction>
+            <div id="tour-movimientos-nuevo">
+              <ProtectedAction module="movimientos" action="crear">
+                <button
+                  onClick={handleCreate}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#E74C3C] hover:bg-[#C0392B] rounded-xl shadow-sm transition-colors whitespace-nowrap"
+                >
+                  <Plus className="w-4 h-4" />
+                  Nuevo Movimiento
+                </button>
+              </ProtectedAction>
+            </div>
           </div>
         </div>
 
@@ -886,7 +888,7 @@ const MovimientosList = () => {
               )}
             </div>
           ) : viewMode === 'table' ? (
-            <div className="overflow-x-auto">
+            <div id="tour-movimientos-tabla" className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">

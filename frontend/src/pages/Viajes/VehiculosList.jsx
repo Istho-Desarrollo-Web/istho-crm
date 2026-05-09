@@ -581,15 +581,17 @@ const VehiculosList = () => {
             </div>
 
             {/* Nuevo Vehículo */}
-            <ProtectedAction module="vehiculos" action="crear">
-              <button
-                onClick={handleCreate}
-                className="flex items-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-xl transition-colors shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                Nuevo Vehículo
-              </button>
-            </ProtectedAction>
+            <div id="tour-vehiculos-nuevo">
+              <ProtectedAction module="vehiculos" action="crear">
+                <button
+                  onClick={handleCreate}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-xl transition-colors shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Nuevo Vehículo
+                </button>
+              </ProtectedAction>
+            </div>
           </div>
         </div>
 
@@ -650,7 +652,7 @@ const VehiculosList = () => {
               )}
             </div>
           ) : viewMode === 'table' ? (
-            <div className="overflow-x-auto">
+            <div id="tour-vehiculos-tabla" className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">

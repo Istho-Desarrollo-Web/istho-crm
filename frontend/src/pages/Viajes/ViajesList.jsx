@@ -486,6 +486,7 @@ const ViajesList = () => {
             {viajes.length > 0 && (
               <>
                 <button
+                  id="tour-viajes-exportar"
                   onClick={handleExportExcel}
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
                 >
@@ -533,7 +534,7 @@ const ViajesList = () => {
         )}
 
         {/* FILTERS BAR */}
-        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div id="tour-viajes-filtros" className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
@@ -589,15 +590,17 @@ const ViajesList = () => {
             </div>
 
             {/* Botón crear */}
-            <ProtectedAction module="viajes" action="crear">
-              <button
-                onClick={() => navigate('/viajes/viajes/nuevo')}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#E74C3C] hover:bg-[#C0392B] rounded-xl shadow-sm transition-colors whitespace-nowrap"
-              >
-                <Plus className="w-4 h-4" />
-                Nuevo Viaje
-              </button>
-            </ProtectedAction>
+            <div id="tour-viajes-nuevo">
+              <ProtectedAction module="viajes" action="crear">
+                <button
+                  onClick={() => navigate('/viajes/viajes/nuevo')}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#E74C3C] hover:bg-[#C0392B] rounded-xl shadow-sm transition-colors whitespace-nowrap"
+                >
+                  <Plus className="w-4 h-4" />
+                  Nuevo Viaje
+                </button>
+              </ProtectedAction>
+            </div>
           </div>
         </div>
 
@@ -646,7 +649,7 @@ const ViajesList = () => {
               </p>
             </div>
           ) : viewMode === 'table' ? (
-            <div className="overflow-x-auto">
+            <div id="tour-viajes-tabla" className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
