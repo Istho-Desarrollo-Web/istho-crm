@@ -187,6 +187,17 @@ admin(100) · supervisor(75) · financiera(60) · operador(50) · conductor(30) 
 | `vehiculos` | `/viajes/vehiculos` | `tour-vehiculos-tabla`, `tour-vehiculos-nuevo` |
 | `cajas_menores` | `/viajes/cajas-menores` | `tour-cajas-tabla`, `tour-cajas-nueva` |
 | `movimientos` | `/viajes/movimientos` | `tour-movimientos-tabla`, `tour-movimientos-nuevo` |
+| `reportes` | `/reportes` | `tour-reportes-header`, `tour-reportes-cards` |
+| `reportes_operaciones` | `/reportes/operaciones` | `tour-reportes-operaciones-filtros`, `-kpis`, `-exportar` |
+| `reportes_inventario` | `/reportes/inventario` | `tour-reportes-inventario-filtros`, `-kpis`, `-exportar` |
+| `reportes_inventario_ubicacion` | `/reportes/inventario-ubicacion` | `tour-reportes-inventario-ubicacion-filtros`, `-kpis`, `-exportar` |
+| `reportes_clientes` | `/reportes/clientes` | `tour-reportes-clientes-filtros`, `-kpis`, `-exportar` |
+| `reportes_viajes` | `/reportes/viajes` | `tour-reportes-viajes-filtros`, `-kpis`, `-exportar` |
+| `reportes_cajas_menores` | `/reportes/cajas-menores` | `tour-reportes-cajas-menores-kpis`, `-exportar` (sin filtros) |
+| `reportes_gastos` | `/reportes/gastos` | `tour-reportes-gastos-filtros`, `-kpis`, `-exportar` |
+| `reportes_averias` | `/reportes/averias` | `tour-reportes-averias-filtros`, `-kpis`, `-exportar` |
+| `reportes_programados` | `/reportes/programados` | `tour-reportes-programados-tabla`, `tour-reportes-programados-nuevo` |
+| `administracion` | `/administracion` | `tour-admin-usuarios-tabla`, `tour-admin-usuarios-nuevo`, `tour-admin-roles-tabla`, `tour-admin-roles-nuevo`, `tour-admin-sesiones-tabla`, `tour-admin-seguridad-panel` |
 
 ## Docs
 `docs/WMS_API_SPEC.md` · `docs/FLUJOS_NEGOCIO.md` · `docs/API.md` · `docs/manuales/` · `DEPLOY.md`
