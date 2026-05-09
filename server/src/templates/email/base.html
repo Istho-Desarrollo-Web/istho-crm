@@ -263,7 +263,7 @@ logo, colores corporativos y firma con imagen. Variables: asunto, contenido, log
                     <td class="content" style="padding: 35px 30px">{{{contenido}}}</td>
                   </tr>
 
-                  <!-- Footer con Logo y firma -->
+                  <!-- Footer -->
                   <tr>
                     <td
                       class="footer"
@@ -282,7 +282,8 @@ logo, colores corporativos y firma con imagen. Variables: asunto, contenido, log
                       >
                         <tr>
                           <td style="text-align: center">
-                            <!-- Logo en footer -->
+                            {{#unless hasFirma}}
+                            <!-- Identidad corporativa (solo cuando el cuerpo no incluye firma) -->
                             {{#if logoUrl}}
                             <img
                               src="{{logoUrl}}"
@@ -313,12 +314,13 @@ logo, colores corporativos y firma con imagen. Variables: asunto, contenido, log
                             <p style="margin: 0 0 3px 0; color: #64748b; font-size: 12px">
                               Girardota, Antioquia - Colombia
                             </p>
-                            <p style="margin: 0; color: #94a3b8; font-size: 12px">
+                            <p style="margin: 0 0 15px 0; color: #94a3b8; font-size: 12px">
                               Tel: (604) 405 2000 | info@istho.com.co
                             </p>
+                            {{/unless}}
 
                             <hr
-                              style="border: none; border-top: 1px solid #e2e8f0; margin: 15px 0"
+                              style="border: none; border-top: 1px solid #e2e8f0; margin: 0 0 15px 0"
                             />
 
                             <p style="margin: 0; color: #94a3b8; font-size: 11px; line-height: 1.5">

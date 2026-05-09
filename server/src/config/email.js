@@ -245,10 +245,17 @@ const resetTransporter = () => {
 // EXPORTS
 // ════════════════════════════════════════════════════════════════════════════
 
+// Inyectar transporter de prueba sin hacer conexiones reales (solo para tests)
+const _setTransporterForTest = (mockTransporter) => {
+  transporter = mockTransporter;
+  transporterVerified = true;
+};
+
 module.exports = {
   getTransporter,
   verificarConexion,
   resetTransporter,
   defaultFrom,
   smtpConfig,
+  _setTransporterForTest,
 };
