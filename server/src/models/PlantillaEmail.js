@@ -26,7 +26,14 @@ module.exports = (sequelize) => {
         comment: 'Nombre interno de la plantilla',
       },
       tipo: {
-        type: DataTypes.ENUM('operacion_cierre', 'alerta_inventario', 'bienvenida', 'general'),
+        type: DataTypes.ENUM(
+          'operacion_cierre',
+          'alerta_inventario',
+          'bienvenida',
+          'general',
+          'reseteo_password',
+          'recuperacion_password'
+        ),
         allowNull: false,
         defaultValue: 'general',
         comment: 'Tipo de evento al que aplica la plantilla',
@@ -147,6 +154,19 @@ module.exports = (sequelize) => {
       { variable: 'mensaje', label: 'Mensaje', ejemplo: 'Contenido del mensaje' },
       { variable: 'urlAccion', label: 'URL de Acción', ejemplo: 'https://crm.istho.com' },
       { variable: 'labelAccion', label: 'Texto del Botón', ejemplo: 'Ver en CRM' },
+    ],
+    reseteo_password: [
+      { variable: 'nombre', label: 'Nombre del Usuario', ejemplo: 'Juan Pérez' },
+      { variable: 'username', label: 'Nombre de Usuario', ejemplo: 'jperez' },
+      { variable: 'email', label: 'Email', ejemplo: 'juan@empresa.com' },
+      { variable: 'passwordTemporal', label: 'Contraseña Temporal', ejemplo: 'Abc123*' },
+      { variable: 'reseteadoPor', label: 'Reseteado por (condicional)', ejemplo: 'Admin ISTHO' },
+      { variable: 'urlLogin', label: 'URL de Login', ejemplo: 'https://crm.istho.com/login' },
+    ],
+    recuperacion_password: [
+      { variable: 'nombre', label: 'Nombre del Usuario', ejemplo: 'Juan Pérez' },
+      { variable: 'username', label: 'Nombre de Usuario', ejemplo: 'jperez' },
+      { variable: 'urlReset', label: 'URL de Reseteo (con token)', ejemplo: 'https://crm.istho.com/reset?token=abc123' },
     ],
   };
 

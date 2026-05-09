@@ -714,6 +714,366 @@ const plantillaKardex = {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
+// PLANTILLAS DEL SISTEMA (bienvenida, alerta, general, reseteo, recuperación)
+// ════════════════════════════════════════════════════════════════════════════
+
+const plantillaBienvenida = {
+  nombre: 'Bienvenida al Sistema',
+  tipo: 'bienvenida',
+  asunto_template: '[ISTHO] Bienvenido al CRM',
+  cuerpo_html: `<div style="padding: 0">
+  {{#if esReenvio}}
+  <h2 style="color: #1e293b; margin: 0 0 20px 0; font-size: 22px; font-weight: 700">Reenvio de Credenciales</h2>
+  {{else}}
+  <h2 style="color: #1e293b; margin: 0 0 20px 0; font-size: 22px; font-weight: 700">Bienvenido a ISTHO CRM</h2>
+  {{/if}}
+
+  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 20px 0">
+    Hola <strong style="color: #1e293b">{{nombre}}</strong>,
+  </p>
+
+  {{#if esReenvio}}
+  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 25px 0">
+    Te reenviamos tus credenciales de acceso al sistema ISTHO CRM{{#if cliente}} para el portal de <strong>{{cliente}}</strong>{{/if}}.
+  </p>
+  {{else}}
+  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 25px 0">
+    Se ha creado una cuenta para ti en el sistema ISTHO CRM{{#if cliente}} para el portal de clientes de <strong>{{cliente}}</strong>{{/if}}. A continuacion encontraras tus credenciales de acceso:
+  </p>
+  {{/if}}
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin: 25px 0;">
+    <tr>
+      <td style="padding: 20px 25px; border-bottom: 1px solid #e2e8f0">
+        <p style="margin: 0 0 3px 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Usuario</p>
+        <p style="margin: 0; color: #1e293b; font-size: 16px; font-weight: 600; font-family: 'Courier New', monospace;">{{username}}</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 20px 25px; border-bottom: 1px solid #e2e8f0">
+        <p style="margin: 0 0 3px 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Email</p>
+        <p style="margin: 0; color: #1e293b; font-size: 15px">{{email}}</p>
+      </td>
+    </tr>
+    {{#if passwordTemporal}}
+    <tr>
+      <td style="padding: 20px 25px; border-bottom: 1px solid #e2e8f0; background-color: #fff7ed">
+        <p style="margin: 0 0 3px 0; color: #c2410c; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Contrasena Temporal</p>
+        <p style="margin: 0; color: #c2410c; font-size: 18px; font-weight: 700; font-family: 'Courier New', monospace; letter-spacing: 2px;">{{passwordTemporal}}</p>
+      </td>
+    </tr>
+    {{/if}}
+    <tr>
+      <td style="padding: 15px 25px">
+        <p style="margin: 0 0 3px 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Rol</p>
+        <span style="display: inline-block; background-color: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">{{rol}}</span>
+      </td>
+    </tr>
+  </table>
+
+  {{#if passwordTemporal}}
+  <div class="info-box warning">
+    <strong>Importante:</strong> Esta contrasena es temporal. Por seguridad, deberas cambiarla en tu primer inicio de sesion.
+  </div>
+  {{/if}}
+
+  {{#if cliente}}
+  <div class="info-box info">
+    <p style="margin: 0 0 10px 0; font-weight: 600">Tu acceso al portal incluye:</p>
+    <ul style="margin: 0; padding-left: 20px; line-height: 1.8">
+      <li>Consulta de inventario en tiempo real</li>
+      <li>Seguimiento de despachos y entregas</li>
+      <li>Descarga de documentos y cumplidos</li>
+      <li>Reportes y estadisticas de operaciones</li>
+    </ul>
+  </div>
+  {{/if}}
+
+  <div style="text-align: center; margin: 30px 0">
+    <a href="{{urlLogin}}" class="btn">{{#if cliente}}Acceder al Portal{{else}}Iniciar Sesion{{/if}}</a>
+  </div>
+
+  {{#if invitadoPor}}
+  <p style="color: #64748b; font-size: 13px; text-align: center; margin: 20px 0 0 0">
+    Invitacion enviada por: <strong>{{invitadoPor}}</strong>
+  </p>
+  {{/if}}
+
+  <p style="color: #94a3b8; font-size: 12px; line-height: 1.5; margin: 25px 0 0 0; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+    Si no solicitaste esta cuenta o tienes alguna pregunta, contacta al administrador del sistema.
+  </p>
+</div>`,
+  firma_habilitada: false,
+  firma_html: null,
+  campos_disponibles: null,
+  es_predeterminada: true,
+  subtipo: null,
+  activo: true,
+};
+
+const plantillaAlertaInventario = {
+  nombre: 'Alerta de Inventario',
+  tipo: 'alerta_inventario',
+  asunto_template: '[ISTHO] ⚠️ Alerta de Inventario',
+  cuerpo_html: `<div style="padding: 0">
+  <h2 style="color: #1e293b; margin: 0 0 5px 0; font-size: 22px; font-weight: 700">Alerta de Inventario</h2>
+  <p style="color: #64748b; font-size: 14px; margin: 0 0 25px 0">Se han detectado alertas que requieren su atencion</p>
+
+  {{#if stockBajo.length}}
+  <h3 style="color: #dc2626; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600">Stock Bajo</h3>
+  <div class="info-box error">Los siguientes productos tienen stock por debajo del minimo establecido.</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>SKU</th>
+        <th>Producto</th>
+        <th style="text-align: right">Stock Actual</th>
+        <th style="text-align: right">Stock Minimo</th>
+        <th>Ubicacion</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each stockBajo}}
+      <tr>
+        <td style="font-family: monospace; font-size: 13px">{{this.sku}}</td>
+        <td>{{this.producto}}</td>
+        <td style="text-align: right; color: #dc2626; font-weight: 700">{{this.cantidad}}</td>
+        <td style="text-align: right">{{this.stock_minimo}}</td>
+        <td>{{this.ubicacion}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{/if}}
+
+  {{#if proximosVencer.length}}
+  <h3 style="color: #d97706; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600">Proximos a Vencer</h3>
+  <div class="info-box warning">Los siguientes productos vencen en los proximos 30 dias.</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>SKU</th>
+        <th>Producto</th>
+        <th>Lote</th>
+        <th style="text-align: right">Cantidad</th>
+        <th>Vencimiento</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each proximosVencer}}
+      <tr>
+        <td style="font-family: monospace; font-size: 13px">{{this.sku}}</td>
+        <td>{{this.producto}}</td>
+        <td>{{this.lote}}</td>
+        <td style="text-align: right">{{this.cantidad}}</td>
+        <td style="color: #d97706; font-weight: 600">{{this.fecha_vencimiento}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{/if}}
+
+  {{#if vencidos.length}}
+  <h3 style="color: #dc2626; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600">Productos Vencidos</h3>
+  <div class="info-box error"><strong>ATENCION:</strong> Los siguientes productos ya estan vencidos y requieren accion inmediata.</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>SKU</th>
+        <th>Producto</th>
+        <th>Lote</th>
+        <th style="text-align: right">Cantidad</th>
+        <th>Vencimiento</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each vencidos}}
+      <tr>
+        <td style="font-family: monospace; font-size: 13px">{{this.sku}}</td>
+        <td>{{this.producto}}</td>
+        <td>{{this.lote}}</td>
+        <td style="text-align: right">{{this.cantidad}}</td>
+        <td style="color: #dc2626; font-weight: 700">{{this.fecha_vencimiento}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{/if}}
+
+  <div style="text-align: center; margin: 30px 0">
+    <a href="{{urlInventario}}" class="btn">Ver Inventario Completo</a>
+  </div>
+
+  <p style="color: #94a3b8; font-size: 12px; margin: 15px 0 0 0">
+    Este correo fue generado automaticamente por el sistema de alertas de ISTHO CRM.
+  </p>
+</div>`,
+  firma_habilitada: false,
+  firma_html: null,
+  campos_disponibles: null,
+  es_predeterminada: true,
+  subtipo: null,
+  activo: true,
+};
+
+const plantillaGeneral = {
+  nombre: 'Notificación General',
+  tipo: 'general',
+  asunto_template: 'Notificación ISTHO CRM',
+  cuerpo_html: `<div style="padding: 0">
+  {{#if titulo}}
+  <h2 style="color: #1e293b; margin: 0 0 20px 0; font-size: 22px; font-weight: 700">{{titulo}}</h2>
+  {{/if}}
+  {{#if mensaje}}
+  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 25px 0">{{mensaje}}</p>
+  {{/if}}
+
+  <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px 20px; margin: 20px 0;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+      <tr>
+        <td style="width: 40px; vertical-align: top">
+          <div style="width: 36px; height: 36px; background-color: #dcfce7; border-radius: 8px; text-align: center; line-height: 36px; font-size: 18px;">📎</div>
+        </td>
+        <td style="padding-left: 12px; vertical-align: middle">
+          <p style="margin: 0 0 2px 0; color: #166534; font-size: 14px; font-weight: 600">Archivos adjuntos</p>
+          <p style="margin: 0; color: #16a34a; font-size: 13px">El reporte se encuentra adjunto a este correo. Puedes descargarlo directamente.</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  {{#if urlAccion}}
+  <div style="text-align: center; margin: 30px 0">
+    <a href="{{urlAccion}}" class="btn">{{#if labelAccion}}{{labelAccion}}{{else}}Ver en el sistema{{/if}}</a>
+  </div>
+  {{/if}}
+
+  <p style="color: #94a3b8; font-size: 12px; margin: 25px 0 0 0; padding-top: 15px; border-top: 1px solid #f3f4f6;">
+    Este mensaje fue generado automaticamente por el sistema ISTHO CRM.
+  </p>
+</div>`,
+  firma_habilitada: false,
+  firma_html: null,
+  campos_disponibles: null,
+  es_predeterminada: true,
+  subtipo: null,
+  activo: true,
+};
+
+const plantillaReseteoPassword = {
+  nombre: 'Reseteo de Contraseña',
+  tipo: 'reseteo_password',
+  asunto_template: '[ISTHO] Reseteo de Contraseña',
+  cuerpo_html: `<div style="padding: 0">
+  <h2 style="color: #1e293b; margin: 0 0 20px 0; font-size: 22px; font-weight: 700">Reseteo de Contrasena</h2>
+
+  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 20px 0">
+    Hola <strong style="color: #1e293b">{{nombre}}</strong>,
+  </p>
+
+  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 25px 0">
+    Se ha generado una nueva contrasena para tu cuenta en el sistema ISTHO CRM.
+  </p>
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin: 25px 0;">
+    <tr>
+      <td style="padding: 20px 25px; border-bottom: 1px solid #e2e8f0">
+        <p style="margin: 0 0 3px 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Usuario</p>
+        <p style="margin: 0; color: #1e293b; font-size: 16px; font-weight: 600; font-family: 'Courier New', monospace;">{{username}}</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 20px 25px; border-bottom: 1px solid #e2e8f0">
+        <p style="margin: 0 0 3px 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Email</p>
+        <p style="margin: 0; color: #1e293b; font-size: 15px">{{email}}</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 20px 25px; background-color: #fff7ed">
+        <p style="margin: 0 0 3px 0; color: #c2410c; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Nueva Contrasena</p>
+        <p style="margin: 0; color: #c2410c; font-size: 18px; font-weight: 700; font-family: 'Courier New', monospace; letter-spacing: 2px;">{{passwordTemporal}}</p>
+      </td>
+    </tr>
+  </table>
+
+  <div class="info-box warning">
+    <strong>Importante:</strong> Esta contrasena es temporal. Deberas cambiarla inmediatamente despues de iniciar sesion.
+  </div>
+
+  <div style="text-align: center; margin: 30px 0">
+    <a href="{{urlLogin}}" class="btn">Iniciar Sesion</a>
+  </div>
+
+  <div class="info-box error">
+    <strong>Seguridad:</strong> Si no solicitaste este cambio de contrasena, contacta inmediatamente al administrador del sistema.
+  </div>
+
+  <div class="info-box success">
+    <p style="margin: 0 0 10px 0; font-weight: 600">Pasos a seguir:</p>
+    <ol style="margin: 0; padding-left: 20px; line-height: 1.8">
+      <li>Haz clic en "Iniciar Sesion"</li>
+      <li>Ingresa tu usuario y la contrasena temporal</li>
+      <li>El sistema te solicitara crear una nueva contrasena</li>
+      <li>Elige una contrasena segura (minimo 8 caracteres)</li>
+    </ol>
+  </div>
+
+  {{#if reseteadoPor}}
+  <p style="color: #64748b; font-size: 13px; text-align: center; margin: 20px 0 0 0">
+    Contrasena reseteada por: <strong>{{reseteadoPor}}</strong>
+  </p>
+  {{/if}}
+</div>`,
+  firma_habilitada: false,
+  firma_html: null,
+  campos_disponibles: null,
+  es_predeterminada: true,
+  subtipo: null,
+  activo: true,
+};
+
+const plantillaRecuperacionPassword = {
+  nombre: 'Recuperación de Contraseña',
+  tipo: 'recuperacion_password',
+  asunto_template: '[ISTHO] Recuperación de Contraseña',
+  cuerpo_html: `<div style="padding: 0">
+  <h2 style="color: #1e293b; margin: 0 0 20px 0; font-size: 22px; font-weight: 700">Recuperación de Contraseña</h2>
+
+  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 20px 0">
+    Hola <strong style="color: #1e293b">{{nombre}}</strong>,
+  </p>
+
+  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 25px 0">
+    Recibimos una solicitud para restablecer la contraseña de la cuenta
+    <strong style="color: #1e293b; font-family: 'Courier New', monospace">{{username}}</strong>.
+    Haz clic en el botón a continuación para crear una nueva contraseña.
+  </p>
+
+  <div style="text-align: center; margin: 32px 0">
+    <a href="{{urlReset}}" style="display: inline-block; background: linear-gradient(135deg, #E74C3C, #C0392B); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; padding: 14px 36px; border-radius: 10px; letter-spacing: 0.3px;">
+      Restablecer Contraseña
+    </a>
+  </div>
+
+  <div class="info-box warning">
+    <strong>Importante:</strong> Este enlace es válido por <strong>1 hora</strong>.
+    Si no solicitaste este cambio, ignora este correo — tu contraseña no será modificada.
+  </div>
+
+  <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 20px 0 0 0; word-break: break-all">
+    Si el botón no funciona, copia y pega este enlace en tu navegador:<br />
+    <a href="{{urlReset}}" style="color: #E74C3C; word-break: break-all">{{urlReset}}</a>
+  </p>
+</div>`,
+  firma_habilitada: false,
+  firma_html: null,
+  campos_disponibles: null,
+  es_predeterminada: true,
+  subtipo: null,
+  activo: true,
+};
+
+// ════════════════════════════════════════════════════════════════════════════
 // EJECUTAR SEED (upsert: actualiza si ya existe)
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -763,6 +1123,28 @@ async function seed({ standalone = true } = {}) {
       console.log('🔄 Plantilla de Kardex actualizada (id:', kardex.id, ')');
     } else {
       console.log('✅ Plantilla de Kardex creada (id:', kardex.id, ')');
+    }
+
+    // Upsert plantillas del sistema
+    const sistemaDefs = [
+      plantillaBienvenida,
+      plantillaAlertaInventario,
+      plantillaGeneral,
+      plantillaReseteoPassword,
+      plantillaRecuperacionPassword,
+    ];
+
+    for (const def of sistemaDefs) {
+      const [rec, created] = await PlantillaEmail.findOrCreate({
+        where: { nombre: def.nombre },
+        defaults: def,
+      });
+      if (!created) {
+        await rec.update(def);
+        console.log(`🔄 Plantilla "${def.nombre}" actualizada (id: ${rec.id})`);
+      } else {
+        console.log(`✅ Plantilla "${def.nombre}" creada (id: ${rec.id})`);
+      }
     }
 
     console.log('\n🎉 Seed completado exitosamente');

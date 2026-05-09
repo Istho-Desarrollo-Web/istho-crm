@@ -57,6 +57,42 @@ const loadTemplate = (templateName) => {
   return templateCache[templateName];
 };
 
+// Mapa templateName → tipo de BD (solo para plantillas del sistema)
+const TEMPLATE_TIPO_MAP = {
+  bienvenida: 'bienvenida',
+  'alerta-inventario': 'alerta_inventario',
+  general: 'general',
+  'reseteo-password': 'reseteo_password',
+  'recuperacion-password': 'recuperacion_password',
+};
+
+/**
+ * Renderizar email desde una plantilla de BD
+ */
+const renderFromDB = (plantilla, datos, asunto) => {
+  const { PlantillaEmail } = require('../models');
+  const basePath = path.join(__dirname, '../templates/email/base.html');
+  const baseContent = fs.readFileSync(basePath, 'utf8');
+  const baseTemplate = Handlebars.compile(baseContent);
+
+  const logoUrl = LOGO_EMAIL_URL;
+  const cuerpoTemplate = Handlebars.compile(plantilla.cuerpo_html);
+  let contenido = cuerpoTemplate({ ...datos, logoUrl });
+
+  if (plantilla.firma_habilitada) {
+    const firmaSource = plantilla.firma_html || PlantillaEmail.FIRMA_DEFAULT;
+    const firmaTemplate = Handlebars.compile(firmaSource);
+    contenido += firmaTemplate({ logoFirmaDataUri: LOGO_EMAIL_URL });
+  }
+
+  return baseTemplate({
+    asunto: asunto || 'Notificación ISTHO CRM',
+    contenido,
+    logoUrl,
+    hasFirma: !!plantilla.firma_habilitada,
+  });
+};
+
 /**
  * Renderizar email completo
  */
@@ -96,8 +132,20 @@ const enviarCorreo = async ({
   try {
     const transporter = await getTransporter();
 
-    // Renderizar HTML
-    const html = renderEmail(templateName, { ...datos, asunto });
+    // Renderizar HTML — intentar plantilla de BD primero para templates del sistema
+    let html;
+    const tipoDB = TEMPLATE_TIPO_MAP[templateName];
+    if (tipoDB) {
+      const { PlantillaEmail } = require('../models');
+      const plantillaDB = await PlantillaEmail.findOne({
+        where: { tipo: tipoDB, activo: true, es_predeterminada: true },
+      });
+      html = plantillaDB
+        ? renderFromDB(plantillaDB, datos, asunto)
+        : renderEmail(templateName, { ...datos, asunto });
+    } else {
+      html = renderEmail(templateName, { ...datos, asunto });
+    }
 
     // Preparar opciones
     const mailOptions = {
@@ -382,6 +430,7 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
           asunto: asuntoCompiled(datos),
           contenido: cuerpoHtml,
           logoUrl,
+          hasFirma: !!plantillaCustom.firma_habilitada,
         });
 
         const transporter = await getTransporter();

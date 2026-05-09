@@ -22,6 +22,8 @@ import {
   AlertTriangle,
   UserPlus,
   X,
+  KeyRound,
+  ShieldCheck,
 } from 'lucide-react';
 
 import { Button, ConfirmDialog } from '../../components/common';
@@ -55,7 +57,22 @@ const TIPO_CONFIG = {
     bg: 'bg-slate-100 dark:bg-centhrix-surface',
     color: 'text-slate-600 dark:text-slate-300',
   },
+  reseteo_password: {
+    label: 'Reseteo de Contraseña',
+    icon: KeyRound,
+    bg: 'bg-orange-100 dark:bg-orange-900/30',
+    color: 'text-orange-600 dark:text-orange-400',
+  },
+  recuperacion_password: {
+    label: 'Recuperación de Contraseña',
+    icon: ShieldCheck,
+    bg: 'bg-violet-100 dark:bg-violet-900/30',
+    color: 'text-violet-600 dark:text-violet-400',
+  },
 };
+
+const TIPOS_OPERACION = ['operacion_cierre'];
+const TIPOS_SISTEMA = ['bienvenida', 'alerta_inventario', 'general', 'reseteo_password', 'recuperacion_password'];
 
 const PlantillaCard = ({ plantilla, onEdit, onDelete, onPreview, canEdit, canDelete }) => {
   const config = TIPO_CONFIG[plantilla.tipo] || TIPO_CONFIG.general;
@@ -146,6 +163,7 @@ const PlantillasEmailList = () => {
 
   const [plantillas, setPlantillas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('operacion');
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, plantilla: null });
   const [previewModal, setPreviewModal] = useState({ isOpen: false, html: '', asunto: '' });
   const [formLoading, setFormLoading] = useState(false);
@@ -235,50 +253,89 @@ const PlantillasEmailList = () => {
           </div>
         </div>
 
+        {/* TABS */}
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-xl p-1 mb-6 w-fit">
+          <button
+            onClick={() => setActiveTab('operacion')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'operacion'
+                ? 'bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+            }`}
+          >
+            Cierre de Operación
+          </button>
+          <button
+            onClick={() => setActiveTab('sistema')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'sistema'
+                ? 'bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+            }`}
+          >
+            Sistema
+          </button>
+        </div>
+
         {/* GRID */}
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className="h-48 bg-gray-200 dark:bg-centhrix-surface rounded-2xl animate-pulse"
-              />
-            ))}
-          </div>
-        ) : plantillas.length === 0 ? (
-          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
-            <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Mail className="w-8 h-8 text-orange-500 dark:text-orange-400" />
+        {(() => {
+          const tiposActivos = activeTab === 'operacion' ? TIPOS_OPERACION : TIPOS_SISTEMA;
+          const plantillasFiltradas = plantillas.filter((p) => tiposActivos.includes(p.tipo));
+
+          if (loading) {
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="h-48 bg-gray-200 dark:bg-centhrix-surface rounded-2xl animate-pulse"
+                  />
+                ))}
+              </div>
+            );
+          }
+
+          if (plantillasFiltradas.length === 0) {
+            return (
+              <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 py-16 text-center">
+                <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Mail className="w-8 h-8 text-orange-500 dark:text-orange-400" />
+                </div>
+                <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
+                  No hay plantillas
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 mb-4">
+                  Crea tu primera plantilla de correo
+                </p>
+                {canCreate && (
+                  <Button
+                    variant="primary"
+                    icon={Plus}
+                    onClick={() => navigate('/plantillas-email/nueva')}
+                  >
+                    Crear Plantilla
+                  </Button>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {plantillasFiltradas.map((plantilla) => (
+                <PlantillaCard
+                  key={plantilla.id}
+                  plantilla={plantilla}
+                  onEdit={(p) => navigate(`/plantillas-email/${p.id}`)}
+                  onDelete={(p) => setDeleteModal({ isOpen: true, plantilla: p })}
+                  onPreview={handlePreview}
+                  canEdit={canEdit}
+                  canDelete={canDelete}
+                />
+              ))}
             </div>
-            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 mb-1">
-              No hay plantillas
-            </h3>
-            <p className="text-slate-500 dark:text-slate-400 mb-4">
-              Crea tu primera plantilla de correo
-            </p>
-            <Button
-              variant="primary"
-              icon={Plus}
-              onClick={() => navigate('/plantillas-email/nueva')}
-            >
-              Crear Plantilla
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {plantillas.map((plantilla) => (
-              <PlantillaCard
-                key={plantilla.id}
-                plantilla={plantilla}
-                onEdit={(p) => navigate(`/plantillas-email/${p.id}`)}
-                onDelete={(p) => setDeleteModal({ isOpen: true, plantilla: p })}
-                onPreview={handlePreview}
-                canEdit={canEdit}
-                canDelete={canDelete}
-              />
-            ))}
-          </div>
-        )}
+          );
+        })()}
 
         {/* Footer */}
         <PageFooter />

@@ -36,6 +36,8 @@ const TIPO_OPTIONS = [
   { value: 'alerta_inventario', label: 'Alerta de Inventario' },
   { value: 'bienvenida', label: 'Bienvenida' },
   { value: 'general', label: 'General' },
+  { value: 'reseteo_password', label: 'Reseteo de Contraseña' },
+  { value: 'recuperacion_password', label: 'Recuperación de Contraseña' },
 ];
 
 const SUBTIPO_OPTIONS = {
