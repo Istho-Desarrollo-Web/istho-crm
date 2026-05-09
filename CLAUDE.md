@@ -197,7 +197,10 @@ admin(100) · supervisor(75) · financiera(60) · operador(50) · conductor(30) 
 | `reportes_gastos` | `/reportes/gastos` | `tour-reportes-gastos-filtros`, `-kpis`, `-exportar` |
 | `reportes_averias` | `/reportes/averias` | `tour-reportes-averias-filtros`, `-kpis`, `-exportar` |
 | `reportes_programados` | `/reportes/programados` | `tour-reportes-programados-tabla`, `tour-reportes-programados-nuevo` |
-| `administracion` | `/administracion` | `tour-admin-usuarios-tabla`, `tour-admin-usuarios-nuevo`, `tour-admin-roles-tabla`, `tour-admin-roles-nuevo`, `tour-admin-sesiones-tabla`, `tour-admin-seguridad-panel` |
+| `administracion_usuarios` | `/administracion?tab=usuarios` (default) | `tour-admin-usuarios-tabla`, `tour-admin-usuarios-nuevo` |
+| `administracion_roles` | `/administracion?tab=roles` | `tour-admin-roles-tabla`, `tour-admin-roles-nuevo` |
+| `administracion_sesiones` | `/administracion?tab=sesiones` | `tour-admin-sesiones-tabla` |
+| `administracion_seguridad` | `/administracion?tab=seguridad` | `tour-admin-seguridad-panel` |
 
 ## Docs
 `docs/WMS_API_SPEC.md` · `docs/FLUJOS_NEGOCIO.md` · `docs/API.md` · `docs/manuales/` · `DEPLOY.md`
