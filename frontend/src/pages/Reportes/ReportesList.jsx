@@ -290,7 +290,7 @@ const ReportesList = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div id="tour-reportes-header" className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 font-display">
               Reportes
@@ -342,7 +342,7 @@ const ReportesList = () => {
 
         {/* Reportes Grid */}
         {reportes.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          <div id="tour-reportes-cards" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {reportes.map((reporte) => (
               <ReporteCard key={reporte.id} reporte={reporte} canExport={canExport} />
             ))}
