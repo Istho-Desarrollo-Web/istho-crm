@@ -364,6 +364,7 @@ const RolesList = () => {
           </button>
           {canCreateRol && (
             <button
+              id="tour-admin-roles-nuevo"
               onClick={() => setShowNewRol(true)}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-xl"
             >
@@ -413,6 +414,7 @@ const RolesList = () => {
 
         return (
           <div
+            id="tour-admin-roles-tabla"
             className="bg-gray-50 dark:bg-centhrix-bg"
             style={{ borderRadius: 12, padding: 16, fontFamily: "'Segoe UI', sans-serif" }}
           >
