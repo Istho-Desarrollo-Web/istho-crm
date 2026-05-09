@@ -374,6 +374,7 @@ const ReportesProgramados = () => {
             </div>
           </div>
           <button
+            id="tour-reportes-programados-nuevo"
             onClick={() => setFormModal({ open: true, reporte: null })}
             className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-xl transition-colors"
             title="Nuevo Programado"
@@ -384,7 +385,7 @@ const ReportesProgramados = () => {
         </div>
 
         {/* Lista */}
-        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+        <div id="tour-reportes-programados-tabla" className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
           {loading ? (
             <div className="p-8 text-center">
               <Loader2 className="w-8 h-8 text-orange-500 animate-spin mx-auto mb-3" />
