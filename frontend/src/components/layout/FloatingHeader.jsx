@@ -1188,7 +1188,11 @@ const FloatingHeader = () => {
           ? 'dashboard_financiera'
           : 'dashboard_operaciones';
     }
-    return RUTAS_CON_TOUR[pathname] ?? null;
+    if (RUTAS_CON_TOUR[pathname]) return RUTAS_CON_TOUR[pathname];
+    if (/^\/operaciones\/(entradas|salidas|kardex)\/\d+/.test(pathname)) return 'operacion_detalle';
+    if (/^\/inventario\/productos\/\d+/.test(pathname)) return 'producto_detalle';
+    if (/^\/clientes\/\d+/.test(pathname)) return 'cliente_detalle';
+    return null;
   }, [pathname, rol]);
 
   // Menú filtrado por rol y permisos de portal

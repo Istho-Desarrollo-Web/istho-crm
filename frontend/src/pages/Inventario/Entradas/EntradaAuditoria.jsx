@@ -157,10 +157,10 @@ const SECTION_COLORS = {
   slate: { bg: 'bg-slate-100 dark:bg-centhrix-bg/30', text: 'text-slate-600 dark:text-slate-400' },
 };
 
-const Section = ({ title, icon: Icon, children, badge, color = 'emerald' }) => {
+const Section = ({ title, icon: Icon, children, badge, color = 'emerald', id }) => {
   const styles = SECTION_COLORS[color] || SECTION_COLORS.emerald;
   return (
-    <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+    <div id={id} className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={`p-2 rounded-lg ${styles.bg}`}>
@@ -1266,7 +1266,7 @@ const EntradaAuditoria = () => {
         </button>
 
         {/* HEADER CARD */}
-        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
+        <div id="tour-op-header" className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
@@ -1336,6 +1336,7 @@ const EntradaAuditoria = () => {
           {/* SECTION 1: LÍNEAS DE OPERACIÓN */}
           {/* ════════════════════════════════════════════════════════════════ */}
           <Section
+            id="tour-op-lineas"
             title="Líneas de Operación (WMS)"
             icon={Package}
             color="emerald"
@@ -1484,6 +1485,7 @@ const EntradaAuditoria = () => {
           {/* SECTION 2: DATOS LOGÍSTICOS */}
           {/* ════════════════════════════════════════════════════════════════ */}
           <Section
+            id="tour-op-logistica"
             title="Datos Logísticos"
             icon={Truck}
             color="blue"
@@ -1884,6 +1886,7 @@ const EntradaAuditoria = () => {
           {/* SECTION 4: EVIDENCIAS Y SOPORTES */}
           {/* ════════════════════════════════════════════════════════════════ */}
           <Section
+            id="tour-op-evidencias"
             title="Evidencias y Soportes"
             icon={Upload}
             color="violet"

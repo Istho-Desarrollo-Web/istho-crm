@@ -857,7 +857,7 @@ const ClienteDetail = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div id="tour-cliente-kpis" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <KpiCard
             title="Operaciones del Mes"
             value={cliente.operaciones_mes || 0}
@@ -884,7 +884,7 @@ const ClienteDetail = () => {
         </div>
 
         {/* TABS */}
-        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 mb-6">
+        <div id="tour-cliente-tabs" className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 mb-6">
           <div className="border-b border-gray-100 dark:border-slate-700 overflow-x-auto">
             <nav className="flex px-2 sm:px-6 min-w-max">
               {tabs.map((tab) => {

@@ -248,6 +248,141 @@ export const TUTORIALES = {
       },
     ],
   },
+
+  salidas: {
+    modulo: 'salidas',
+    pasos: [
+      {
+        element: '#tour-salidas-kpis',
+        popover: {
+          title: 'Estado de despachos',
+          description: 'Resumen de salidas: pendientes de auditoría, en proceso y ya cerradas.',
+        },
+      },
+      {
+        element: '#tour-salidas-filtros',
+        popover: {
+          title: 'Buscar y filtrar',
+          description: 'Filtra por documento, cliente, estado o rango de fechas para encontrar una salida específica.',
+        },
+      },
+      {
+        element: '#tour-salidas-tabla',
+        popover: {
+          title: 'Lista de salidas',
+          description: 'Cada fila es un despacho del WMS. Haz clic para iniciar o continuar la auditoría de esa salida.',
+        },
+      },
+    ],
+  },
+
+  kardex: {
+    modulo: 'kardex',
+    pasos: [
+      {
+        element: '#tour-kardex-kpis',
+        popover: {
+          title: 'Estado de ajustes',
+          description: 'Resumen de kardex: ajustes pendientes, en proceso y cerrados.',
+        },
+      },
+      {
+        element: '#tour-kardex-filtros',
+        popover: {
+          title: 'Buscar y filtrar',
+          description: 'Filtra por documento, motivo, cliente o fechas para localizar un ajuste de inventario.',
+        },
+      },
+      {
+        element: '#tour-kardex-tabla',
+        popover: {
+          title: 'Lista de kardex',
+          description: 'Cada fila es un ajuste de unidades generado por el WMS. Haz clic para ver el detalle y las líneas afectadas.',
+        },
+      },
+    ],
+  },
+
+  operacion_detalle: {
+    modulo: 'operacion_detalle',
+    pasos: [
+      {
+        element: '#tour-op-header',
+        popover: {
+          title: 'Encabezado del documento',
+          description: 'Número de orden, cliente y estado de la auditoría. El círculo de progreso indica cuántas líneas ya fueron verificadas.',
+        },
+      },
+      {
+        element: '#tour-op-lineas',
+        popover: {
+          title: 'Líneas de operación',
+          description: 'Cada línea corresponde a un producto del WMS. Márcalas como verificadas conforme las revisas físicamente.',
+        },
+      },
+      {
+        element: '#tour-op-logistica',
+        popover: {
+          title: 'Datos logísticos',
+          description: 'Conductor, placa del vehículo y otros datos requeridos para cerrar la auditoría.',
+        },
+      },
+      {
+        element: '#tour-op-evidencias',
+        popover: {
+          title: 'Evidencias y soportes',
+          description: 'Adjunta fotos o PDFs como soporte del despacho o recepción. Se guardan automáticamente.',
+        },
+      },
+    ],
+  },
+
+  cliente_detalle: {
+    modulo: 'cliente_detalle',
+    pasos: [
+      {
+        element: '#tour-cliente-kpis',
+        popover: {
+          title: 'Resumen del cliente',
+          description: 'Operaciones del mes, productos en bodega y número de contactos registrados.',
+        },
+      },
+      {
+        element: '#tour-cliente-tabs',
+        popover: {
+          title: 'Tabs del cliente',
+          description: 'Navega entre Información (datos fiscales y de contacto), Contactos, Usuarios Portal e Historial de actividad.',
+        },
+      },
+    ],
+  },
+
+  producto_detalle: {
+    modulo: 'producto_detalle',
+    pasos: [
+      {
+        element: '#tour-producto-kpis',
+        popover: {
+          title: 'Indicadores del producto',
+          description: 'Valor en stock, entradas y salidas del mes y tasa de rotación en los últimos 30 días.',
+        },
+      },
+      {
+        element: '#tour-producto-stock',
+        popover: {
+          title: 'Stock actual',
+          description: 'Medidor visual del stock. Los límites mínimo y máximo son editables y disparan alertas automáticas.',
+        },
+      },
+      {
+        element: '#tour-producto-tabs',
+        popover: {
+          title: 'Detalle del producto',
+          description: 'Tabs: Información general, Cajas en bodega, Movimientos (historial), Estadísticas y Ubicación WMS (si aplica).',
+        },
+      },
+    ],
+  },
 };
 
 export const RUTAS_CON_TOUR = {
@@ -255,8 +390,8 @@ export const RUTAS_CON_TOUR = {
   '/clientes': 'clientes',
   '/inventario': 'inventario',
   '/operaciones/entradas': 'operaciones',
-  '/operaciones/salidas': 'operaciones',
-  '/operaciones/kardex': 'operaciones',
+  '/operaciones/salidas': 'salidas',
+  '/operaciones/kardex': 'kardex',
   '/viajes/viajes': 'viajes',
   '/viajes/vehiculos': 'vehiculos',
   '/viajes/cajas-menores': 'cajas_menores',

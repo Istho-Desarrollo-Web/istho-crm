@@ -838,7 +838,7 @@ const ProductoDetail = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div id="tour-producto-kpis" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <KpiCard
             title="Valor en Stock"
             value={formatCurrency(kpis.valorStock)}
@@ -872,7 +872,7 @@ const ProductoDetail = () => {
         {/* MAIN CONTENT */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Stock Gauge */}
-          <div className="lg:col-span-1">
+          <div id="tour-producto-stock" className="lg:col-span-1">
             <StockGauge
               actual={stockActual}
               minimo={stockMinimo}
@@ -911,7 +911,7 @@ const ProductoDetail = () => {
           </div>
 
           {/* Right Column - Tabs */}
-          <div className="lg:col-span-2">
+          <div id="tour-producto-tabs" className="lg:col-span-2">
             <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
               <div className="border-b border-gray-100 dark:border-slate-700">
                 <nav className="flex px-2 sm:px-6 overflow-x-auto scrollbar-none">

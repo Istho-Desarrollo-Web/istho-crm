@@ -334,7 +334,7 @@ const KardexList = () => {
         </div>
 
         {/* KPI CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div id="tour-kardex-kpis" className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <KpiMini
             icon={Clock}
             label="Pendientes"
@@ -369,7 +369,7 @@ const KardexList = () => {
         )}
 
         {/* FILTERS BAR */}
-        <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
+        <div id="tour-kardex-filtros" className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -526,7 +526,7 @@ const KardexList = () => {
             </p>
           </div>
         ) : viewMode === 'table' ? (
-          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+          <div id="tour-kardex-tabla" className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
