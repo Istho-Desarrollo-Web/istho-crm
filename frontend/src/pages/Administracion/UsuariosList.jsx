@@ -223,6 +223,7 @@ const UsuariosList = () => {
 
         {hasPermission('usuarios', 'crear') && (
           <button
+            id="tour-admin-usuarios-nuevo"
             onClick={() => {
               setEditingUser(null);
               setShowForm(true);
@@ -261,7 +262,7 @@ const UsuariosList = () => {
 
       {/* Table / Cards */}
       {viewMode === 'table' ? (
-        <div className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700">
+        <div id="tour-admin-usuarios-tabla" className="bg-white dark:bg-centhrix-card rounded-2xl border border-gray-200 dark:border-slate-700">
           <div className="overflow-x-auto rounded-t-2xl">
             <table className="w-full text-sm">
               <thead>
