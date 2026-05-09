@@ -169,7 +169,7 @@ const DashboardSeguridad = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div id="tour-admin-seguridad-panel" className="space-y-6">
       {/* Header acciones */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500 dark:text-slate-400">

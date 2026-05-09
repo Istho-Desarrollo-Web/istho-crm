@@ -177,7 +177,7 @@ const SesionesActivas = () => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div id="tour-admin-sesiones-tabla" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {sesiones.map((s) => {
             const isMe = s.id === user?.id;
             const rolColor = ROL_COLORS[s.rol] || ROL_COLORS.operador;
