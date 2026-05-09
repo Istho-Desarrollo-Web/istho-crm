@@ -12,7 +12,7 @@ Agregar un sistema de tutorial interactivo guiado (tooltips paso a paso) a los m
 
 ---
 
-## Alcance — Módulos v1
+## Alcance — Módulos implementados (v1 + extensión 2026-05-08)
 
 | Módulo | Ruta(s) | Clave localStorage |
 |---|---|---|
@@ -21,11 +21,18 @@ Agregar un sistema de tutorial interactivo guiado (tooltips paso a paso) a los m
 | Dashboard (Financiera) | `/dashboard` (rol: financiera) | `centhrix_tour_dashboard_financiera` |
 | Clientes | `/clientes` | `centhrix_tour_clientes` |
 | Inventario | `/inventario` | `centhrix_tour_inventario` |
-| Operaciones | `/operaciones/entradas`, `/operaciones/salidas`, `/operaciones/kardex` | `centhrix_tour_operaciones` |
+| Operaciones Entradas | `/operaciones/entradas` | `centhrix_tour_operaciones` |
+| Operaciones Salidas | `/operaciones/salidas` | `centhrix_tour_salidas` |
+| Operaciones Kardex | `/operaciones/kardex` | `centhrix_tour_kardex` |
+| Detalle Operación | `/operaciones/(entradas\|salidas\|kardex)/:id` | `centhrix_tour_operacion_detalle` |
+| Detalle Cliente | `/clientes/:id` | `centhrix_tour_cliente_detalle` |
+| Detalle Producto | `/inventario/productos/:id` | `centhrix_tour_producto_detalle` |
 | Viajes | `/viajes/viajes` | `centhrix_tour_viajes` |
 | Vehículos | `/viajes/vehiculos` | `centhrix_tour_vehiculos` |
 | Cajas Menores | `/viajes/cajas-menores` | `centhrix_tour_cajas_menores` |
 | Movimientos | `/viajes/movimientos` | `centhrix_tour_movimientos` |
+
+> **Nota extensión 2026-05-08:** Salidas y Kardex recibieron tours propios (antes compartían `'operaciones'`). Los detalles de operación, cliente y producto usan regex en `FloatingHeader.moduloActivo` para detectar rutas con `:id`. El componente `Section` local en cada Auditoria recibió prop `id` opcional.
 
 ---
 

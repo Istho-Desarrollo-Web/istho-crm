@@ -158,5 +158,35 @@ admin(100) · supervisor(75) · financiera(60) · operador(50) · conductor(30) 
 - **`zoneName`** del WMS siempre es `null` — no usar. La coordenada completa viene en `coordinate` (ej: `"RACK-A1-M6-N1-P3"`).
 - Colección Postman: `docs/ISTHO_WMS_Postman_Collection.json` (57 endpoints, 14 carpetas).
 
+## Tutorial Interactivo (driver.js)
+
+- Librería: **driver.js v1.4.0** — botón `?` fijo en `FloatingHeader`, se muestra solo si la ruta tiene tour configurado.
+- Config centralizada: `frontend/src/utils/tutorialConfig.js` (objeto `TUTORIALES` + mapa `RUTAS_CON_TOUR`).
+- Hook: `frontend/src/hooks/useTutorial.js` — expone `iniciarTour(modulo)` y `haTomadoTour(modulo)`. Persiste en `localStorage` como `centhrix_tour_<modulo>`.
+- **DOM-resiliente**: `useTutorial` filtra pasos cuyos `element` no existen en el DOM antes de lanzar el tour (previene crash en páginas que comparten la misma clave de tour).
+- Detección de ruta dinámica en `FloatingHeader.moduloActivo` (useMemo):
+  - Rutas estáticas → `RUTAS_CON_TOUR[pathname]`
+  - Rutas con `:id` → regex: `/operaciones/(entradas|salidas|kardex)/\d+` → `'operacion_detalle'` · `/inventario/productos/\d+` → `'producto_detalle'` · `/clientes/\d+` → `'cliente_detalle'`
+- **Regla de IDs**: al agregar elementos ancla en una página, usar `id="tour-<modulo>-<elemento>"`. Solo agregar el `id` al componente o div que ya existe — no crear wrappers nuevos salvo que sea inevitable.
+- **Pages con tour activo** (clave → ruta):
+
+| Clave | Ruta(s) | IDs requeridos |
+| --- | --- | --- |
+| `dashboard_operaciones` | `/dashboard` (admin/supervisor/operador/cliente) | `tour-dash-kpis`, `tour-dash-grafico`, `tour-dash-alertas` |
+| `dashboard_conductor` | `/dashboard` (conductor) | `tour-dash-caja`, `tour-dash-registrar` |
+| `dashboard_financiera` | `/dashboard` (financiera) | `tour-dash-resumen`, `tour-dash-pendientes` |
+| `clientes` | `/clientes` | `tour-clientes-tabla`, `tour-clientes-filtros`, `tour-clientes-exportar`, `tour-clientes-nuevo` |
+| `inventario` | `/inventario` | `tour-inventario-kpis`, `tour-inventario-buscar`, `tour-inventario-tabla` |
+| `operaciones` | `/operaciones/entradas` | `tour-ops-exportar`, `tour-ops-filtros`, `tour-ops-tabla` |
+| `salidas` | `/operaciones/salidas` | `tour-salidas-kpis`, `tour-salidas-filtros`, `tour-salidas-tabla` |
+| `kardex` | `/operaciones/kardex` | `tour-kardex-kpis`, `tour-kardex-filtros`, `tour-kardex-tabla` |
+| `operacion_detalle` | `/operaciones/(entradas\|salidas\|kardex)/:id` | `tour-op-header`, `tour-op-lineas`, `tour-op-logistica`, `tour-op-evidencias` |
+| `cliente_detalle` | `/clientes/:id` | `tour-cliente-kpis`, `tour-cliente-tabs` |
+| `producto_detalle` | `/inventario/productos/:id` | `tour-producto-kpis`, `tour-producto-stock`, `tour-producto-tabs` |
+| `viajes` | `/viajes/viajes` | `tour-viajes-exportar`, `tour-viajes-filtros`, `tour-viajes-tabla`, `tour-viajes-nuevo` |
+| `vehiculos` | `/viajes/vehiculos` | `tour-vehiculos-tabla`, `tour-vehiculos-nuevo` |
+| `cajas_menores` | `/viajes/cajas-menores` | `tour-cajas-tabla`, `tour-cajas-nueva` |
+| `movimientos` | `/viajes/movimientos` | `tour-movimientos-tabla`, `tour-movimientos-nuevo` |
+
 ## Docs
 `docs/WMS_API_SPEC.md` · `docs/FLUJOS_NEGOCIO.md` · `docs/API.md` · `docs/manuales/` · `DEPLOY.md`
