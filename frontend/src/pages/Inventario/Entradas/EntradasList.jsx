@@ -17,6 +17,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
+import Divider from '@mui/material/Divider';
 import { useThemeContext } from '../../../context/ThemeContext';
 import { useAuth } from '../../../context/AuthContext';
 import useNotification from '../../../hooks/useNotification';
@@ -41,6 +42,8 @@ import {
   X,
   ChevronDown,
   Pencil,
+  Trash2,
+  XCircle,
 } from 'lucide-react';
 import clientesService from '../../../api/clientes.service';
 import { Pagination, FilterDropdown, DatePicker } from '../../../components/common';
@@ -84,6 +87,17 @@ const ESTADO_CONFIG = {
     darkBg: 'dark:bg-emerald-900/20',
     darkText: 'dark:text-emerald-300',
     darkBorder: 'dark:border-emerald-800',
+  },
+  anulado: {
+    label: 'Anulado',
+    icon: XCircle,
+    bg: 'bg-red-50',
+    text: 'text-red-700',
+    border: 'border-red-200',
+    dot: 'bg-red-500',
+    darkBg: 'dark:bg-red-900/20',
+    darkText: 'dark:text-red-300',
+    darkBorder: 'dark:border-red-800',
   },
 };
 
@@ -137,11 +151,13 @@ const ProgressBar = ({ verified, total }) => {
 // ROW ACTIONS COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
 
-const RowActions = ({ entrada, onView }) => {
+const RowActions = ({ entrada, onView, onAnular }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const { isDark } = useThemeContext();
   const { user } = useAuth();
   const esPortal = user?.rol === 'cliente';
+  const esAdmin = user?.rol === 'admin';
+  const puedeAnular = esAdmin && ['pendiente', 'en_proceso'].includes(entrada.estado);
   const open = Boolean(anchorEl);
 
   return (
@@ -186,6 +202,19 @@ const RowActions = ({ entrada, onView }) => {
           <Eye className="w-4 h-4" />
           {entrada.estado === 'pendiente' && !esPortal ? 'Iniciar Operación' : 'Ver Operación'}
         </MenuItem>
+        {puedeAnular && <Divider sx={{ my: 0.5 }} />}
+        {puedeAnular && (
+          <MenuItem
+            onClick={() => {
+              onAnular(entrada);
+              setAnchorEl(null);
+            }}
+            sx={{ color: '#dc2626 !important', '&:hover': { backgroundColor: 'rgba(220,38,38,0.08) !important' } }}
+          >
+            <Trash2 className="w-4 h-4" />
+            Anular operación
+          </MenuItem>
+        )}
       </Menu>
     </>
   );
@@ -321,6 +350,30 @@ const EntradasList = () => {
   };
 
   const notify = useNotification();
+
+  const [anularModal, setAnularModal] = useState({ open: false, operacion: null });
+  const [motivoAnular, setMotivoAnular] = useState('');
+  const [anulando, setAnulando] = useState(false);
+
+  const handleAnular = (entrada) => {
+    setAnularModal({ open: true, operacion: entrada });
+    setMotivoAnular('');
+  };
+
+  const confirmarAnular = async () => {
+    if (!anularModal.operacion) return;
+    setAnulando(true);
+    try {
+      await auditoriasService.anularOperacion(anularModal.operacion.id, motivoAnular);
+      notify.success('Operación anulada exitosamente');
+      setAnularModal({ open: false, operacion: null });
+      fetchEntradas(pagination.page);
+    } catch (err) {
+      notify.error(err.message || 'Error al anular la operación');
+    } finally {
+      setAnulando(false);
+    }
+  };
 
   const handleExportExcel = async () => {
     try {
@@ -686,7 +739,7 @@ const EntradasList = () => {
                         <StatusBadge estado={entrada.estado} />
                       </td>
                       <td className="py-4 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                        <RowActions entrada={entrada} onView={handleView} />
+                        <RowActions entrada={entrada} onView={handleView} onAnular={handleAnular} />
                       </td>
                     </tr>
                   ))}
@@ -728,7 +781,7 @@ const EntradasList = () => {
                       </div>
                     </div>
                     <div onClick={(e) => e.stopPropagation()}>
-                      <RowActions entrada={entrada} onView={handleView} />
+                      <RowActions entrada={entrada} onView={handleView} onAnular={handleAnular} />
                     </div>
                   </div>
 
@@ -778,6 +831,55 @@ const EntradasList = () => {
         {/* FOOTER */}
         <PageFooter />
       </main>
+
+      {/* MODAL ANULAR OPERACIÓN */}
+      {anularModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-md w-full mx-4 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                <Trash2 className="w-5 h-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Anular operación</h3>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+              ¿Estás seguro que deseas anular{' '}
+              <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
+                {anularModal.operacion?.numero_operacion || anularModal.operacion?.documento_origen}
+              </span>
+              ? Esta acción cambiará el estado a <strong>Anulado</strong> y no se puede deshacer.
+            </p>
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Motivo (opcional)
+              </label>
+              <textarea
+                value={motivoAnular}
+                onChange={(e) => setMotivoAnular(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-red-500/30"
+                placeholder="Explica el motivo de la anulación..."
+              />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setAnularModal({ open: false, operacion: null })}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-centhrix-surface rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarAnular}
+                disabled={anulando}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {anulando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Anular operación
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

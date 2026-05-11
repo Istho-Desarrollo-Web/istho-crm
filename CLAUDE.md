@@ -83,7 +83,8 @@ import { DatePicker } from '../../../components/common';
 - **Clientes portal** (`rol=cliente`): usan `permisos_cliente` JSON + `getPermisos()` en `Usuario.js` — sistema SEPARADO de permisos por rol. Seeds NO afectan clientes portal. Módulos forzados en `getPermisos()`: `clientes/operaciones/configuracion/perfil`
 - `PERMISOS_POR_ROL` en `AuthContext.jsx` debe tener los 6 roles sincronizados con `seedRolesPermisos.js`. Rol faltante cae a `cliente`
 - `/configuracion` usa `PermissionRoute module="perfil" action="ver"` — todos los roles incluido `cliente` necesitan `perfil.ver`
-- Supervisor: `notificaciones: ['ver']` — sin editar plantillas de email
+- Supervisor: `notificaciones: ['ver', 'enviar']` — puede enviar emails manuales pero no editar plantillas
+- Admin: `notificaciones: ['ver', 'enviar']` — mismo conjunto que supervisor para este módulo
 - Menú: cada sub-item href necesita `if (item.href==='...') return hasPermission(...)` explícito en `FloatingHeader`
 
 ## Base de Datos
@@ -99,6 +100,32 @@ import { DatePicker } from '../../../components/common';
 
 `server/src/controllers/auditoriaWmsController.js` construye objetos de respuesta explícitos — NO devuelve el modelo Sequelize directamente. Hay **6 puntos de mapeo**: `listarEntradas`, `listarSalidas`, `listarKardex` + `obtenerEntradaPorId`, `obtenerSalidaPorId`, `obtenerKardexPorId`.  
 **Al agregar cualquier campo nuevo a `Operacion.js`, agregarlo en los 6 mapeos de `auditoriaWmsController.js`**, o el campo no llega al frontend aunque exista en BD y en el modelo.
+
+## Operaciones — Funciones Admin (Crítico)
+
+### Anulación de operaciones
+
+- Solo estados `pendiente` / `en_proceso` pueden anularse — `cerrado` y `anulado` NO.
+- Backend: `DELETE /operaciones/:id` con body `{ motivo }` — requiere `requiereRolMinimo('supervisor')`. Función `anular()` en `operacionController.js`.
+- Frontend: botón "Anular operación" en el ⋮ de cada fila — visible solo para `user?.rol === 'admin'` + estado permitido.
+- Service: `auditoriasService.anularOperacion(operacionId, motivo)` usa `apiClient.delete(url, { data: { motivo } })` (patrón axios para DELETE con body).
+- Badge `anulado` en `ESTADO_CONFIG` de EntradasList / SalidasList / KardexList: color rojo, ícono `XCircle`. Fallback `ESTADO_CONFIG.pendiente` existente — asegurarse de que `anulado` esté en el objeto.
+
+### Edición administrativa de operaciones
+
+- Solo admin puede editar operaciones en estado `pendiente` / `en_proceso`.
+- Componente: `EditarOperacionModal` (`frontend/src/components/common/EditarOperacionModal.jsx`) — permite corregir encabezado (cliente, documento, fecha) y líneas de detalle (añadir/eliminar/modificar).
+- Marca `editado_admin: true` en BD (`Operacion.editado_admin` BOOLEAN, migración `20260511*`).
+- Backend: endpoint `PATCH /operaciones/:id/editar-admin` — requiere rol admin; registra en `Auditoria`.
+- El campo `editado_admin` debe estar en los 6 mapeos de `auditoriaWmsController.js`.
+
+## Envío Manual de Email
+
+- Permiso: `notificaciones.enviar` (admin + supervisor). Acción separada de `crear` (que controla plantillas).
+- Backend: `POST /api/v1/emails/enviar` — dos modos: `{ plantilla_id, para, cc, variables }` (renderiza Handlebars) o `{ asunto, cuerpo_html, para, cc }` (libre). Responde inmediatamente, envío en `setImmediate`.
+- Frontend: modal `EnviarEmailModal` abre desde botón ✉️ en `FloatingHeader` (solo si `hasPermission('notificaciones', 'enviar')`).
+- Service frontend: `emailManualService.enviar(payload)` — `frontend/src/api/emailManual.service.js`.
+- Auditoría: registra en tabla `emails_manuales`, acción `envio_manual`.
 
 ## Deploy
 - **App Runner (backend, us-west-2):** NO configurar `PORT` — lo inyecta App Runner automáticamente (8080). `CORS_ORIGIN` = URL exacta de Vercel (sin `/` final). Start command DEBE ser `node server/server.js` desde raíz (NO `cd server && node server.js` — App Runner ejecuta sin shell).

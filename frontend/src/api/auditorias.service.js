@@ -403,6 +403,23 @@ const auditoriasService = {
     }
   },
 
+  /**
+   * Anular una operación (solo admin, estados pendiente/en_proceso)
+   */
+  anularOperacion: async (operacionId, motivo = '') => {
+    try {
+      const response = await apiClient.delete(OPERACIONES_ENDPOINTS.BY_ID(operacionId), {
+        data: { motivo },
+      });
+      return response;
+    } catch (error) {
+      throw {
+        success: false,
+        message: error.message || 'Error al anular la operación',
+      };
+    }
+  },
+
   // ══════════════════════════════════════════════════════════════════════════
   // CIERRE
   // ══════════════════════════════════════════════════════════════════════════
