@@ -698,6 +698,33 @@ export const TUTORIALES = {
       },
     ],
   },
+
+  plantillas_email: {
+    modulo: 'plantillas_email',
+    pasos: [
+      {
+        element: '#tour-plantillas-tabs',
+        popover: {
+          title: 'Tipos de plantilla',
+          description: 'Cambia entre "Cierre de Operación" (notificaciones del WMS) y "Sistema" (bienvenida, alertas de inventario, contraseñas).',
+        },
+      },
+      {
+        element: '#tour-plantillas-grid',
+        popover: {
+          title: 'Tarjetas de plantilla',
+          description: 'Cada tarjeta muestra la plantilla activa para ese tipo de correo. Usa el ícono de ojo para previsualizarla o el lápiz para editarla.',
+        },
+      },
+      {
+        element: '#tour-plantillas-nuevo',
+        popover: {
+          title: 'Nueva plantilla',
+          description: 'Crea una plantilla personalizada con editor HTML y variables Handlebars. Al existir una plantilla activa, el sistema la usará en lugar del archivo estático por defecto.',
+        },
+      },
+    ],
+  },
 };
 
 export const RUTAS_CON_TOUR = {
@@ -721,4 +748,5 @@ export const RUTAS_CON_TOUR = {
   '/reportes/gastos': 'reportes_gastos',
   '/reportes/averias': 'reportes_averias',
   '/reportes/programados': 'reportes_programados',
+  '/plantillas-email': 'plantillas_email',
 };

@@ -1578,6 +1578,153 @@ const eliminarAveria = async (req, res) => {
   }
 };
 
+/**
+ * Edición administrativa de una operación (solo admin)
+ * Permite corregir encabezado y líneas en operaciones pendiente/en_proceso.
+ */
+const editarAdmin = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const { id } = req.params;
+    const {
+      cliente_id,
+      fecha_documento,
+      fecha_operacion,
+      origen,
+      destino,
+      documento_wms,
+      observaciones,
+      observaciones_cierre,
+      vehiculo_placa,
+      vehiculo_tipo,
+      conductor_nombre,
+      conductor_cedula,
+      conductor_telefono,
+      ciudad_destino,
+      sucursal_entrega,
+      lineas_actualizar = [],
+      lineas_agregar = [],
+      lineas_eliminar = [],
+    } = req.body;
+
+    if (!req.user.esAdmin) {
+      await transaction.rollback();
+      return errorResponse(res, 'Solo el administrador puede editar operaciones', 403);
+    }
+
+    const operacion = await Operacion.findByPk(id, { transaction });
+    if (!operacion) {
+      await transaction.rollback();
+      return notFound(res, 'Operación no encontrada');
+    }
+    if (!operacion.esEditable()) {
+      await transaction.rollback();
+      return errorResponse(res, 'Solo se pueden editar operaciones pendientes o en proceso', 400);
+    }
+
+    const datosAnteriores = {
+      cliente_id: operacion.cliente_id,
+      fecha_documento: operacion.fecha_documento,
+      fecha_operacion: operacion.fecha_operacion,
+      origen: operacion.origen,
+      destino: operacion.destino,
+      documento_wms: operacion.documento_wms,
+      observaciones: operacion.observaciones,
+      observaciones_cierre: operacion.observaciones_cierre,
+      vehiculo_placa: operacion.vehiculo_placa,
+      vehiculo_tipo: operacion.vehiculo_tipo,
+      conductor_nombre: operacion.conductor_nombre,
+      conductor_cedula: operacion.conductor_cedula,
+      conductor_telefono: operacion.conductor_telefono,
+    };
+
+    const camposActualizar = {};
+    const campos = {
+      cliente_id, fecha_documento, fecha_operacion, origen, destino,
+      documento_wms, observaciones, observaciones_cierre,
+      vehiculo_placa, vehiculo_tipo, conductor_nombre, conductor_cedula,
+      conductor_telefono, ciudad_destino, sucursal_entrega,
+    };
+    for (const [k, v] of Object.entries(campos)) {
+      if (v !== undefined) camposActualizar[k] = v;
+    }
+    if (Object.keys(camposActualizar).length > 0) {
+      await operacion.update(camposActualizar, { transaction });
+    }
+
+    // Líneas: eliminar
+    if (lineas_eliminar.length > 0) {
+      await OperacionDetalle.destroy({
+        where: { id: lineas_eliminar, operacion_id: id },
+        transaction,
+      });
+    }
+
+    // Líneas: actualizar
+    for (const linea of lineas_actualizar) {
+      await OperacionDetalle.update(
+        {
+          sku: linea.sku,
+          producto: linea.producto,
+          cantidad: linea.cantidad,
+          unidad_medida: linea.unidad_medida,
+          lote: linea.lote,
+          peso: linea.peso,
+          observaciones_averia: linea.observaciones,
+        },
+        { where: { id: linea.id, operacion_id: id }, transaction }
+      );
+    }
+
+    // Líneas: agregar
+    if (lineas_agregar.length > 0) {
+      await OperacionDetalle.bulkCreate(
+        lineas_agregar.map((l) => ({
+          operacion_id: Number(id),
+          sku: l.sku,
+          producto: l.producto,
+          cantidad: l.cantidad,
+          unidad_medida: l.unidad_medida || 'UND',
+          lote: l.lote || null,
+          peso: l.peso || null,
+        })),
+        { transaction }
+      );
+    }
+
+    // Recalcular totales y marcar edición admin
+    const todasLineas = await OperacionDetalle.findAll({ where: { operacion_id: id }, transaction });
+    await operacion.update(
+      {
+        total_referencias: todasLineas.length,
+        total_unidades: todasLineas.reduce((s, l) => s + parseFloat(l.cantidad || 0), 0),
+        editado_admin: true,
+      },
+      { transaction }
+    );
+
+    await Auditoria.registrar({
+      tabla: 'operaciones',
+      registro_id: operacion.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_anteriores: datosAnteriores,
+      datos_nuevos: camposActualizar,
+      ip_address: getClientIP(req),
+      descripcion: `Edición admin: ${operacion.numero_operacion}. Líneas: +${lineas_agregar.length} mod:${lineas_actualizar.length} del:${lineas_eliminar.length}`,
+    });
+
+    await transaction.commit();
+    return success(res, null, 'Operación actualizada correctamente');
+  } catch (err) {
+    try { await transaction.rollback(); } catch (_) {}
+    logger.error('Error en editarAdmin:', { message: err.message });
+    return serverError(res, 'Error al editar la operación', err);
+  }
+};
+
 module.exports = {
   listarDocumentosWMS,
   buscarDocumentoWMS,
@@ -1593,4 +1740,5 @@ module.exports = {
   cerrar,
   reenviarCorreo,
   anular,
+  editarAdmin,
 };

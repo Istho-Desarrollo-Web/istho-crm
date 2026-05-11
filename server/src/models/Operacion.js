@@ -236,6 +236,14 @@ module.exports = (sequelize) => {
         allowNull: true,
         comment: 'UUID de la orden en el WMS CenthriX (deduplicación PULL)',
       },
+
+      // Indica si un admin editó esta operación después de su creación
+      editado_admin: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+        comment: 'true si un administrador editó esta operación',
+      },
     },
     {
       tableName: 'operaciones',

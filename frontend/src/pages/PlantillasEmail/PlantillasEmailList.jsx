@@ -243,6 +243,7 @@ const PlantillasEmailList = () => {
             </Button>
             {canCreate && (
               <Button
+                id="tour-plantillas-nuevo"
                 variant="primary"
                 icon={Plus}
                 onClick={() => navigate('/plantillas-email/nueva')}
@@ -254,7 +255,7 @@ const PlantillasEmailList = () => {
         </div>
 
         {/* TABS */}
-        <div className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-xl p-1 mb-6 w-fit">
+        <div id="tour-plantillas-tabs" className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-xl p-1 mb-6 w-fit">
           <button
             onClick={() => setActiveTab('operacion')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -321,7 +322,7 @@ const PlantillasEmailList = () => {
           }
 
           return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div id="tour-plantillas-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {plantillasFiltradas.map((plantilla) => (
                 <PlantillaCard
                   key={plantilla.id}

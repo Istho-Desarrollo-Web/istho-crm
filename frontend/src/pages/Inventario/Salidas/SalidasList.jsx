@@ -40,6 +40,7 @@ import {
   Filter,
   X,
   ChevronDown,
+  Pencil,
 } from 'lucide-react';
 import clientesService from '../../../api/clientes.service';
 import { Pagination, FilterDropdown, DatePicker } from '../../../components/common';
@@ -631,6 +632,11 @@ const SalidasList = () => {
                             <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
                               {salida.documento}
                             </p>
+                            {salida.editado_admin && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 mt-1 rounded text-[10px] font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                                <Pencil className="w-3 h-3" /> Editado
+                              </span>
+                            )}
                           </div>
                         </div>
                       </td>

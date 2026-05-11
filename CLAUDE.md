@@ -93,6 +93,12 @@ import { DatePicker } from '../../../components/common';
 - Scripts: `migration:create` · `migration:status` · `migration:up` · `migration:undo`
 - Fechas: `DATEONLY` en Sequelize, parsear con `new Date(date+'T00:00:00')` en frontend
 - Precios: enteros en BD, `Intl.NumberFormat('es-CO')` en frontend
+- **Diagnóstico si Umzug no aplica una migración**: verificar `SELECT name FROM SequelizeMeta ORDER BY name`. Si el archivo no aparece pero Umzug dice "sin pendientes", usar un script Node con `sequelize.query('ALTER TABLE ...')` + `INSERT INTO SequelizeMeta (name) VALUES (?)` para aplicarlo manualmente.
+
+## auditoriaWmsController — Mapeo explícito (Crítico)
+
+`server/src/controllers/auditoriaWmsController.js` construye objetos de respuesta explícitos — NO devuelve el modelo Sequelize directamente. Hay **6 puntos de mapeo**: `listarEntradas`, `listarSalidas`, `listarKardex` + `obtenerEntradaPorId`, `obtenerSalidaPorId`, `obtenerKardexPorId`.  
+**Al agregar cualquier campo nuevo a `Operacion.js`, agregarlo en los 6 mapeos de `auditoriaWmsController.js`**, o el campo no llega al frontend aunque exista en BD y en el modelo.
 
 ## Deploy
 - **App Runner (backend, us-west-2):** NO configurar `PORT` — lo inyecta App Runner automáticamente (8080). `CORS_ORIGIN` = URL exacta de Vercel (sin `/` final). Start command DEBE ser `node server/server.js` desde raíz (NO `cd server && node server.js` — App Runner ejecuta sin shell).

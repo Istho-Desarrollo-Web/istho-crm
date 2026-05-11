@@ -650,6 +650,41 @@ const enviarRecuperacionPassword = async ({ email, nombre, username, urlReset })
   }
 };
 
+/**
+ * Enviar email manual (ad-hoc) — con plantilla de BD o HTML libre
+ */
+const enviarManual = async ({ para, cc = [], plantillaId, variables = {}, asunto, cuerpoHtml }) => {
+  const { PlantillaEmail } = require('../models');
+  const transporter = await getTransporter();
+
+  let mailAsunto, mailHtml;
+
+  if (plantillaId) {
+    const plantilla = await PlantillaEmail.findByPk(plantillaId);
+    if (!plantilla) throw new Error('Plantilla no encontrada');
+    const asuntoTemplate = Handlebars.compile(plantilla.asunto_template);
+    mailAsunto = asuntoTemplate(variables);
+    mailHtml = renderFromDB(plantilla, variables, mailAsunto);
+  } else {
+    if (!asunto || !cuerpoHtml) throw new Error('Se requiere asunto y cuerpo cuando no se usa plantilla');
+    mailAsunto = asunto;
+    mailHtml = cuerpoHtml;
+  }
+
+  const paraStr = Array.isArray(para) ? para.join(', ') : para;
+  const ccStr = cc && cc.length ? (Array.isArray(cc) ? cc.join(', ') : cc) : undefined;
+
+  await transporter.sendMail({
+    from: defaultFrom,
+    to: paraStr,
+    cc: ccStr,
+    subject: mailAsunto,
+    html: mailHtml,
+  });
+
+  logger.info('Email manual enviado', { para: paraStr, asunto: mailAsunto, plantillaId });
+};
+
 // ════════════════════════════════════════════════════════════════════════════
 // EXPORTS
 // ════════════════════════════════════════════════════════════════════════════
@@ -663,4 +698,5 @@ module.exports = {
   enviarBienvenidaUsuarioCliente,
   enviarReseteoPassword,
   enviarRecuperacionPassword,
+  enviarManual,
 };

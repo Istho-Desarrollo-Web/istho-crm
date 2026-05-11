@@ -17,7 +17,7 @@
  */
 
 import apiClient, { createUploadClient } from './client';
-import { AUDITORIAS_ENDPOINTS } from './endpoints';
+import { AUDITORIAS_ENDPOINTS, OPERACIONES_ENDPOINTS } from './endpoints';
 
 // ============================================================================
 // SERVICIO DE AUDITORIAS
@@ -466,6 +466,32 @@ const auditoriasService = {
         message: error.message || 'Error al reenviar correo',
         errors: error.errors || [],
         code: 'REENVIAR_CORREO_ERROR',
+      };
+    }
+  },
+
+  getOperacionById: async (id) => {
+    try {
+      const response = await apiClient.get(OPERACIONES_ENDPOINTS.BY_ID(id));
+      return response;
+    } catch (error) {
+      throw {
+        success: false,
+        message: error.message || 'Error al obtener operación',
+        code: 'GET_OPERACION_ERROR',
+      };
+    }
+  },
+
+  editarAdmin: async (operacionId, payload) => {
+    try {
+      const response = await apiClient.put(`/operaciones/${operacionId}`, payload);
+      return response;
+    } catch (error) {
+      throw {
+        success: false,
+        message: error.message || 'Error al editar la operación',
+        code: 'EDITAR_ADMIN_ERROR',
       };
     }
   },

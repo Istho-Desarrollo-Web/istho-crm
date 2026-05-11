@@ -104,6 +104,14 @@ router.post(
   operacionController.reenviarCorreo
 );
 
+// Edición administrativa (solo admin)
+router.put(
+  '/:id',
+  noClientes,
+  requiereRolMinimo('admin'),
+  operacionController.editarAdmin
+);
+
 // Anular operación
 router.delete(
   '/:id',

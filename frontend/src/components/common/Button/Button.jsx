@@ -22,6 +22,7 @@ const Button = ({
   className = '',
   title,
   ariaLabel,
+  id,
 }) => {
   const baseClasses = `
     inline-flex items-center justify-center gap-2
@@ -78,6 +79,7 @@ const Button = ({
 
   return (
     <button
+      id={id}
       type={type}
       onClick={onClick}
       disabled={disabled || loading}

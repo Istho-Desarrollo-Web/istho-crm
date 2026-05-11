@@ -57,6 +57,7 @@ import { useNotificaciones } from '../../context/NotificacionesContext';
 import { formatDateShort as formatDateSafe } from '../../utils/formatDate';
 import { RUTAS_CON_TOUR } from '../../utils/tutorialConfig';
 import useTutorial from '../../hooks/useTutorial';
+import { EnviarEmailModal } from '../common';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -754,6 +755,8 @@ const MobileMenu = ({
   onToggleDark,
   _onShowShortcuts,
   menuItems,
+  onComposeEmail,
+  canSendEmail,
 }) => {
   const [expandedSection, setExpandedSection] = useState(null);
   const menuRef = useRef(null);
@@ -942,6 +945,15 @@ const MobileMenu = ({
             >
               <FileSpreadsheet className="w-4 h-4" />
               Reportes
+            </button>
+          )}
+          {canSendEmail && (
+            <button
+              onClick={onComposeEmail}
+              className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-centhrix-card rounded-lg transition-colors"
+            >
+              <Mail className="w-4 h-4" />
+              Componer Email
             </button>
           )}
           <button
@@ -1218,6 +1230,7 @@ const FloatingHeader = () => {
     loading: loadingNotifs,
   } = useNotificaciones();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
   const notifRef = useRef(null);
   const lastNotifRef = useRef(null);
   const liveRegionTimeoutRef = useRef(null);
@@ -1634,6 +1647,17 @@ const FloatingHeader = () => {
                   )}
                 </div>
 
+                {hasPermission('notificaciones', 'enviar') && (
+                  <button
+                    onClick={() => setEmailModalOpen(true)}
+                    aria-label="Componer email"
+                    title="Componer email"
+                    className="hidden sm:inline-flex p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-card rounded-lg transition-colors"
+                  >
+                    <Mail className="w-5 h-5" aria-hidden="true" />
+                  </button>
+                )}
+
                 <AvatarDropdown user={user} onNavigate={navigate} onLogout={handleLogout} />
               </div>
             </div>
@@ -1656,10 +1680,18 @@ const FloatingHeader = () => {
         onToggleDark={toggleDark}
         onShowShortcuts={() => setIsShortcutsOpen(true)}
         menuItems={menuConfig}
+        canSendEmail={hasPermission('notificaciones', 'enviar')}
+        onComposeEmail={() => {
+          setIsMobileMenuOpen(false);
+          setEmailModalOpen(true);
+        }}
       />
 
       {/* Shortcuts Modal */}
       <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
+
+      {/* Email Manual Modal */}
+      <EnviarEmailModal isOpen={emailModalOpen} onClose={() => setEmailModalOpen(false)} />
 
       {/* Live region para screen readers */}
       <div aria-live="polite" aria-atomic="true" className="sr-only" id="centhrix-live-region" />

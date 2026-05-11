@@ -337,6 +337,12 @@ const PERMISOS_CATALOGO = [
     descripcion: 'Eliminar notificaciones',
     grupo: 'General',
   },
+  {
+    modulo: 'notificaciones',
+    accion: 'enviar',
+    descripcion: 'Enviar emails manuales',
+    grupo: 'General',
+  },
 
   // Vehículos
   { modulo: 'vehiculos', accion: 'ver', descripcion: 'Ver listado de vehículos', grupo: 'Viajes' },
@@ -456,7 +462,7 @@ const PERMISOS_POR_ROL = {
     usuarios: ['ver'],
     configuracion: ['ver', 'editar'],
     configuracion_wms: ['ver'],
-    notificaciones: ['ver'],
+    notificaciones: ['ver', 'enviar'],
     vehiculos: ['ver', 'crear', 'editar', 'eliminar'],
     viajes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
     caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'eliminar', 'exportar'],

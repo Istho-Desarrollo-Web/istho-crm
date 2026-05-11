@@ -123,6 +123,7 @@ const listarEntradas = async (req, res) => {
       tipo_documento_wms: op.tipo_documento_wms || 'CO',
       fecha_ingreso: op.fecha_operacion || op.created_at,
       estado: op.estado,
+      editado_admin: !!op.editado_admin,
       lineas: op.detalles?.length || op.total_referencias || 0,
       lineas_verificadas: Math.min(
         (op.detalles || []).filter((d) => d.verificado).length,
@@ -198,6 +199,7 @@ const obtenerEntradaPorId = async (req, res) => {
       tipo_documento: 'Recepción',
       fecha_ingreso: operacion.fecha_operacion || operacion.created_at,
       estado: operacion.estado,
+      editado_admin: !!operacion.editado_admin,
       lineas: (operacion.detalles || []).map((d) => ({
         id: d.id,
         sku: d.sku || '',
@@ -325,6 +327,7 @@ const listarSalidas = async (req, res) => {
       tipo_documento_wms: op.tipo_documento_wms || 'PK',
       fecha_salida: op.fecha_operacion || op.created_at,
       estado: op.estado,
+      editado_admin: !!op.editado_admin,
       lineas: op.detalles?.length || op.total_referencias || 0,
       lineas_verificadas: Math.min(
         (op.detalles || []).filter((d) => d.verificado).length,
@@ -400,6 +403,7 @@ const obtenerSalidaPorId = async (req, res) => {
       tipo_documento: 'Despacho',
       fecha_salida: operacion.fecha_operacion || operacion.created_at,
       estado: operacion.estado,
+      editado_admin: !!operacion.editado_admin,
       lineas: (operacion.detalles || []).map((d) => ({
         id: d.id,
         sku: d.sku || '',
@@ -526,6 +530,7 @@ const listarKardex = async (req, res) => {
       motivo: op.motivo_kardex || '',
       fecha_ingreso: op.fecha_operacion || op.created_at,
       estado: op.estado,
+      editado_admin: !!op.editado_admin,
       lineas: op.detalles?.length || op.total_referencias || 0,
       lineas_verificadas: Math.min(
         (op.detalles || []).filter((d) => d.verificado).length,
@@ -604,6 +609,7 @@ const obtenerKardexPorId = async (req, res) => {
       motivo: operacion.motivo_kardex || '',
       fecha_ingreso: operacion.fecha_operacion || operacion.created_at,
       estado: operacion.estado,
+      editado_admin: !!operacion.editado_admin,
       lineas: (operacion.detalles || []).map((d) => ({
         id: d.id,
         sku: d.sku || '',

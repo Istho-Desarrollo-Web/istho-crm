@@ -928,20 +928,6 @@ const plantillaGeneral = {
   <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 25px 0">{{mensaje}}</p>
   {{/if}}
 
-  <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px 20px; margin: 20px 0;">
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-      <tr>
-        <td style="width: 40px; vertical-align: top">
-          <div style="width: 36px; height: 36px; background-color: #dcfce7; border-radius: 8px; text-align: center; line-height: 36px; font-size: 18px;">📎</div>
-        </td>
-        <td style="padding-left: 12px; vertical-align: middle">
-          <p style="margin: 0 0 2px 0; color: #166534; font-size: 14px; font-weight: 600">Archivos adjuntos</p>
-          <p style="margin: 0; color: #16a34a; font-size: 13px">El reporte se encuentra adjunto a este correo. Puedes descargarlo directamente.</p>
-        </td>
-      </tr>
-    </table>
-  </div>
-
   {{#if urlAccion}}
   <div style="text-align: center; margin: 30px 0">
     <a href="{{urlAccion}}" class="btn">{{#if labelAccion}}{{labelAccion}}{{else}}Ver en el sistema{{/if}}</a>

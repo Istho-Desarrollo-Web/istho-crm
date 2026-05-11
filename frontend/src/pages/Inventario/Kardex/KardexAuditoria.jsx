@@ -40,13 +40,14 @@ import {
   Shield,
   Mail,
   Camera,
+  Pencil,
 } from 'lucide-react';
 
 import auditoriasService from '../../../api/auditorias.service';
 import { useAlert } from '../../../context/AlertContext';
 import { useAuth } from '../../../context/AuthContext';
 import CierreAuditoriaModal from '../../../components/common/CierreAuditoriaModal';
-import { FilterDropdown } from '../../../components/common';
+import { FilterDropdown, EditarOperacionModal } from '../../../components/common';
 import { formatDateShort } from '../../../utils/formatDate';
 import { getServerFileUrl } from '../../../api/client';
 import { comprimirImagen, COMPRESS_PRESETS } from '../../../utils/compressImage';
@@ -577,7 +578,8 @@ const KardexAuditoria = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showAlert, showConfirm } = useAlert();
-  const { hasPermission } = useAuth();
+  const { hasPermission, isAdmin } = useAuth();
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   // Estado de carga
   const [pageLoading, setPageLoading] = useState(true);
@@ -1224,12 +1226,27 @@ const KardexAuditoria = () => {
                   <span>Kardex</span>
                   <span>•</span>
                   <span>{formatDateShort(kardexData.fecha_ingreso)}</span>
+                  {kardexData.editado_admin && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
+                      <Pencil className="w-3 h-3" /> Editado por admin
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Overall Progress */}
             <div className="flex items-center gap-3">
+              {isAdmin() && !isCerrado && (
+                <button
+                  onClick={() => setEditModalOpen(true)}
+                  title="Editar operación (admin)"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded-xl border border-orange-200 dark:border-orange-800/50 transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Editar
+                </button>
+              )}
               <div className="text-right">
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Progreso</p>
                 <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
@@ -1980,6 +1997,12 @@ const KardexAuditoria = () => {
         auditoriaId={id}
         closing={closing}
         colorScheme="purple"
+      />
+      <EditarOperacionModal
+        isOpen={editModalOpen}
+        operacionId={id}
+        onClose={() => setEditModalOpen(false)}
+        onGuardado={() => navigate(0)}
       />
     </div>
   );

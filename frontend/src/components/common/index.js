@@ -28,3 +28,5 @@ export { default as Pagination } from './Pagination';
 export { default as Input } from './Input/Input';
 export { default as ReportFilters } from './ReportFilters';
 export { default as AccionesDropdown } from './AccionesDropdown';
+export { default as EnviarEmailModal } from './EnviarEmailModal';
+export { default as EditarOperacionModal } from './EditarOperacionModal';

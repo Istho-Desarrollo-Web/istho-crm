@@ -54,10 +54,11 @@ Sistema integral de gestión logística, transporte y almacenamiento para **ISTH
 
 | Componente | Plataforma |
 |-----------|-----------|
-| **Backend + BD** | Railway (MySQL + Node.js) |
+| **Backend** | AWS App Runner (us-west-2) |
+| **Base de datos** | AWS RDS MySQL 8.0 (db.t3.micro) |
 | **Frontend** | Vercel |
-| **Archivos y medios** | Cloudinary |
-| **Email transaccional** | Resend |
+| **Archivos y medios** | AWS S3 (`istho-crm-files`, presigned URLs) |
+| **Email** | Gmail SMTP vía Nodemailer |
 
 ## Módulos del Sistema
 
@@ -225,27 +226,28 @@ Los seeds de roles, permisos, plantillas de email y configuración WMS se ejecut
 
 | Variable | Descripción |
 |----------|-------------|
-| `DATABASE_URL` / `MYSQL_URL` | Conexión MySQL |
-| `JWT_SECRET` | Secreto para access tokens — **obligatorio, mínimo 32 caracteres** (el servidor lanza error en startup si no está configurado) |
+| `DB_HOST` / `MYSQL_URL` | Conexión MySQL (local / RDS) |
+| `JWT_SECRET` | Secreto para access tokens — **obligatorio, mínimo 32 caracteres** |
 | `JWT_REFRESH_SECRET` | Secreto para refresh tokens |
-| `RESEND_API_KEY` | API key de Resend (email producción) |
-| `CLOUDINARY_CLOUD_NAME` | Nombre del cloud en Cloudinary |
-| `CLOUDINARY_API_KEY` | API key de Cloudinary |
-| `CLOUDINARY_API_SECRET` | API secret de Cloudinary |
-| `WMS_API_KEY` | Key para autenticar llamadas del WMS |
+| `SMTP_USER` / `SMTP_PASS` | Credenciales Gmail SMTP (app password) |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Credenciales S3 (solo desarrollo; producción usa IAM Role) |
+| `AWS_S3_BUCKET` | Nombre del bucket S3 (`istho-crm-files`) |
+| `WMS_URL` | URL base de la API WMS |
+| `WMS_EMAIL` / `WMS_PASSWORD` | Credenciales de integración WMS (polling PULL) |
+| `WMS_API_KEY` | Key para autenticar llamadas PUSH del WMS |
 | `CORS_ORIGIN` | URL exacta del frontend (sin trailing slash) |
 
 ## Despliegue
 
 | Componente | Plataforma | Configuración |
 |-----------|-----------|---------------|
-| **Backend** | Railway | `server/railway.toml` + `server/nixpacks.toml`. Health check: `/health` |
+| **Backend** | AWS App Runner (us-west-2) | Start: `node server/server.js`. Health check: `/health`. NO definir `PORT`. |
 | **Frontend** | Vercel | `frontend/vercel.json`. Root directory: `frontend` |
-| **Base de datos** | Railway MySQL | `MYSQL_URL` (interna) para backend |
-| **Archivos** | Cloudinary | Avatares, soportes, evidencias, averías y branding |
-| **Email** | Resend | API HTTP. Requiere verificar dominio para enviar a externos |
+| **Base de datos** | AWS RDS MySQL 8.0 | VPC connector al App Runner. Sin acceso público. |
+| **Archivos** | AWS S3 (`istho-crm-files`) | Presigned URLs (15 min TTL). IAM Instance Role en producción. |
+| **Email** | Gmail SMTP vía Nodemailer | Puerto 587, app password |
 
-> **Importante:** NO definir variable `PORT` en Railway (se asigna automáticamente). `CORS_ORIGIN` debe coincidir con la URL exacta de Vercel sin trailing slash.
+> **Importante:** NO definir variable `PORT` en App Runner (se asigna automáticamente en 8080). `CORS_ORIGIN` debe coincidir con la URL exacta de Vercel sin trailing slash.
 
 Para detalles completos de deploy ver [DEPLOY.md](DEPLOY.md).
 
