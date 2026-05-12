@@ -33,6 +33,7 @@ const {
 } = require('../utils/responses');
 const { parsePaginacion, parseOrdenamiento, getClientIP } = require('../utils/helpers');
 const excelService = require('../services/excelService');
+const wmsApiService = require('../services/wmsApiService');
 const logger = require('../utils/logger');
 
 const CAMPOS_ORDENAMIENTO = ['numero_operacion', 'fecha_operacion', 'tipo', 'estado', 'created_at'];
@@ -195,6 +196,7 @@ const obtenerEntradaPorId = async (req, res) => {
       id: operacion.id,
       documento: operacion.numero_operacion,
       documento_wms: operacion.documento_wms || null,
+      wms_order_id: operacion.wms_order_id || null,
       cliente: operacion.cliente?.razon_social || 'Sin cliente',
       tipo_documento: 'Recepción',
       fecha_ingreso: operacion.fecha_operacion || operacion.created_at,
@@ -399,6 +401,7 @@ const obtenerSalidaPorId = async (req, res) => {
       id: operacion.id,
       documento: operacion.numero_operacion,
       documento_wms: operacion.documento_wms || null,
+      wms_order_id: operacion.wms_order_id || null,
       cliente: operacion.cliente?.razon_social || 'Sin cliente',
       tipo_documento: 'Despacho',
       fecha_salida: operacion.fecha_operacion || operacion.created_at,
@@ -603,6 +606,7 @@ const obtenerKardexPorId = async (req, res) => {
       id: operacion.id,
       documento: operacion.numero_operacion,
       documento_wms: operacion.documento_wms || null,
+      wms_order_id: operacion.wms_order_id || null,
       cliente: operacion.cliente?.razon_social || 'Sin cliente',
       tipo_documento: 'Kardex',
       tipo_documento_wms: operacion.tipo_documento_wms || 'CR',
@@ -1285,6 +1289,40 @@ const exportarExcel = async (req, res) => {
   }
 };
 
+// ════════════════════════════════════════════════════════════════════════════
+// ETIQUETAS WMS (proxy para imprimir desde CRM)
+// ════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Obtiene las etiquetas de pallet de una orden WMS para impresión.
+ * GET /auditorias/:tipo/:id/etiquetas-wms
+ * Requiere que la operación tenga wms_order_id (sincronizada desde el WMS).
+ */
+const getEtiquetasWms = async (req, res) => {
+  try {
+    const { tipo, id } = req.params;
+    const tiposValidos = { entradas: 'ingreso', salidas: 'salida', kardex: 'kardex' };
+    const tipoOperacion = tiposValidos[tipo];
+    if (!tipoOperacion) return errorResponse(res, 'Tipo de operación inválido', 400);
+
+    const operacion = await Operacion.findOne({
+      where: { id, tipo: tipoOperacion },
+      attributes: ['id', 'wms_order_id', 'numero_operacion'],
+    });
+
+    if (!operacion) return notFound(res, 'Operación no encontrada');
+    if (!operacion.wms_order_id) {
+      return errorResponse(res, 'Esta operación no tiene vínculo con el WMS (sin wms_order_id)', 422);
+    }
+
+    const labels = await wmsApiService.getPalletLabels(operacion.wms_order_id);
+    return success(res, { wms_order_id: operacion.wms_order_id, labels: Array.isArray(labels) ? labels : [] });
+  } catch (err) {
+    logger.error('[AUDITORIAS] Error al obtener etiquetas WMS:', err);
+    return serverError(res, 'Error al consultar etiquetas en el WMS', err);
+  }
+};
+
 module.exports = {
   listarEntradas,
   obtenerEntradaPorId,
@@ -1303,4 +1341,5 @@ module.exports = {
   estadisticas,
   recientes,
   exportarExcel,
+  getEtiquetasWms,
 };

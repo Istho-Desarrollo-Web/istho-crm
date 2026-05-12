@@ -141,6 +141,9 @@ export const AUDITORIAS_ENDPOINTS = {
 
   // Exportar Excel
   EXPORT_EXCEL: (tipo) => `/auditorias/${tipo}/excel`,
+
+  // Etiquetas WMS para impresión (proxy al WMS)
+  ETIQUETAS_WMS: (tipo, id) => `/auditorias/${tipo}/${id}/etiquetas-wms`,
 };
 
 // ════════════════════════════════════════════════════════════════════════════

@@ -41,6 +41,7 @@ import {
   Mail,
   Camera,
   Pencil,
+  Printer,
 } from 'lucide-react';
 
 import auditoriasService from '../../../api/auditorias.service';
@@ -48,7 +49,7 @@ import { useAlert } from '../../../context/AlertContext';
 import { useAuth } from '../../../context/AuthContext';
 import { getServerFileUrl } from '../../../api/client';
 import CierreAuditoriaModal from '../../../components/common/CierreAuditoriaModal';
-import { FilterDropdown, EditarOperacionModal } from '../../../components/common';
+import { FilterDropdown, EditarOperacionModal, ImprimirEtiquetasModal } from '../../../components/common';
 import { formatDateShort } from '../../../utils/formatDate';
 import { comprimirImagen, COMPRESS_PRESETS } from '../../../utils/compressImage';
 
@@ -633,6 +634,7 @@ const EntradaAuditoria = () => {
   const { showAlert, showConfirm } = useAlert();
   const { hasPermission, isAdmin } = useAuth();
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [printModalOpen, setPrintModalOpen] = useState(false);
 
   // Estado de carga
   const [pageLoading, setPageLoading] = useState(true);
@@ -1300,6 +1302,16 @@ const EntradaAuditoria = () => {
 
             {/* Overall Progress */}
             <div className="flex items-center gap-3">
+              {entradaData?.wms_order_id && (
+                <button
+                  onClick={() => setPrintModalOpen(true)}
+                  title="Imprimir etiquetas de pallet"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#E74C3C] bg-[#E74C3C]/10 hover:bg-[#E74C3C]/20 rounded-xl border border-[#E74C3C]/30 transition-colors"
+                >
+                  <Printer className="w-4 h-4" />
+                  Imprimir
+                </button>
+              )}
               {isAdmin() && !isCerrado && (
                 <button
                   onClick={() => setEditModalOpen(true)}
@@ -2050,6 +2062,13 @@ const EntradaAuditoria = () => {
         operacionId={id}
         onClose={() => setEditModalOpen(false)}
         onGuardado={() => navigate(0)}
+      />
+      <ImprimirEtiquetasModal
+        isOpen={printModalOpen}
+        onClose={() => setPrintModalOpen(false)}
+        tipoOperacion="entradas"
+        operacionId={id}
+        sourceRef={entradaData?.documento_wms || entradaData?.documento}
       />
     </div>
   );

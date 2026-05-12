@@ -557,6 +557,24 @@ const auditoriasService = {
       };
     }
   },
+
+  /**
+   * Obtiene los label_ids de los pallets de una operación desde el WMS.
+   * @param {'entradas'|'salidas'|'kardex'} tipo
+   * @param {number} id
+   */
+  getEtiquetasWms: async (tipo, id) => {
+    try {
+      const response = await apiClient.get(AUDITORIAS_ENDPOINTS.ETIQUETAS_WMS(tipo, id));
+      return response;
+    } catch (error) {
+      throw {
+        success: false,
+        message: error.message || 'Error al obtener etiquetas del WMS',
+        code: 'GET_ETIQUETAS_WMS_ERROR',
+      };
+    }
+  },
 };
 
 // ============================================================================

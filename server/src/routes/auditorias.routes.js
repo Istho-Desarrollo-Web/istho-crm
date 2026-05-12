@@ -51,6 +51,12 @@ router.get('/kardex', auditoriaWmsController.listarKardex);
 router.get('/kardex/:id', auditoriaWmsController.obtenerKardexPorId);
 
 // =============================================
+// ETIQUETAS WMS (proxy para impresión desde CRM)
+// =============================================
+
+router.get('/:tipo/:id/etiquetas-wms', auditoriaWmsController.getEtiquetasWms);
+
+// =============================================
 // ACCIONES SOBRE LÍNEAS
 // =============================================
 

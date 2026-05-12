@@ -194,6 +194,11 @@ async function postKardexAdjustment(body) {
   return _normalizar(res.data);
 }
 
+async function getPalletLabels(wmsOrderId) {
+  const res = await _http.get(`/orders/${wmsOrderId}/pallet-labels`);
+  return _normalizar(res.data, true);
+}
+
 // Llamar al arranque para tener token listo antes del primer ciclo de polling
 async function calentarToken() {
   try {
@@ -218,5 +223,6 @@ module.exports = {
   getKardexMotives,
   getKardexHistory,
   postKardexAdjustment,
+  getPalletLabels,
   calentarToken,
 };

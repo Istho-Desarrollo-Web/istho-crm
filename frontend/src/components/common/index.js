@@ -30,3 +30,4 @@ export { default as ReportFilters } from './ReportFilters';
 export { default as AccionesDropdown } from './AccionesDropdown';
 export { default as EnviarEmailModal } from './EnviarEmailModal';
 export { default as EditarOperacionModal } from './EditarOperacionModal';
+export { default as ImprimirEtiquetasModal } from './ImprimirEtiquetasModal';
