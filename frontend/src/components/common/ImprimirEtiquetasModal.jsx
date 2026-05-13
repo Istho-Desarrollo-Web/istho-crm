@@ -5,11 +5,12 @@
  * centhrix-print-server para impresión en impresoras Zebra.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Printer, X, Wifi, WifiOff, Package, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import useNotification from '../../hooks/useNotification';
 import auditoriasService from '../../api/auditorias.service';
 import { getPrintersDisponibles, enviarJobsBulk } from '../../api/printService';
+import { FilterDropdown } from './index';
 
 const BADGE_STATUS = {
   online: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
@@ -27,6 +28,7 @@ const BADGE_STATUS = {
 const ImprimirEtiquetasModal = ({ isOpen, onClose, tipoOperacion, operacionId, sourceRef }) => {
   const [printers, setPrinters] = useState([]);
   const [labels, setLabels] = useState([]);
+  const [labelType, setLabelType] = useState('QR');
   const [printerId, setPrinterId] = useState('');
   const [copies, setCopies] = useState(1);
   const [loadingData, setLoadingData] = useState(false);
@@ -34,6 +36,11 @@ const ImprimirEtiquetasModal = ({ isOpen, onClose, tipoOperacion, operacionId, s
   const [errorMsg, setErrorMsg] = useState('');
   const [done, setDone] = useState(false);
   const { success, error } = useNotification();
+
+  const filteredLabels = useMemo(
+    () => labels.filter((l) => l.labelType === labelType),
+    [labels, labelType]
+  );
 
   const cargarDatos = useCallback(async () => {
     setLoadingData(true);
@@ -78,14 +85,14 @@ const ImprimirEtiquetasModal = ({ isOpen, onClose, tipoOperacion, operacionId, s
     try {
       const payload = {
         printer_id: printerId,
-        labels: labels.map((l) => ({ label_id: l.id || l.label_id, pallet_id: l.palletId || l.pallet_id })),
+        labels: filteredLabels.map((l) => ({ label_id: l.id || l.label_id, pallet_id: l.palletId || l.pallet_id })),
         copies: Math.max(1, Number(copies) || 1),
         priority: 5,
         source: 'crm-centhrix',
         source_ref: sourceRef || String(operacionId),
       };
       const res = await enviarJobsBulk(payload);
-      success(`${res?.jobs_created ?? labels.length} etiqueta(s) enviadas a la impresora`);
+      success(`${res?.jobs_created ?? filteredLabels.length} etiqueta(s) enviadas a la impresora`);
       setDone(true);
     } catch (err) {
       error(err.message || 'Error al enviar trabajos de impresión');
@@ -134,7 +141,7 @@ const ImprimirEtiquetasModal = ({ isOpen, onClose, tipoOperacion, operacionId, s
                 Trabajos enviados a la cola de impresión
               </p>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                {labels.length} etiqueta(s) · {copies} copia(s) cada una
+                {filteredLabels.length} etiqueta(s) {labelType} · {copies} copia(s) cada una
               </p>
             </div>
           ) : (
@@ -147,11 +154,26 @@ const ImprimirEtiquetasModal = ({ isOpen, onClose, tipoOperacion, operacionId, s
                 </div>
               )}
 
+              {/* Tipo de etiqueta */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Tipo de etiqueta
+                </label>
+                <FilterDropdown
+                  options={[
+                    { value: 'QR', label: 'QR' },
+                    { value: 'BARCODE', label: 'Código de barras' },
+                  ]}
+                  value={labelType}
+                  onChange={(v) => setLabelType(v)}
+                />
+              </div>
+
               {/* Etiquetas disponibles */}
               <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
                 <Package className="w-4 h-4 text-slate-400" />
                 <span className="text-sm text-slate-600 dark:text-slate-300">
-                  <strong className="text-slate-800 dark:text-slate-100">{labels.length}</strong> etiqueta(s) encontradas en el WMS
+                  <strong className="text-slate-800 dark:text-slate-100">{filteredLabels.length}</strong> etiqueta(s) {labelType} encontradas en el WMS
                 </span>
               </div>
 
@@ -222,7 +244,7 @@ const ImprimirEtiquetasModal = ({ isOpen, onClose, tipoOperacion, operacionId, s
                     +
                   </button>
                   <span className="text-xs text-slate-400 ml-1">
-                    = {labels.length * copies} impresión(es) total
+                    = {filteredLabels.length * copies} impresión(es) total
                   </span>
                 </div>
               </div>
@@ -241,7 +263,7 @@ const ImprimirEtiquetasModal = ({ isOpen, onClose, tipoOperacion, operacionId, s
           {!done && (
             <button
               onClick={handleEnviar}
-              disabled={!printerId || labels.length === 0 || sending || loadingData}
+              disabled={!printerId || filteredLabels.length === 0 || sending || loadingData}
               className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-[#E74C3C] hover:bg-[#C0392B] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-colors"
             >
               {sending ? (
@@ -252,7 +274,7 @@ const ImprimirEtiquetasModal = ({ isOpen, onClose, tipoOperacion, operacionId, s
               ) : (
                 <>
                   <Printer className="w-4 h-4" />
-                  Imprimir {labels.length > 0 ? `${labels.length} etiqueta(s)` : ''}
+                  Imprimir {filteredLabels.length > 0 ? `${filteredLabels.length} etiqueta(s)` : ''}
                 </>
               )}
             </button>
