@@ -1321,7 +1321,7 @@ const getEtiquetasWms = async (req, res) => {
       labels = (ordenDetalle?.orderItems ?? [])
         .flatMap((item) => item.pallets ?? [])
         .flatMap((pallet) =>
-          (pallet.palletLabels ?? []).map((label) => ({
+          (pallet.palletLabels ?? []).filter((label) => label.labelType === 'QR').map((label) => ({
             id: label.id,
             labelType: label.labelType,
             code: label.code,
