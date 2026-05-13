@@ -36,7 +36,7 @@ async function _fetch(path, options = {}) {
 /** Lista impresoras disponibles (online / printing) en el microservicio. */
 export async function getPrintersDisponibles() {
   const data = await _fetch('/api/printers/available');
-  return data?.printers ?? [];
+  return data?.data?.printers ?? data?.printers ?? [];
 }
 
 /**
