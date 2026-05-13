@@ -24,7 +24,7 @@
         { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' https://vercel.live https://*.vercel.live; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://istho-crm-files.s3.us-west-2.amazonaws.com https://*.awsapprunner.com; connect-src 'self' https://*.awsapprunner.com wss://*.awsapprunner.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://*.trycloudflare.com https://*.cfargotunnel.com; worker-src blob:; frame-src blob: https://istho-crm-files.s3.us-west-2.amazonaws.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"
+          "value": "default-src 'self'; script-src 'self' https://vercel.live https://*.vercel.live; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://istho-crm-files.s3.us-west-2.amazonaws.com https://*.awsapprunner.com; connect-src 'self' https://*.awsapprunner.com wss://*.awsapprunner.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://*.trycloudflare.com https://*.cfargotunnel.com; worker-src blob:; frame-src blob: https://istho-crm-files.s3.us-west-2.amazonaws.com https://vercel.live https://*.vercel.live; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"
         }
       ]
     }

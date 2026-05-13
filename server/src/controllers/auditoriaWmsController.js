@@ -1317,17 +1317,31 @@ const getEtiquetasWms = async (req, res) => {
 
     let labels;
     try {
-      labels = await wmsApiService.getPalletLabels(operacion.wms_order_id);
+      const ordenDetalle = await wmsApiService.getOrdenDetalle(operacion.wms_order_id);
+      labels = (ordenDetalle?.orderItems ?? [])
+        .flatMap((item) => item.pallets ?? [])
+        .flatMap((pallet) =>
+          (pallet.palletLabels ?? []).map((label) => ({
+            id: label.id,
+            labelType: label.labelType,
+            code: label.code,
+            consecutive: label.consecutive,
+            palletId: pallet.id,
+            palletNumber: pallet.palletNumber,
+          }))
+        );
     } catch (wmsErr) {
       const status = wmsErr.response?.status;
       const wmsMsg = wmsErr.response?.data?.message || wmsErr.response?.data?.error || wmsErr.message;
-      logger.warn('[AUDITORIAS] WMS rechazó petición de etiquetas:', { status, wmsMsg, wms_order_id: operacion.wms_order_id });
-      if (status === 404) {
-        return errorResponse(res, 'La orden WMS no tiene etiquetas de pallet registradas aún', 422);
-      }
+      logger.warn('[AUDITORIAS] WMS error al obtener detalle de orden:', { status, wmsMsg, wms_order_id: operacion.wms_order_id });
       return errorResponse(res, `WMS: ${wmsMsg || 'Error al obtener etiquetas'}`, status >= 400 && status < 500 ? 422 : 500);
     }
-    return success(res, { wms_order_id: operacion.wms_order_id, labels: Array.isArray(labels) ? labels : [] });
+
+    if (!labels.length) {
+      return errorResponse(res, 'La orden WMS no tiene etiquetas de pallet registradas aún', 422);
+    }
+
+    return success(res, { wms_order_id: operacion.wms_order_id, labels });
   } catch (err) {
     logger.error('[AUDITORIAS] Error al obtener etiquetas WMS:', err);
     return serverError(res, 'Error al consultar etiquetas en el WMS', err);
