@@ -300,8 +300,7 @@ apiClient.interceptors.response.use(
         break;
 
       case 422:
-        // Error de validación
-        console.warn('⚠️ [API] Error de validación:', data.errors);
+        console.warn('⚠️ [API] Error de negocio (422):', data?.message);
         break;
 
       case 500:
