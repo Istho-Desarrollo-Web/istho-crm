@@ -24,6 +24,8 @@ Flujo: Routes → `verifyToken → cargarCachePermisos → requierePermiso` → 
 - `useNotification` default export. Exporta `success`/`error`/`warning`/`info` — **NO** `showSuccess`/`showError`
 - `formatDate` singleton: `setPreferencias(prefs)` desde AuthContext. `useIdleTimer` montado en ProtectedLayout.
 - Aliases: `@`→`src/`, `@components`, `@pages`, `@hooks`, `@context`, `@api`, `@utils`, `@styles`, `@assets`
+- **MySQL DECIMAL como string**: columnas `DECIMAL` en MySQL llegan a JS como strings (ej. `"100.000"`). Nunca renderizar directamente en JSX — siempre usar `Number(val).toLocaleString('es-CO', { maximumFractionDigits: 2 })`. Aplica a `cantidad_esperada`, `cantidad`, precios, etc.
+- **Respuesta paginada clientes**: `clientesService.getAll()` retorna `{ data: { rows: [...], count: N } }` — el campo es `.rows`, **NO** `.items`. Mismo patrón que todos los endpoints paginados del CRM.
 
 ## Componentes de Formulario (Crítico)
 
