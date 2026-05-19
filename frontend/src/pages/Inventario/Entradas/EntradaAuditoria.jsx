@@ -1435,7 +1435,7 @@ const EntradaAuditoria = () => {
                         {linea.producto}
                       </p>
                       <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
-                        SKU: {linea.sku} • {linea.cantidad_esperada} {linea.unidad}
+                        SKU: {linea.sku} • {Number(linea.cantidad_esperada).toLocaleString('es-CO', { maximumFractionDigits: 2 })} {linea.unidad}
                         {linea.caja && (
                           <span className="ml-1 text-blue-500 font-bold">• Caja: {linea.caja}</span>
                         )}

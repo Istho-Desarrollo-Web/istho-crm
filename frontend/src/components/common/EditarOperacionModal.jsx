@@ -86,11 +86,10 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
         clientesService.getActivos(),
       ]);
 
-      if (cliResp?.data?.items) {
-        setClientes(
-          cliResp.data.items.map((c) => ({ value: String(c.id), label: c.nombre || c.razon_social }))
-        );
-      }
+      const cliList = Array.isArray(cliResp?.data) ? cliResp.data : cliResp?.data?.rows ?? [];
+      setClientes(
+        cliList.map((c) => ({ value: String(c.id), label: c.razon_social || c.nombre || String(c.id) }))
+      );
 
       const raw = opResp?.data || opResp;
       if (raw) {

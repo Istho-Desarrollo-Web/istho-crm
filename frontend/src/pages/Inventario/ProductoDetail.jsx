@@ -540,6 +540,15 @@ const ProductoDetail = () => {
     });
   }, [estadisticas]);
 
+  // Mapa numero_caja → cantidad WMS para mostrar stock real en el tab Cajas
+  const wmsCantidadPorCaja = useMemo(() => {
+    const map = {};
+    (ubicacionWms || []).forEach((ub) => {
+      if (ub.numero_caja != null) map[String(ub.numero_caja)] = ub.cantidad;
+    });
+    return map;
+  }, [ubicacionWms]);
+
   const cajasFiltradas = useMemo(() => {
     let lista = cajas;
     if (busquedaCajas.trim()) {
@@ -1089,7 +1098,12 @@ const ProductoDetail = () => {
                                   {caja.lote}
                                 </td>
                                 <td className="py-3 px-2 text-right font-medium text-slate-800 dark:text-slate-200">
-                                  {formatNumber(caja.cantidad)}
+                                  {(() => {
+                                    const wmsQty = wmsCantidadPorCaja[String(caja.numero_caja)];
+                                    return wmsQty != null
+                                      ? Number(wmsQty).toLocaleString('es-CO')
+                                      : formatNumber(caja.cantidad);
+                                  })()}
                                 </td>
                                 <td className="py-3 px-2 text-center">
                                   <span
