@@ -790,7 +790,7 @@ const plantillaBienvenida = {
   {{/if}}
 
   <div style="text-align: center; margin: 30px 0">
-    <a href="{{urlLogin}}" class="btn">{{#if cliente}}Acceder al Portal{{else}}Iniciar Sesion{{/if}}</a>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;"><tr><td style="background-color:#E74C3C;border-radius:10px;text-align:center;"><a href="{{urlLogin}}" style="display:inline-block;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;padding:14px 36px;font-family:sans-serif;">{{#if cliente}}Acceder al Portal{{else}}Iniciar Sesion{{/if}}</a></td></tr></table>
   </div>
 
   {{#if invitadoPor}}
@@ -901,7 +901,7 @@ const plantillaAlertaInventario = {
   {{/if}}
 
   <div style="text-align: center; margin: 30px 0">
-    <a href="{{urlInventario}}" class="btn">Ver Inventario Completo</a>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;"><tr><td style="background-color:#E74C3C;border-radius:10px;text-align:center;"><a href="{{urlInventario}}" style="display:inline-block;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;padding:14px 36px;font-family:sans-serif;">Ver Inventario Completo</a></td></tr></table>
   </div>
 
   <p style="color: #94a3b8; font-size: 12px; margin: 15px 0 0 0">
@@ -930,7 +930,7 @@ const plantillaGeneral = {
 
   {{#if urlAccion}}
   <div style="text-align: center; margin: 30px 0">
-    <a href="{{urlAccion}}" class="btn">{{#if labelAccion}}{{labelAccion}}{{else}}Ver en el sistema{{/if}}</a>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;"><tr><td style="background-color:#E74C3C;border-radius:10px;text-align:center;"><a href="{{urlAccion}}" style="display:inline-block;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;padding:14px 36px;font-family:sans-serif;">{{#if labelAccion}}{{labelAccion}}{{else}}Ver en el sistema{{/if}}</a></td></tr></table>
   </div>
   {{/if}}
 
@@ -987,7 +987,7 @@ const plantillaReseteoPassword = {
   </div>
 
   <div style="text-align: center; margin: 30px 0">
-    <a href="{{urlLogin}}" class="btn">Iniciar Sesion</a>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;"><tr><td style="background-color:#E74C3C;border-radius:10px;text-align:center;"><a href="{{urlLogin}}" style="display:inline-block;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;padding:14px 36px;font-family:sans-serif;">Iniciar Sesion</a></td></tr></table>
   </div>
 
   <div class="info-box error">
