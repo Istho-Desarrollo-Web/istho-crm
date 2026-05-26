@@ -49,7 +49,7 @@ const generarNumeroSolicitud = async (t) => {
   const [row] = await sequelize.query(
     `SELECT MAX(CAST(SUBSTRING_INDEX(numero_solicitud, '-', -1) AS UNSIGNED)) AS ultimo
      FROM solicitudes
-     WHERE numero_solicitud LIKE :patron`,
+     WHERE numero_solicitud LIKE :patron FOR UPDATE`,
     {
       replacements: { patron: `SOL-${year}-%` },
       type: sequelize.QueryTypes.SELECT,
@@ -139,6 +139,16 @@ const crear = async (req, res) => {
     // Acciones post-commit (no bloquean la respuesta)
     setImmediate(async () => {
       try {
+        // Auditoría PRIMERO (antes de notificaciones que pueden fallar)
+        await Auditoria.registrar({
+          tabla: 'solicitudes',
+          registro_id: solicitud.id,
+          accion: 'crear',
+          usuario_id: req.user.id,
+          usuario_nombre: req.user.nombre_completo || req.user.username,
+          datos_nuevos: { numero_solicitud, tipo, estado: 'recibida', cliente_id },
+        });
+
         const accion_url = `/clientes/${cliente_id}?tab=solicitudes&id=${solicitud.id}`;
         const tipoLabel = TIPO_LABEL[tipo];
         const titulo = `Nueva ${tipoLabel}: ${numero_solicitud}`;
@@ -208,16 +218,6 @@ const crear = async (req, res) => {
             }
           }
         }
-
-        // Auditoría
-        await Auditoria.registrar({
-          tabla: 'solicitudes',
-          registro_id: solicitud.id,
-          accion: 'crear',
-          usuario_id: req.user.id,
-          usuario_nombre: req.user.nombre_completo || req.user.username,
-          datos_nuevos: { numero_solicitud, tipo, estado: 'recibida', cliente_id },
-        });
       } catch (err) {
         logger.error('[SolicitudController] Error en post-commit:', err.message);
       }
@@ -249,11 +249,18 @@ const listar = async (req, res) => {
     const where = {};
     if (tipo) where.tipo = tipo;
     if (estado) where.estado = estado;
-    if (cliente_id) where.cliente_id = cliente_id;
+    if (req.user?.rol === 'cliente') {
+      if (!req.user.cliente_id) {
+        return errorResponse(res, 'Usuario cliente sin cliente asignado', 403);
+      }
+      where.cliente_id = req.user.cliente_id;
+    } else if (cliente_id) {
+      where.cliente_id = cliente_id;
+    }
     if (desde || hasta) {
-      where.created_at = {};
-      if (desde) where.created_at[Op.gte] = new Date(desde + 'T00:00:00');
-      if (hasta) where.created_at[Op.lte] = new Date(hasta + 'T23:59:59');
+      where.createdAt = {};
+      if (desde) where.createdAt[Op.gte] = new Date(desde + 'T00:00:00');
+      if (hasta) where.createdAt[Op.lte] = new Date(hasta + 'T23:59:59');
     }
 
     const { count, rows } = await Solicitud.findAndCountAll({
@@ -288,6 +295,19 @@ const obtener = async (req, res) => {
     const { id } = req.params;
     const esCliente = req.user?.rol === 'cliente';
     const comentariosWhere = esCliente ? { es_interno: false } : {};
+
+    // Verificación de ownership liviana antes del query completo
+    if (esCliente) {
+      const ownership = await Solicitud.findOne({
+        where: { id },
+        attributes: ['id', 'cliente_id'],
+        paranoid: false,
+      });
+      if (!ownership) return notFound(res, 'Solicitud no encontrada');
+      if (Number(ownership.cliente_id) !== Number(req.user.cliente_id)) {
+        return errorResponse(res, 'No tiene acceso a esta solicitud', 403);
+      }
+    }
 
     const solicitud = await Solicitud.findByPk(id, {
       include: [
@@ -326,10 +346,6 @@ const obtener = async (req, res) => {
     });
 
     if (!solicitud) return notFound(res, 'Solicitud no encontrada');
-
-    if (esCliente && Number(solicitud.cliente_id) !== Number(req.user.cliente_id)) {
-      return errorResponse(res, 'No tiene acceso a esta solicitud', 403);
-    }
 
     let documento_url = solicitud.documento_url;
     if (documento_url && s3Service.isS3Key && s3Service.isS3Key(documento_url)) {
@@ -381,16 +397,24 @@ const cambiarEstado = async (req, res) => {
           400
         );
       }
-      await SolicitudComentario.create({
-        solicitud_id: id,
-        usuario_id: req.user.id,
-        mensaje: `Solicitud rechazada: ${motivo.trim()}`,
-        es_interno: false,
-      });
     }
 
     const estadoAnterior = solicitud.estado;
-    await solicitud.update({ estado });
+
+    await sequelize.transaction(async (t) => {
+      if (estado === 'rechazada') {
+        await SolicitudComentario.create(
+          {
+            solicitud_id: id,
+            usuario_id: req.user.id,
+            mensaje: `Solicitud rechazada: ${motivo.trim()}`,
+            es_interno: false,
+          },
+          { transaction: t }
+        );
+      }
+      await solicitud.update({ estado }, { transaction: t });
+    });
 
     await Auditoria.registrar({
       tabla: 'solicitudes',
@@ -420,9 +444,18 @@ const vincular = async (req, res) => {
     const solicitud = await Solicitud.findByPk(id);
     if (!solicitud) return notFound(res, 'Solicitud no encontrada');
 
+    if (solicitud.operacion_id && Number(solicitud.operacion_id) !== Number(operacion_id)) {
+      return errorResponse(
+        res,
+        `Esta solicitud ya está vinculada a la operación #${solicitud.operacion_id}`,
+        422
+      );
+    }
+
     const operacion = await Operacion.findByPk(operacion_id);
     if (!operacion) return notFound(res, 'Operación no encontrada');
 
+    const operacionAnterior = solicitud.operacion_id || null;
     const nuevoEstado = solicitud.estado === 'recibida' ? 'en_proceso' : solicitud.estado;
     await solicitud.update({ operacion_id, estado: nuevoEstado });
 
@@ -432,6 +465,7 @@ const vincular = async (req, res) => {
       accion: 'vincular_operacion',
       usuario_id: req.user.id,
       usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_anteriores: { operacion_id: operacionAnterior },
       datos_nuevos: { operacion_id },
     });
 
