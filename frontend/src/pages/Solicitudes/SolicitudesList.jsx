@@ -17,7 +17,7 @@ const ESTADO_CONFIG = {
 const SolicitudesList = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isCliente } = useAuth();
+  const { isCliente } = useAuth();
   const { error } = useNotification();
 
   const tabActivo = searchParams.get('tab') || 'ingreso';
@@ -30,7 +30,7 @@ const SolicitudesList = () => {
   const [busqueda, setBusqueda] = useState('');
   const [showForm, setShowForm] = useState(false);
 
-  const fetchSolicitudes = useCallback(async () => {
+  const fetchSolicitudes = useCallback(async (page = 1) => {
     setLoading(true);
     try {
       const res = await solicitudesService.getAll({
@@ -39,7 +39,7 @@ const SolicitudesList = () => {
         desde: filtroDesde || undefined,
         hasta: filtroHasta || undefined,
         search: busqueda || undefined,
-        page: pagination.page,
+        page,
         limit: 20,
       });
       setSolicitudes(res.data || []);
@@ -49,9 +49,9 @@ const SolicitudesList = () => {
     } finally {
       setLoading(false);
     }
-  }, [tabActivo, filtroEstado, filtroDesde, filtroHasta, busqueda, pagination.page]);
+  }, [tabActivo, filtroEstado, filtroDesde, filtroHasta, busqueda, error]);
 
-  useEffect(() => { fetchSolicitudes(); }, [fetchSolicitudes]);
+  useEffect(() => { fetchSolicitudes(1); }, [fetchSolicitudes]);
 
   const handleTabChange = (tab) => {
     setSearchParams({ tab });
@@ -72,7 +72,7 @@ const SolicitudesList = () => {
           </div>
         </div>
         <div className="flex gap-2">
-          <button onClick={fetchSolicitudes} className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-xl transition-colors">
+          <button onClick={() => fetchSolicitudes(1)} className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-xl transition-colors">
             <RefreshCw className="w-4 h-4" /> Actualizar
           </button>
           {isCliente() && (
@@ -164,7 +164,7 @@ const SolicitudesList = () => {
                     className="hover:bg-slate-50 dark:hover:bg-centhrix-surface cursor-pointer transition-colors">
                     <td className="px-4 py-3 text-sm font-mono font-medium text-slate-700 dark:text-slate-200">{s.numero_solicitud}</td>
                     <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">{s.cliente?.razon_social || '—'}</td>
-                    <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{s.fecha_estimada || new Date(s.created_at).toLocaleDateString('es-CO')}</td>
+                    <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{s.fecha_estimada ? new Date(s.fecha_estimada + 'T00:00:00').toLocaleDateString('es-CO') : new Date(s.created_at).toLocaleDateString('es-CO')}</td>
                     <td className="px-4 py-3">
                       {s.prioridad === 'urgente' && (
                         <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Urgente</span>
@@ -184,24 +184,24 @@ const SolicitudesList = () => {
       {/* Paginación */}
       {pagination.totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-4">
-          <button disabled={pagination.page <= 1} onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
+          <button disabled={pagination.page <= 1} onClick={() => fetchSolicitudes(pagination.page - 1)}
             className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-slate-700 disabled:opacity-40">Anterior</button>
           <span className="px-3 py-1.5 text-sm text-slate-500 dark:text-slate-400">{pagination.page} / {pagination.totalPages}</span>
-          <button disabled={pagination.page >= pagination.totalPages} onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
+          <button disabled={pagination.page >= pagination.totalPages} onClick={() => fetchSolicitudes(pagination.page + 1)}
             className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-slate-700 disabled:opacity-40">Siguiente</button>
         </div>
       )}
 
       {/* Modal de creación — se agrega en Task 7 */}
       {showForm && (
-        <SolicitudFormPlaceholder tipo={tabActivo} onClose={() => setShowForm(false)} onSave={() => { setShowForm(false); fetchSolicitudes(); }} />
+        <SolicitudFormPlaceholder tipo={tabActivo} onClose={() => setShowForm(false)} onSave={() => { setShowForm(false); fetchSolicitudes(1); }} />
       )}
     </div>
   );
 };
 
 // Placeholder temporal hasta crear SolicitudForm en Task 7
-const SolicitudFormPlaceholder = ({ onClose }) => (
+const SolicitudFormPlaceholder = ({ onClose, onSave: _onSave }) => (
   <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
     <div className="bg-white dark:bg-centhrix-card rounded-2xl p-6">
       <p className="text-slate-700 dark:text-slate-200">Formulario pendiente (Task 7)</p>
