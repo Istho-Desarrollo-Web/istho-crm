@@ -1,1 +1,4 @@
 abrir-tunel-db.bat
+
+# Git worktrees
+.worktrees/
