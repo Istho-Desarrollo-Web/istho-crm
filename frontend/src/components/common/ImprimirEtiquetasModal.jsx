@@ -85,6 +85,7 @@ const ImprimirEtiquetasModal = ({ isOpen, onClose, tipoOperacion, operacionId, s
     try {
       const payload = {
         printer_id: printerId,
+        label_type: labelType,
         labels: filteredLabels.map((l) => ({ label_id: l.id || l.label_id, pallet_id: l.palletId || l.pallet_id })),
         copies: Math.max(1, Number(copies) || 1),
         priority: 5,
