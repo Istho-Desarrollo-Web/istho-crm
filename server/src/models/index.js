@@ -36,6 +36,10 @@ const BackupRegistroModel = require('./BackupRegistro');
 const PasswordHistoricoModel = require('./PasswordHistorico');
 const TokenBlacklistModel = require('./TokenBlacklist');
 const WmsSyncLogModel = require('./WmsSyncLog');
+const SolicitudModel = require('./Solicitud');
+const SolicitudDetalleModel = require('./SolicitudDetalle');
+const SolicitudComentarioModel = require('./SolicitudComentario');
+const ClienteResponsableModel = require('./ClienteResponsable');
 const Notificacion = require('./Notificacion')(sequelize);
 
 // Inicializar modelos
@@ -65,6 +69,10 @@ const BackupRegistro = BackupRegistroModel(sequelize);
 const PasswordHistorico = PasswordHistoricoModel(sequelize);
 const TokenBlacklist = TokenBlacklistModel(sequelize);
 const WmsSyncLog = WmsSyncLogModel(sequelize);
+const Solicitud = SolicitudModel(sequelize);
+const SolicitudDetalle = SolicitudDetalleModel(sequelize);
+const SolicitudComentario = SolicitudComentarioModel(sequelize);
+const ClienteResponsable = ClienteResponsableModel(sequelize);
 
 // ============================================
 // DEFINIR ASOCIACIONES
@@ -387,6 +395,35 @@ MovimientoCajaMenor.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario'
 MovimientoCajaMenor.belongsTo(Usuario, { foreignKey: 'aprobado_por', as: 'aprobador' });
 
 // ============================================
+// ASOCIACIONES - Módulo de Solicitudes
+// ============================================
+
+// Solicitud <-> Cliente
+Cliente.hasMany(Solicitud, { foreignKey: 'cliente_id', as: 'solicitudes', onDelete: 'RESTRICT' });
+Solicitud.belongsTo(Cliente, { foreignKey: 'cliente_id', as: 'cliente' });
+
+// Solicitud <-> Usuario (creador)
+Usuario.hasMany(Solicitud, { foreignKey: 'creado_por', as: 'solicitudes_creadas' });
+Solicitud.belongsTo(Usuario, { foreignKey: 'creado_por', as: 'creador' });
+
+// Solicitud <-> Operacion (vinculación)
+Solicitud.belongsTo(Operacion, { foreignKey: 'operacion_id', as: 'operacion' });
+
+// Solicitud <-> SolicitudDetalle
+Solicitud.hasMany(SolicitudDetalle, { foreignKey: 'solicitud_id', as: 'detalles', onDelete: 'CASCADE' });
+SolicitudDetalle.belongsTo(Solicitud, { foreignKey: 'solicitud_id', as: 'solicitud' });
+
+// Solicitud <-> SolicitudComentario
+Solicitud.hasMany(SolicitudComentario, { foreignKey: 'solicitud_id', as: 'comentarios', onDelete: 'CASCADE' });
+SolicitudComentario.belongsTo(Solicitud, { foreignKey: 'solicitud_id', as: 'solicitud' });
+SolicitudComentario.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'autor' });
+
+// Cliente <-> ClienteResponsable
+Cliente.hasMany(ClienteResponsable, { foreignKey: 'cliente_id', as: 'responsables', onDelete: 'CASCADE' });
+ClienteResponsable.belongsTo(Cliente, { foreignKey: 'cliente_id', as: 'cliente' });
+ClienteResponsable.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
+
+// ============================================
 // EXPORTAR MODELOS
 // ============================================
 
@@ -422,6 +459,10 @@ const db = {
   PasswordHistorico,
   TokenBlacklist,
   WmsSyncLog,
+  Solicitud,
+  SolicitudDetalle,
+  SolicitudComentario,
+  ClienteResponsable,
 };
 
 module.exports = db;
