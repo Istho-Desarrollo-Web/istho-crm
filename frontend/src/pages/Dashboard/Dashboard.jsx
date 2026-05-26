@@ -407,13 +407,13 @@ const Dashboard = () => {
     }
     mesesConDatos.sort((a, b) => a - b);
     return mesesConDatos.length
-      ? mesesConDatos.map((m) => ({ value: m, label: MESES[m - 1] }))
-      : [{ value: mesActual, label: MESES[mesActual - 1] }];
+      ? mesesConDatos.map((m) => ({ value: String(m), label: MESES[m - 1] }))
+      : [{ value: String(mesActual), label: MESES[mesActual - 1] }];
   })();
 
   // Ajustar mes si no está disponible en el año seleccionado
   useEffect(() => {
-    if (mesesDisponibles.length && !mesesDisponibles.find((m) => m.value === mesFiltro)) {
+    if (mesesDisponibles.length && !mesesDisponibles.find((m) => m.value === String(mesFiltro))) {
       setMesFiltro(mesesDisponibles[mesesDisponibles.length - 1].value);
     }
   }, [anioFiltro]); // eslint-disable-line react-hooks/exhaustive-deps

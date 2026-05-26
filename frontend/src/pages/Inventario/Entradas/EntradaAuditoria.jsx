@@ -632,7 +632,7 @@ const EntradaAuditoria = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showAlert, showConfirm } = useAlert();
-  const { hasPermission, isAdmin } = useAuth();
+  const { hasPermission, isAdmin, isCliente } = useAuth();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [printModalOpen, setPrintModalOpen] = useState(false);
 
@@ -1302,7 +1302,7 @@ const EntradaAuditoria = () => {
 
             {/* Overall Progress */}
             <div className="flex items-center gap-3">
-              {entradaData?.wms_order_id && (
+              {entradaData?.wms_order_id && !isCliente() && (
                 <button
                   onClick={() => setPrintModalOpen(true)}
                   title="Imprimir etiquetas de pallet"
