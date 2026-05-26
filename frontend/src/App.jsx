@@ -24,7 +24,7 @@ import useIdleTimer from './hooks/useIdleTimer';
 // ════════════════════════════════════════════════════════════════════════════
 import { AlertProvider } from './context/AlertContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import PrivateRoute, { AdminRoute, PermissionRoute } from './components/auth/PrivateRoute';
+import PrivateRoute, { AdminRoute, PermissionRoute, SupervisorRoute } from './components/auth/PrivateRoute';
 
 // Layout
 import { AlertTriangle, Wrench } from 'lucide-react';
@@ -543,9 +543,9 @@ function App() {
                     <Route
                       path="/reportes/solicitudes"
                       element={
-                        <PermissionRoute module="reportes" action="ver">
+                        <SupervisorRoute>
                           <ReporteSolicitudes />
-                        </PermissionRoute>
+                        </SupervisorRoute>
                       }
                     />
                     <Route
