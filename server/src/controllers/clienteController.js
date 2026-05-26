@@ -16,6 +16,7 @@ const {
   Inventario,
   Usuario,
   Auditoria,
+  ClienteResponsable,
   sequelize,
 } = require('../models');
 const notificacionService = require('../services/notificacionService');
@@ -1038,6 +1039,121 @@ const descargarPlantillaImportacion = async (req, res) => {
   }
 };
 
+// ─── RESPONSABLES DE CLIENTE ─────────────────────────────────────────────────
+
+/**
+ * GET /clientes/:id/responsables
+ * Listar responsables asignados a un cliente
+ */
+const getResponsables = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const cliente = await Cliente.findByPk(id);
+    if (!cliente) return notFound(res, 'Cliente no encontrado');
+
+    const responsables = await ClienteResponsable.findAll({
+      where: { cliente_id: id },
+      include: [
+        {
+          model: Usuario,
+          as: 'usuario',
+          attributes: ['id', 'nombre', 'apellido', 'email', 'rol', 'avatar_url'],
+        },
+      ],
+      order: [['created_at', 'ASC']],
+    });
+
+    return success(
+      res,
+      responsables.map((r) => ({
+        id: r.id,
+        usuario_id: r.usuario_id,
+        nombre: r.usuario?.nombre,
+        apellido: r.usuario?.apellido,
+        email: r.usuario?.email,
+        rol: r.usuario?.rol,
+        avatar_url: r.usuario?.avatar_url,
+      }))
+    );
+  } catch (err) {
+    logger.error('Error al obtener responsables:', { message: err.message });
+    return serverError(res, 'Error al obtener responsables', err);
+  }
+};
+
+/**
+ * POST /clientes/:id/responsables
+ * Asignar un usuario como responsable de un cliente
+ */
+const addResponsable = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { usuario_id } = req.body;
+
+    if (!usuario_id) return errorResponse(res, 'usuario_id es requerido', 400);
+
+    const cliente = await Cliente.findByPk(id);
+    if (!cliente) return notFound(res, 'Cliente no encontrado');
+
+    const usuario = await Usuario.findByPk(usuario_id);
+    if (!usuario) return notFound(res, 'Usuario no encontrado');
+
+    const rolesPermitidos = ['admin', 'supervisor', 'operador'];
+    if (!rolesPermitidos.includes(usuario.rol)) {
+      return errorResponse(res, 'Solo se pueden asignar usuarios con rol admin, supervisor u operador', 422);
+    }
+
+    const [responsable, creado] = await ClienteResponsable.findOrCreate({
+      where: { cliente_id: id, usuario_id },
+      defaults: { cliente_id: id, usuario_id },
+    });
+
+    if (!creado) return conflict(res, 'Este usuario ya está asignado a este cliente');
+
+    logger.info('Responsable asignado:', { clienteId: id, usuarioId: usuario_id, asignadoPor: req.user?.id });
+
+    return created(res, 'Responsable asignado exitosamente', {
+      id: responsable.id,
+      usuario_id,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      email: usuario.email,
+      rol: usuario.rol,
+    });
+  } catch (err) {
+    logger.error('Error al agregar responsable:', { message: err.message });
+    return serverError(res, 'Error al agregar responsable', err);
+  }
+};
+
+/**
+ * DELETE /clientes/:id/responsables/:uid
+ * Remover un responsable de un cliente
+ */
+const removeResponsable = async (req, res) => {
+  try {
+    const { id, uid } = req.params;
+
+    const cliente = await Cliente.findByPk(id);
+    if (!cliente) return notFound(res, 'Cliente no encontrado');
+
+    const responsable = await ClienteResponsable.findOne({
+      where: { cliente_id: id, usuario_id: uid },
+    });
+    if (!responsable) return notFound(res, 'Responsable no encontrado');
+
+    await responsable.destroy();
+
+    logger.info('Responsable removido:', { clienteId: id, usuarioId: uid, removidoPor: req.user?.id });
+
+    return successMessage(res, 'Responsable removido correctamente');
+  } catch (err) {
+    logger.error('Error al remover responsable:', { message: err.message });
+    return serverError(res, 'Error al remover responsable', err);
+  }
+};
+
 module.exports = {
   // Clientes
   listar,
@@ -1056,4 +1172,8 @@ module.exports = {
   eliminarContacto,
   // Historial
   historial,
+  // Responsables
+  getResponsables,
+  addResponsable,
+  removeResponsable,
 };
