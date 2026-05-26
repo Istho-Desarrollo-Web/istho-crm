@@ -36,12 +36,14 @@ import {
   FileCheck,
   Package,
   Camera,
+  ClipboardCheck,
+  RefreshCw,
 } from 'lucide-react';
 
 // Layout
 
 // Components
-import { Button, StatusChip, KpiCard, ConfirmDialog, Modal } from '../../components/common';
+import { Button, StatusChip, KpiCard, ConfirmDialog, Modal, FilterDropdown } from '../../components/common';
 
 // Local Components
 import ClienteForm from './components/ClienteForm';
@@ -56,6 +58,8 @@ import { formatDateShort } from '../../utils/formatDate';
 // Services
 import inventarioService from '../../api/inventario.service';
 import clientesService from '../../api/clientes.service';
+import solicitudesService from '../../api/solicitudes.service';
+import adminService from '../../api/admin.service';
 import PageFooter from '@components/common/PageFooter';
 import { comprimirImagen, COMPRESS_PRESETS } from '../../utils/compressImage';
 
@@ -505,7 +509,7 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
 const ClienteDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { _user, hasPermission } = useAuth();
+  const { _user, hasPermission, isAdmin } = useAuth();
   const { success, apiError, deleted } = useNotification();
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -539,6 +543,18 @@ const ClienteDetail = () => {
   const [_productosCliente, setProductosCliente] = useState([]);
   const [totalProductos, setTotalProductos] = useState(0);
   const [loadingProductos, setLoadingProductos] = useState(false);
+
+  // Solicitudes
+  const [solicitudes, setSolicitudes] = useState([]);
+  const [solicitudesLoading, setSolicitudesLoading] = useState(false);
+  const [solicitudesPag, setSolicitudesPag] = useState({ total: 0, page: 1, totalPages: 1 });
+
+  // Responsables
+  const [responsables, setResponsables] = useState([]);
+  const [responsablesLoading, setResponsablesLoading] = useState(false);
+  const [usuariosInternos, setUsuariosInternos] = useState([]);
+  const [nuevoResponsableId, setNuevoResponsableId] = useState('');
+  const [agregandoResponsable, setAgregandoResponsable] = useState(false);
 
   // Modals
   const [editModal, setEditModal] = useState(false);
@@ -645,6 +661,52 @@ const ClienteDetail = () => {
       loadHistorial(id);
     }
   }, [id, fetchCliente, loadContactos, loadProductosCliente, loadHistorial]);
+
+  const fetchSolicitudesCliente = async () => {
+    if (!id) return;
+    setSolicitudesLoading(true);
+    try {
+      const res = await solicitudesService.getPorCliente(id, { limit: 20, page: solicitudesPag.page });
+      setSolicitudes(res.data || []);
+      if (res.pagination) setSolicitudesPag(res.pagination);
+    } catch {
+      // silencioso
+    } finally {
+      setSolicitudesLoading(false);
+    }
+  };
+
+  const fetchResponsables = async () => {
+    if (!id) return;
+    setResponsablesLoading(true);
+    try {
+      const res = await clientesService.getResponsables(id);
+      setResponsables(res.data || []);
+    } catch {
+      // silencioso
+    } finally {
+      setResponsablesLoading(false);
+    }
+  };
+
+  const fetchUsuariosInternos = async () => {
+    try {
+      const res = await adminService.getUsuarios({ limit: 200 });
+      const usuarios = Array.isArray(res.data) ? res.data : res.data?.rows || res.data?.usuarios || [];
+      setUsuariosInternos(usuarios.filter((u) => ['admin', 'supervisor', 'operador'].includes(u.rol)));
+    } catch {
+      // silencioso
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'solicitudes') {
+      fetchSolicitudesCliente();
+      fetchResponsables();
+      fetchUsuariosInternos();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, id]);
 
   // ──────────────────────────────────────────────────────────────────────────
   // HANDLERS
@@ -763,12 +825,13 @@ const ClienteDetail = () => {
   // RENDER
   // ──────────────────────────────────────────────────────────────────────────
 
-  // ✅ TABS ACTUALIZADOS - Incluye Usuarios Portal
+  // ✅ TABS ACTUALIZADOS - Incluye Usuarios Portal y Solicitudes
   const tabs = [
     { id: 'info', label: 'Información', icon: Building2 },
     { id: 'contactos', label: `Contactos (${contactos.length})`, icon: User },
-    // ← NUEVO TAB (solo visible si tiene permisos)
+    // ← Solo visible si tiene permisos
     ...(canManageUsers ? [{ id: 'usuarios', label: 'Usuarios Portal', icon: Users }] : []),
+    { id: 'solicitudes', label: 'Solicitudes', icon: ClipboardCheck },
     { id: 'historial', label: 'Historial', icon: Clock },
   ];
 
@@ -1078,6 +1141,156 @@ const ClienteDetail = () => {
             {/* ══════════════════════════════════════════════════════════════ */}
             {activeTab === 'usuarios' && canManageUsers && (
               <UsuariosCliente clienteId={cliente.id} clienteNombre={cliente.razon_social} />
+            )}
+
+            {/* ══════════════════════════════════════════════════════════════ */}
+            {/* Tab: Solicitudes */}
+            {/* ══════════════════════════════════════════════════════════════ */}
+            {activeTab === 'solicitudes' && (
+              <div className="space-y-6">
+                {/* Tabla de solicitudes del cliente */}
+                <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-700">
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Solicitudes del Cliente</h3>
+                    <button
+                      onClick={() => fetchSolicitudesCliente()}
+                      className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-1"
+                    >
+                      <RefreshCw className="w-3 h-3" /> Actualizar
+                    </button>
+                  </div>
+                  {solicitudesLoading ? (
+                    <div className="py-8 text-center text-slate-400 text-sm">Cargando...</div>
+                  ) : solicitudes.length === 0 ? (
+                    <div className="py-8 text-center text-slate-400 text-sm">Sin solicitudes</div>
+                  ) : (
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-100 dark:border-slate-700">
+                          {['N° Solicitud', 'Tipo', 'Fecha', 'Estado'].map((h) => (
+                            <th key={h} className="px-4 py-2 text-left text-xs font-semibold text-slate-500 dark:text-slate-400">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50 dark:divide-slate-700/50">
+                        {solicitudes.map((s) => {
+                          const ESTADO_COLOR = {
+                            recibida: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                            en_proceso: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                            completada: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                            rechazada: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                          };
+                          return (
+                            <tr
+                              key={s.id}
+                              onClick={() => navigate(`/solicitudes/${s.id}`)}
+                              className="hover:bg-slate-50 dark:hover:bg-centhrix-surface cursor-pointer transition-colors"
+                            >
+                              <td className="px-4 py-2.5 text-sm font-mono text-slate-700 dark:text-slate-200">{s.numero_solicitud}</td>
+                              <td className="px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 capitalize">
+                                {s.tipo === 'ingreso' ? 'Ingreso' : 'Despacho'}
+                              </td>
+                              <td className="px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400">
+                                {s.fecha_estimada
+                                  ? new Date(s.fecha_estimada + 'T00:00:00').toLocaleDateString('es-CO')
+                                  : new Date(s.created_at).toLocaleDateString('es-CO')}
+                              </td>
+                              <td className="px-4 py-2.5">
+                                <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${ESTADO_COLOR[s.estado] || ''}`}>
+                                  {s.estado}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+
+                {/* Sección responsables — solo admin */}
+                {isAdmin() && (
+                  <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4">Equipo ISTHO Asignado</h3>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
+                      Estos usuarios reciben las notificaciones y emails cuando este cliente envía una solicitud.
+                    </p>
+
+                    {/* Lista de responsables */}
+                    <div className="space-y-2 mb-4">
+                      {responsablesLoading ? (
+                        <div className="py-4 text-center text-slate-400 text-sm">Cargando...</div>
+                      ) : responsables.length === 0 ? (
+                        <p className="text-xs text-slate-400 dark:text-slate-500">
+                          Sin responsables asignados. Las solicitudes se notificarán a todos los administradores.
+                        </p>
+                      ) : (
+                        responsables.map((r) => (
+                          <div key={r.id} className="flex items-center justify-between py-2 px-3 bg-slate-50 dark:bg-centhrix-surface rounded-xl">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-xs font-bold text-orange-600">
+                                {(r.nombre || '?')[0].toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{r.nombre} {r.apellido}</p>
+                                <p className="text-xs text-slate-400 dark:text-slate-500 capitalize">{r.rol} · {r.email}</p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await clientesService.removeResponsable(id, r.usuario_id);
+                                  fetchResponsables();
+                                } catch {
+                                  apiError('Error al remover responsable');
+                                }
+                              }}
+                              className="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            >
+                              Quitar
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Agregar responsable */}
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <FilterDropdown
+                          options={[
+                            { value: '', label: 'Seleccionar usuario...' },
+                            ...usuariosInternos
+                              .filter((u) => !responsables.find((r) => r.usuario_id === u.id))
+                              .map((u) => ({ value: String(u.id), label: `${u.nombre} ${u.apellido} (${u.rol})` })),
+                          ]}
+                          value={nuevoResponsableId}
+                          onChange={setNuevoResponsableId}
+                        />
+                      </div>
+                      <button
+                        disabled={!nuevoResponsableId || agregandoResponsable}
+                        onClick={async () => {
+                          setAgregandoResponsable(true);
+                          try {
+                            await clientesService.addResponsable(id, Number(nuevoResponsableId));
+                            setNuevoResponsableId('');
+                            fetchResponsables();
+                            success('Responsable asignado correctamente');
+                          } catch (err) {
+                            apiError(err.message || 'Error al asignar responsable');
+                          } finally {
+                            setAgregandoResponsable(false);
+                          }
+                        }}
+                        className="px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-xl disabled:opacity-50 transition-colors"
+                      >
+                        {agregandoResponsable ? 'Asignando...' : 'Asignar'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* ══════════════════════════════════════════════════════════════ */}

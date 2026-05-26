@@ -340,6 +340,16 @@ const clientesService = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+
+  // ════════════════════════════════════════════════════════════════════════
+  // RESPONSABLES
+  // ════════════════════════════════════════════════════════════════════════
+
+  getResponsables: (clienteId) => apiClient.get(`/clientes/${clienteId}/responsables`),
+  addResponsable: (clienteId, usuario_id) =>
+    apiClient.post(`/clientes/${clienteId}/responsables`, { usuario_id }),
+  removeResponsable: (clienteId, usuarioId) =>
+    apiClient.delete(`/clientes/${clienteId}/responsables/${usuarioId}`),
 };
 
 // ============================================================================
