@@ -25,6 +25,8 @@ const {
   MovimientoCajaMenor,
   Usuario,
   CajaInventario,
+  Solicitud,
+  ClienteResponsable,
   sequelize,
 } = require('../models');
 const excelService = require('../services/excelService');
@@ -2597,8 +2599,6 @@ const reporteSolicitudes = async (req, res) => {
       if (hasta) where.createdAt[Op.lte] = new Date(hasta + 'T23:59:59');
     }
 
-    const { Solicitud, ClienteResponsable } = require('../models');
-
     let solicitudesQuery = {
       where,
       include: [
@@ -2606,6 +2606,7 @@ const reporteSolicitudes = async (req, res) => {
         { model: Usuario, as: 'creador', attributes: ['id', 'nombre', 'apellido'] },
       ],
       order: [['created_at', 'DESC']],
+      limit: 5000,
     };
 
     if (responsable_id) {

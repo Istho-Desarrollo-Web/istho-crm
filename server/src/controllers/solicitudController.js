@@ -10,6 +10,8 @@
  */
 
 const { Op } = require('sequelize');
+
+const escHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const {
   Solicitud,
   SolicitudDetalle,
@@ -103,6 +105,18 @@ const crear = async (req, res) => {
     if (!Array.isArray(detalles) || detalles.length === 0) {
       await t.rollback();
       return errorResponse(res, 'Debe incluir al menos un producto en detalles', 400);
+    }
+
+    for (const d of detalles) {
+      const cant = Number(d.cantidad);
+      if (!d.referencia || !d.referencia.trim()) {
+        await t.rollback();
+        return errorResponse(res, 'Cada línea de detalle debe tener referencia', 400);
+      }
+      if (isNaN(cant) || cant <= 0) {
+        await t.rollback();
+        return errorResponse(res, 'La cantidad de cada línea debe ser un número positivo', 400);
+      }
     }
 
     const numero_solicitud = await generarNumeroSolicitud(t);
@@ -200,11 +214,15 @@ const crear = async (req, res) => {
                 asunto: `Nueva ${tipoLabel}: ${numero_solicitud} — ${razonSocial}`,
                 cuerpoHtml: `
                   <h2 style="color:#E74C3C">${tipoLabel} recibida</h2>
-                  <p><strong>N° Solicitud:</strong> ${numero_solicitud}</p>
-                  <p><strong>Cliente:</strong> ${razonSocial}</p>
-                  <p><strong>Prioridad:</strong> ${prioridad || 'normal'}</p>
-                  ${fecha_estimada ? `<p><strong>Fecha estimada:</strong> ${fecha_estimada}</p>` : ''}
-                  ${notas ? `<p><strong>Notas:</strong> ${notas}</p>` : ''}
+                  <p><strong>N° Solicitud:</strong> ${escHtml(numero_solicitud)}</p>
+                  <p><strong>Cliente:</strong> ${escHtml(razonSocial)}</p>
+                  <p><strong>Prioridad:</strong> ${escHtml(prioridad || 'normal')}</p>
+                  ${fecha_estimada ? `<p><strong>Fecha estimada:</strong> ${escHtml(fecha_estimada)}</p>` : ''}
+                  ${numero_documento ? `<p><strong>N° Documento:</strong> ${escHtml(numero_documento)}</p>` : ''}
+                  ${transportista ? `<p><strong>Transportista:</strong> ${escHtml(transportista)}</p>` : ''}
+                  ${direccion_entrega ? `<p><strong>Dirección de entrega:</strong> ${escHtml(direccion_entrega)}</p>` : ''}
+                  ${contacto_destino ? `<p><strong>Contacto destino:</strong> ${escHtml(contacto_destino)}</p>` : ''}
+                  ${notas ? `<p><strong>Notas:</strong> ${escHtml(notas)}</p>` : ''}
                   <p style="margin-top:20px">
                     <a href="${appUrl}${accion_url}"
                        style="background:#E74C3C;color:white;padding:10px 20px;border-radius:6px;text-decoration:none">
@@ -426,6 +444,33 @@ const cambiarEstado = async (req, res) => {
       datos_nuevos: { estado, motivo: motivo || null },
     });
 
+    // Notificar al cliente creador del cambio de estado
+    setImmediate(async () => {
+      try {
+        const estadoLabel = { en_proceso: 'En Proceso', completada: 'Completada', rechazada: 'Rechazada' };
+        const creadorSolicitud = await Solicitud.findByPk(id, {
+          include: [
+            { model: Usuario, as: 'creador', attributes: ['id', 'email', 'nombre'] },
+            { model: Cliente, as: 'cliente', attributes: ['razon_social'] },
+          ],
+        });
+        if (creadorSolicitud?.creado_por) {
+          await Notificacion.notificarMultiple(
+            [creadorSolicitud.creado_por],
+            {
+              tipo: 'solicitud_estado',
+              titulo: `Solicitud ${solicitud.numero_solicitud} — ${estadoLabel[estado] || estado}`,
+              mensaje: `Tu solicitud fue actualizada al estado: ${estadoLabel[estado] || estado}`,
+              accion_url: `/solicitudes/${id}`,
+              accion_label: 'Ver solicitud',
+            }
+          );
+        }
+      } catch (err) {
+        logger.error('[cambiarEstado] Error al notificar cliente:', err);
+      }
+    });
+
     return successMessage(res, `Solicitud marcada como ${estado}`, { id, estado });
   } catch (err) {
     return serverError(res, 'Error al cambiar estado', err);
@@ -454,6 +499,10 @@ const vincular = async (req, res) => {
 
     const operacion = await Operacion.findByPk(operacion_id);
     if (!operacion) return notFound(res, 'Operación no encontrada');
+
+    if (Number(operacion.cliente_id) !== Number(solicitud.cliente_id)) {
+      return errorResponse(res, 'La operación no pertenece al mismo cliente que la solicitud', 422);
+    }
 
     const operacionAnterior = solicitud.operacion_id || null;
     const nuevoEstado = solicitud.estado === 'recibida' ? 'en_proceso' : solicitud.estado;
@@ -503,6 +552,29 @@ const agregarComentario = async (req, res) => {
       mensaje: mensaje.trim(),
       es_interno: esCliente ? false : !!es_interno,
     });
+
+    // Notificar al cliente si el comentario es visible y lo hace un usuario interno
+    if (!esCliente && !comentario.es_interno) {
+      setImmediate(async () => {
+        try {
+          const solicitudInfo = await Solicitud.findByPk(id, { attributes: ['numero_solicitud', 'creado_por'] });
+          if (solicitudInfo?.creado_por) {
+            await Notificacion.notificarMultiple(
+              [solicitudInfo.creado_por],
+              {
+                tipo: 'solicitud_comentario',
+                titulo: `Nueva respuesta en solicitud ${solicitudInfo.numero_solicitud}`,
+                mensaje: 'El equipo ISTHO respondió a tu solicitud',
+                accion_url: `/solicitudes/${id}`,
+                accion_label: 'Ver solicitud',
+              }
+            );
+          }
+        } catch (err) {
+          logger.error('[agregarComentario] Error al notificar cliente:', err);
+        }
+      });
+    }
 
     const autor = await Usuario.findByPk(req.user.id, {
       attributes: ['id', 'nombre', 'apellido', 'rol', 'avatar_url'],
