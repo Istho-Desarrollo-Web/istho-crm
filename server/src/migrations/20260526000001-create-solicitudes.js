@@ -25,10 +25,15 @@ module.exports = {
       updated_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
       deleted_at: { type: DataTypes.DATE, allowNull: true },
     });
+    await queryInterface.addIndex('solicitudes', ['cliente_id'], { name: 'idx_solicitudes_cliente_id' });
+    await queryInterface.addIndex('solicitudes', ['estado'], { name: 'idx_solicitudes_estado' });
+    await queryInterface.addIndex('solicitudes', ['operacion_id'], { name: 'idx_solicitudes_operacion_id' });
   },
   async down(queryInterface) {
     const tables = await queryInterface.showAllTables();
     if (!tables.includes('solicitudes')) return;
+    await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 0;');
     await queryInterface.dropTable('solicitudes');
+    await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 1;');
   },
 };

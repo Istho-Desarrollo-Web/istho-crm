@@ -15,6 +15,7 @@ module.exports = {
       created_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
       updated_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
     });
+    await queryInterface.addIndex('solicitud_comentarios', ['solicitud_id'], { name: 'idx_solicitud_comentarios_solicitud_id' });
   },
   async down(queryInterface) {
     const tables = await queryInterface.showAllTables();
