@@ -29,7 +29,7 @@ const PERMISOS_CLIENTE_DEFAULT = {
   reportes: { ver: true, descargar: false },
   facturacion: { ver: true, descargar: true },
   perfil: { ver: true, editar: true, cambiar_password: true },
-  solicitudes: ['ver', 'crear', 'comentar'],
+  solicitudes: { ver: true, crear: true, comentar: true },
 };
 
 const PERMISOS_CLIENTE_CATALOGO = {
