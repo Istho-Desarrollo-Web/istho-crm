@@ -124,6 +124,12 @@ router.get(
 );
 
 // =============================================
+// REPORTE DE SOLICITUDES
+// =============================================
+
+router.get('/solicitudes', reporteController.reporteSolicitudes);
+
+// =============================================
 // ENVIAR REPORTE POR EMAIL
 // =============================================
 

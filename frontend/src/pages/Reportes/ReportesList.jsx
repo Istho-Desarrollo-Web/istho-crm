@@ -21,6 +21,7 @@ import {
   Receipt,
   MapPin,
   AlertTriangle,
+  ClipboardCheck,
 } from 'lucide-react';
 
 import { Button } from '../../components/common';
@@ -79,6 +80,14 @@ const REPORTES_OPERATIVOS = [
     color: 'bg-red-500',
     navigateTo: '/reportes/averias',
     exportEndpoints: { excel: '/reportes/averias/excel', pdf: '/reportes/averias/pdf' },
+  },
+  {
+    id: 'solicitudes',
+    titulo: 'Reporte de Solicitudes',
+    descripcion: 'Tiempos de respuesta, cumplimiento y volumen por cliente',
+    icon: ClipboardCheck,
+    color: 'bg-orange-500',
+    navigateTo: '/reportes/solicitudes',
   },
 ];
 
