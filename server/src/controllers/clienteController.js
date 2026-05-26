@@ -1111,6 +1111,17 @@ const addResponsable = async (req, res) => {
 
     if (!creado) return conflict(res, 'Este usuario ya está asignado a este cliente');
 
+    await Auditoria.registrar({
+      tabla: 'cliente_responsables',
+      registro_id: responsable.id,
+      accion: 'crear',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_nuevos: { cliente_id: id, usuario_id },
+      ip_address: getClientIP(req),
+      descripcion: `Responsable asignado: ${usuario.nombre} ${usuario.apellido} al cliente ${cliente.razon_social}`,
+    });
+
     logger.info('Responsable asignado:', { clienteId: id, usuarioId: usuario_id, asignadoPor: req.user?.id });
 
     return created(res, 'Responsable asignado exitosamente', {
@@ -1120,6 +1131,7 @@ const addResponsable = async (req, res) => {
       apellido: usuario.apellido,
       email: usuario.email,
       rol: usuario.rol,
+      avatar_url: usuario.avatar_url,
     });
   } catch (err) {
     logger.error('Error al agregar responsable:', { message: err.message });
@@ -1142,6 +1154,17 @@ const removeResponsable = async (req, res) => {
       where: { cliente_id: id, usuario_id: uid },
     });
     if (!responsable) return notFound(res, 'Responsable no encontrado');
+
+    await Auditoria.registrar({
+      tabla: 'cliente_responsables',
+      registro_id: responsable.id,
+      accion: 'eliminar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_anteriores: { cliente_id: id, usuario_id: uid },
+      ip_address: getClientIP(req),
+      descripcion: `Responsable removido del cliente ${cliente.razon_social}`,
+    });
 
     await responsable.destroy();
 
