@@ -129,6 +129,7 @@ const PERMISOS_POR_ROL = {
     reportes: ['ver', 'exportar'],
     configuracion: ['ver', 'editar'],
     notificaciones: ['ver'],
+    solicitudes: ['ver', 'crear', 'comentar'],
     perfil: ['ver', 'cambiar_password'],
   },
 };

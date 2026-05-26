@@ -124,6 +124,12 @@ router.get(
 );
 
 // =============================================
+// REPORTE DE SOLICITUDES
+// =============================================
+
+router.get('/solicitudes', requierePermiso('reportes', 'ver'), reporteController.reporteSolicitudes);
+
+// =============================================
 // ENVIAR REPORTE POR EMAIL
 // =============================================
 

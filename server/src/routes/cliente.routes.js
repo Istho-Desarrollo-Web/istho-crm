@@ -204,4 +204,27 @@ router.delete(
   clienteController.eliminarContacto
 );
 
+// ─── RESPONSABLES ────────────────────────────────────────────────────────────
+
+/**
+ * @route   GET /clientes/:id/responsables
+ * @desc    Listar responsables de un cliente
+ * @access  Privado (supervisor o superior)
+ */
+router.get('/:id/responsables', requiereRolMinimo('supervisor'), clienteController.getResponsables);
+
+/**
+ * @route   POST /clientes/:id/responsables
+ * @desc    Asignar responsable a un cliente
+ * @access  Privado (admin)
+ */
+router.post('/:id/responsables', requiereRolMinimo('admin'), clienteController.addResponsable);
+
+/**
+ * @route   DELETE /clientes/:id/responsables/:uid
+ * @desc    Remover responsable de un cliente
+ * @access  Privado (admin)
+ */
+router.delete('/:id/responsables/:uid', requiereRolMinimo('admin'), clienteController.removeResponsable);
+
 module.exports = router;

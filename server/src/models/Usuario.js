@@ -29,6 +29,7 @@ const PERMISOS_CLIENTE_DEFAULT = {
   reportes: { ver: true, descargar: false },
   facturacion: { ver: true, descargar: true },
   perfil: { ver: true, editar: true, cambiar_password: true },
+  solicitudes: { ver: true, crear: true, comentar: true },
 };
 
 const PERMISOS_CLIENTE_CATALOGO = {
@@ -96,6 +97,23 @@ const PERMISOS_CLIENTE_CATALOGO = {
       codigo: 'cambiar_password',
       nombre: 'Cambiar contraseña',
       descripcion: 'Permite cambiar su contraseña',
+    },
+  ],
+  solicitudes: [
+    {
+      codigo: 'ver',
+      nombre: 'Ver solicitudes',
+      descripcion: 'Permite ver las solicitudes de ingreso y despacho',
+    },
+    {
+      codigo: 'crear',
+      nombre: 'Crear solicitudes',
+      descripcion: 'Permite crear nuevas solicitudes de ingreso y despacho',
+    },
+    {
+      codigo: 'comentar',
+      nombre: 'Comentar solicitudes',
+      descripcion: 'Permite agregar comentarios a las solicitudes',
     },
   ],
 };

@@ -150,11 +150,23 @@ const uploadSoporte = multer({
   },
 });
 
+/**
+ * Upload para documentos adjuntos de solicitudes de cliente (S3 vía buffer)
+ */
+const uploadSolicitudDoc = multer({
+  storage: storageMemory,
+  fileFilter: documentFilter,
+  limits: {
+    fileSize: 20 * 1024 * 1024, // 20MB
+  },
+});
+
 module.exports = {
   uploadAveria,
   uploadCumplido,
   uploadLogo,
   uploadAvatar,
   uploadSoporte,
+  uploadSolicitudDoc,
   UPLOAD_DIRS,
 };

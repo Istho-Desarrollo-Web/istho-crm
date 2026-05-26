@@ -25,6 +25,8 @@ const {
   MovimientoCajaMenor,
   Usuario,
   CajaInventario,
+  Solicitud,
+  ClienteResponsable,
   sequelize,
 } = require('../models');
 const excelService = require('../services/excelService');
@@ -2577,6 +2579,101 @@ const exportarAveriasPDF = async (req, res) => {
   }
 };
 
+// =============================================
+// REPORTE DE SOLICITUDES
+// =============================================
+
+const reporteSolicitudes = async (req, res) => {
+  try {
+    const { desde, hasta, cliente_id, tipo, estado, responsable_id } = req.query;
+    const esCliente = req.user?.rol === 'cliente';
+
+    const where = {};
+    if (esCliente) where.cliente_id = req.user.cliente_id;
+    else if (cliente_id) where.cliente_id = cliente_id;
+    if (tipo) where.tipo = tipo;
+    if (estado) where.estado = estado;
+    if (desde || hasta) {
+      where.createdAt = {};
+      if (desde) where.createdAt[Op.gte] = new Date(desde + 'T00:00:00');
+      if (hasta) where.createdAt[Op.lte] = new Date(hasta + 'T23:59:59');
+    }
+
+    let solicitudesQuery = {
+      where,
+      include: [
+        { model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] },
+        { model: Usuario, as: 'creador', attributes: ['id', 'nombre', 'apellido'] },
+      ],
+      order: [['created_at', 'DESC']],
+      limit: 5000,
+    };
+
+    if (responsable_id) {
+      const clientesDelResponsable = await ClienteResponsable.findAll({
+        where: { usuario_id: responsable_id }, attributes: ['cliente_id'],
+      });
+      const clienteIds = clientesDelResponsable.map((c) => c.cliente_id);
+      if (clienteIds.length === 0) {
+        return success(res, { kpis: { total: 0, tasa_cumplimiento: 0, tiempo_promedio_dias: 0, rechazadas: 0 }, por_mes: [], por_tipo: [], tabla: [] });
+      }
+      where.cliente_id = { [Op.in]: clienteIds };
+    }
+
+    const solicitudes = await Solicitud.findAll(solicitudesQuery);
+
+    const total = solicitudes.length;
+    const completadas = solicitudes.filter((s) => s.estado === 'completada').length;
+    const rechazadas = solicitudes.filter((s) => s.estado === 'rechazada').length;
+    const tasa_cumplimiento = total > 0 ? Math.round((completadas / total) * 100) : 0;
+
+    const tiemposDias = solicitudes
+      .filter((s) => s.operacion_id && s.updated_at && s.created_at)
+      .map((s) => (new Date(s.updated_at) - new Date(s.created_at)) / (1000 * 60 * 60 * 24));
+    const tiempo_promedio_dias = tiemposDias.length > 0
+      ? Math.round((tiemposDias.reduce((a, b) => a + b, 0) / tiemposDias.length) * 10) / 10
+      : 0;
+
+    const porMesMap = {};
+    solicitudes.forEach((s) => {
+      const key = new Date(s.created_at).toISOString().slice(0, 7);
+      if (!porMesMap[key]) porMesMap[key] = { mes: key, ingreso: 0, despacho: 0, total: 0 };
+      porMesMap[key][s.tipo]++;
+      porMesMap[key].total++;
+    });
+    const por_mes = Object.values(porMesMap).sort((a, b) => a.mes.localeCompare(b.mes)).slice(-6);
+
+    const ingresosCount = solicitudes.filter((s) => s.tipo === 'ingreso').length;
+    const despachosCount = solicitudes.filter((s) => s.tipo === 'despacho').length;
+    const por_tipo = [
+      { tipo: 'Ingresos', cantidad: ingresosCount },
+      { tipo: 'Despachos', cantidad: despachosCount },
+    ];
+
+    const tabla = solicitudes.map((s) => ({
+      id: s.id,
+      numero_solicitud: s.numero_solicitud,
+      cliente: s.cliente?.razon_social || '',
+      tipo: s.tipo,
+      fecha_envio: s.created_at,
+      estado: s.estado,
+      operacion_id: s.operacion_id,
+      tiempo_respuesta_dias: s.operacion_id
+        ? Math.round(((new Date(s.updated_at) - new Date(s.created_at)) / (1000 * 60 * 60 * 24)) * 10) / 10
+        : null,
+    }));
+
+    return success(res, {
+      kpis: { total, tasa_cumplimiento, tiempo_promedio_dias, rechazadas },
+      por_mes,
+      por_tipo,
+      tabla,
+    });
+  } catch (err) {
+    return serverError(res, 'Error al generar reporte de solicitudes', err);
+  }
+};
+
 module.exports = {
   getPeriodosDisponibles,
   exportarOperacionesExcel,
@@ -2620,4 +2717,6 @@ module.exports = {
   getReporteAverias,
   exportarAveriasExcel,
   exportarAveriasPDF,
+  // Solicitudes
+  reporteSolicitudes,
 };
