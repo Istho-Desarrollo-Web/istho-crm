@@ -83,10 +83,15 @@ const ImprimirEtiquetasModal = ({ isOpen, onClose, tipoOperacion, operacionId, s
     if (!printerId) return;
     setSending(true);
     try {
+      const sortedLabels = [...filteredLabels].sort((a, b) => {
+        const idA = Number(a.palletId || a.pallet_id || 0);
+        const idB = Number(b.palletId || b.pallet_id || 0);
+        return idA - idB;
+      });
       const payload = {
         printer_id: printerId,
         label_type: labelType,
-        labels: filteredLabels.map((l) => ({ label_id: l.id || l.label_id, pallet_id: l.palletId || l.pallet_id })),
+        labels: sortedLabels.map((l) => ({ label_id: l.id || l.label_id, pallet_id: l.palletId || l.pallet_id })),
         copies: Math.max(1, Number(copies) || 1),
         priority: 5,
         source: 'crm-centhrix',
