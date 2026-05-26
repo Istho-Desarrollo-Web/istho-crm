@@ -2592,9 +2592,9 @@ const reporteSolicitudes = async (req, res) => {
     if (tipo) where.tipo = tipo;
     if (estado) where.estado = estado;
     if (desde || hasta) {
-      where.created_at = {};
-      if (desde) where.created_at[Op.gte] = new Date(desde + 'T00:00:00');
-      if (hasta) where.created_at[Op.lte] = new Date(hasta + 'T23:59:59');
+      where.createdAt = {};
+      if (desde) where.createdAt[Op.gte] = new Date(desde + 'T00:00:00');
+      if (hasta) where.createdAt[Op.lte] = new Date(hasta + 'T23:59:59');
     }
 
     const { Solicitud, ClienteResponsable } = require('../models');
