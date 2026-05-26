@@ -146,6 +146,17 @@ const allMenuConfig = [
     ],
   },
   {
+    id: 'solicitudes',
+    label: 'Solicitudes',
+    icon: ClipboardList,
+    basePath: '/solicitudes',
+    shortcut: 'S',
+    soloPortalCliente: true, // Solo visible para rol cliente
+    items: [
+      { icon: ClipboardList, label: 'Mis Solicitudes', href: '/solicitudes', shortcut: 'G S' },
+    ],
+  },
+  {
     id: 'admin',
     label: 'Administración',
     icon: Shield,
@@ -181,6 +192,7 @@ const MENU_PERMISSION_MAP = {
   inventario: ['inventario.ver', 'inventario.alertas'],
   operaciones: ['operaciones.ver'],
   viajes: ['vehiculos.ver', 'viajes.ver', 'caja_menor.ver', 'movimientos.ver'],
+  solicitudes: ['solicitudes.ver'],
   admin: ['usuarios.ver', 'roles.ver', 'configuracion_wms.ver'],
 };
 
@@ -194,6 +206,8 @@ const getMenuForRole = (rol, hasPermission) => {
       if (menu.soloAdmin) return false;
       // Ocultar menús soloInternos para clientes
       if (menu.soloInternos && rol === 'cliente') return false;
+      // Ocultar menús soloPortalCliente para roles internos
+      if (menu.soloPortalCliente && rol !== 'cliente') return false;
 
       // Verificar si el usuario tiene al menos UN permiso del menú
       const permisos = MENU_PERMISSION_MAP[menu.id];
@@ -227,6 +241,8 @@ const getMenuForRole = (rol, hasPermission) => {
         if (item.href === '/plantillas-email') return hasPermission('plantillas_email', 'ver');
         // Lista de clientes requiere permiso
         if (item.href === '/clientes') return hasPermission('clientes', 'ver');
+        // Solicitudes requiere permiso
+        if (item.href === '/solicitudes') return hasPermission('solicitudes', 'ver');
         // Sub-items de viajes por módulo
         if (item.href === '/viajes/vehiculos') return hasPermission('vehiculos', 'ver');
         if (item.href === '/viajes/viajes') return hasPermission('viajes', 'ver');

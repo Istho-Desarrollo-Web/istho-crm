@@ -107,6 +107,11 @@ const AuditoriaAcciones = lazy(() => import('./pages/AuditoriaAcciones'));
 // WMS Dashboard
 const WmsDashboard = lazy(() => import('./pages/WmsDashboard'));
 
+// Módulo de Solicitudes
+const SolicitudesList = lazy(() => import('./pages/Solicitudes/SolicitudesList'));
+const SolicitudDetail = lazy(() => import('./pages/Solicitudes/SolicitudDetail'));
+const ReporteSolicitudes = lazy(() => import('./pages/Reportes/ReporteSolicitudes'));
+
 // Módulo de Viajes
 const VehiculosList = lazy(() => import('./pages/Viajes/VehiculosList'));
 const CajaMenorList = lazy(() => import('./pages/Viajes/CajaMenorList'));
@@ -329,6 +334,26 @@ function App() {
                     />
 
                     {/* ────────────────────────────────────────────────────────── */}
+                    {/* SOLICITUDES - Requiere solicitudes.ver (portal cliente) */}
+                    {/* ────────────────────────────────────────────────────────── */}
+                    <Route
+                      path="/solicitudes"
+                      element={
+                        <PermissionRoute module="solicitudes" action="ver">
+                          <SolicitudesList />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/solicitudes/:id"
+                      element={
+                        <PermissionRoute module="solicitudes" action="ver">
+                          <SolicitudDetail />
+                        </PermissionRoute>
+                      }
+                    />
+
+                    {/* ────────────────────────────────────────────────────────── */}
                     {/* INVENTARIO - Requiere inventario.ver (todos los roles) */}
                     {/* ────────────────────────────────────────────────────────── */}
                     <Route
@@ -512,6 +537,14 @@ function App() {
                       element={
                         <PermissionRoute module="reportes" action="ver">
                           <ReporteAverias />
+                        </PermissionRoute>
+                      }
+                    />
+                    <Route
+                      path="/reportes/solicitudes"
+                      element={
+                        <PermissionRoute module="reportes" action="ver">
+                          <ReporteSolicitudes />
                         </PermissionRoute>
                       }
                     />
