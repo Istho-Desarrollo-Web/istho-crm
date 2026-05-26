@@ -29,6 +29,7 @@ const backupRoutes = require('./backup.routes');
 const archivosRoutes = require('./archivos.routes');
 const forklifDriverKardexRoutes = require('./forklifDriverKardex.routes');
 const emailRoutes = require('./email.routes');
+const solicitudRoutes = require('./solicitud.routes');
 
 // Info de la API
 router.get('/', (req, res) => {
@@ -74,5 +75,6 @@ router.use('/backup', backupRoutes);
 router.use('/archivos', archivosRoutes);
 router.use('/forklift-drivers/kardex', forklifDriverKardexRoutes);
 router.use('/emails', emailRoutes);
+router.use('/solicitudes', solicitudRoutes);
 
 module.exports = router;
