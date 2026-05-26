@@ -16,6 +16,9 @@ module.exports = (sequelize) => {
       tableName: 'cliente_responsables',
       underscored: true,
       paranoid: false,
+      indexes: [
+        { unique: true, fields: ['cliente_id', 'usuario_id'] },
+      ],
     }
   );
 

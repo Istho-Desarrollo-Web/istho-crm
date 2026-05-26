@@ -99,6 +99,23 @@ const PERMISOS_CLIENTE_CATALOGO = {
       descripcion: 'Permite cambiar su contraseña',
     },
   ],
+  solicitudes: [
+    {
+      codigo: 'ver',
+      nombre: 'Ver solicitudes',
+      descripcion: 'Permite ver las solicitudes de ingreso y despacho',
+    },
+    {
+      codigo: 'crear',
+      nombre: 'Crear solicitudes',
+      descripcion: 'Permite crear nuevas solicitudes de ingreso y despacho',
+    },
+    {
+      codigo: 'comentar',
+      nombre: 'Comentar solicitudes',
+      descripcion: 'Permite agregar comentarios a las solicitudes',
+    },
+  ],
 };
 
 // Permisos por rol interno
