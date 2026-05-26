@@ -6,6 +6,7 @@ import solicitudesService from '../../api/solicitudes.service';
 import { FilterDropdown, DatePicker } from '../../components/common';
 import useNotification from '../../hooks/useNotification';
 import { useAuth } from '../../context/AuthContext';
+import SolicitudForm from './SolicitudForm';
 
 const ESTADO_CONFIG = {
   recibida:    { label: 'Recibida',    color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
@@ -192,22 +193,15 @@ const SolicitudesList = () => {
         </div>
       )}
 
-      {/* Modal de creación — se agrega en Task 7 */}
       {showForm && (
-        <SolicitudFormPlaceholder tipo={tabActivo} onClose={() => setShowForm(false)} onSave={() => { setShowForm(false); fetchSolicitudes(1); }} />
+        <SolicitudForm
+          tipo={tabActivo}
+          onClose={() => setShowForm(false)}
+          onSave={() => { setShowForm(false); fetchSolicitudes(1); }}
+        />
       )}
     </div>
   );
 };
-
-// Placeholder temporal hasta crear SolicitudForm en Task 7
-const SolicitudFormPlaceholder = ({ onClose, onSave: _onSave }) => (
-  <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-    <div className="bg-white dark:bg-centhrix-card rounded-2xl p-6">
-      <p className="text-slate-700 dark:text-slate-200">Formulario pendiente (Task 7)</p>
-      <button onClick={onClose} className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-xl">Cerrar</button>
-    </div>
-  </div>
-);
 
 export default SolicitudesList;
