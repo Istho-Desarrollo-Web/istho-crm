@@ -73,7 +73,6 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    setError('');
     try {
       const [permisosRes, catalogoRes] = await Promise.all([
         adminService.getPermisosUsuario(usuario.id),
@@ -129,7 +128,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
         setExpandedGroups(groups);
       }
     } catch (err) {
-      setError('Error cargando permisos del usuario');
+      notifyError('Error cargando permisos del usuario');
       console.error(err);
     }
     setLoading(false);
