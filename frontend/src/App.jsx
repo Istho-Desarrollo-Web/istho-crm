@@ -224,6 +224,12 @@ const snackbarConfig = {
   classes: {
     containerRoot: 'notistack-SnackbarContainer',
   },
+  iconVariant: {
+    success: null,
+    error: null,
+    warning: null,
+    info: null,
+  },
 };
 
 // ════════════════════════════════════════════════════════════════════════════

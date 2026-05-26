@@ -87,6 +87,12 @@ const apiClient = axios.create({
  */
 const _pendingGets = new Map();
 
+/**
+ * Evita que mutaciones idénticas (POST/PUT/PATCH/DELETE) se envíen en paralelo.
+ * key: `method|url` — si ya hay una en vuelo, la segunda se cancela silenciosamente.
+ */
+const _pendingMutations = new Set();
+
 // Promesa compartida para deduplicar refreshes simultáneos.
 // Si varios requests fallan con 401 a la vez, solo se hace UN refresh.
 let _refreshPromise = null;
@@ -108,6 +114,18 @@ apiClient.interceptors.request.use(
     // Si existe token, agregarlo al header Authorization
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Deduplicar mutaciones: bloquea POST/PUT/PATCH/DELETE duplicados mientras uno está en vuelo
+    if (['post', 'put', 'patch', 'delete'].includes(config.method)) {
+      const mutKey = `${config.method}|${config.url}`;
+      if (_pendingMutations.has(mutKey)) {
+        config.adapter = () =>
+          Promise.reject({ isDuplicateRequest: true, message: 'Solicitud en curso, por favor espere' });
+      } else {
+        _pendingMutations.add(mutKey);
+        config._mutationKey = mutKey;
+      }
     }
 
     // Deduplicar GETs: si ya hay un request idéntico en vuelo, reutilizar su promesa
@@ -159,6 +177,10 @@ apiClient.interceptors.request.use(
  */
 apiClient.interceptors.response.use(
   (response) => {
+    // Liberar clave de mutación en vuelo
+    const mutKey = response.config?._mutationKey;
+    if (mutKey) _pendingMutations.delete(mutKey);
+
     // Resolver promesa compartida para requests deduplicados
     const key = response.config?._dedupeKey;
     if (key && _pendingGets.has(key)) {
@@ -181,6 +203,20 @@ apiClient.interceptors.response.use(
     return response.data;
   },
   async (error) => {
+    // Solicitud duplicada bloqueada — rechazar silenciosamente sin llegar al servidor
+    if (error?.isDuplicateRequest) {
+      return Promise.reject({
+        success: false,
+        message: error.message,
+        code: 'DUPLICATE_REQUEST',
+        status: 0,
+      });
+    }
+
+    // Liberar clave de mutación en vuelo si el request original falló
+    const mutKey = error.config?._mutationKey;
+    if (mutKey) _pendingMutations.delete(mutKey);
+
     // Rechazar promesa compartida si el request canónico falló
     const key = error.config?._dedupeKey;
     if (key && _pendingGets.has(key)) {

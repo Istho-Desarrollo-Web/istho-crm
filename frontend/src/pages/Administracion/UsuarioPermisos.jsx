@@ -17,11 +17,10 @@ import {
   RotateCcw,
   ChevronDown,
   ChevronRight,
-  CheckCircle,
-  AlertTriangle,
   Loader2,
 } from 'lucide-react';
 import adminService from '../../api/admin.service';
+import useNotification from '../../hooks/useNotification';
 
 const MODULO_LABELS = {
   dashboard: 'Dashboard',
@@ -55,10 +54,9 @@ const ACCION_LABELS = {
 };
 
 const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
+  const { success, error: notifyError } = useNotification();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
   const [data, setData] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState({});
 
@@ -180,19 +178,14 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
 
   const handleRestaurarRol = async () => {
     setSaving(true);
-    setError('');
     try {
       await adminService.actualizarPermisosUsuario(usuario.id, { restaurar_rol: true });
-      setSuccessMsg('Permisos restaurados a los del rol');
+      success('Permisos restaurados a los del rol');
       setTienePersonalizados(false);
-      // Recargar permisos del rol
       await fetchData();
-      setTimeout(() => {
-        setSuccessMsg('');
-      }, 2000);
       if (onSave) onSave();
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al restaurar permisos');
+      notifyError(err.message || 'Error al restaurar permisos');
     }
     setSaving(false);
   };
@@ -212,16 +205,12 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
 
   const handleSave = async () => {
     setSaving(true);
-    setError('');
-    setSuccessMsg('');
-
     try {
       if (data.tipo === 'cliente') {
         await adminService.actualizarPermisosUsuario(usuario.id, {
           permisos_cliente: permisosCliente,
         });
       } else {
-        // Convertir Set de IDs a formato { modulo: ['accion1', 'accion2'] }
         const permisos_personalizados = {};
         selectedPermisos.forEach((id) => {
           const p = catalogoPermisos.find((x) => x.id === id);
@@ -230,20 +219,13 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
             permisos_personalizados[p.modulo].push(p.accion);
           }
         });
-
-        await adminService.actualizarPermisosUsuario(usuario.id, {
-          permisos_personalizados,
-        });
+        await adminService.actualizarPermisosUsuario(usuario.id, { permisos_personalizados });
         setTienePersonalizados(true);
       }
-
-      setSuccessMsg('Permisos guardados exitosamente');
-      setTimeout(() => {
-        setSuccessMsg('');
-      }, 2000);
+      success('Permisos guardados exitosamente');
       if (onSave) onSave();
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al guardar permisos');
+      notifyError(err.message || 'Error al guardar permisos');
     }
     setSaving(false);
   };
@@ -325,18 +307,6 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
-
-        {/* Messages */}
-        {error && (
-          <div className="mx-6 mt-4 px-4 py-2 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-xl flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
-          </div>
-        )}
-        {successMsg && (
-          <div className="mx-6 mt-4 px-4 py-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 rounded-xl flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 shrink-0" /> {successMsg}
-          </div>
-        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-4">

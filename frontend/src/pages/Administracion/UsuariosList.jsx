@@ -24,7 +24,7 @@ import {
   List,
   LayoutGrid,
 } from 'lucide-react';
-import { useSnackbar } from 'notistack';
+import useNotification from '../../hooks/useNotification';
 import adminService from '../../api/admin.service';
 import useSort from '@hooks/useSort';
 import SortIcon from '@components/common/SortIcon';
@@ -35,7 +35,7 @@ import { FilterDropdown } from '../../components/common';
 
 const UsuariosList = () => {
   const { hasPermission } = useAuth();
-  const { enqueueSnackbar } = useSnackbar();
+  const { success, error } = useNotification();
   const [usuarios, setUsuarios] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +52,6 @@ const UsuariosList = () => {
   const [enviarCorreoReset, setEnviarCorreoReset] = useState(false);
   const [showPermisos, setShowPermisos] = useState(null);
   const [sendingCredentials, setSendingCredentials] = useState(null);
-  const [credentialsMsg, setCredentialsMsg] = useState(null);
   const [viewMode, setViewMode] = useState('table');
   const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
 
@@ -100,12 +99,14 @@ const UsuariosList = () => {
     try {
       if (usuario.activo) {
         await adminService.desactivarUsuario(usuario.id);
+        success(`Usuario ${usuario.nombre_completo || usuario.username} desactivado`);
       } else {
         await adminService.actualizarUsuario(usuario.id, { activo: true });
+        success(`Usuario ${usuario.nombre_completo || usuario.username} reactivado`);
       }
       fetchUsuarios();
-    } catch (error) {
-      console.error('Error:', error);
+    } catch (err) {
+      error(err.message || 'Error al cambiar el estado del usuario');
     }
     setMenuOpen(null);
   };
@@ -118,14 +119,12 @@ const UsuariosList = () => {
         enviar_correo: enviarCorreoReset,
       });
       const msg = response?.message || 'Contraseña reseteada exitosamente';
-      enqueueSnackbar(msg, { variant: 'success' });
+      success(msg);
       setShowResetPassword(null);
       setNewPassword('');
       setEnviarCorreoReset(false);
-    } catch (error) {
-      const msg =
-        error?.response?.data?.message || error?.message || 'Error al resetear la contraseña';
-      enqueueSnackbar(msg, { variant: 'error' });
+    } catch (err) {
+      error(err?.message || 'Error al resetear la contraseña');
     }
   };
 
@@ -134,15 +133,11 @@ const UsuariosList = () => {
     setMenuOpen(null);
     try {
       await adminService.reenviarCredenciales(user.id);
-      setCredentialsMsg({ type: 'success', text: `Credenciales enviadas a ${user.email}` });
-    } catch (error) {
-      setCredentialsMsg({
-        type: 'error',
-        text: error.response?.data?.message || 'Error al enviar credenciales',
-      });
+      success(`Credenciales enviadas a ${user.email}`);
+    } catch (err) {
+      error(err.message || 'Error al enviar credenciales');
     }
     setSendingCredentials(null);
-    setTimeout(() => setCredentialsMsg(null), 4000);
   };
 
   const handleFormSave = () => {
@@ -153,20 +148,6 @@ const UsuariosList = () => {
 
   return (
     <div className="space-y-4">
-      {/* Toast de credenciales */}
-      {credentialsMsg && (
-        <div
-          className={`px-4 py-3 rounded-xl text-sm flex items-center gap-2 ${
-            credentialsMsg.type === 'success'
-              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
-          }`}
-        >
-          <Mail className="w-4 h-4 shrink-0" />
-          {credentialsMsg.text}
-        </div>
-      )}
-
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Search */}

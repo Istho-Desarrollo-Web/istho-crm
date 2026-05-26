@@ -12,6 +12,7 @@
 
 const logger = require('../utils/logger');
 const { forbidden, unauthorized } = require('../utils/responses');
+const { Usuario } = require('../models');
 
 // ════════════════════════════════════════════════════════════════════════════
 // MIDDLEWARE DE FILTRO POR CLIENTE
@@ -120,7 +121,7 @@ const verificarPermisoCliente = (modulo, accion) => {
 
       // Para usuarios cliente, verificar permisos específicos
       if (req.user.rol === 'cliente') {
-        const permisos = req.user.permisos_cliente || {};
+        const permisos = req.user.permisos_cliente || Usuario.getPermisosClienteDefault();
 
         if (!permisos[modulo] || !permisos[modulo][accion]) {
           logger.warn('Permiso de cliente denegado:', {

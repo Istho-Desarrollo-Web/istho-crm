@@ -12,9 +12,11 @@ import { X } from 'lucide-react';
 import adminService from '../../api/admin.service';
 import clientesService from '../../api/clientes.service';
 import { FilterDropdown } from '../../components/common';
+import useNotification from '../../hooks/useNotification';
 
 const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
   const isEdit = !!usuario;
+  const { success, error: notifyError } = useNotification();
 
   const [form, setForm] = useState({
     username: '',
@@ -88,12 +90,16 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
         delete data.username; // username can't be changed
         delete data.password; // use reset-password instead
         await adminService.actualizarUsuario(usuario.id, data);
+        success('Usuario actualizado correctamente');
       } else {
         await adminService.crearUsuario(data);
+        success('Usuario creado correctamente');
       }
       onSave();
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Error al guardar');
+      const msg = err.message || 'Error al guardar';
+      setError(msg);
+      notifyError(msg);
     }
     setSaving(false);
   };
