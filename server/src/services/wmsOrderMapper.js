@@ -14,7 +14,7 @@ const logger = require('../utils/logger');
  * @returns {{ tipo: 'entrada'|'salida', payload: object }}
  */
 async function mapearOrden(ordenWms, itemsArr) {
-  const { id: wmsId, type, systemNumberOrder, customerNumberOrder, customer, warehouse } = ordenWms;
+  const { id: wmsId, type, systemNumberOrder, customerNumberOrder, pickingNumber, customer, warehouse } = ordenWms;
 
   const nit = customer?.nit || customer?.taxId || customer?.identification || customer?.rut;
   if (!nit) {
@@ -107,7 +107,7 @@ async function mapearOrden(ordenWms, itemsArr) {
       tipo: 'salida',
       payload: {
         nit,
-        numero_picking: docOrigen,
+        numero_picking: pickingNumber || docOrigen,
         tipo_orden: 'PK',
         wms_order_id: wmsId,
         conductor_nombre: ordenWms.vehicleDriver || null,
