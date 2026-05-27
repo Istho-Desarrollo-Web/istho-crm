@@ -1106,21 +1106,26 @@ const ProductoDetail = () => {
                                   })()}
                                 </td>
                                 <td className="py-3 px-2 text-center">
-                                  <span
-                                    className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                      caja.estado === 'disponible'
-                                        ? 'bg-emerald-50 text-emerald-700'
-                                        : caja.estado === 'despachada'
-                                          ? 'bg-slate-100 text-slate-600'
-                                          : caja.estado === 'en_transito'
-                                            ? 'bg-blue-50 text-blue-700'
-                                            : caja.estado === 'dañada'
-                                              ? 'bg-red-50 text-red-700'
-                                              : 'bg-slate-100 text-slate-600'
-                                    }`}
-                                  >
-                                    {caja.estado || '-'}
-                                  </span>
+                                  {(() => {
+                                    const estadoVisible = Number(caja.cantidad) > 0 ? 'disponible' : caja.estado;
+                                    return (
+                                      <span
+                                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                          estadoVisible === 'disponible'
+                                            ? 'bg-emerald-50 text-emerald-700'
+                                            : estadoVisible === 'despachada'
+                                              ? 'bg-slate-100 text-slate-600'
+                                              : estadoVisible === 'en_transito'
+                                                ? 'bg-blue-50 text-blue-700'
+                                                : estadoVisible === 'dañada'
+                                                  ? 'bg-red-50 text-red-700'
+                                                  : 'bg-slate-100 text-slate-600'
+                                        }`}
+                                      >
+                                        {estadoVisible || '-'}
+                                      </span>
+                                    );
+                                  })()}
                                 </td>
                                 <td className="hidden sm:table-cell py-3 px-2 font-mono text-xs text-slate-500 dark:text-slate-400">
                                   {caja.documento}
