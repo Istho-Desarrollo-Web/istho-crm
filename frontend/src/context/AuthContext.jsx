@@ -66,6 +66,7 @@ const PERMISOS_POR_ROL = {
     caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'eliminar', 'exportar'],
     movimientos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar'],
     plantillas_email: ['ver', 'crear', 'editar', 'eliminar'],
+    solicitudes: ['ver', 'crear', 'comentar', 'exportar'],
     perfil: ['ver', 'cambiar_password'],
   },
   supervisor: {
@@ -84,6 +85,7 @@ const PERMISOS_POR_ROL = {
     viajes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
     caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'eliminar', 'exportar'],
     movimientos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar'],
+    solicitudes: ['ver', 'crear', 'comentar', 'exportar'],
     perfil: ['ver', 'cambiar_password'],
   },
   financiera: {
@@ -109,6 +111,7 @@ const PERMISOS_POR_ROL = {
     notificaciones: ['ver'],
     caja_menor: ['ver'],
     movimientos: ['ver', 'crear', 'editar'],
+    solicitudes: ['ver', 'comentar'],
     perfil: ['ver', 'cambiar_password'],
   },
   conductor: {

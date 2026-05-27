@@ -433,6 +433,12 @@ const PERMISOS_CATALOGO = [
     grupo: 'Viajes',
   },
 
+  // Solicitudes de clientes
+  { modulo: 'solicitudes', accion: 'ver', descripcion: 'Ver solicitudes de clientes', grupo: 'Gestión' },
+  { modulo: 'solicitudes', accion: 'crear', descripcion: 'Crear solicitudes', grupo: 'Gestión' },
+  { modulo: 'solicitudes', accion: 'comentar', descripcion: 'Comentar y gestionar solicitudes', grupo: 'Gestión' },
+  { modulo: 'solicitudes', accion: 'exportar', descripcion: 'Exportar reporte de solicitudes', grupo: 'Gestión' },
+
   // Perfil (disponible para todos los roles)
   { modulo: 'perfil', accion: 'ver', descripcion: 'Ver y editar perfil propio', grupo: 'General' },
   {
@@ -467,6 +473,7 @@ const PERMISOS_POR_ROL = {
     viajes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
     caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'eliminar', 'exportar'],
     movimientos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar'],
+    solicitudes: ['ver', 'crear', 'comentar', 'exportar'],
     perfil: ['ver', 'cambiar_password'],
   },
 
@@ -494,6 +501,7 @@ const PERMISOS_POR_ROL = {
     notificaciones: ['ver'],
     caja_menor: ['ver'],
     movimientos: ['ver', 'crear', 'editar'],
+    solicitudes: ['ver', 'comentar'],
     perfil: ['ver', 'cambiar_password'],
   },
 
@@ -516,6 +524,7 @@ const PERMISOS_POR_ROL = {
     reportes: ['ver', 'exportar'],
     configuracion: ['ver', 'editar'],
     notificaciones: ['ver'],
+    solicitudes: ['ver', 'crear', 'comentar'],
     perfil: ['ver', 'cambiar_password'],
   },
 };
