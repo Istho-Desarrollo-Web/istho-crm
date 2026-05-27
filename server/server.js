@@ -95,7 +95,10 @@ server.listen(PORT, () => {
   logger.info(`   🌐 Frontend: ${process.env.CORS_ORIGIN || 'http://localhost:5173'}`);
 
   // Inicializar DB en background
-  initializeDatabase();
+  initializeDatabase().catch(err => {
+    logger.error(`❌ FALLO CRÍTICO en inicialización de BD: ${err.message}`);
+    logger.error('   Revisa las migraciones pendientes con: npm run migration:status');
+  });
 });
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -130,9 +133,9 @@ async function initializeDatabase() {
     
     const umzug = new Umzug({
       migrations: {
-        glob: path.join(__dirname, 'src/migrations/*.js'),
-        resolve: ({ name, path, context }) => {
-          const migration = require(path);
+        glob: path.join(__dirname, 'src/migrations/*.js').replace(/\\/g, '/'),
+        resolve: ({ name, path: migPath, context }) => {
+          const migration = require(migPath);
           return {
             name,
             up: async () => migration.up(context, db.Sequelize),

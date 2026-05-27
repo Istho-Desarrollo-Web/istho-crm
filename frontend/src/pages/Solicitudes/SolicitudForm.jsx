@@ -13,8 +13,10 @@ const UNIDADES = [
 
 const lineaVacia = () => ({ referencia: '', descripcion: '', cantidad: '', unidad: 'unidad' });
 
-const SolicitudForm = ({ tipo, onClose, onSave }) => {
+const SolicitudForm = ({ tipo: tipoProp, onClose, onSave }) => {
   const { success, error: notifyError } = useNotification();
+  const [tipoSeleccionado, setTipoSeleccionado] = useState(tipoProp || '');
+  const tipo = tipoProp || tipoSeleccionado;
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     prioridad: 'normal',
@@ -26,7 +28,7 @@ const SolicitudForm = ({ tipo, onClose, onSave }) => {
     notas: '',
   });
   const [detalles, setDetalles] = useState([lineaVacia()]);
-  const [adjunto, setAdjunto] = useState(null);
+  const [adjuntos, setAdjuntos] = useState([]);
   const [formError, setFormError] = useState('');
 
   const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -42,6 +44,10 @@ const SolicitudForm = ({ tipo, onClose, onSave }) => {
     e.preventDefault();
     setFormError('');
 
+    if (!tipo) {
+      setFormError('Selecciona el tipo de solicitud');
+      return;
+    }
     const lineasValidas = detalles.filter((d) => d.referencia.trim() && Number(d.cantidad) > 0);
     if (lineasValidas.length === 0) {
       setFormError('Agrega al menos un producto con referencia y cantidad válidas');
@@ -51,12 +57,7 @@ const SolicitudForm = ({ tipo, onClose, onSave }) => {
     setSaving(true);
     try {
       const payload = { ...form, tipo, detalles: lineasValidas };
-      const res = await solicitudesService.crear(payload);
-      const solicitudId = res.data?.id;
-
-      if (adjunto && solicitudId) {
-        await solicitudesService.subirDocumento(solicitudId, adjunto);
-      }
+      const res = await solicitudesService.crear(payload, adjuntos);
 
       success(`Solicitud ${res.data?.numero_solicitud} creada correctamente`);
       onSave();
@@ -69,14 +70,14 @@ const SolicitudForm = ({ tipo, onClose, onSave }) => {
     }
   };
 
-  const tipoLabel = tipo === 'ingreso' ? 'Aviso de Ingreso' : 'Solicitud de Despacho';
+  const tipoLabel = tipo === 'ingreso' ? 'Aviso de Ingreso' : tipo === 'despacho' ? 'Solicitud de Despacho' : 'Nueva Solicitud';
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Nueva {tipoLabel}</h3>
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{tipoLabel}</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-centhrix-surface">
             <X className="w-5 h-5 text-slate-500" />
           </button>
@@ -85,6 +86,31 @@ const SolicitudForm = ({ tipo, onClose, onSave }) => {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {formError && (
             <div className="px-4 py-2 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-xl">{formError}</div>
+          )}
+
+          {/* Selector de tipo (solo cuando no se pasa tipo fijo por prop) */}
+          {!tipoProp && (
+            <div>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Tipo de solicitud *</label>
+              <div className="grid grid-cols-2 gap-3">
+                {[{ value: 'ingreso', label: 'Aviso de Ingreso', desc: 'Notificar llegada de mercancía a bodega' },
+                  { value: 'despacho', label: 'Solicitud de Despacho', desc: 'Solicitar salida de productos de bodega' }].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setTipoSeleccionado(opt.value)}
+                    className={`p-3 rounded-xl border-2 text-left transition-colors ${
+                      tipoSeleccionado === opt.value
+                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
+                        : 'border-gray-200 dark:border-slate-700 hover:border-orange-300'
+                    }`}
+                  >
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{opt.label}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{opt.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Campos comunes */}
@@ -206,12 +232,47 @@ const SolicitudForm = ({ tipo, onClose, onSave }) => {
               placeholder="Instrucciones especiales, condiciones, observaciones..." />
           </div>
 
-          {/* Adjunto */}
+          {/* Adjuntos múltiples */}
           <div>
-            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Documento soporte (PDF / imagen)</label>
-            <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"
-              onChange={(e) => setAdjunto(e.target.files[0] || null)}
-              className="w-full text-sm text-slate-600 dark:text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100" />
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+              Documentos soporte (PDF / imagen) — puedes seleccionar varios
+            </label>
+            <label className="inline-flex items-center gap-2 cursor-pointer px-3 py-1.5 text-xs font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/40 dark:text-orange-400 rounded-lg transition-colors">
+              Elegir archivos
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.webp"
+                multiple
+                className="sr-only"
+                onChange={(e) => {
+                  const nuevos = Array.from(e.target.files);
+                  setAdjuntos((prev) => {
+                    const claves = new Set(prev.map((f) => f.name + f.size));
+                    return [...prev, ...nuevos.filter((f) => !claves.has(f.name + f.size))];
+                  });
+                  e.target.value = '';
+                }}
+              />
+            </label>
+            {adjuntos.length > 0 && (
+              <span className="ml-3 text-xs text-slate-400 dark:text-slate-500">{adjuntos.length} {adjuntos.length === 1 ? 'archivo' : 'archivos'}</span>
+            )}
+            {adjuntos.length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {adjuntos.map((f, i) => (
+                  <li key={i} className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-centhrix-surface rounded-lg px-3 py-1.5">
+                    <span className="truncate">{f.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setAdjuntos((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="ml-2 text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Acciones */}

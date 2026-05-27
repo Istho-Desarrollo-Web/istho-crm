@@ -239,8 +239,8 @@ const listarOperacionesValidator = [
 
   query('limit')
     .optional()
-    .isInt({ min: 1, max: 100 })
-    .withMessage('Límite debe ser entre 1 y 100'),
+    .isInt({ min: 1, max: 500 })
+    .withMessage('Límite debe ser entre 1 y 500'),
 
   query('tipo').optional().isIn(['ingreso', 'salida', 'todos']).withMessage('Tipo no válido'),
 

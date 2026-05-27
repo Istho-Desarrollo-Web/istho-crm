@@ -1528,6 +1528,106 @@ const exportarAverias = async (averias, filtros = {}) => {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// EXPORTAR SOLICITUDES
+// ═══════════════════════════════════════════════════════════════════════════
+
+const exportarSolicitudes = async (solicitudes, filtros = {}) => {
+  try {
+    const wb = crearLibro();
+    const ws = wb.addWorksheet('Solicitudes', {
+      pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true },
+    });
+
+    const COLS = [
+      { header: '#', key: 'idx', width: 5, align: 'center' },
+      { header: 'N° Solicitud', key: 'num', width: 20, align: 'left' },
+      { header: 'Cliente', key: 'cli', width: 32, align: 'left' },
+      { header: 'Tipo', key: 'tipo', width: 12, align: 'center' },
+      { header: 'Prioridad', key: 'prio', width: 12, align: 'center' },
+      { header: 'Estado', key: 'estado', width: 14, align: 'center' },
+      { header: 'Fecha Envío', key: 'fecha', width: 15, align: 'center' },
+      { header: 'T. Respuesta (días)', key: 'dias', width: 20, align: 'right' },
+      { header: 'N° Operación', key: 'op', width: 14, align: 'center' },
+    ];
+
+    ws.columns = COLS.map((c) => ({ width: c.width }));
+
+    let sub = null;
+    if (filtros.desde || filtros.hasta) {
+      sub = `Período: ${filtros.desde || '...'} al ${filtros.hasta || '...'} | Generado el ${fechaHoy()}`;
+    }
+
+    let fila = agregarEncabezado(ws, 'REPORTE DE SOLICITUDES', sub, COLS.length, wb);
+
+    const completadas = solicitudes.filter((s) => s.estado === 'completada').length;
+    const rechazadas = solicitudes.filter((s) => s.estado === 'rechazada').length;
+    fila = agregarResumen(
+      ws, fila,
+      [
+        { label: 'Total solicitudes:', value: solicitudes.length },
+        { label: 'Completadas:', value: completadas },
+        { label: 'Rechazadas:', value: rechazadas },
+      ],
+      COLS.length
+    );
+
+    const ESTADO_LABEL = {
+      recibida: 'Recibida', en_proceso: 'En proceso', completada: 'Completada', rechazada: 'Rechazada',
+    };
+
+    const filas = solicitudes.map((s, i) => {
+      const tiempoDias =
+        s.operacion_id && s.updatedAt && s.createdAt
+          ? Math.round(((new Date(s.updatedAt) - new Date(s.createdAt)) / (1000 * 60 * 60 * 24)) * 10) / 10
+          : null;
+      return [
+        i + 1,
+        s.numero_solicitud || '',
+        s.cliente?.razon_social || '',
+        s.tipo === 'ingreso' ? 'Ingreso' : 'Despacho',
+        (s.prioridad || 'normal').charAt(0).toUpperCase() + (s.prioridad || 'normal').slice(1),
+        ESTADO_LABEL[s.estado] || s.estado || '',
+        s.createdAt ? new Date(s.createdAt) : null,
+        tiempoDias,
+        s.operacion_id ? `#${s.operacion_id}` : '—',
+      ];
+    });
+
+    const dataFila = crearTablaExcel(ws, fila, 'Solicitudes', COLS, filas);
+
+    filas.forEach((fRow, idx) => {
+      ws.getRow(dataFila + idx).height = 20;
+      fRow.forEach((val, ci) => {
+        const cell = ws.getCell(dataFila + idx, ci + 1);
+        estiloCelda(cell, ci, idx, { align: COLS[ci].align });
+        if (ci === 6 && val) cell.numFmt = 'DD/MM/YYYY';
+        if (ci === 3) {
+          cell.font = {
+            bold: true,
+            color: { argb: (val || '') === 'Ingreso' ? C.azulMedio : C.naranja },
+          };
+        }
+        if (ci === 5) {
+          const v = (val || '').toLowerCase();
+          if (v === 'completada') cell.font = { bold: true, color: { argb: C.verde } };
+          else if (v === 'rechazada') cell.font = { bold: true, color: { argb: C.rojo } };
+        }
+      });
+    });
+
+    agregarFilaTotales(ws, dataFila + filas.length + 1, [{ col: 1, value: 'TOTAL' }, { col: 2, value: solicitudes.length }], COLS.length);
+    ws.views = [{ state: 'frozen', ySplit: fila }];
+
+    const buffer = await wb.xlsx.writeBuffer();
+    logger.info('Excel solicitudes generado:', { registros: solicitudes.length });
+    return buffer;
+  } catch (error) {
+    logger.error('Error Excel solicitudes:', { message: error.message });
+    throw error;
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // EXPORTS
 // ═══════════════════════════════════════════════════════════════════════════
 // EXPORTAR AUDITORÍA DE ACCIONES
@@ -1640,5 +1740,6 @@ module.exports = {
   exportarMovimientos,
   exportarVehiculos,
   exportarAverias,
+  exportarSolicitudes,
   exportarAuditoriaAcciones,
 };

@@ -87,7 +87,6 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
       if (!showClienteSelector) delete data.cliente_id;
 
       if (isEdit) {
-        delete data.username; // username can't be changed
         delete data.password; // use reset-password instead
         await adminService.actualizarUsuario(usuario.id, data);
         success('Usuario actualizado correctamente');
@@ -140,9 +139,8 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
                 aria-label="Usuario"
                 value={form.username}
                 onChange={handleChange}
-                disabled={isEdit}
                 required
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200 disabled:opacity-50"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                 placeholder="usuario123"
               />
             </div>

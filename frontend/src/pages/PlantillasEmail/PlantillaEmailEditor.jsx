@@ -239,10 +239,10 @@ const PlantillaEmailEditor = () => {
     try {
       if (isEdit) {
         await plantillasEmailService.update(id, formData);
-        success('Plantilla actualizada');
+        success('Plantilla actualizada correctamente');
       } else {
         await plantillasEmailService.create(formData);
-        success('Plantilla creada');
+        success('Plantilla creada correctamente');
       }
       navigate('/plantillas-email');
     } catch (err) {

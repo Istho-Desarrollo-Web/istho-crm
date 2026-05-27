@@ -14,6 +14,7 @@ const auditoriaWmsController = require('../controllers/auditoriaWmsController');
 const { verificarToken, filtrarPorCliente } = require('../middleware/auth');
 const { requiereRolMinimo } = require('../middleware/roles');
 const { uploadCumplido } = require('../config/multer');
+const comprimir = require('../middleware/comprimir');
 
 // Todas las rutas requieren autenticación y filtrado por cliente portal
 router.use(verificarToken);
@@ -94,6 +95,7 @@ router.post(
   '/:id/evidencias',
   requiereRolMinimo('operador'),
   uploadCumplido.array('evidencias', 15),
+  comprimir({ maxWidthPx: 1920 }),
   auditoriaWmsController.subirEvidencias
 );
 router.delete(

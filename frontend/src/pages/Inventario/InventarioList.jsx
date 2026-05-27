@@ -577,7 +577,7 @@ const InventarioList = () => {
           `Importación completada: ${resultados.creados} creados, ${resultados.actualizados} actualizados`
         );
       } else {
-        notifyError(`Importación con ${resultados.errores.length} error(es). Revisa los detalles.`);
+        notifyError(`Importación incompleta: ${resultados.errores.length} ${resultados.errores.length === 1 ? 'registro rechazado' : 'registros rechazados'}. Revisa los detalles.`);
       }
     } catch (err) {
       notifyError(err.message || 'Error al importar productos');

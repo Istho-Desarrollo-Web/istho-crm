@@ -29,6 +29,7 @@ import {
   CheckCheck,
   ExternalLink,
   ClipboardList,
+  ClipboardCheck,
   BarChart3,
   LogOut,
   Settings,
@@ -148,12 +149,12 @@ const allMenuConfig = [
   {
     id: 'solicitudes',
     label: 'Solicitudes',
-    icon: ClipboardList,
+    icon: ClipboardCheck,
     basePath: '/solicitudes',
     shortcut: 'S',
-    soloPortalCliente: true, // Solo visible para rol cliente
     items: [
-      { icon: ClipboardList, label: 'Mis Solicitudes', href: '/solicitudes', shortcut: 'G S' },
+      { icon: ClipboardCheck, label: 'Mis Solicitudes', href: '/solicitudes', shortcut: 'G S', soloCliente: true },
+      { icon: ClipboardCheck, label: 'Solicitudes de Clientes', href: '/solicitudes', shortcut: 'G S', soloInternos: true },
     ],
   },
   {
@@ -197,8 +198,13 @@ const MENU_PERMISSION_MAP = {
 };
 
 const getMenuForRole = (rol, hasPermission) => {
-  // Admin ve todo
-  if (rol === 'admin') return allMenuConfig;
+  // Admin ve todo, pero nunca items exclusivos del portal cliente
+  if (rol === 'admin') {
+    return allMenuConfig.map((menu) => ({
+      ...menu,
+      items: menu.items.filter((item) => !item.soloCliente),
+    })).filter((menu) => menu.items.length > 0);
+  }
 
   return allMenuConfig
     .filter((menu) => {
@@ -241,8 +247,9 @@ const getMenuForRole = (rol, hasPermission) => {
         if (item.href === '/plantillas-email') return hasPermission('plantillas_email', 'ver');
         // Lista de clientes requiere permiso
         if (item.href === '/clientes') return hasPermission('clientes', 'ver');
-        // Solicitudes requiere permiso
-        if (item.href === '/solicitudes') return hasPermission('solicitudes', 'ver');
+        // Solicitudes: label diferente por rol
+        if (item.soloCliente) return rol === 'cliente' && hasPermission('solicitudes', 'ver');
+        if (item.soloInternos && item.href === '/solicitudes') return rol !== 'cliente' && hasPermission('solicitudes', 'ver');
         // Sub-items de viajes por módulo
         if (item.href === '/viajes/vehiculos') return hasPermission('vehiculos', 'ver');
         if (item.href === '/viajes/viajes') return hasPermission('viajes', 'ver');
@@ -1219,6 +1226,9 @@ const FloatingHeader = () => {
     if (pathname === '/administracion') {
       const tab = new URLSearchParams(search).get('tab') || 'usuarios';
       return `administracion_${tab}`;
+    }
+    if (RUTAS_CON_TOUR[pathname] === 'solicitudes') {
+      return rol === 'cliente' ? 'mis_solicitudes' : 'solicitudes_clientes';
     }
     if (RUTAS_CON_TOUR[pathname]) return RUTAS_CON_TOUR[pathname];
     if (/^\/operaciones\/(entradas|salidas|kardex)\/\d+/.test(pathname)) return 'operacion_detalle';

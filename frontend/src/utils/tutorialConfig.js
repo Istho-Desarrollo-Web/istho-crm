@@ -725,6 +725,67 @@ export const TUTORIALES = {
       },
     ],
   },
+  mis_solicitudes: {
+    modulo: 'mis_solicitudes',
+    pasos: [
+      {
+        element: '#tour-solicitudes-tabs',
+        popover: {
+          title: 'Ingresos y Despachos',
+          description: 'Usa las pestañas para ver tus avisos de ingreso de mercancía o tus solicitudes de despacho.',
+        },
+      },
+      {
+        element: '#tour-solicitudes-nueva',
+        popover: {
+          title: 'Nueva Solicitud',
+          description: 'Crea un aviso de ingreso o una solicitud de despacho. Puedes indicar documento, fecha estimada y observaciones.',
+        },
+      },
+      {
+        element: '#tour-solicitudes-filtros',
+        popover: {
+          title: 'Filtros',
+          description: 'Busca por número de solicitud o documento. Filtra por estado (recibida, en proceso, completada) y por rango de fechas.',
+        },
+      },
+      {
+        element: '#tour-solicitudes-tabla',
+        popover: {
+          title: 'Tus solicitudes',
+          description: 'Lista de todas tus solicitudes. Haz clic en una fila para ver el detalle, el estado y los comentarios del equipo ISTHO.',
+        },
+      },
+    ],
+  },
+
+  solicitudes_clientes: {
+    modulo: 'solicitudes_clientes',
+    pasos: [
+      {
+        element: '#tour-solicitudes-tabs',
+        popover: {
+          title: 'Ingresos y Despachos',
+          description: 'Filtra las solicitudes por tipo: avisos de ingreso de mercancía o solicitudes de despacho enviadas por los clientes.',
+        },
+      },
+      {
+        element: '#tour-solicitudes-filtros',
+        popover: {
+          title: 'Filtros',
+          description: 'Busca por número de solicitud o documento. Filtra por estado y rango de fechas para encontrar rápidamente lo que necesitas gestionar.',
+        },
+      },
+      {
+        element: '#tour-solicitudes-tabla',
+        popover: {
+          title: 'Solicitudes de clientes',
+          description: 'Lista de solicitudes de todos los clientes. Haz clic en una fila para ver el detalle, cambiar su estado y agregar comentarios.',
+        },
+      },
+    ],
+  },
+
 };
 
 export const RUTAS_CON_TOUR = {
@@ -749,4 +810,5 @@ export const RUTAS_CON_TOUR = {
   '/reportes/averias': 'reportes_averias',
   '/reportes/programados': 'reportes_programados',
   '/plantillas-email': 'plantillas_email',
+  '/solicitudes': 'solicitudes',
 };

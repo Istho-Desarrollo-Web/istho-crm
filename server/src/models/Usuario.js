@@ -607,6 +607,7 @@ module.exports = (sequelize) => {
           operaciones: { ver: true },
           configuracion: { ver: true, editar: true },
           perfil: { ver: true, editar: true, cambiar_password: true },
+          notificaciones: { ver: true },
         },
       };
     }

@@ -1058,7 +1058,7 @@ const getResponsables = async (req, res) => {
         {
           model: Usuario,
           as: 'usuario',
-          attributes: ['id', 'nombre', 'apellido', 'email', 'rol', 'avatar_url'],
+          attributes: ['id', 'nombre', 'apellido', 'nombre_completo', 'email', 'rol', 'avatar_url'],
         },
       ],
       order: [['created_at', 'ASC']],
@@ -1071,6 +1071,7 @@ const getResponsables = async (req, res) => {
         usuario_id: r.usuario_id,
         nombre: r.usuario?.nombre,
         apellido: r.usuario?.apellido,
+        nombre_completo: r.usuario?.nombre_completo,
         email: r.usuario?.email,
         rol: r.usuario?.rol,
         avatar_url: r.usuario?.avatar_url,

@@ -262,8 +262,17 @@ const actualizarUsuario = async (req, res) => {
     const usuario = await Usuario.findByPk(req.params.id);
     if (!usuario) return notFound(res, 'Usuario no encontrado');
 
-    const { nombre, apellido, email, telefono, cargo, departamento, rol_id, activo, cliente_id } =
+    const { username, nombre, apellido, email, telefono, cargo, departamento, rol_id, activo, cliente_id } =
       req.body;
+
+    // Si cambia username, verificar unicidad
+    if (username && username !== usuario.username) {
+      const existeUsername = await Usuario.findOne({
+        where: { username, id: { [Op.ne]: usuario.id } },
+      });
+      if (existeUsername) return badRequest(res, 'El nombre de usuario ya está en uso');
+      usuario.username = username;
+    }
 
     // Si cambia rol, verificar que existe
     if (rol_id && rol_id !== usuario.rol_id) {

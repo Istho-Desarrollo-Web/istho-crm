@@ -192,21 +192,40 @@ VITE_ENABLE_NOTIFICATIONS=true
 
 ---
 
-## 5. Redis — Socket.IO multi-instancia (opcional)
+## 5. Redis — Socket.IO multi-instancia (recomendado)
 
-Redis permite que todas las instancias App Runner (si se escala a 2+) compartan el estado de Socket.IO.
+Redis es necesario para que Socket.IO funcione correctamente cuando App Runner reinicia o escala a 2+ instancias. Sin Redis, los eventos WebSocket emitidos desde una instancia no llegan a usuarios conectados en otra instancia.
 
-**Proveedor recomendado:** [Upstash](https://upstash.com) — sin VPC, gratis hasta 10K req/día.
+**Proveedor:** [Upstash](https://upstash.com) — sin VPC, free tier hasta 10K req/día (suficiente para uso actual).
 
-1. Crear cuenta en Upstash → New Database → Redis → us-west-2
+1. Crear cuenta en Upstash → New Database → Redis → **us-west-2** (misma región que App Runner)
 2. Copiar la URL `rediss://default:<password>@<host>.upstash.io:6379`
-3. Agregar en App Runner → Variables de entorno:
+3. Agregar en **App Runner → Configuration → Environment variables**:
    ```
    REDIS_URL = rediss://default:<password>@<host>.upstash.io:6379
    ```
-4. Redesplegar → logs mostrarán `[WS] Redis adapter configurado`
+4. Redesplegar → logs mostrarán `[WS] Redis adapter configurado — modo multi-instancia activo`
 
-Sin `REDIS_URL` el servicio funciona en modo single-instance (comportamiento actual).
+Sin `REDIS_URL` el servicio funciona en modo single-instance.
+
+---
+
+## 6. App Runner — Configuración para WebSocket
+
+App Runner soporta WebSocket. El frontend usa `transports: ['websocket', 'polling']` (WebSocket primero, polling como fallback). Para que WebSocket persista, el servidor envía pings cada 15 segundos — bien por debajo del timeout de 120s de App Runner.
+
+### Instancias mínimas (evitar cold starts)
+
+Por defecto App Runner puede escalar a 0 instancias cuando no hay tráfico, causando cold starts de 15-30 segundos que rompen la conexión Socket.IO para el primer usuario.
+
+**En AWS Console → App Runner → tu servicio → Configuration → Auto scaling:**
+
+| Campo | Valor recomendado |
+| --- | --- |
+| Minimum size | `1` |
+| Maximum size | `3` (o según carga) |
+
+Costo adicional de 1 instancia mínima: ~$5-8 USD/mes (pero elimina el cold start).
 
 ---
 

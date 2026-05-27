@@ -88,6 +88,7 @@ const REPORTES_OPERATIVOS = [
     icon: ClipboardCheck,
     color: 'bg-orange-500',
     navigateTo: '/reportes/solicitudes',
+    exportEndpoints: { excel: '/reportes/solicitudes/excel', pdf: '/reportes/solicitudes/pdf' },
   },
 ];
 

@@ -16,6 +16,7 @@ const {
 } = require('../middleware/auth');
 const { requiereRolMinimo, noClientes } = require('../middleware/roles');
 const { uploadAveria, uploadCumplido } = require('../config/multer');
+const comprimir = require('../middleware/comprimir');
 const {
   crearOperacionValidator,
   actualizarTransporteValidator,
@@ -67,6 +68,7 @@ router.post(
   noClientes,
   requiereRolMinimo('operador'),
   uploadAveria.single('foto'),
+  comprimir({ maxWidthPx: 1600 }),
   registrarAveriaValidator,
   operacionController.registrarAveria
 );
@@ -83,6 +85,7 @@ router.post(
   noClientes,
   requiereRolMinimo('operador'),
   uploadCumplido.single('archivo'),
+  comprimir({ maxWidthPx: 1920 }),
   operacionController.subirDocumento
 );
 

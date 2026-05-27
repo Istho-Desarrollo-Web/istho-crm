@@ -311,7 +311,7 @@ const ReportesProgramados = () => {
       });
       fetchData();
     } catch (err) {
-      enqueueSnackbar(err?.message || 'Error', { variant: 'error' });
+      enqueueSnackbar(err?.message || 'Error al cambiar estado del reporte', { variant: 'error' });
     }
   };
 

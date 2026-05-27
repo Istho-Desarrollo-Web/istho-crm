@@ -28,6 +28,14 @@ const LOGO_EMAIL_URL =
 // Cache de plantillas compiladas (deshabilitado en desarrollo para recargar cambios)
 const templateCache = {};
 
+const escHtml = (str) =>
+  String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 /**
  * Cargar y compilar plantilla
  */
@@ -651,6 +659,142 @@ const enviarRecuperacionPassword = async ({ email, nombre, username, urlReset })
 };
 
 /**
+ * Enviar notificación de nueva solicitud (Aviso de Ingreso / Solicitud de Despacho)
+ * Busca plantilla BD por tipo 'solicitud_nueva' + subtipo (ingreso|despacho).
+ * Fallback a plantilla genérica sin subtipo, y luego a HTML inline básico.
+ */
+const enviarSolicitudNueva = async (solicitud, emails, adjuntos = []) => {
+  const { PlantillaEmail } = require('../models');
+  const transporter = await getTransporter();
+
+  const {
+    id,
+    numero_solicitud,
+    tipo,
+    prioridad,
+    fecha_estimada,
+    numero_documento,
+    transportista,
+    direccion_entrega,
+    contacto_destino,
+    notas,
+    cliente,
+  } = solicitud;
+
+  const TIPO_LABEL = { ingreso: 'Aviso de Ingreso', despacho: 'Solicitud de Despacho' };
+  const tipoLabel = TIPO_LABEL[tipo] || tipo;
+  const clienteNombre = cliente?.razon_social || '';
+  const urlSolicitud = `${APP_URL}/solicitudes/${id}`;
+
+  const datos = {
+    tipoLabel,
+    numeroSolicitud: numero_solicitud,
+    clienteNombre,
+    prioridad: prioridad || 'normal',
+    fechaEstimada: fecha_estimada || '',
+    numeroDocumento: numero_documento || '',
+    transportista: transportista || '',
+    direccionEntrega: direccion_entrega || '',
+    contactoDestino: contacto_destino || '',
+    notas: notas || '',
+    urlSolicitud,
+  };
+
+  // Buscar plantilla BD: subtipo exacto → genérica → cualquier activa
+  let plantilla = await PlantillaEmail.findOne({
+    where: { tipo: 'solicitud_nueva', subtipo: tipo, es_predeterminada: true, activo: true },
+  });
+  if (!plantilla) {
+    plantilla = await PlantillaEmail.findOne({
+      where: { tipo: 'solicitud_nueva', subtipo: null, es_predeterminada: true, activo: true },
+    });
+  }
+  if (!plantilla) {
+    plantilla = await PlantillaEmail.findOne({
+      where: { tipo: 'solicitud_nueva', subtipo: tipo, activo: true },
+    });
+  }
+  if (!plantilla) {
+    plantilla = await PlantillaEmail.findOne({
+      where: { tipo: 'solicitud_nueva', activo: true },
+    });
+  }
+
+  const asunto = `Nueva ${tipoLabel}: ${numero_solicitud} — ${clienteNombre}`;
+  let html;
+
+  if (plantilla) {
+    const asuntoTemplate = Handlebars.compile(plantilla.asunto_template);
+    const asuntoRendered = asuntoTemplate(datos);
+    html = renderFromDB(plantilla, datos, asuntoRendered);
+  } else {
+    // Fallback HTML inline usando la plantilla base
+    const basePath = path.join(__dirname, '../templates/email/base.html');
+    const baseContent = fs.readFileSync(basePath, 'utf8');
+    const baseTemplate = Handlebars.compile(baseContent);
+    const logoUrl = LOGO_EMAIL_URL;
+
+    const filas = [
+      ['N° Solicitud', numero_solicitud],
+      ['Cliente', clienteNombre],
+      ['Prioridad', prioridad || 'normal'],
+      fecha_estimada && ['Fecha estimada', fecha_estimada],
+      numero_documento && ['N° Documento', numero_documento],
+      transportista && ['Transportista', transportista],
+      direccion_entrega && ['Dirección de entrega', direccion_entrega],
+      contacto_destino && ['Contacto destino', contacto_destino],
+      notas && ['Notas', notas],
+    ]
+      .filter(Boolean)
+      .map(
+        ([label, valor]) => `
+        <tr>
+          <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;width:180px">${escHtml(label)}</td>
+          <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#1e293b;font-size:14px">${escHtml(valor)}</td>
+        </tr>`
+      )
+      .join('');
+
+    const contenido = `
+<h2 style="color:#E74C3C;margin:0 0 5px 0">${escHtml(tipoLabel)} recibida</h2>
+<p style="color:#64748b;margin:0 0 20px 0;font-size:14px">Se ha recibido una nueva solicitud en el CRM.</p>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
+  <tr>
+    <td style="background:linear-gradient(135deg,#E74C3C,#C0392B);padding:12px 16px">
+      <span style="color:#fff;font-size:14px;font-weight:600">Detalle de la Solicitud</span>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse:collapse">${filas}</table>
+    </td>
+  </tr>
+</table>
+<p style="margin:24px 0 0 0">
+  <a href="${escHtml(urlSolicitud)}" style="background:#E74C3C;color:#fff;padding:11px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">Ver Solicitud</a>
+</p>`;
+
+    html = baseTemplate({ asunto, contenido, logoUrl });
+  }
+
+  const paraStr = Array.isArray(emails) ? emails.join(', ') : emails;
+  const mailOptions = { from: defaultFrom, to: paraStr, subject: asunto, html };
+  if (adjuntos.length > 0) {
+    mailOptions.attachments = adjuntos.map((adj) => ({
+      filename: adj.nombre,
+      content: adj.content,
+      contentType: adj.contentType,
+    }));
+  }
+  await transporter.sendMail(mailOptions);
+  logger.info('[emailService] Solicitud nueva notificada', {
+    para: paraStr,
+    asunto,
+    adjuntos: adjuntos.length,
+  });
+};
+
+/**
  * Enviar email manual (ad-hoc) — con plantilla de BD o HTML libre
  */
 const enviarManual = async ({ para, cc = [], plantillaId, variables = {}, asunto, cuerpoHtml }) => {
@@ -699,4 +843,5 @@ module.exports = {
   enviarReseteoPassword,
   enviarRecuperacionPassword,
   enviarManual,
+  enviarSolicitudNueva,
 };

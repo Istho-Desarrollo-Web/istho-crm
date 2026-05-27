@@ -17,6 +17,7 @@ const authController = require('../controllers/authController');
 const { verificarToken, verificarPermisoCliente } = require('../middleware/auth');
 const { soloAdmin } = require('../middleware/roles');
 const { uploadAvatar } = require('../config/multer');
+const comprimir = require('../middleware/comprimir');
 
 // Validadores
 const {
@@ -113,6 +114,7 @@ router.post(
   '/me/avatar',
   verificarToken,
   uploadAvatar.single('avatar'),
+  comprimir({ maxWidthPx: 400 }),
   authController.subirAvatar
 );
 

@@ -18,6 +18,24 @@ Flujo: Routes → `verifyToken → cargarCachePermisos → requierePermiso` → 
 - `registerErrorHandlers()` DESPUÉS de todas las rutas. Health check ANTES de error handlers.
 - Auditoría obligatoria en todo write: `Auditoria.registrar({ tabla, registro_id, accion, usuario_id, ... })`
 
+### filtrarPorCliente + Multer (Crítico)
+
+`filtrarPorCliente` inyecta `req.body.cliente_id` **antes** de que multer procese el formulario. En rutas `multipart/form-data` (con `upload.array()` o `upload.single()`), **multer reemplaza `req.body`** al parsear — borrando el `cliente_id` inyectado.
+
+En controladores de rutas multipart que necesiten `cliente_id` para usuarios cliente del portal, leerlo de `req.user`:
+
+```js
+// ❌ INCORRECTO — multer habrá borrado este valor en rutas multipart
+const { cliente_id } = req.body;
+
+// ✅ CORRECTO — para rutas multipart con usuarios cliente
+const cliente_id = (req.user.esCliente && req.user.cliente_id)
+  ? req.user.cliente_id
+  : req.body.cliente_id;
+```
+
+Aplica a cualquier ruta que use `uploadSolicitudDoc`, `uploadEvidencia`, `uploadAvatar`, etc.
+
 ## Frontend
 - Providers en `main.jsx`: `AuthProvider → SocketProvider → NotificacionesProvider` (orden crítico)
 - `uploadClient` interceptor extrae `response.data` — no hacer `.data.data`
@@ -82,7 +100,7 @@ import { DatePicker } from '../../../components/common';
 
 ## Permisos (Crítico)
 - Rutas: siempre `PermissionRoute(module, action)`. Solo `AdminRoute` para `/administracion`, `/auditoria-acciones`, `/configuracion-wms`
-- **Clientes portal** (`rol=cliente`): usan `permisos_cliente` JSON + `getPermisos()` en `Usuario.js` — sistema SEPARADO de permisos por rol. Seeds NO afectan clientes portal. Módulos forzados en `getPermisos()`: `clientes/operaciones/configuracion/perfil`
+- **Clientes portal** (`rol=cliente`): usan `permisos_cliente` JSON + `getPermisos()` en `Usuario.js` — sistema SEPARADO de permisos por rol. Seeds NO afectan clientes portal. Módulos forzados en `getPermisos()`: `clientes/operaciones/configuracion/perfil/notificaciones`
 - `PERMISOS_POR_ROL` en `AuthContext.jsx` debe tener los 6 roles sincronizados con `seedRolesPermisos.js`. Rol faltante cae a `cliente`
 - `/configuracion` usa `PermissionRoute module="perfil" action="ver"` — todos los roles incluido `cliente` necesitan `perfil.ver`
 - Supervisor: `notificaciones: ['ver', 'enviar']` — puede enviar emails manuales pero no editar plantillas
@@ -236,6 +254,53 @@ admin(100) · supervisor(75) · financiera(60) · operador(50) · conductor(30) 
 | `administracion_roles` | `/administracion?tab=roles` | `tour-admin-roles-tabla`, `tour-admin-roles-nuevo` |
 | `administracion_sesiones` | `/administracion?tab=sesiones` | `tour-admin-sesiones-tabla` |
 | `administracion_seguridad` | `/administracion?tab=seguridad` | `tour-admin-seguridad-panel` |
+| `mis_solicitudes` | `/solicitudes` (rol=cliente) | `tour-solicitudes-tabs`, `tour-solicitudes-nueva`, `tour-solicitudes-filtros`, `tour-solicitudes-tabla` |
+| `solicitudes_clientes` | `/solicitudes` (roles internos) | `tour-solicitudes-tabs`, `tour-solicitudes-filtros`, `tour-solicitudes-tabla` |
+
+## Reportes — Estructura Estándar (Crítico)
+
+### Página de detalle de reporte (ej: ReporteAverias.jsx, ReporteSolicitudes.jsx)
+
+Todos los reportes con página propia DEBEN seguir esta estructura:
+
+```jsx
+// 1. Header con AccionesDropdown (NO botón Actualizar suelto)
+<AccionesDropdown acciones={[
+  { label: 'Actualizar', icon: RefreshCw, onClick: fetchData },
+  { label: 'Enviar', icon: Mail, onClick: () => setEmailModal(true), hidden: !canDownload },
+  { label: 'Excel', icon: FileSpreadsheet, onClick: () => handleExport('excel'), hidden: !canDownload },
+  { label: 'PDF', icon: Download, onClick: () => handleExport('pdf'), hidden: !canDownload, variant: 'primary' },
+]} />
+
+// 2. Estado de carga: firstLoad skeleton (animate-pulse), loading overlay en tabla
+// 3. URL persistence: useSearchParams para todos los filtros
+// 4. fetchData con useCallback + useEffect([fetchData])
+// 5. EnviarReporteModal al final del JSX
+// 6. canDownload: hasPermission('reportes','exportar') || hasPermission('reportes','descargar')
+// 7. handleExport usa descargarArchivo + buildFilterParams (filtros como query string)
+```
+
+### Backend por cada reporte exportable
+
+Cada reporte necesita 3 endpoints:
+- `GET /reportes/<slug>` — JSON para la vista (usa `success(res, data)`)
+- `GET /reportes/<slug>/excel` — descarga XLSX (usa `excelService.exportar<Nombre>`)
+- `GET /reportes/<slug>/pdf` — descarga PDF (usa `pdfService.generarPDF<Nombre>`)
+
+Extraer la lógica de query en un helper `_build<Nombre>Query` para reusar entre los 3 endpoints.
+
+---
+
+### Lista de reportes (ReportesList.jsx)
+
+Cada entrada en `REPORTES_OPERATIVOS`/`REPORTES_FINANCIEROS`/`REPORTES_CLIENTE` DEBE tener `exportEndpoints: { excel, pdf }` para que aparezcan los botones Excel/PDF en la card.
+
+### Servicios de exportación
+
+- `excelService.js` — función `exportarSolicitudes`, `exportarAverias`, etc. Patrón: `crearLibro → agregarEncabezado → agregarResumen → crearTablaExcel → agregarFilaTotales → wb.xlsx.writeBuffer()`
+- `pdfService.js` — función `generarPDF<Nombre>`. Patrón: `new PDFDocument → agregarEncabezado → agregarKpis → generarTabla → agregarPiePagina → doc.end()`
+- Exportar en `module.exports` de ambos servicios.
+- Reportar en `module.exports` del controller.
 
 ## Docs
 `docs/WMS_API_SPEC.md` · `docs/FLUJOS_NEGOCIO.md` · `docs/API.md` · `docs/manuales/` · `DEPLOY.md`

@@ -39,6 +39,7 @@ const WmsSyncLogModel = require('./WmsSyncLog');
 const SolicitudModel = require('./Solicitud');
 const SolicitudDetalleModel = require('./SolicitudDetalle');
 const SolicitudComentarioModel = require('./SolicitudComentario');
+const SolicitudDocumentoModel = require('./SolicitudDocumento');
 const ClienteResponsableModel = require('./ClienteResponsable');
 const Notificacion = require('./Notificacion')(sequelize);
 
@@ -72,6 +73,7 @@ const WmsSyncLog = WmsSyncLogModel(sequelize);
 const Solicitud = SolicitudModel(sequelize);
 const SolicitudDetalle = SolicitudDetalleModel(sequelize);
 const SolicitudComentario = SolicitudComentarioModel(sequelize);
+const SolicitudDocumento = SolicitudDocumentoModel(sequelize);
 const ClienteResponsable = ClienteResponsableModel(sequelize);
 
 // ============================================
@@ -418,6 +420,10 @@ Solicitud.hasMany(SolicitudComentario, { foreignKey: 'solicitud_id', as: 'coment
 SolicitudComentario.belongsTo(Solicitud, { foreignKey: 'solicitud_id', as: 'solicitud' });
 SolicitudComentario.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'autor' });
 
+// Solicitud <-> SolicitudDocumento
+Solicitud.hasMany(SolicitudDocumento, { foreignKey: 'solicitud_id', as: 'documentos', onDelete: 'CASCADE' });
+SolicitudDocumento.belongsTo(Solicitud, { foreignKey: 'solicitud_id', as: 'solicitud' });
+
 // Cliente <-> ClienteResponsable
 Cliente.hasMany(ClienteResponsable, { foreignKey: 'cliente_id', as: 'responsables', onDelete: 'CASCADE' });
 ClienteResponsable.belongsTo(Cliente, { foreignKey: 'cliente_id', as: 'cliente' });
@@ -462,6 +468,7 @@ const db = {
   Solicitud,
   SolicitudDetalle,
   SolicitudComentario,
+  SolicitudDocumento,
   ClienteResponsable,
 };
 

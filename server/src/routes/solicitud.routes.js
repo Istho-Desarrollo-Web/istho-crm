@@ -14,9 +14,12 @@ const router = express.Router();
 
 const solicitudController = require('../controllers/solicitudController');
 const { uploadSolicitudDoc } = require('../config/multer');
+const comprimir = require('../middleware/comprimir');
 
 const { verificarToken, filtrarPorCliente } = require('../middleware/auth');
 const { noClientes } = require('../middleware/roles');
+
+const OPTS_SOLICITUD = { maxWidthPx: 1920 };
 
 // =============================================
 // Todas las rutas requieren autenticación
@@ -27,7 +30,7 @@ router.use(filtrarPorCliente);
 
 // Listar / Crear
 router.get('/', solicitudController.listar);
-router.post('/', solicitudController.crear);
+router.post('/', uploadSolicitudDoc.array('archivos', 10), comprimir(OPTS_SOLICITUD), solicitudController.crear);
 
 // Detalle
 router.get('/:id', solicitudController.obtener);
@@ -41,7 +44,14 @@ router.post('/:id/comentarios', solicitudController.agregarComentario);
 router.post(
   '/:id/documento',
   uploadSolicitudDoc.single('archivo'),
+  comprimir(OPTS_SOLICITUD),
   solicitudController.subirDocumento
+);
+router.post(
+  '/:id/documentos',
+  uploadSolicitudDoc.single('archivo'),
+  comprimir(OPTS_SOLICITUD),
+  solicitudController.subirDocumentoAdicional
 );
 
 module.exports = router;

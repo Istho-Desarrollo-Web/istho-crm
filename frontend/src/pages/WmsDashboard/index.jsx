@@ -304,7 +304,9 @@ export default function WmsDashboard() {
     try {
       const res = await wmsDashboardService.reejecutar(tipoReej || null);
       enqueueSnackbar(
-        `Re-ejecución exitosa: ${res.data?.resultado?.numero_operacion || 'completado'}`,
+        res.data?.resultado?.numero_operacion
+          ? `Re-ejecución completada — operación ${res.data.resultado.numero_operacion}`
+          : 'Re-ejecución completada exitosamente',
         { variant: 'success' }
       );
       setShowModal(false);

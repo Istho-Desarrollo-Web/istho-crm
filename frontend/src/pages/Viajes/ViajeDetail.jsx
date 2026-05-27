@@ -216,7 +216,7 @@ const ViajeDetail = () => {
       setAnularModal(false);
       setMotivoAnulacion('');
       await fetchViaje();
-      success('Viaje anulado');
+      success('Viaje anulado exitosamente');
     } catch (err) {
       apiError(err);
     } finally {

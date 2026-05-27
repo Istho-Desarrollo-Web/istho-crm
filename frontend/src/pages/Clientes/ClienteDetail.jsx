@@ -47,7 +47,7 @@ import { Button, StatusChip, KpiCard, ConfirmDialog, Modal, FilterDropdown } fro
 
 // Local Components
 import ClienteForm from './components/ClienteForm';
-import UsuariosCliente from './components/UsuariosCliente'; // ← NUEVO
+import UsuariosCliente from './components/UsuariosCliente';
 
 // Hooks
 import useClientes from '../../hooks/useClientes';
@@ -509,7 +509,7 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
 const ClienteDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { _user, hasPermission, isAdmin } = useAuth();
+  const { _user, hasPermission, isAdmin, isCliente } = useAuth();
   const { success, apiError, deleted } = useNotification();
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -825,13 +825,11 @@ const ClienteDetail = () => {
   // RENDER
   // ──────────────────────────────────────────────────────────────────────────
 
-  // ✅ TABS ACTUALIZADOS - Incluye Usuarios Portal y Solicitudes
   const tabs = [
     { id: 'info', label: 'Información', icon: Building2 },
     { id: 'contactos', label: `Contactos (${contactos.length})`, icon: User },
-    // ← Solo visible si tiene permisos
     ...(canManageUsers ? [{ id: 'usuarios', label: 'Usuarios Portal', icon: Users }] : []),
-    { id: 'solicitudes', label: 'Solicitudes', icon: ClipboardCheck },
+    ...(!isCliente() ? [{ id: 'solicitudes', label: 'Solicitudes', icon: ClipboardCheck }] : []),
     { id: 'historial', label: 'Historial', icon: Clock },
   ];
 
@@ -1229,10 +1227,10 @@ const ClienteDetail = () => {
                           <div key={r.id} className="flex items-center justify-between py-2 px-3 bg-slate-50 dark:bg-centhrix-surface rounded-xl">
                             <div className="flex items-center gap-2">
                               <div className="w-7 h-7 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-xs font-bold text-orange-600">
-                                {(r.nombre || '?')[0].toUpperCase()}
+                                {(r.nombre_completo || r.nombre || '?')[0].toUpperCase()}
                               </div>
                               <div>
-                                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{r.nombre} {r.apellido}</p>
+                                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{r.nombre_completo || `${r.nombre || ''} ${r.apellido || ''}`.trim() || r.email}</p>
                                 <p className="text-xs text-slate-400 dark:text-slate-500 capitalize">{r.rol} · {r.email}</p>
                               </div>
                             </div>
@@ -1262,7 +1260,7 @@ const ClienteDetail = () => {
                             { value: '', label: 'Seleccionar usuario...' },
                             ...usuariosInternos
                               .filter((u) => !responsables.find((r) => r.usuario_id === u.id))
-                              .map((u) => ({ value: String(u.id), label: `${u.nombre} ${u.apellido} (${u.rol})` })),
+                              .map((u) => ({ value: String(u.id), label: `${u.nombre_completo || `${u.nombre || ''} ${u.apellido || ''}`.trim() || u.username} (${u.rol})` })),
                           ]}
                           value={nuevoResponsableId}
                           onChange={setNuevoResponsableId}
@@ -1374,6 +1372,7 @@ const ClienteDetail = () => {
         type="danger"
         loading={formLoading}
       />
+
     </div>
   );
 };

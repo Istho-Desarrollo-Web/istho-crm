@@ -1060,6 +1060,156 @@ const plantillaRecuperacionPassword = {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
+// PLANTILLA 4: AVISO DE INGRESO (solicitud_nueva / ingreso)
+// ════════════════════════════════════════════════════════════════════════════
+
+const plantillaAvisoIngreso = {
+  nombre: 'Aviso de Ingreso — Nueva Solicitud',
+  tipo: 'solicitud_nueva',
+  subtipo: 'ingreso',
+  asunto_template: 'Nueva {{tipoLabel}}: {{numeroSolicitud}} — {{clienteNombre}}',
+  cuerpo_html: `<h2 style="color:#E74C3C;margin:0 0 5px 0">Aviso de Ingreso recibida</h2>
+<p style="color:#64748b;margin:0 0 25px 0;font-size:14px">El cliente ha registrado un nuevo aviso de ingreso de mercancía a bodega.</p>
+
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
+  <tr>
+    <td style="background:linear-gradient(135deg,#E74C3C,#C0392B);padding:14px 20px">
+      <span style="color:#fff;font-size:14px;font-weight:600">Detalle de la Solicitud</span>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse:collapse">
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;width:180px">N° Solicitud</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;font-weight:700;color:#1e293b;font-size:14px">{{numeroSolicitud}}</td>
+        </tr>
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Cliente</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#1e293b;font-size:14px">{{clienteNombre}}</td>
+        </tr>
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Prioridad</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px">{{prioridad}}</td>
+        </tr>
+        {{#if fechaEstimada}}
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Fecha estimada</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px">{{fechaEstimada}}</td>
+        </tr>
+        {{/if}}
+        {{#if numeroDocumento}}
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">N° Documento</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px">{{numeroDocumento}}</td>
+        </tr>
+        {{/if}}
+        {{#if transportista}}
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Transportista</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px">{{transportista}}</td>
+        </tr>
+        {{/if}}
+        {{#if notas}}
+        <tr>
+          <td style="padding:11px 20px;color:#64748b;font-size:13px">Notas</td>
+          <td style="padding:11px 20px;color:#1e293b;font-size:14px">{{notas}}</td>
+        </tr>
+        {{/if}}
+      </table>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:24px 0 0 0">
+  <a href="{{urlSolicitud}}" style="background:#E74C3C;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block">Ver Solicitud</a>
+</p>`,
+  firma_habilitada: true,
+  firma_html: null,
+  campos_disponibles: null,
+  es_predeterminada: true,
+  activo: true,
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+// PLANTILLA 5: SOLICITUD DE DESPACHO (solicitud_nueva / despacho)
+// ════════════════════════════════════════════════════════════════════════════
+
+const plantillaSolicitudDespacho = {
+  nombre: 'Solicitud de Despacho — Nueva Solicitud',
+  tipo: 'solicitud_nueva',
+  subtipo: 'despacho',
+  asunto_template: 'Nueva {{tipoLabel}}: {{numeroSolicitud}} — {{clienteNombre}}',
+  cuerpo_html: `<h2 style="color:#E74C3C;margin:0 0 5px 0">Solicitud de Despacho recibida</h2>
+<p style="color:#64748b;margin:0 0 25px 0;font-size:14px">El cliente ha registrado una nueva solicitud de salida de productos de bodega.</p>
+
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
+  <tr>
+    <td style="background:linear-gradient(135deg,#E74C3C,#C0392B);padding:14px 20px">
+      <span style="color:#fff;font-size:14px;font-weight:600">Detalle de la Solicitud</span>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse:collapse">
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;width:180px">N° Solicitud</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;font-weight:700;color:#1e293b;font-size:14px">{{numeroSolicitud}}</td>
+        </tr>
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Cliente</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#1e293b;font-size:14px">{{clienteNombre}}</td>
+        </tr>
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Prioridad</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px">{{prioridad}}</td>
+        </tr>
+        {{#if fechaEstimada}}
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Fecha deseada</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px">{{fechaEstimada}}</td>
+        </tr>
+        {{/if}}
+        {{#if numeroDocumento}}
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">N° Orden de Compra</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px">{{numeroDocumento}}</td>
+        </tr>
+        {{/if}}
+        {{#if direccionEntrega}}
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Dirección de entrega</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px">{{direccionEntrega}}</td>
+        </tr>
+        {{/if}}
+        {{#if contactoDestino}}
+        <tr>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Contacto destino</td>
+          <td style="padding:11px 20px;border-bottom:1px solid #f1f5f9;color:#1e293b;font-size:14px">{{contactoDestino}}</td>
+        </tr>
+        {{/if}}
+        {{#if notas}}
+        <tr>
+          <td style="padding:11px 20px;color:#64748b;font-size:13px">Notas</td>
+          <td style="padding:11px 20px;color:#1e293b;font-size:14px">{{notas}}</td>
+        </tr>
+        {{/if}}
+      </table>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:24px 0 0 0">
+  <a href="{{urlSolicitud}}" style="background:#E74C3C;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block">Ver Solicitud</a>
+</p>`,
+  firma_habilitada: true,
+  firma_html: null,
+  campos_disponibles: null,
+  es_predeterminada: true,
+  activo: true,
+};
+
+// ════════════════════════════════════════════════════════════════════════════
 // EJECUTAR SEED (upsert: actualiza si ya existe)
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -1109,6 +1259,21 @@ async function seed({ standalone = true } = {}) {
       console.log('🔄 Plantilla de Kardex actualizada (id:', kardex.id, ')');
     } else {
       console.log('✅ Plantilla de Kardex creada (id:', kardex.id, ')');
+    }
+
+    // Upsert plantillas de solicitudes nuevas
+    const solicitudDefs = [plantillaAvisoIngreso, plantillaSolicitudDespacho];
+    for (const def of solicitudDefs) {
+      const [rec, created] = await PlantillaEmail.findOrCreate({
+        where: { nombre: def.nombre },
+        defaults: def,
+      });
+      if (!created) {
+        await rec.update(def);
+        console.log(`🔄 Plantilla "${def.nombre}" actualizada (id: ${rec.id})`);
+      } else {
+        console.log(`✅ Plantilla "${def.nombre}" creada (id: ${rec.id})`);
+      }
     }
 
     // Upsert plantillas del sistema

@@ -9,6 +9,7 @@ const movimientoController = require('../controllers/movimientoCajaMenorControll
 const { verificarToken } = require('../middleware/auth');
 const { requierePermiso } = require('../middleware/roles');
 const { uploadSoporte } = require('../config/multer');
+const comprimir = require('../middleware/comprimir');
 const {
   crearMovimientoValidator,
   actualizarMovimientoValidator,
@@ -37,6 +38,7 @@ router.get(
 router.post(
   '/',
   uploadSoporte.single('soporte'),
+  comprimir({ maxWidthPx: 1600 }),
   crearMovimientoValidator,
   requierePermiso('movimientos', 'crear'),
   movimientoController.crear
@@ -44,6 +46,7 @@ router.post(
 router.put(
   '/:id',
   uploadSoporte.single('soporte'),
+  comprimir({ maxWidthPx: 1600 }),
   actualizarMovimientoValidator,
   requierePermiso('movimientos', 'editar'),
   movimientoController.actualizar

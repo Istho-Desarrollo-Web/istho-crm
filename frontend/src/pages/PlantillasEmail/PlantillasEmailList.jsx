@@ -24,6 +24,7 @@ import {
   X,
   KeyRound,
   ShieldCheck,
+  ClipboardCheck,
 } from 'lucide-react';
 
 import { Button, ConfirmDialog } from '../../components/common';
@@ -69,10 +70,17 @@ const TIPO_CONFIG = {
     bg: 'bg-violet-100 dark:bg-violet-900/30',
     color: 'text-violet-600 dark:text-violet-400',
   },
+  solicitud_nueva: {
+    label: 'Solicitud de Cliente',
+    icon: ClipboardCheck,
+    bg: 'bg-orange-100 dark:bg-orange-900/30',
+    color: 'text-orange-600 dark:text-orange-400',
+  },
 };
 
 const TIPOS_OPERACION = ['operacion_cierre'];
 const TIPOS_SISTEMA = ['bienvenida', 'alerta_inventario', 'general', 'reseteo_password', 'recuperacion_password'];
+const TIPOS_SOLICITUDES = ['solicitud_nueva'];
 
 const PlantillaCard = ({ plantilla, onEdit, onDelete, onPreview, canEdit, canDelete }) => {
   const config = TIPO_CONFIG[plantilla.tipo] || TIPO_CONFIG.general;
@@ -102,10 +110,14 @@ const PlantillaCard = ({ plantilla, onEdit, onDelete, onPreview, canEdit, canDel
                 {plantilla.subtipo && (
                   <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
                     {plantilla.subtipo === 'ingreso'
-                      ? 'Entrada'
+                      ? 'Aviso de Ingreso'
                       : plantilla.subtipo === 'salida'
                         ? 'Salida'
-                        : plantilla.subtipo}
+                        : plantilla.subtipo === 'despacho'
+                          ? 'Solicitud de Despacho'
+                          : plantilla.subtipo === 'kardex'
+                            ? 'Kardex'
+                            : plantilla.subtipo}
                   </span>
                 )}
               </div>
@@ -256,31 +268,31 @@ const PlantillasEmailList = () => {
 
         {/* TABS */}
         <div id="tour-plantillas-tabs" className="flex items-center gap-1 bg-slate-100 dark:bg-centhrix-card rounded-xl p-1 mb-6 w-fit">
-          <button
-            onClick={() => setActiveTab('operacion')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === 'operacion'
-                ? 'bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-            }`}
-          >
-            Cierre de Operación
-          </button>
-          <button
-            onClick={() => setActiveTab('sistema')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === 'sistema'
-                ? 'bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-            }`}
-          >
-            Sistema
-          </button>
+          {[
+            { key: 'operacion', label: 'Cierre de Operación' },
+            { key: 'sistema', label: 'Sistema' },
+            { key: 'solicitudes', label: 'Solicitudes' },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === tab.key
+                  ? 'bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* GRID */}
         {(() => {
-          const tiposActivos = activeTab === 'operacion' ? TIPOS_OPERACION : TIPOS_SISTEMA;
+          const tiposActivos =
+            activeTab === 'operacion' ? TIPOS_OPERACION :
+            activeTab === 'solicitudes' ? TIPOS_SOLICITUDES :
+            TIPOS_SISTEMA;
           const plantillasFiltradas = plantillas.filter((p) => tiposActivos.includes(p.tipo));
 
           if (loading) {

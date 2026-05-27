@@ -16,6 +16,7 @@ const {
   Solicitud,
   SolicitudDetalle,
   SolicitudComentario,
+  SolicitudDocumento,
   ClienteResponsable,
   Cliente,
   Usuario,
@@ -65,15 +66,13 @@ const generarNumeroSolicitud = async (t) => {
 // ─── OBTENER IDs DE USUARIOS A NOTIFICAR ────────────────────────────────────
 
 const getResponsablesIds = async (cliente_id) => {
-  const registros = await ClienteResponsable.findAll({
-    where: { cliente_id },
-    attributes: ['usuario_id'],
-  });
-  if (registros.length > 0) {
-    return registros.map((r) => r.usuario_id);
-  }
-  // Fallback: todos los admin activos
-  return notificacionService.getUsuariosPorRol(['admin']);
+  const [responsables, internos] = await Promise.all([
+    ClienteResponsable.findAll({ where: { cliente_id }, attributes: ['usuario_id'] }),
+    notificacionService.getUsuariosPorRol(['admin', 'supervisor']),
+  ]);
+  const responsablesIds = responsables.map((r) => r.usuario_id);
+  // Unión sin duplicados: responsables asignados + admins/supervisores siempre
+  return [...new Set([...responsablesIds, ...internos])];
 };
 
 // ─── CREAR SOLICITUD ────────────────────────────────────────────────────────
@@ -91,8 +90,14 @@ const crear = async (req, res) => {
       contacto_destino,
       notas,
       detalles,
-      cliente_id,
     } = req.body;
+
+    // Para usuarios cliente del portal, cliente_id viene del token (multer reemplaza req.body
+    // antes de que filtrarPorCliente pueda inyectarlo, así que se lee directo de req.user)
+    const cliente_id =
+      req.user.esCliente && req.user.cliente_id
+        ? req.user.cliente_id
+        : req.body.cliente_id;
 
     if (!tipo || !['ingreso', 'despacho'].includes(tipo)) {
       await t.rollback();
@@ -102,12 +107,14 @@ const crear = async (req, res) => {
       await t.rollback();
       return errorResponse(res, 'cliente_id es requerido', 400);
     }
-    if (!Array.isArray(detalles) || detalles.length === 0) {
+    // multer (multipart) entrega detalles como JSON string; JSON body lo entrega ya parseado
+    const detallesParsed = typeof detalles === 'string' ? JSON.parse(detalles) : detalles;
+    if (!Array.isArray(detallesParsed) || detallesParsed.length === 0) {
       await t.rollback();
       return errorResponse(res, 'Debe incluir al menos un producto en detalles', 400);
     }
 
-    for (const d of detalles) {
+    for (const d of detallesParsed) {
       const cant = Number(d.cantidad);
       if (!d.referencia || !d.referencia.trim()) {
         await t.rollback();
@@ -139,7 +146,7 @@ const crear = async (req, res) => {
       { transaction: t }
     );
 
-    const lineas = detalles.map((d) => ({
+    const lineas = detallesParsed.map((d) => ({
       solicitud_id: solicitud.id,
       referencia: d.referencia,
       descripcion: d.descripcion || null,
@@ -149,6 +156,13 @@ const crear = async (req, res) => {
     await SolicitudDetalle.bulkCreate(lineas, { transaction: t });
 
     await t.commit();
+
+    // Capturar archivos antes del setImmediate (el req object puede gc'd)
+    const archivosSubidos = (req.files || []).map((f) => ({
+      buffer: f.buffer,
+      originalname: f.originalname,
+      mimetype: f.mimetype,
+    }));
 
     // Acciones post-commit (no bloquean la respuesta)
     setImmediate(async () => {
@@ -163,7 +177,7 @@ const crear = async (req, res) => {
           datos_nuevos: { numero_solicitud, tipo, estado: 'recibida', cliente_id },
         });
 
-        const accion_url = `/clientes/${cliente_id}?tab=solicitudes&id=${solicitud.id}`;
+        const accion_url = `/solicitudes/${solicitud.id}`;
         const tipoLabel = TIPO_LABEL[tipo];
         const titulo = `Nueva ${tipoLabel}: ${numero_solicitud}`;
 
@@ -198,39 +212,40 @@ const crear = async (req, res) => {
             created_at: new Date(),
           });
 
-          // Email
+          // Subir documentos adjuntos a S3 y crear registros
+          const adjuntosEmail = [];
+          for (const archivo of archivosSubidos) {
+            try {
+              const fakeFile = { buffer: archivo.buffer, mimetype: archivo.mimetype, originalname: archivo.originalname };
+              const { key } = await s3Service.subir(fakeFile, `solicitudes/${solicitud.id}`);
+              await SolicitudDocumento.create({
+                solicitud_id: solicitud.id,
+                nombre_original: archivo.originalname,
+                s3_key: key,
+              });
+              adjuntosEmail.push({
+                nombre: archivo.originalname,
+                content: archivo.buffer,
+                contentType: archivo.mimetype,
+              });
+            } catch (uploadErr) {
+              logger.error('[SolicitudController] Error subiendo archivo adjunto:', uploadErr.message);
+            }
+          }
+
+          // Email usando plantilla BD
           const responsablesUsuarios = await Usuario.findAll({
             where: { id: { [Op.in]: responsablesIds }, activo: true },
-            attributes: ['email', 'nombre'],
+            attributes: ['email'],
           });
           const emails = responsablesUsuarios.map((u) => u.email).filter(Boolean);
           if (emails.length > 0) {
-            const appUrl =
-              process.env.APP_URL ||
-              (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',')[0].trim();
             try {
-              await emailService.enviarManual({
-                para: emails,
-                asunto: `Nueva ${tipoLabel}: ${numero_solicitud} — ${razonSocial}`,
-                cuerpoHtml: `
-                  <h2 style="color:#E74C3C">${tipoLabel} recibida</h2>
-                  <p><strong>N° Solicitud:</strong> ${escHtml(numero_solicitud)}</p>
-                  <p><strong>Cliente:</strong> ${escHtml(razonSocial)}</p>
-                  <p><strong>Prioridad:</strong> ${escHtml(prioridad || 'normal')}</p>
-                  ${fecha_estimada ? `<p><strong>Fecha estimada:</strong> ${escHtml(fecha_estimada)}</p>` : ''}
-                  ${numero_documento ? `<p><strong>N° Documento:</strong> ${escHtml(numero_documento)}</p>` : ''}
-                  ${transportista ? `<p><strong>Transportista:</strong> ${escHtml(transportista)}</p>` : ''}
-                  ${direccion_entrega ? `<p><strong>Dirección de entrega:</strong> ${escHtml(direccion_entrega)}</p>` : ''}
-                  ${contacto_destino ? `<p><strong>Contacto destino:</strong> ${escHtml(contacto_destino)}</p>` : ''}
-                  ${notas ? `<p><strong>Notas:</strong> ${escHtml(notas)}</p>` : ''}
-                  <p style="margin-top:20px">
-                    <a href="${appUrl}${accion_url}"
-                       style="background:#E74C3C;color:white;padding:10px 20px;border-radius:6px;text-decoration:none">
-                      Ver Solicitud
-                    </a>
-                  </p>
-                `,
-              });
+              await emailService.enviarSolicitudNueva(
+                { ...solicitud.dataValues, cliente: { razon_social: razonSocial } },
+                emails,
+                adjuntosEmail
+              );
             } catch (mailErr) {
               logger.error('[SolicitudController] Error enviando email:', mailErr.message);
             }
@@ -340,6 +355,7 @@ const obtener = async (req, res) => {
           attributes: ['id', 'nombre', 'apellido'],
         },
         { model: SolicitudDetalle, as: 'detalles' },
+        { model: SolicitudDocumento, as: 'documentos', attributes: ['id', 'nombre_original', 's3_key', 'created_at'] },
         {
           model: SolicitudComentario,
           as: 'comentarios',
@@ -349,7 +365,7 @@ const obtener = async (req, res) => {
             {
               model: Usuario,
               as: 'autor',
-              attributes: ['id', 'nombre', 'apellido', 'rol', 'avatar_url'],
+              attributes: ['id', 'nombre', 'apellido', 'nombre_completo', 'username', 'rol', 'avatar_url'],
             },
           ],
         },
@@ -367,10 +383,22 @@ const obtener = async (req, res) => {
 
     let documento_url = solicitud.documento_url;
     if (documento_url && s3Service.isS3Key && s3Service.isS3Key(documento_url)) {
-      documento_url = await s3Service.getUrl(documento_url, 900);
+      documento_url = await s3Service.getUrl(documento_url, 7200);
     }
 
-    return success(res, { ...solicitud.toJSON(), documento_url });
+    const documentos = await Promise.all(
+      (solicitud.documentos || []).map(async (d) => ({
+        id: d.id,
+        nombre_original: d.nombre_original,
+        url: await s3Service.getUrl(d.s3_key, 7200),
+        download_url: await s3Service.getUrl(d.s3_key, 7200, {
+          contentDisposition: `attachment; filename="${encodeURIComponent(d.nombre_original)}"`,
+        }),
+        created_at: d.created_at,
+      }))
+    );
+
+    return success(res, { ...solicitud.toJSON(), documento_url, documentos });
   } catch (err) {
     return serverError(res, 'Error al obtener solicitud', err);
   }
@@ -470,6 +498,10 @@ const cambiarEstado = async (req, res) => {
         logger.error('[cambiarEstado] Error al notificar cliente:', err);
       }
     });
+
+    const destinatariosEstado = await getResponsablesIds(solicitud.cliente_id);
+    if (solicitud.creado_por) destinatariosEstado.push(solicitud.creado_por);
+    socketService.emitToUsers([...new Set(destinatariosEstado)], 'solicitud:estado_cambio', { solicitud_id: Number(id), estado });
 
     return successMessage(res, `Solicitud marcada como ${estado}`, { id, estado });
   } catch (err) {
@@ -577,10 +609,15 @@ const agregarComentario = async (req, res) => {
     }
 
     const autor = await Usuario.findByPk(req.user.id, {
-      attributes: ['id', 'nombre', 'apellido', 'rol', 'avatar_url'],
+      attributes: ['id', 'nombre', 'apellido', 'nombre_completo', 'username', 'rol', 'avatar_url'],
     });
 
-    return created(res, 'Comentario agregado', { ...comentario.toJSON(), autor });
+    const payload = { ...comentario.toJSON(), autor };
+    const destinatariosComentario = await getResponsablesIds(solicitud.cliente_id);
+    if (solicitud.creado_por) destinatariosComentario.push(solicitud.creado_por);
+    socketService.emitToUsers([...new Set(destinatariosComentario)], 'solicitud:comentario_nuevo', { solicitud_id: Number(id), comentario: payload });
+
+    return created(res, 'Comentario agregado', payload);
   } catch (err) {
     return serverError(res, 'Error al agregar comentario', err);
   }
@@ -615,8 +652,48 @@ const subirDocumento = async (req, res) => {
       datos_nuevos: { documento_url: key },
     });
 
-    const url = await s3Service.getUrl(key, 900);
+    const url = await s3Service.getUrl(key, 7200);
     return success(res, { documento_url: url });
+  } catch (err) {
+    return serverError(res, 'Error al subir documento', err);
+  }
+};
+
+// ─── SUBIR DOCUMENTO ADICIONAL (tabla solicitud_documentos) ─────────────────
+
+const subirDocumentoAdicional = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!req.file) return errorResponse(res, 'No se recibió ningún archivo', 400);
+
+    const solicitud = await Solicitud.findByPk(id);
+    if (!solicitud) return notFound(res, 'Solicitud no encontrada');
+
+    if (
+      req.user?.rol === 'cliente' &&
+      Number(solicitud.cliente_id) !== Number(req.user.cliente_id)
+    ) {
+      return errorResponse(res, 'No tiene acceso a esta solicitud', 403);
+    }
+
+    const { key } = await s3Service.subir(req.file, `solicitudes/${id}`);
+    const doc = await SolicitudDocumento.create({
+      solicitud_id: id,
+      nombre_original: req.file.originalname,
+      s3_key: key,
+    });
+
+    await Auditoria.registrar({
+      tabla: 'solicitudes',
+      registro_id: id,
+      accion: 'subir_documento',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo || req.user.username,
+      datos_nuevos: { documento: req.file.originalname },
+    });
+
+    const url = await s3Service.getUrl(key, 7200);
+    return success(res, { id: doc.id, nombre_original: doc.nombre_original, url });
   } catch (err) {
     return serverError(res, 'Error al subir documento', err);
   }
@@ -630,4 +707,5 @@ module.exports = {
   vincular,
   agregarComentario,
   subirDocumento,
+  subirDocumentoAdicional,
 };

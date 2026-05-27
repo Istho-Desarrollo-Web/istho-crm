@@ -45,11 +45,12 @@ export const SocketProvider = ({ children }) => {
 
     const socket = io(serverUrl, {
       auth: { token },
-      transports: ['polling'],
+      transports: ['websocket', 'polling'], // WebSocket primero, polling como fallback
       reconnection: true,
       reconnectionAttempts: Infinity,
-      reconnectionDelay: 3000,
-      reconnectionDelayMax: 15000,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 10000,
+      timeout: 10000, // Falla rápido si el servidor no responde al handshake
     });
 
     socket.on('connect', () => {

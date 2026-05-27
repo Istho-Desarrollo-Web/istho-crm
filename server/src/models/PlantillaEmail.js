@@ -32,7 +32,8 @@ module.exports = (sequelize) => {
           'bienvenida',
           'general',
           'reseteo_password',
-          'recuperacion_password'
+          'recuperacion_password',
+          'solicitud_nueva'
         ),
         allowNull: false,
         defaultValue: 'general',
@@ -167,6 +168,19 @@ module.exports = (sequelize) => {
       { variable: 'nombre', label: 'Nombre del Usuario', ejemplo: 'Juan Pérez' },
       { variable: 'username', label: 'Nombre de Usuario', ejemplo: 'jperez' },
       { variable: 'urlReset', label: 'URL de Reseteo (con token)', ejemplo: 'https://crm.istho.com/reset?token=abc123' },
+    ],
+    solicitud_nueva: [
+      { variable: 'tipoLabel', label: 'Tipo de Solicitud', ejemplo: 'Aviso de Ingreso' },
+      { variable: 'numeroSolicitud', label: 'N° Solicitud', ejemplo: 'SOL-2026-0001' },
+      { variable: 'clienteNombre', label: 'Nombre del Cliente', ejemplo: 'HACEB WHIRLPOOL INDUSTRIAL S.A.S' },
+      { variable: 'prioridad', label: 'Prioridad', ejemplo: 'urgente' },
+      { variable: 'fechaEstimada', label: 'Fecha Estimada', ejemplo: '2026-05-27' },
+      { variable: 'numeroDocumento', label: 'N° Documento', ejemplo: 'KDC25287' },
+      { variable: 'transportista', label: 'Transportista (ingreso)', ejemplo: 'Transportes ISTHO' },
+      { variable: 'direccionEntrega', label: 'Dirección de Entrega (despacho)', ejemplo: 'Cl 46A 53C-15, Medellín' },
+      { variable: 'contactoDestino', label: 'Contacto en Destino (despacho)', ejemplo: 'María García' },
+      { variable: 'notas', label: 'Notas / Instrucciones', ejemplo: 'Manipulación cuidadosa' },
+      { variable: 'urlSolicitud', label: 'Enlace a la Solicitud', ejemplo: 'https://crm.istho.com/solicitudes/5' },
     ],
   };
 

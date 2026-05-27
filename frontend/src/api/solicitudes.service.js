@@ -42,15 +42,24 @@ const solicitudesService = {
   getById: (id) => apiClient.get(`${BASE}/${id}`),
 
   /**
-   * Crear una nueva solicitud
+   * Crear una nueva solicitud.
+   * Si se pasan archivos, se envía como multipart/form-data para que los adjuntos
+   * se suban a S3 y lleguen adjuntos al email de notificación en una sola operación.
    * @param {Object} data - Datos de la solicitud
-   * @param {string} data.tipo - Tipo de solicitud
-   * @param {string} data.asunto - Asunto
-   * @param {string} data.descripcion - Descripción detallada
-   * @param {string} [data.prioridad] - Prioridad ('baja'|'media'|'alta')
+   * @param {File[]} [archivos=[]] - Archivos adjuntos (PDF/imagen)
    * @returns {Promise<Object>}
    */
-  crear: (data) => apiClient.post(BASE, data),
+  crear: async (data, archivos = []) => {
+    const formData = new FormData();
+    const { detalles, ...campos } = data;
+    Object.entries(campos).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') formData.append(k, String(v));
+    });
+    formData.append('detalles', JSON.stringify(detalles));
+    archivos.forEach((f) => formData.append('archivos', f));
+    const uploadClient = createUploadClient();
+    return uploadClient.post(BASE, formData);
+  },
 
   /**
    * Cambiar el estado de una solicitud
@@ -93,6 +102,13 @@ const solicitudesService = {
     formData.append('archivo', file);
     const uploadClient = createUploadClient();
     return uploadClient.post(`${BASE}/${id}/documento`, formData);
+  },
+
+  subirDocumentoAdicional: async (id, file) => {
+    const formData = new FormData();
+    formData.append('archivo', file);
+    const uploadClient = createUploadClient();
+    return uploadClient.post(`${BASE}/${id}/documentos`, formData);
   },
 
   /**

@@ -27,6 +27,7 @@ import {
   Activity,
   ChevronRight,
   Eye,
+  ClipboardList,
 } from 'lucide-react';
 
 // Common Components
@@ -549,13 +550,22 @@ const Dashboard = () => {
             color="violet"
             onClick={() => navigate('/inventario')}
           />
-          {hasPermission('clientes', 'ver') && (
+          {hasPermission('clientes', 'ver') && user?.rol !== 'cliente' && (
             <QuickAction
               icon={Users}
               label="Clientes"
               description="Gestión de clientes"
               color="orange"
               onClick={() => navigate('/clientes')}
+            />
+          )}
+          {hasPermission('solicitudes', 'ver') && (
+            <QuickAction
+              icon={ClipboardList}
+              label="Solicitudes"
+              description="Avisos de ingreso y despacho"
+              color="rose"
+              onClick={() => navigate('/solicitudes')}
             />
           )}
         </div>

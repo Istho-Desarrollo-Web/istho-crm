@@ -83,9 +83,11 @@ const subirMultiples = async (files, carpeta = 'general') => {
  * @param {number} expiresIn - Segundos de validez (default 3600 = 1 hora)
  * @returns {Promise<string>} URL firmada
  */
-const getUrl = async (key, expiresIn = 3600) => {
+const getUrl = async (key, expiresIn = 3600, options = {}) => {
   if (!key) return null;
-  return getSignedUrl(s3, new GetObjectCommand({ Bucket: BUCKET, Key: key }), { expiresIn });
+  const commandInput = { Bucket: BUCKET, Key: key };
+  if (options.contentDisposition) commandInput.ResponseContentDisposition = options.contentDisposition;
+  return getSignedUrl(s3, new GetObjectCommand(commandInput), { expiresIn });
 };
 
 /**

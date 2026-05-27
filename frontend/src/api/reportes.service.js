@@ -155,6 +155,15 @@ const reportesService = {
     }
   },
 
+  getReporteSolicitudes: async (params = {}) => {
+    try {
+      return await apiClient.get('/reportes/solicitudes', { params });
+    } catch (error) {
+      console.error('❌ Error obteniendo reporte de solicitudes:', error);
+      throw error;
+    }
+  },
+
   // ──────────────────────────────────────────────────────────────────────────
   // REPORTES FINANCIEROS (datos JSON para vistas)
   // ──────────────────────────────────────────────────────────────────────────

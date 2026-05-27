@@ -20,6 +20,7 @@ const { requiereRolMinimo, noClientes } = require('../middleware/roles');
 
 // Upload
 const { uploadLogo } = require('../config/multer');
+const comprimir = require('../middleware/comprimir');
 
 // Validadores
 const {
@@ -144,6 +145,7 @@ router.post(
   noClientes,
   requiereRolMinimo('operador'),
   uploadLogo.single('logo'),
+  comprimir({ maxWidthPx: 800 }),
   clienteController.subirLogo
 );
 

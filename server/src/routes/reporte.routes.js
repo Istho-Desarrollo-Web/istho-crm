@@ -128,6 +128,8 @@ router.get(
 // =============================================
 
 router.get('/solicitudes', requierePermiso('reportes', 'ver'), reporteController.reporteSolicitudes);
+router.get('/solicitudes/excel', requierePermiso('reportes', 'ver'), reporteController.exportarSolicitudesExcel);
+router.get('/solicitudes/pdf', requierePermiso('reportes', 'ver'), reporteController.exportarSolicitudesPDF);
 
 // =============================================
 // ENVIAR REPORTE POR EMAIL

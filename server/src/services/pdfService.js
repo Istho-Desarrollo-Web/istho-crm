@@ -1102,6 +1102,149 @@ const generarPDFInventarioUbicacion = async (cajas, _filtros = {}) => {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// SOLICITUDES
+// ═══════════════════════════════════════════════════════════════════════════
+
+const generarPDFSolicitudes = async (solicitudes, _filtros = {}) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        layout: 'landscape',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
+      const chunks = [];
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      const subtitulo = _filtros.desde || _filtros.hasta
+        ? `Período: ${_filtros.desde || '...'} al ${_filtros.hasta || '...'}`
+        : 'Tiempos de respuesta, cumplimiento y volumen';
+      agregarEncabezado(doc, 'REPORTE DE SOLICITUDES', subtitulo);
+
+      const completadas = solicitudes.filter((s) => s.estado === 'completada').length;
+      const rechazadas = solicitudes.filter((s) => s.estado === 'rechazada').length;
+      const tasa = solicitudes.length > 0 ? Math.round((completadas / solicitudes.length) * 100) : 0;
+
+      agregarKpis(doc, [
+        { label: 'Total Solicitudes', valor: solicitudes.length, subtexto: 'registros', color: COLORES.acento },
+        { label: 'Completadas', valor: completadas, subtexto: `${tasa}% cumplimiento`, color: COLORES.verde },
+        { label: 'Rechazadas', valor: rechazadas, subtexto: 'no procesadas', color: '#E74C3C' },
+        { label: 'Pendientes', valor: solicitudes.length - completadas - rechazadas, subtexto: 'en proceso', color: COLORES.azul },
+      ]);
+
+      const ESTADO_LABEL = {
+        recibida: 'Recibida', en_proceso: 'En proceso', completada: 'Completada', rechazada: 'Rechazada',
+      };
+
+      const headers = ['#', 'N° Solicitud', 'Cliente', 'Tipo', 'Estado', 'Fecha Envío', 'T. Resp. (días)', 'Operación'];
+      const rows = solicitudes.map((s, i) => {
+        const tiempoDias =
+          s.operacion_id && s.updatedAt && s.createdAt
+            ? `${Math.round(((new Date(s.updatedAt) - new Date(s.createdAt)) / (1000 * 60 * 60 * 24)) * 10) / 10}d`
+            : '—';
+        return [
+          i + 1,
+          s.numero_solicitud || '',
+          (s.cliente?.razon_social || '').substring(0, 24),
+          s.tipo === 'ingreso' ? 'Ingreso' : 'Despacho',
+          ESTADO_LABEL[s.estado] || s.estado || '',
+          s.createdAt ? new Date(s.createdAt).toLocaleDateString('es-CO') : '—',
+          tiempoDias,
+          s.operacion_id ? `#${s.operacion_id}` : '—',
+        ];
+      });
+
+      const finalPage = generarTabla(doc, headers, rows, {
+        anchoColumnas: [30, 110, 145, 65, 80, 75, 80, 75],
+        alineacion: ['center', 'left', 'left', 'center', 'center', 'center', 'center', 'center'],
+        etiquetaSeccion: 'Detalle de Solicitudes',
+        titulosContinuacion: 'REPORTE DE SOLICITUDES',
+        paginaInicial: 1,
+      });
+
+      agregarPiePagina(doc, finalPage);
+      doc.end();
+
+      logger.info('PDF solicitudes generado:', { registros: solicitudes.length });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AVERÍAS
+// ─────────────────────────────────────────────────────────────────────────────
+
+const generarPDFAverias = async (averias, _filtros = {}) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        layout: 'landscape',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        autoFirstPage: true,
+      });
+      const chunks = [];
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      const subtitulo = _filtros.fecha_desde || _filtros.fecha_hasta
+        ? `Período: ${_filtros.fecha_desde || '...'} al ${_filtros.fecha_hasta || '...'}`
+        : 'Registro detallado de averías por operación';
+      agregarEncabezado(doc, 'REPORTE DE AVERÍAS', subtitulo);
+
+      const totalUnidades = averias.reduce((s, a) => s + (parseFloat(a.cantidad) || 0), 0);
+
+      agregarKpis(doc, [
+        { label: 'Total Averías', valor: averias.length, subtexto: 'registros', color: COLORES.acento },
+        { label: 'Unidades Averiadas', valor: totalUnidades.toLocaleString('es-CO'), subtexto: 'afectadas', color: '#E74C3C' },
+        {
+          label: 'Operaciones Afectadas',
+          valor: new Set(averias.map((a) => a.operacion_id)).size,
+          subtexto: 'con averías',
+          color: COLORES.azul,
+        },
+      ]);
+
+      const headers = ['#', 'Fecha', 'N° Registro', 'Tipo', 'Cliente', 'Referencia', 'Tipo Avería', 'Cantidad', 'Registrado por'];
+      const rows = averias.map((a, i) => [
+        i + 1,
+        a.operacion?.fecha_operacion
+          ? new Date(a.operacion.fecha_operacion + 'T00:00:00').toLocaleDateString('es-CO')
+          : '—',
+        a.operacion?.numero_operacion || '—',
+        (a.operacion?.tipo || '').toUpperCase(),
+        (a.operacion?.cliente?.razon_social || '—').substring(0, 20),
+        a.sku || '—',
+        (a.tipo_averia || '—').substring(0, 18),
+        (parseFloat(a.cantidad) || 0).toLocaleString('es-CO'),
+        (a.registrador?.nombre_completo || '—').substring(0, 20),
+      ]);
+
+      const finalPage = generarTabla(doc, headers, rows, {
+        anchoColumnas: [30, 68, 100, 55, 120, 80, 105, 60, 115],
+        alineacion: ['center', 'center', 'left', 'center', 'left', 'left', 'left', 'right', 'left'],
+        etiquetaSeccion: 'Detalle de Averías',
+        titulosContinuacion: 'REPORTE DE AVERÍAS',
+        paginaInicial: 1,
+      });
+
+      agregarPiePagina(doc, finalPage);
+      doc.end();
+
+      logger.info('PDF averías generado:', { registros: averias.length });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // AUDITORÍA DE ACCIONES
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1320,6 +1463,8 @@ module.exports = {
   generarPDFVehiculos,
   generarPDFCajasMenores,
   generarPDFGastos,
+  generarPDFAverias,
+  generarPDFSolicitudes,
   generarPDFAuditoriaAcciones,
   generarPDFDetalleCajaMenor,
 };

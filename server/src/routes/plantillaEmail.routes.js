@@ -12,6 +12,7 @@ const plantillaEmailController = require('../controllers/plantillaEmailControlle
 const { verificarToken } = require('../middleware/auth');
 const { requiereRolMinimo } = require('../middleware/roles');
 const { uploadLogo } = require('../config/multer');
+const comprimir = require('../middleware/comprimir');
 
 // Todas las rutas requieren autenticación
 router.use(verificarToken);
@@ -22,6 +23,7 @@ router.post(
   '/logo-firma',
   requiereRolMinimo('supervisor'),
   uploadLogo.single('logo'),
+  comprimir({ maxWidthPx: 800 }),
   plantillaEmailController.subirLogoFirma
 );
 

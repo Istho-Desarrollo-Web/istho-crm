@@ -60,7 +60,7 @@ const ForgotPassword = () => {
     e.preventDefault();
 
     if (!email) {
-      enqueueSnackbar('Por favor ingrese su correo electronico', { variant: 'warning' });
+      enqueueSnackbar('Por favor ingresa tu correo electrónico', { variant: 'warning' });
       return;
     }
 
@@ -72,7 +72,7 @@ const ForgotPassword = () => {
       if (response.success) {
         setSubmitted(true);
         enqueueSnackbar(
-          'Si el correo existe, recibiras instrucciones para restablecer tu contrasena',
+          'Si el correo existe, recibirás las instrucciones para restablecer tu contraseña',
           { variant: 'success' }
         );
       } else {
@@ -80,7 +80,7 @@ const ForgotPassword = () => {
       }
     } catch (error) {
       console.error('Error en forgot password:', error);
-      enqueueSnackbar('Error de conexion. Intente nuevamente', { variant: 'error' });
+      enqueueSnackbar('Error de conexión. Intenta nuevamente', { variant: 'error' });
     } finally {
       setLoading(false);
     }
