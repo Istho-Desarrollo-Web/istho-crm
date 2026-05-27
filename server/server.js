@@ -146,9 +146,9 @@ async function initializeDatabase() {
       context: db.sequelize.getQueryInterface(),
       storage: new SequelizeStorage({ sequelize: db.sequelize }),
       logger: {
-        info: msg => logger.info(`[Migración] ${msg.message}`),
-        warn: msg => logger.warn(`[Migración] ${msg.message}`),
-        error: msg => logger.error(`[Migración] ${msg.message}`),
+        info: msg => logger.info(`[Migración] ${msg.name || msg.message || JSON.stringify(msg)}`),
+        warn: msg => logger.warn(`[Migración] ${msg.name || msg.message || JSON.stringify(msg)}`),
+        error: msg => logger.error(`[Migración] ${msg.name || msg.message || JSON.stringify(msg)}`),
         debug: () => {}
       },
     });
