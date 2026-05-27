@@ -473,7 +473,7 @@ const PERMISOS_POR_ROL = {
     viajes: ['ver', 'crear', 'editar', 'eliminar', 'exportar'],
     caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'eliminar', 'exportar'],
     movimientos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar'],
-    solicitudes: ['ver', 'crear', 'comentar', 'exportar'],
+    solicitudes: ['ver', 'comentar', 'exportar'],
     perfil: ['ver', 'cambiar_password'],
   },
 
