@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { X, Pencil, Plus, Trash2, Save, AlertTriangle } from 'lucide-react';
+import { X, Pencil, Plus, Trash2, Save, AlertTriangle, Ban } from 'lucide-react';
 import Button from './Button/Button';
 import { FilterDropdown } from './index';
 import { DatePicker } from './index';
@@ -37,7 +37,7 @@ const lineaVacia = () => ({
   _nueva: true,
 });
 
-const InputField = ({ label, value, onChange, placeholder = '', type = 'text', required = false }) => (
+const InputField = ({ label, value, onChange, placeholder = '', type = 'text', required = false, disabled = false }) => (
   <div>
     <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
       {label} {required && <span className="text-red-500">*</span>}
@@ -45,9 +45,14 @@ const InputField = ({ label, value, onChange, placeholder = '', type = 'text', r
     <input
       type={type}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => !disabled && onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+      disabled={disabled}
+      className={`w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+        disabled
+          ? 'bg-slate-50 dark:bg-centhrix-bg opacity-60 cursor-not-allowed'
+          : 'bg-white dark:bg-centhrix-surface'
+      }`}
     />
   </div>
 );
@@ -57,6 +62,7 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [clientes, setClientes] = useState([]);
+  const [estadoOperacion, setEstadoOperacion] = useState(null);
   const { success, error } = useNotification();
 
   // Encabezado
@@ -77,6 +83,8 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
   const [lineas, setLineas] = useState([]);
   const [lineasEliminar, setLineasEliminar] = useState([]);
 
+  const readonly = estadoOperacion === 'anulado' || estadoOperacion === 'cerrado';
+
   const cargarDatos = useCallback(async () => {
     if (!operacionId) return;
     setLoading(true);
@@ -93,6 +101,7 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
 
       const raw = opResp?.data || opResp;
       if (raw) {
+        setEstadoOperacion(raw.estado || null);
         setClienteId(String(raw.cliente_id || ''));
         setFechaDocumento(raw.fecha_documento || '');
         setFechaOperacion(raw.fecha_operacion || '');
@@ -204,14 +213,21 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-slate-700 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-              <Pencil className="w-5 h-5 text-orange-500" />
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${readonly ? 'bg-slate-100 dark:bg-slate-800' : 'bg-orange-100 dark:bg-orange-900/30'}`}>
+              {readonly
+                ? <Ban className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                : <Pencil className="w-5 h-5 text-orange-500" />
+              }
             </div>
             <div>
-              <h3 className="font-semibold text-slate-800 dark:text-slate-100">Editar Operación</h3>
+              <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                {readonly ? 'Detalle de Operación' : 'Editar Operación'}
+              </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3 text-amber-500" />
-                Acción administrativa — los cambios quedan en auditoría
+                {readonly
+                  ? <><Ban className="w-3 h-3 text-red-400" /> Operación {estadoOperacion} — no se puede editar</>
+                  : <><AlertTriangle className="w-3 h-3 text-amber-500" /> Acción administrativa — los cambios quedan en auditoría</>
+                }
               </p>
             </div>
           </div>
@@ -242,6 +258,12 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-5">
+          {!loading && readonly && (
+            <div className="flex items-center gap-2 mb-4 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-sm text-red-700 dark:text-red-400">
+              <Ban className="w-4 h-4 shrink-0" />
+              Esta operación está <strong className="mx-1">{estadoOperacion}</strong> y no puede ser modificada.
+            </div>
+          )}
           {loading ? (
             <div className="space-y-3">
               {[...Array(6)].map((_, i) => (
@@ -255,7 +277,7 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                 Datos del Documento
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
+                <div className={readonly ? 'pointer-events-none opacity-60' : ''}>
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                     Cliente
                   </label>
@@ -270,14 +292,15 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                   value={documentoWms}
                   onChange={setDocumentoWms}
                   placeholder="Ej: CO-2026-0001"
+                  disabled={readonly}
                 />
-                <div>
+                <div className={readonly ? 'pointer-events-none opacity-60' : ''}>
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                     Fecha de Operación
                   </label>
                   <DatePicker value={fechaOperacion} onChange={setFechaOperacion} />
                 </div>
-                <div>
+                <div className={readonly ? 'pointer-events-none opacity-60' : ''}>
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                     Fecha Documento
                   </label>
@@ -290,8 +313,8 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                 Logística
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <InputField label="Origen" value={origen} onChange={setOrigen} placeholder="Ciudad/punto de origen" />
-                <InputField label="Destino" value={destino} onChange={setDestino} placeholder="Ciudad/punto de destino" />
+                <InputField label="Origen" value={origen} onChange={setOrigen} placeholder="Ciudad/punto de origen" disabled={readonly} />
+                <InputField label="Destino" value={destino} onChange={setDestino} placeholder="Ciudad/punto de destino" disabled={readonly} />
               </div>
 
               {/* Sección Transporte */}
@@ -299,10 +322,10 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                 Transporte
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <InputField label="Placa" value={vehiculoPlaca} onChange={setVehiculoPlaca} placeholder="Ej: ABC123" />
-                <InputField label="Conductor" value={conductorNombre} onChange={setConductorNombre} />
-                <InputField label="Cédula Conductor" value={conductorCedula} onChange={setConductorCedula} />
-                <InputField label="Teléfono Conductor" value={conductorTelefono} onChange={setConductorTelefono} />
+                <InputField label="Placa" value={vehiculoPlaca} onChange={setVehiculoPlaca} placeholder="Ej: ABC123" disabled={readonly} />
+                <InputField label="Conductor" value={conductorNombre} onChange={setConductorNombre} disabled={readonly} />
+                <InputField label="Cédula Conductor" value={conductorCedula} onChange={setConductorCedula} disabled={readonly} />
+                <InputField label="Teléfono Conductor" value={conductorTelefono} onChange={setConductorTelefono} disabled={readonly} />
               </div>
 
               {/* Observaciones */}
@@ -318,7 +341,8 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                     rows={3}
                     value={observaciones}
                     onChange={(e) => setObservaciones(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                    disabled={readonly}
+                    className={`w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none ${readonly ? 'bg-slate-50 dark:bg-centhrix-bg opacity-60 cursor-not-allowed' : 'bg-white dark:bg-centhrix-surface'}`}
                   />
                 </div>
                 <div>
@@ -329,7 +353,8 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                     rows={2}
                     value={observacionesCierre}
                     onChange={(e) => setObservacionesCierre(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                    disabled={readonly}
+                    className={`w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none ${readonly ? 'bg-slate-50 dark:bg-centhrix-bg opacity-60 cursor-not-allowed' : 'bg-white dark:bg-centhrix-surface'}`}
                   />
                 </div>
               </div>
@@ -341,9 +366,11 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   {lineas.length} línea{lineas.length !== 1 ? 's' : ''}
                 </p>
-                <Button variant="ghost" size="sm" icon={Plus} onClick={handleAgregarLinea}>
-                  Agregar línea
-                </Button>
+                {!readonly && (
+                  <Button variant="ghost" size="sm" icon={Plus} onClick={handleAgregarLinea}>
+                    Agregar línea
+                  </Button>
+                )}
               </div>
 
               {lineas.length === 0 ? (
@@ -369,7 +396,8 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                             value={linea.sku}
                             onChange={(e) => handleCampoLinea(linea._key, 'sku', e.target.value)}
                             placeholder="SKU-001"
-                            className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-card text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            disabled={readonly}
+                            className={`w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 ${readonly ? 'bg-slate-50 dark:bg-centhrix-bg opacity-60 cursor-not-allowed' : 'bg-white dark:bg-centhrix-card'}`}
                           />
                         </div>
                         <div className="col-span-2 sm:col-span-1">
@@ -379,7 +407,8 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                             value={linea.producto}
                             onChange={(e) => handleCampoLinea(linea._key, 'producto', e.target.value)}
                             placeholder="Nombre del producto"
-                            className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-card text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            disabled={readonly}
+                            className={`w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 ${readonly ? 'bg-slate-50 dark:bg-centhrix-bg opacity-60 cursor-not-allowed' : 'bg-white dark:bg-centhrix-card'}`}
                           />
                         </div>
                         <div>
@@ -390,10 +419,11 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                             step="0.001"
                             value={linea.cantidad}
                             onChange={(e) => handleCampoLinea(linea._key, 'cantidad', e.target.value)}
-                            className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-card text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            disabled={readonly}
+                            className={`w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 ${readonly ? 'bg-slate-50 dark:bg-centhrix-bg opacity-60 cursor-not-allowed' : 'bg-white dark:bg-centhrix-card'}`}
                           />
                         </div>
-                        <div>
+                        <div className={readonly ? 'pointer-events-none opacity-60' : ''}>
                           <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Unidad</label>
                           <FilterDropdown
                             options={UNIDADES}
@@ -409,7 +439,8 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                             value={linea.lote || ''}
                             onChange={(e) => handleCampoLinea(linea._key, 'lote', e.target.value)}
                             placeholder="Opcional"
-                            className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-card text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            disabled={readonly}
+                            className={`w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 ${readonly ? 'bg-slate-50 dark:bg-centhrix-bg opacity-60 cursor-not-allowed' : 'bg-white dark:bg-centhrix-card'}`}
                           />
                         </div>
                         <div>
@@ -421,10 +452,12 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                             value={linea.peso || ''}
                             onChange={(e) => handleCampoLinea(linea._key, 'peso', e.target.value)}
                             placeholder="Opcional"
-                            className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-card text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            disabled={readonly}
+                            className={`w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 ${readonly ? 'bg-slate-50 dark:bg-centhrix-bg opacity-60 cursor-not-allowed' : 'bg-white dark:bg-centhrix-card'}`}
                           />
                         </div>
                       </div>
+                      {!readonly && (
                       <div className="flex justify-end mt-2">
                         <button
                           onClick={() => handleEliminarLinea(linea)}
@@ -434,6 +467,7 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
                           Eliminar
                         </button>
                       </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -444,12 +478,20 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-5 border-t border-gray-100 dark:border-slate-700 shrink-0">
-          <Button variant="ghost" size="sm" onClick={onClose} disabled={saving}>
-            Cancelar
-          </Button>
-          <Button variant="primary" size="sm" icon={Save} onClick={handleGuardar} loading={saving}>
-            Guardar Cambios
-          </Button>
+          {readonly ? (
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              Cerrar
+            </Button>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" onClick={onClose} disabled={saving}>
+                Cancelar
+              </Button>
+              <Button variant="primary" size="sm" icon={Save} onClick={handleGuardar} loading={saving}>
+                Guardar Cambios
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>
