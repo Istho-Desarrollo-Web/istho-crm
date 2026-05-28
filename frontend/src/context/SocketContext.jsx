@@ -45,7 +45,7 @@ export const SocketProvider = ({ children }) => {
 
     const socket = io(serverUrl, {
       auth: { token },
-      transports: ['websocket', 'polling'], // WebSocket primero, polling como fallback
+      transports: ['polling', 'websocket'], // polling primero (compatible con App Runner), upgrade a WS si disponible
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
