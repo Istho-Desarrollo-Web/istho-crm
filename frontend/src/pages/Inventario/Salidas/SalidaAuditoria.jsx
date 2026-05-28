@@ -79,6 +79,29 @@ const STEPS = [
 ];
 
 const StatusStepper = ({ currentStatus }) => {
+  if (currentStatus === 'anulado') {
+    return (
+      <div className="flex items-center justify-between w-full opacity-50">
+        {STEPS.map((step, idx) => {
+          const Icon = step.icon;
+          return (
+            <div key={step.key} className="flex items-center flex-1 last:flex-none">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center border-2 bg-slate-100 dark:bg-centhrix-surface border-slate-300 dark:border-slate-600 text-slate-400">
+                  <Icon className="w-6 h-6" />
+                </div>
+                <p className="mt-2 text-xs font-semibold text-slate-400 dark:text-slate-500 line-through">{step.label}</p>
+              </div>
+              {idx < STEPS.length - 1 && (
+                <div className="flex-1 h-0.5 mx-3 mt-[-24px] bg-slate-200 dark:bg-centhrix-surface" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   const currentIdx = STEPS.findIndex((s) => s.key === currentStatus);
 
   return (
@@ -1898,11 +1921,13 @@ const SalidaAuditoria = () => {
             {!puedeEditar ? (
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <Shield className="w-5 h-5 text-emerald-500" />
+                  <Shield className={`w-5 h-5 ${isCerrado ? 'text-emerald-500' : 'text-slate-400'}`} />
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
                     {isCerrado
                       ? `Operación completada — ${files.length} evidencia${files.length !== 1 ? 's' : ''} registrada${files.length !== 1 ? 's' : ''}`
-                      : 'No tienes permiso para agregar evidencias'}
+                      : files.length > 0
+                        ? `${files.length} evidencia${files.length !== 1 ? 's' : ''} registrada${files.length !== 1 ? 's' : ''}`
+                        : 'Sin evidencias registradas'}
                   </p>
                 </div>
                 <FilePreviewGallery files={files} readOnly={true} />
