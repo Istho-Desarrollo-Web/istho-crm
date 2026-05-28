@@ -1044,7 +1044,8 @@ const SalidaAuditoria = () => {
   const totalProgress = Math.round((lineasProgress + formProgress + evidenceProgress) / 3);
   const canClose = lineasProgress === 100 && formProgress === 100 && evidenceProgress === 100;
   const isCerrado = estado === 'cerrado';
-  const puedeEditar = hasPermission('auditoria', 'ver') && !isCerrado;
+  const isAnulado = estado === 'anulado';
+  const puedeEditar = hasPermission('auditoria', 'ver') && !isCerrado && !isAnulado;
 
   const handleCerrarAuditoria = () => {
     if (!canClose || closing) return;
@@ -1273,7 +1274,7 @@ const SalidaAuditoria = () => {
                   Imprimir
                 </button>
               )}
-              {isAdmin() && !isCerrado && (
+              {isAdmin() && !isCerrado && !isAnulado && (
                 <button
                   onClick={() => setEditModalOpen(true)}
                   title="Editar operación (admin)"
@@ -1317,6 +1318,21 @@ const SalidaAuditoria = () => {
           </div>
           <StatusStepper currentStatus={estado} />
         </div>
+
+        {/* BANNER ANULACIÓN */}
+        {isAnulado && (
+          <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50">
+            <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+            </div>
+            <div>
+              <p className="font-semibold text-red-700 dark:text-red-400">Operación anulada</p>
+              <p className="text-sm text-red-600/80 dark:text-red-400/70">
+                Esta operación fue anulada y no puede ser modificada. Solo está disponible para consulta.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-6">
           {/* LÍNEAS */}
