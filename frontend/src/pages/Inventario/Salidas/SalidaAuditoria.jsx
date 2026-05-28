@@ -1231,10 +1231,19 @@ const SalidaAuditoria = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-                  {salidaData.documento_wms || salidaData.documento}
+                  {salidaData.numero_picking || salidaData.documento_wms || salidaData.documento}
                 </h1>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-slate-500 dark:text-slate-400">
                   <span className="font-mono text-xs">{salidaData.documento}</span>
+                  {salidaData.documento_wms && salidaData.documento_wms !== salidaData.numero_picking && (
+                    <>
+                      <span className="hidden sm:inline">•</span>
+                      <span className="flex items-center gap-1">
+                        <span className="text-slate-400 dark:text-slate-500">N° Orden Cliente</span>
+                        <span className="font-mono font-medium text-slate-700 dark:text-slate-200">{salidaData.documento_wms}</span>
+                      </span>
+                    </>
+                  )}
                   <span className="hidden sm:inline">•</span>
                   <span className="flex items-center gap-1">
                     <Building2 className="w-4 h-4" />

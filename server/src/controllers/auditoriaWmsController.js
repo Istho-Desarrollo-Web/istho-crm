@@ -401,6 +401,7 @@ const obtenerSalidaPorId = async (req, res) => {
       id: operacion.id,
       documento: operacion.numero_operacion,
       documento_wms: operacion.documento_wms || null,
+      numero_picking: operacion.numero_picking || null,
       wms_order_id: operacion.wms_order_id || null,
       cliente: operacion.cliente?.razon_social || 'Sin cliente',
       tipo_documento: 'Despacho',

@@ -108,6 +108,7 @@ async function mapearOrden(ordenWms, itemsArr) {
       payload: {
         nit,
         numero_picking: pickingNumber || docOrigen,
+        documento_wms: customerNumberOrder || null,
         tipo_orden: 'PK',
         wms_order_id: wmsId,
         conductor_nombre: ordenWms.vehicleDriver || null,
