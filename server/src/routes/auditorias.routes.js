@@ -94,7 +94,7 @@ router.put(
 router.post(
   '/:id/evidencias',
   requiereRolMinimo('operador'),
-  uploadCumplido.array('evidencias', 15),
+  uploadCumplido.array('evidencias', 110),
   comprimir({ maxWidthPx: 1920 }),
   auditoriaWmsController.subirEvidencias
 );

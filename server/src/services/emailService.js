@@ -291,19 +291,24 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
       }),
     };
 
-    // Recopilar documentos y fotos de averías para adjuntar individualmente
+    // Generar presigned URLs para documentos y fotos de averías (sin adjuntar archivos — soporta 100+ fotos)
     const adjuntos = [];
-    const archivosParaAdjuntar = [];
+    datos.evidenciasLinks = [];
+    datos.tieneEvidencias = false;
+
+    const LINK_EXPIRY = 30 * 24 * 3600; // 30 días — suficiente para que el destinatario acceda
+
+    const archivosParaEnlazar = [];
 
     if (operacion.documentos && operacion.documentos.length > 0) {
       for (const doc of operacion.documentos) {
         const key = doc.cloudinary_public_id || doc.archivo_url;
         if (key && !key.startsWith('http') && !key.startsWith('data:')) {
-          archivosParaAdjuntar.push({ key, nombre: doc.archivo_nombre || `soporte_${doc.id}`, tipo: doc.archivo_tipo });
-        } else if (key && !key.startsWith('http')) {
+          archivosParaEnlazar.push({ key, nombre: doc.archivo_nombre || `soporte_${doc.id}`, tipo: doc.archivo_tipo, filePath: null });
+        } else if (key && key.startsWith('/')) {
           const filePath = path.join(__dirname, '../../', key);
           if (fs.existsSync(filePath)) {
-            archivosParaAdjuntar.push({ filePath, nombre: doc.archivo_nombre, tipo: doc.archivo_tipo });
+            archivosParaEnlazar.push({ key: null, nombre: doc.archivo_nombre, tipo: doc.archivo_tipo, filePath });
           }
         }
       }
@@ -313,62 +318,42 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
       for (const av of operacion.averias) {
         const key = av.cloudinary_public_id || av.foto_url;
         if (key && !key.startsWith('http') && !key.startsWith('data:')) {
-          archivosParaAdjuntar.push({ key, nombre: av.foto_nombre || `averia_${av.id}.jpg`, tipo: av.foto_tipo || 'image/jpeg' });
+          archivosParaEnlazar.push({ key, nombre: av.foto_nombre || `averia_${av.id}.jpg`, tipo: av.foto_tipo || 'image/jpeg', filePath: null });
         }
       }
     }
 
-    if (archivosParaAdjuntar.length > 0) {
+    if (archivosParaEnlazar.length > 0) {
       const s3Svc = require('./s3Service');
-      const LIMITE_TOTAL_MB = 20;
-      let bytesTotales = 0;
 
-      for (const archivo of archivosParaAdjuntar) {
+      for (const archivo of archivosParaEnlazar) {
         try {
-          let buffer;
-          if (archivo.key) buffer = await s3Svc.getBuffer(archivo.key);
-          else if (archivo.filePath) buffer = fs.readFileSync(archivo.filePath);
-          if (!buffer) continue;
-
-          let bufferFinal = buffer;
-          let tipoFinal = archivo.tipo;
-          let nombreFinal = archivo.nombre;
-
-          // Comprimir imágenes con sharp (calidad 75%) → ahorra ~50–70% de peso
-          if (tipoFinal && tipoFinal.startsWith('image/')) {
-            try {
-              const sharp = require('sharp');
-              bufferFinal = await sharp(buffer).jpeg({ quality: 75 }).toBuffer();
-              tipoFinal = 'image/jpeg';
-              if (nombreFinal && !/\.(jpg|jpeg)$/i.test(nombreFinal)) {
-                nombreFinal = nombreFinal.replace(/\.[^.]+$/, '.jpg');
-              }
-            } catch (sharpErr) {
-              logger.warn(`Compresión imagen ${archivo.nombre}: ${sharpErr.message} — adjuntando original`);
-              bufferFinal = buffer;
-            }
+          if (archivo.key) {
+            // S3: generar presigned URL con larga vigencia
+            const url = await s3Svc.getUrl(archivo.key, LINK_EXPIRY);
+            datos.evidenciasLinks.push({
+              nombre: archivo.nombre,
+              url,
+              tipo: archivo.tipo?.startsWith('image/') ? 'Foto' : 'Documento',
+            });
+          } else if (archivo.filePath) {
+            // Archivo local (legacy sin S3): adjuntar directamente
+            const buffer = fs.readFileSync(archivo.filePath);
+            adjuntos.push({ nombre: archivo.nombre, content: buffer, tipo: archivo.tipo });
           }
-
-          if (bytesTotales + bufferFinal.length > LIMITE_TOTAL_MB * 1024 * 1024) {
-            logger.warn(`Adjunto "${nombreFinal}" omitido — límite total de ${LIMITE_TOTAL_MB} MB alcanzado`);
-            continue;
-          }
-
-          bytesTotales += bufferFinal.length;
-          adjuntos.push({ nombre: nombreFinal, content: bufferFinal, tipo: tipoFinal });
-          logger.info(`Adjunto: ${nombreFinal} (${(bufferFinal.length / 1024).toFixed(1)} KB)`);
         } catch (err) {
-          logger.warn(`Error adjuntando ${archivo.nombre}: ${err.message}`);
+          logger.warn(`Error generando enlace para ${archivo.nombre}: ${err.message}`);
         }
       }
 
+      if (datos.evidenciasLinks.length > 0) {
+        datos.tieneEvidencias = true;
+        logger.info(`Email cierre: ${datos.evidenciasLinks.length} enlace(s) de evidencias generados`);
+      }
       if (adjuntos.length > 0) {
-        logger.info(`Adjuntos cierre: ${adjuntos.length} archivo(s), ${(bytesTotales / 1024).toFixed(1)} KB total`);
+        logger.info(`Email cierre: ${adjuntos.length} adjunto(s) locales`);
       }
     }
-
-    datos.evidenciasLinks = [];
-    datos.tieneEvidencias = false;
 
     // Parsear correos
     const correos = correosDestino

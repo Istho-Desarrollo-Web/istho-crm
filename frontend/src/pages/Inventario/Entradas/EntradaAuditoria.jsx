@@ -481,7 +481,7 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
 // DROPZONE COMPONENT (Improved with type separation)
 // ════════════════════════════════════════════════════════════════════════════
 
-const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 10, maxPdfs = 5 }) => {
+const EvidenceDropzone = ({ files, onAddFiles, onRemoveFile, maxPhotos = 100, maxPdfs = 10 }) => {
   const [dragActive, setDragActive] = useState({ pdf: false, photos: false });
   const pdfInputRef = useRef(null);
   const photoInputRef = useRef(null);
@@ -1992,8 +1992,8 @@ const EntradaAuditoria = () => {
                 files={files}
                 onAddFiles={handleAddFiles}
                 onRemoveFile={handleRemoveFile}
-                maxPhotos={10}
-                maxPdfs={5}
+                maxPhotos={100}
+                maxPdfs={10}
               />
             )}
           </Section>

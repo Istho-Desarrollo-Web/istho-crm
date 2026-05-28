@@ -149,8 +149,8 @@ averias[] --}}
   {{#if tieneAverias}}
   <div class="info-box warning">
     <strong>Nota:</strong> Se registraron {{totalAverias}} unidades con averia.{{#if
-    tieneEvidencias}} Consulte las evidencias fotograficas en la seccion de archivos
-    adjuntos.{{else}} Las evidencias fotograficas estan disponibles en el sistema.{{/if}}
+    tieneEvidencias}} Consulte las evidencias fotograficas en los enlaces a
+    continuacion.{{else}} Las evidencias fotograficas estan disponibles en el sistema.{{/if}}
   </div>
   {{/if}}
 
@@ -225,7 +225,7 @@ averias[] --}}
   <div class="info-box info"><strong>Observaciones:</strong><br />{{observaciones}}</div>
   {{/if}} {{#if tieneEvidencias}}
   <h3 style="color: #1e293b; margin: 25px 0 10px 0; font-size: 16px; font-weight: 600">
-    📎 Evidencias Adjuntas ({{evidenciasLinks.length}} archivos)
+    🔗 Evidencias disponibles — {{evidenciasLinks.length}} archivos
   </h3>
   <table
     role="presentation"
