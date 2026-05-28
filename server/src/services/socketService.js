@@ -74,8 +74,8 @@ const inicializar = (httpServer) => {
       methods: ['GET', 'POST'],
       credentials: true,
     },
-    pingTimeout: 30000,   // Detectar conexiones muertas en 30s (antes 60s)
-    pingInterval: 15000,  // Heartbeat cada 15s (antes 25s)
+    pingTimeout: 20000,   // App Runner corta idle ~60s — detectar muertos en 20s
+    pingInterval: 10000,  // Heartbeat cada 10s (polling interval mínimo compatible)
   });
 
   // Conectar Redis adapter de forma no bloqueante
