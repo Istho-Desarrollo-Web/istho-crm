@@ -324,6 +324,7 @@ const listarSalidas = async (req, res) => {
       id: op.id,
       documento: op.numero_operacion,
       documento_wms: op.documento_wms || null,
+      numero_picking: op.numero_picking || null,
       cliente: op.cliente?.razon_social || 'Sin cliente',
       tipo_documento: 'Despacho',
       tipo_documento_wms: op.tipo_documento_wms || 'PK',

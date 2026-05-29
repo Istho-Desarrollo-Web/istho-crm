@@ -677,8 +677,13 @@ const SalidasList = () => {
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                              {salida.documento_wms || salida.documento}
+                              {salida.numero_picking || salida.documento_wms || salida.documento}
                             </p>
+                            {salida.documento_wms && salida.documento_wms !== salida.numero_picking && (
+                              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                                N° Orden: {salida.documento_wms}
+                              </p>
+                            )}
                             <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
                               {salida.documento}
                             </p>
@@ -752,8 +757,13 @@ const SalidasList = () => {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                          {salida.documento_wms || salida.documento}
+                          {salida.numero_picking || salida.documento_wms || salida.documento}
                         </p>
+                        {salida.documento_wms && salida.documento_wms !== salida.numero_picking && (
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                            N° Orden: {salida.documento_wms}
+                          </p>
+                        )}
                         <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
                           {salida.documento}
                         </p>
