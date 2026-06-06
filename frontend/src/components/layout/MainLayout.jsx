@@ -48,7 +48,7 @@ const MainLayout = () => {
       />
 
       {/* Main Content Area */}
-      <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
+      <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
         {/* Outlet renderiza las rutas hijas */}
         <Outlet />
       </main>

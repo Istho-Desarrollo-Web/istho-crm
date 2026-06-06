@@ -1330,7 +1330,7 @@ const FloatingHeader = () => {
       <header
         className={`
           fixed z-40 transition-[transform,box-shadow] duration-500 ease-in-out
-          left-4 right-4 md:left-8 md:right-8 lg:left-1/2 lg:w-full lg:max-w-7xl lg:-translate-x-1/2
+          left-4 right-4 md:left-8 md:right-8 lg:left-1/2 lg:w-full lg:max-w-[1700px] lg:-translate-x-1/2
           ${isVisible ? 'top-4 translate-y-0' : '-top-24 -translate-y-full'}
           bg-white dark:bg-centhrix-bg rounded-2xl border border-gray-100 dark:border-slate-700
           ${
@@ -1340,7 +1340,7 @@ const FloatingHeader = () => {
           }
         `}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 gap-4">
             {/* Logo & Mobile Toggle */}
             <div className="flex items-center gap-4">
