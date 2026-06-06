@@ -329,6 +329,13 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
           onClose={() => setLightboxIdx(null)}
         />
       )}
+      {averiaLightboxUrl && (
+        <Lightbox
+          src={averiaLightboxUrl}
+          alt="Evidencia de avería"
+          onClose={() => setAveriaLightboxUrl(null)}
+        />
+      )}
 
       {pdfFiles.length > 0 && (
         <div>
@@ -641,10 +648,11 @@ const KardexAuditoria = () => {
     descripcion_custom: '',
     cantidad_afectada: '',
   });
-  const [averiaFoto, setAveriaFoto] = useState(null);
-  const [averiaFotoPreview, setAveriaFotoPreview] = useState(null);
+  const [averiaFotos, setAveriaFotos] = useState([]);
   const averiaFotoRef = useRef(null);
   const [savingAveria, setSavingAveria] = useState(false);
+  const [averiaLightboxUrl, setAveriaLightboxUrl] = useState(null);
+  const MAX_FOTOS_AVERIA = 20;
 
   // Control de guardado intermedio
   const [savingLogistica, setSavingLogistica] = useState(false);
@@ -957,7 +965,7 @@ const KardexAuditoria = () => {
         tipo_averia: tipoFinal,
         cantidad_afectada: cantAfectada,
       };
-      if (averiaFoto) payload.foto = averiaFoto;
+      payload.fotos = averiaFotos.map((f) => f.file);
       const res = await auditoriasService.registrarAveria(id, payload);
       if (res?.success) {
         setAverias((prev) => [res.data, ...prev]);
@@ -967,8 +975,7 @@ const KardexAuditoria = () => {
           descripcion_custom: '',
           cantidad_afectada: '',
         });
-        setAveriaFoto(null);
-        setAveriaFotoPreview(null);
+        setAveriaFotos([]);
         showAlert({
           type: 'success',
           title: 'Averia registrada',
@@ -1788,41 +1795,48 @@ const KardexAuditoria = () => {
                       accept="image/*"
                       className="hidden"
                       onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setAveriaFoto(file);
-                          setAveriaFotoPreview(URL.createObjectURL(file));
-                        }
+                        const files = Array.from(e.target.files || []);
+                        setAveriaFotos((prev) => {
+                          const disponibles = MAX_FOTOS_AVERIA - prev.length;
+                          const nuevas = files.slice(0, disponibles).map((f) => ({
+                            file: f,
+                            preview: URL.createObjectURL(f),
+                          }));
+                          return [...prev, ...nuevas];
+                        });
                         e.target.value = '';
                       }}
                     />
-                    {averiaFotoPreview ? (
-                      <div className="relative inline-block">
-                        <img
-                          src={averiaFotoPreview}
-                          alt="Vista previa"
-                          className="w-32 h-32 object-cover rounded-xl border-2 border-amber-300 dark:border-amber-700"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAveriaFoto(null);
-                            setAveriaFotoPreview(null);
-                          }}
-                          aria-label="Eliminar foto de avería"
-                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
-                        >
-                          <X className="w-3 h-3" aria-hidden="true" />
-                        </button>
+                    {averiaFotos.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {averiaFotos.map((f, idx) => (
+                          <div key={idx} className="relative">
+                            <img
+                              src={f.preview}
+                              alt={`Foto ${idx + 1}`}
+                              className="w-20 h-20 object-cover rounded-xl border-2 border-amber-300 dark:border-amber-700 cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={() => setAveriaLightboxUrl(f.preview)}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setAveriaFotos((prev) => prev.filter((_, i) => i !== idx))}
+                              aria-label="Eliminar foto"
+                              className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
+                            >
+                              <X className="w-3 h-3" aria-hidden="true" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    ) : (
+                    )}
+                    {averiaFotos.length < MAX_FOTOS_AVERIA && (
                       <button
                         type="button"
                         onClick={() => averiaFotoRef.current?.click()}
                         className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:border-amber-400 hover:text-amber-600 dark:hover:border-amber-500 dark:hover:text-amber-400 transition-all"
                       >
                         <Camera className="w-4 h-4" />
-                        Adjuntar foto
+                        {averiaFotos.length === 0 ? 'Adjuntar foto' : `Agregar foto (${averiaFotos.length}/${MAX_FOTOS_AVERIA})`}
                       </button>
                     )}
                   </div>
@@ -1856,21 +1870,35 @@ const KardexAuditoria = () => {
                       key={av.id || idx}
                       className="flex items-center gap-3 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl"
                     >
-                      {av.foto_url ? (
-                        <a
-                          href={getServerFileUrl(av.foto_url)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <img
-                            src={getServerFileUrl(av.foto_url)}
-                            alt="Evidencia"
-                            className="w-10 h-10 object-cover rounded-lg border border-amber-300 dark:border-amber-700 flex-shrink-0 hover:opacity-80 transition-opacity"
-                          />
-                        </a>
-                      ) : (
-                        <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                      )}
+                      {(() => {
+                        const fotosAveria = Array.isArray(av.fotos_urls) && av.fotos_urls.length > 0
+                          ? av.fotos_urls
+                          : av.foto_url ? [av.foto_url] : [];
+                        return fotosAveria.length > 0 ? (
+                          <div className="flex gap-1 flex-shrink-0">
+                            {fotosAveria.slice(0, 3).map((url, fi) => (
+                              <button
+                                key={fi}
+                                onClick={() => setAveriaLightboxUrl(getServerFileUrl(url))}
+                                aria-label={`Ver foto ${fi + 1}`}
+                              >
+                                <img
+                                  src={getServerFileUrl(url)}
+                                  alt={`Evidencia ${fi + 1}`}
+                                  className="w-10 h-10 object-cover rounded-lg border border-amber-300 dark:border-amber-700 hover:opacity-80 transition-opacity"
+                                />
+                              </button>
+                            ))}
+                            {fotosAveria.length > 3 && (
+                              <div className="w-10 h-10 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-xs font-bold text-amber-600 dark:text-amber-400">
+                                +{fotosAveria.length - 3}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                        );
+                      })()}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
                           {lineaRef

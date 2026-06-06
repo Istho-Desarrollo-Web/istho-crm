@@ -67,7 +67,7 @@ router.post(
   '/:id/averias',
   noClientes,
   requiereRolMinimo('operador'),
-  uploadAveria.single('foto'),
+  uploadAveria.array('fotos', 20),
   comprimir({ maxWidthPx: 1600 }),
   registrarAveriaValidator,
   operacionController.registrarAveria

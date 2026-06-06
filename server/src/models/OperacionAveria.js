@@ -85,6 +85,21 @@ module.exports = (sequelize) => {
         comment: 'Tamaño en bytes',
       },
 
+      // Fotos adicionales
+      fotos_urls: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'JSON array de URLs de fotos de evidencia',
+        get() {
+          const raw = this.getDataValue('fotos_urls');
+          if (!raw) return [];
+          try { return JSON.parse(raw); } catch { return []; }
+        },
+        set(val) {
+          this.setDataValue('fotos_urls', val ? JSON.stringify(val) : null);
+        },
+      },
+
       // Cloudinary
       cloudinary_public_id: {
         type: DataTypes.STRING(500),

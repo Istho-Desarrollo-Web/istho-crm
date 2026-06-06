@@ -973,26 +973,37 @@ const registrarAveria = async (req, res) => {
       return errorResponse(res, 'Esta operación ya no se puede modificar', 400);
     }
 
+    const archivos = Array.isArray(req.files) ? req.files : (req.file ? [req.file] : []);
+    const s3Service = require('../services/s3Service');
+
+    const urlsSubidas = await Promise.all(
+      archivos.map(async (archivo) => {
+        if (s3Service.isConfigured()) {
+          const resultado = await s3Service.subir(archivo, `averias/${id}`);
+          return resultado.key;
+        }
+        const base64 = archivo.buffer.toString('base64');
+        return `data:${archivo.mimetype || 'image/jpeg'};base64,${base64}`;
+      })
+    );
+
+    const primeraFoto = archivos[0];
     let fotoData = {};
-    if (req.file) {
-      const s3Service = require('../services/s3Service');
+    if (primeraFoto) {
       if (s3Service.isConfigured()) {
-        const resultado = await s3Service.subir(req.file, `averias/${id}`);
         fotoData = {
-          foto_url: resultado.key,
-          foto_nombre: req.file.originalname,
-          foto_tipo: req.file.mimetype,
-          foto_tamanio: resultado.bytes,
-          cloudinary_public_id: resultado.key,
+          foto_url: urlsSubidas[0],
+          foto_nombre: primeraFoto.originalname,
+          foto_tipo: primeraFoto.mimetype,
+          foto_tamanio: urlsSubidas[0]?.bytes || primeraFoto.size,
+          cloudinary_public_id: urlsSubidas[0],
         };
       } else {
-        const base64 = req.file.buffer.toString('base64');
-        const mimeType = req.file.mimetype || 'image/jpeg';
         fotoData = {
-          foto_url: `data:${mimeType};base64,${base64}`,
-          foto_nombre: req.file.originalname,
-          foto_tipo: req.file.mimetype,
-          foto_tamanio: req.file.size,
+          foto_url: urlsSubidas[0],
+          foto_nombre: primeraFoto.originalname,
+          foto_tipo: primeraFoto.mimetype,
+          foto_tamanio: primeraFoto.size,
         };
       }
     }
@@ -1007,6 +1018,7 @@ const registrarAveria = async (req, res) => {
         tipo_averia: datos.tipo_averia,
         descripcion: datos.descripcion,
         ...fotoData,
+        fotos_urls: urlsSubidas.length > 0 ? JSON.stringify(urlsSubidas) : null,
         registrado_por: req.user.id,
       },
       { transaction }
@@ -1039,9 +1051,13 @@ const registrarAveria = async (req, res) => {
 
     logger.info('Avería registrada:', { operacionId: id, averiaId: averia.id });
 
-    const s3ServiceFinal = require('../services/s3Service');
     const averiaData = averia.toJSON();
-    averiaData.foto_url = await s3ServiceFinal.resolveUrl(averiaData.foto_url);
+    averiaData.foto_url = await s3Service.resolveUrl(averiaData.foto_url);
+    const fotosRaw = averiaData.fotos_urls;
+    const fotosArr = Array.isArray(fotosRaw)
+      ? fotosRaw
+      : (typeof fotosRaw === 'string' ? (() => { try { return JSON.parse(fotosRaw); } catch { return []; } })() : []);
+    averiaData.fotos_urls = await Promise.all(fotosArr.map((u) => s3Service.resolveUrl(u)));
 
     return created(res, 'Avería registrada exitosamente', averiaData);
   } catch (error) {
@@ -1407,6 +1423,11 @@ const listarAverias = async (req, res) => {
       averias.map(async (av) => {
         const plain = av.toJSON();
         plain.foto_url = await s3Service.resolveUrl(plain.foto_url);
+        const fotosRaw2 = plain.fotos_urls;
+        const fotosArr2 = Array.isArray(fotosRaw2)
+          ? fotosRaw2
+          : (typeof fotosRaw2 === 'string' ? (() => { try { return JSON.parse(fotosRaw2); } catch { return []; } })() : []);
+        plain.fotos_urls = await Promise.all(fotosArr2.map((u) => s3Service.resolveUrl(u)));
         return plain;
       })
     );

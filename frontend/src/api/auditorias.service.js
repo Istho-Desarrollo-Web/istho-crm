@@ -355,7 +355,11 @@ const auditoriasService = {
       formData.append('tipo_averia', data.tipo_averia);
       if (data.cantidad_afectada != null) formData.append('cantidad_afectada', data.cantidad_afectada);
       if (data.descripcion) formData.append('descripcion', data.descripcion);
-      if (data.foto) formData.append('foto', data.foto);
+      if (Array.isArray(data.fotos)) {
+        data.fotos.forEach((f) => formData.append('fotos', f));
+      } else if (data.foto) {
+        formData.append('fotos', data.foto);
+      }
 
       const uploadClient = createUploadClient();
       const response = await uploadClient.post(`/operaciones/${operacionId}/averias`, formData);
