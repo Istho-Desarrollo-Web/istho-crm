@@ -1826,6 +1826,7 @@ const EntradaAuditoria = () => {
                     <input
                       ref={averiaFotoRef}
                       type="file"
+                      multiple
                       accept=".jpg,.jpeg,.png,.webp"
                       className="hidden"
                       onChange={(e) => {

@@ -1794,6 +1794,7 @@ const KardexAuditoria = () => {
                     <input
                       ref={averiaFotoRef}
                       type="file"
+                      multiple
                       accept="image/*"
                       className="hidden"
                       onChange={(e) => {
