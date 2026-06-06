@@ -965,7 +965,9 @@ const KardexAuditoria = () => {
         tipo_averia: tipoFinal,
         cantidad_afectada: cantAfectada,
       };
-      payload.fotos = averiaFotos.map((f) => f.file);
+      payload.fotos = await Promise.all(
+        averiaFotos.map((f) => comprimirImagen(f.file, COMPRESS_PRESETS.AVERIA))
+      );
       const res = await auditoriasService.registrarAveria(id, payload);
       if (res?.success) {
         setAverias((prev) => [res.data, ...prev]);
