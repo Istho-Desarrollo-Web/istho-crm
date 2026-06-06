@@ -37,6 +37,8 @@ import {
   AlertCircle,
   AlertTriangle,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Plus,
   Mail,
   Camera,
@@ -244,10 +246,12 @@ const FormField = ({
 // LIGHTBOX MODAL
 // ════════════════════════════════════════════════════════════════════════════
 
-const Lightbox = ({ src, alt, onClose }) => {
+const Lightbox = ({ src, alt, onClose, onPrev, onNext, hasPrev, hasNext }) => {
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft' && hasPrev) onPrev?.();
+      if (e.key === 'ArrowRight' && hasNext) onNext?.();
     };
     document.addEventListener('keydown', handleKey);
     document.body.style.overflow = 'hidden';
@@ -255,7 +259,7 @@ const Lightbox = ({ src, alt, onClose }) => {
       document.removeEventListener('keydown', handleKey);
       document.body.style.overflow = '';
     };
-  }, [onClose]);
+  }, [onClose, onPrev, onNext, hasPrev, hasNext]);
 
   return (
     <div
@@ -269,6 +273,26 @@ const Lightbox = ({ src, alt, onClose }) => {
       >
         <X className="w-6 h-6" aria-hidden="true" />
       </button>
+      {hasPrev && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onPrev(); }}
+          aria-label="Foto anterior"
+          className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+        >
+          <ChevronLeft className="w-6 h-6" aria-hidden="true" />
+        </button>
+      )}
+      {hasNext && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onNext(); }}
+          aria-label="Foto siguiente"
+          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+        >
+          <ChevronRight className="w-6 h-6" aria-hidden="true" />
+        </button>
+      )}
       <img
         src={src}
         alt={alt}
@@ -368,6 +392,10 @@ const FilePreviewGallery = ({ files, onRemoveFile, readOnly = false }) => {
           src={imageFiles[lightboxIdx].url}
           alt={imageFiles[lightboxIdx].file.name}
           onClose={() => setLightboxIdx(null)}
+          hasPrev={lightboxIdx > 0}
+          hasNext={lightboxIdx < imageFiles.length - 1}
+          onPrev={() => setLightboxIdx((i) => i - 1)}
+          onNext={() => setLightboxIdx((i) => i + 1)}
         />
       )}
 
@@ -681,7 +709,7 @@ const SalidaAuditoria = () => {
   const [averiaFotos, setAveriaFotos] = useState([]);
   const averiaFotoRef = useRef(null);
   const [savingAveria, setSavingAveria] = useState(false);
-  const [averiaLightboxUrl, setAveriaLightboxUrl] = useState(null);
+  const [averiaLightbox, setAveriaLightbox] = useState(null);
   const MAX_FOTOS_AVERIA = 20;
 
   // Control de guardado intermedio
@@ -1230,11 +1258,15 @@ const SalidaAuditoria = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       {/* Lightbox de foto de avería */}
-      {averiaLightboxUrl && (
+      {averiaLightbox && (
         <Lightbox
-          src={averiaLightboxUrl}
+          src={averiaLightbox.photos[averiaLightbox.idx]}
           alt="Foto de avería"
-          onClose={() => setAveriaLightboxUrl(null)}
+          onClose={() => setAveriaLightbox(null)}
+          hasPrev={averiaLightbox.idx > 0}
+          hasNext={averiaLightbox.idx < averiaLightbox.photos.length - 1}
+          onPrev={() => setAveriaLightbox((prev) => ({ ...prev, idx: prev.idx - 1 }))}
+          onNext={() => setAveriaLightbox((prev) => ({ ...prev, idx: prev.idx + 1 }))}
         />
       )}
 
@@ -1797,7 +1829,7 @@ const SalidaAuditoria = () => {
                               src={f.preview}
                               alt={`Foto ${idx + 1}`}
                               className="w-20 h-20 object-cover rounded-xl border-2 border-amber-300 dark:border-amber-700 cursor-pointer hover:opacity-80 transition-opacity"
-                              onClick={() => setAveriaLightboxUrl(f.preview)}
+                              onClick={() => setAveriaLightbox({ photos: averiaFotos.map((p) => p.preview), idx })}
                             />
                             <button
                               type="button"
@@ -1861,7 +1893,7 @@ const SalidaAuditoria = () => {
                             {fotosAveria.slice(0, 3).map((url, fi) => (
                               <button
                                 key={fi}
-                                onClick={() => setAveriaLightboxUrl(getServerFileUrl(url))}
+                                onClick={() => setAveriaLightbox({ photos: fotosAveria.map((u) => getServerFileUrl(u)), idx: fi })}
                                 aria-label={`Ver foto ${fi + 1}`}
                               >
                                 <img
@@ -1872,9 +1904,14 @@ const SalidaAuditoria = () => {
                               </button>
                             ))}
                             {fotosAveria.length > 3 && (
-                              <div className="w-10 h-10 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-xs font-bold text-amber-600 dark:text-amber-400">
+                              <button
+                                type="button"
+                                onClick={() => setAveriaLightbox({ photos: fotosAveria.map((u) => getServerFileUrl(u)), idx: 3 })}
+                                aria-label={`Ver ${fotosAveria.length - 3} fotos más`}
+                                className="w-10 h-10 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-xs font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+                              >
                                 +{fotosAveria.length - 3}
-                              </div>
+                              </button>
                             )}
                           </div>
                         ) : (
