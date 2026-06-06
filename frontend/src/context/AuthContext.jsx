@@ -71,7 +71,7 @@ const PERMISOS_POR_ROL = {
   },
   supervisor: {
     dashboard: ['ver', 'exportar'],
-    clientes: ['ver', 'crear', 'editar', 'exportar'],
+    clientes: ['ver'],
     inventario: ['ver', 'crear', 'editar', 'ajustar', 'exportar', 'alertas'],
     operaciones: ['ver', 'exportar', 'reenviar_correo'],
     auditoria: ['ver'],
