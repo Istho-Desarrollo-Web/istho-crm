@@ -1199,7 +1199,7 @@ const KardexAuditoria = () => {
   if (pageError || !kardexData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-        <main className="pt-28 px-4 pb-8 max-w-5xl mx-auto">
+        <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
           <button
             onClick={() => navigate('/operaciones/kardex')}
             className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 mb-6 transition-colors group"
@@ -1252,7 +1252,7 @@ const KardexAuditoria = () => {
           onNext={() => setAveriaLightbox((prev) => ({ ...prev, idx: prev.idx + 1 }))}
         />
       )}
-      <main className="pt-28 px-4 pb-32 max-w-5xl mx-auto">
+      <main className="pt-28 px-4 pb-32 max-w-[1700px] mx-auto">
         {/* BACK NAVIGATION */}
         <button
           onClick={() => navigate('/operaciones/kardex')}
@@ -2034,7 +2034,7 @@ const KardexAuditoria = () => {
       {/* ════════════════════════════════════════════════════════════════════ */}
       {puedeEditar && (
         <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/80 dark:bg-centhrix-bg/80 backdrop-blur-xl border-t border-gray-200 dark:border-slate-700 px-4 py-4">
-          <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+          <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-4">
             {/* Progress Summary */}
             <div className="hidden sm:flex items-center gap-6 text-sm">
               <div className="flex items-center gap-2">
@@ -2087,7 +2087,7 @@ const KardexAuditoria = () => {
       {/* CLOSED STATE BANNER */}
       {isCerrado && (
         <div className="fixed bottom-0 left-0 right-0 z-30 bg-purple-500 text-white px-4 py-4">
-          <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
+          <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5" />
               <span className="font-semibold">Operación completada exitosamente</span>

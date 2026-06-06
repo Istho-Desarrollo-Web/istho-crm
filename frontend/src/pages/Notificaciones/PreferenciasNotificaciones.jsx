@@ -158,7 +158,7 @@ export default function PreferenciasNotificaciones() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-centhrix-bg">
-      <div className="max-w-2xl mx-auto px-4 pt-28 pb-8">
+      <div className="max-w-[1700px] mx-auto px-4 pt-28 pb-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button

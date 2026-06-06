@@ -321,7 +321,7 @@ const ViajeForm = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 pt-28 px-4 pb-32">
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div className="max-w-5xl mx-auto space-y-6">
+        <div className="max-w-[1700px] mx-auto space-y-6">
           {/* ── BACK NAV ── */}
           <button
             type="button"

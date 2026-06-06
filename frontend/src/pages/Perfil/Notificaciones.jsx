@@ -448,7 +448,7 @@ const Notificaciones = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <main className="pt-28 px-4 pb-8 max-w-4xl mx-auto">
+      <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
         {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
           <div>
