@@ -1144,7 +1144,11 @@ const ClienteDetail = () => {
             {/* Tab: Usuarios Portal (NUEVO) */}
             {/* ══════════════════════════════════════════════════════════════ */}
             {activeTab === 'usuarios' && canManageUsers && (
-              <UsuariosCliente clienteId={cliente.id} clienteNombre={cliente.razon_social} />
+              <UsuariosCliente
+                clienteId={cliente.id}
+                clienteNombre={cliente.razon_social}
+                canCreate={hasPermission('usuarios', 'crear')}
+              />
             )}
 
             {/* ══════════════════════════════════════════════════════════════ */}

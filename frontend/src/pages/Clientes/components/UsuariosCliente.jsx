@@ -231,7 +231,7 @@ const UsuarioRow = ({
 // COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════════════════════════════════════
 
-const UsuariosCliente = ({ clienteId, clienteNombre }) => {
+const UsuariosCliente = ({ clienteId, clienteNombre, canCreate = false }) => {
   // Estado
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -410,9 +410,11 @@ const UsuariosCliente = ({ clienteId, clienteNombre }) => {
           </p>
         </div>
 
-        <Button variant="primary" icon={Plus} onClick={handleCrear} title="Crear Usuario">
-          <span className="hidden sm:inline">Crear Usuario</span>
-        </Button>
+        {canCreate && (
+          <Button variant="primary" icon={Plus} onClick={handleCrear} title="Crear Usuario">
+            <span className="hidden sm:inline">Crear Usuario</span>
+          </Button>
+        )}
       </div>
 
       {/* ════════════════════════════════════════════════════════════════════ */}
