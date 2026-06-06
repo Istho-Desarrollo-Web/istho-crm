@@ -510,7 +510,7 @@ const UsuariosCliente = ({ clienteId, clienteNombre, canCreate = false }) => {
                 : 'Este cliente aún no tiene usuarios con acceso al portal'
             }
             action={
-              !searchTerm && (
+              !searchTerm && canCreate && (
                 <Button variant="primary" icon={Plus} onClick={handleCrear}>
                   Crear primer usuario
                 </Button>
