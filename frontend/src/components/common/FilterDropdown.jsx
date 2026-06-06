@@ -1,14 +1,16 @@
 /**
  * ISTHO CRM - FilterDropdown Component
- * Dropdown de filtros reutilizable
+ * Dropdown de filtros reutilizable con buscador integrado
  *
  * @author Coordinación TI ISTHO
  * @date Enero 2026
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, Search, X } from 'lucide-react';
+
+const SEARCH_THRESHOLD = 6;
 
 const FilterDropdown = ({
   label,
@@ -19,15 +21,23 @@ const FilterDropdown = ({
   multiple = false,
   icon: Icon,
   compact = false,
+  searchable,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [panelStyle, setPanelStyle] = useState({});
+  const [search, setSearch] = useState('');
   const containerRef = useRef(null);
   const buttonRef = useRef(null);
   const panelRef = useRef(null);
+  const searchRef = useRef(null);
+
+  const showSearch = searchable !== undefined ? searchable : options.length > SEARCH_THRESHOLD;
+
+  const filteredOptions = showSearch && search.trim()
+    ? options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()))
+    : options;
 
   // Calcular posición fixed al abrir para escapar del stacking context del modal
-  // useEffect en lugar de useLayoutEffect evita el forced-reflow sincrónico que bloquea el INP
   useEffect(() => {
     if (!isOpen || !buttonRef.current) return;
     const raf = requestAnimationFrame(() => {
@@ -44,6 +54,14 @@ const FilterDropdown = ({
     });
     return () => cancelAnimationFrame(raf);
   }, [isOpen]);
+
+  // Auto-foco en el buscador al abrir
+  useEffect(() => {
+    if (isOpen && showSearch) {
+      requestAnimationFrame(() => searchRef.current?.focus());
+    }
+    if (!isOpen) setSearch('');
+  }, [isOpen, showSearch]);
 
   // Cerrar al hacer click fuera
   useEffect(() => {
@@ -67,7 +85,7 @@ const FilterDropdown = ({
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, [isOpen]);
 
-  const handleSelect = (optionValue) => {
+  const handleSelect = useCallback((optionValue) => {
     if (multiple) {
       const currentValues = Array.isArray(value) ? value : [];
       const newValues = currentValues.includes(optionValue)
@@ -78,7 +96,7 @@ const FilterDropdown = ({
       onChange?.(optionValue);
       setIsOpen(false);
     }
-  };
+  }, [multiple, value, onChange]);
 
   const getDisplayValue = () => {
     if (multiple && Array.isArray(value) && value.length > 0) {
@@ -136,30 +154,68 @@ const FilterDropdown = ({
           style={panelStyle}
           className={`
             bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 shadow-lg dark:shadow-slate-900/50
-            max-h-60 overflow-y-auto animate-fadeIn
+            animate-fadeIn overflow-hidden
             ${compact ? 'rounded-lg' : 'rounded-xl'}
           `}
         >
-          {options.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => handleSelect(option.value)}
-              className={`
-                flex items-center justify-between w-full
-                text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400
-                transition-colors duration-150
-                ${compact ? 'px-3 py-2 text-xs' : 'px-4 py-2.5 text-sm'}
-              `}
-            >
-              <span>{option.label}</span>
-              {isSelected(option.value) && <Check className={compact ? 'w-3 h-3 text-orange-500' : 'w-4 h-4 text-orange-500'} />}
-            </button>
-          ))}
-
-          {options.length === 0 && (
-            <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 text-center">No hay opciones</div>
+          {/* Buscador */}
+          {showSearch && (
+            <div className={`border-b border-slate-100 dark:border-slate-700 ${compact ? 'p-1.5' : 'p-2'}`}>
+              <div className="relative flex items-center">
+                <Search className={`absolute left-2.5 text-slate-400 dark:text-slate-500 pointer-events-none ${compact ? 'w-3 h-3' : 'w-3.5 h-3.5'}`} />
+                <input
+                  ref={searchRef}
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Escape' && setIsOpen(false)}
+                  placeholder="Buscar..."
+                  className={`
+                    w-full bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600
+                    rounded-lg text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
+                    focus:outline-none focus:ring-1 focus:ring-orange-500/40 focus:border-orange-400
+                    transition-colors
+                    ${compact ? 'pl-7 pr-6 py-1 text-xs' : 'pl-8 pr-7 py-1.5 text-xs'}
+                  `}
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => { setSearch(''); searchRef.current?.focus(); }}
+                    className={`absolute right-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors`}
+                  >
+                    <X className={compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
+                  </button>
+                )}
+              </div>
+            </div>
           )}
+
+          {/* Lista de opciones */}
+          <div className="max-h-52 overflow-y-auto">
+            {filteredOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleSelect(option.value)}
+                className={`
+                  flex items-center justify-between w-full
+                  text-slate-700 dark:text-slate-200 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400
+                  transition-colors duration-150
+                  ${compact ? 'px-3 py-2 text-xs' : 'px-4 py-2.5 text-sm'}
+                `}
+              >
+                <span>{option.label}</span>
+                {isSelected(option.value) && <Check className={compact ? 'w-3 h-3 text-orange-500' : 'w-4 h-4 text-orange-500'} />}
+              </button>
+            ))}
+
+            {filteredOptions.length === 0 && (
+              <div className={`text-slate-500 dark:text-slate-400 text-center ${compact ? 'px-3 py-2 text-xs' : 'px-4 py-3 text-sm'}`}>
+                {search ? 'Sin resultados' : 'No hay opciones'}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -180,6 +236,7 @@ FilterDropdown.propTypes = {
   multiple: PropTypes.bool,
   icon: PropTypes.elementType,
   compact: PropTypes.bool,
+  searchable: PropTypes.bool,
 };
 
 export default FilterDropdown;
