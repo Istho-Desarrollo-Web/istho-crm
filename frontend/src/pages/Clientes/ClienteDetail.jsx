@@ -38,6 +38,8 @@ import {
   Camera,
   ClipboardCheck,
   RefreshCw,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 // Layout
@@ -509,7 +511,7 @@ const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => 
 const ClienteDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { _user, hasPermission, isAdmin, isCliente } = useAuth();
+  const { user, hasPermission, isAdmin, isCliente } = useAuth();
   const { success, apiError, deleted } = useNotification();
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -538,6 +540,8 @@ const ClienteDetail = () => {
   const [loadingContactos, setLoadingContactos] = useState(false);
   const [historial, setHistorial] = useState([]);
   const [loadingHistorial, setLoadingHistorial] = useState(false);
+  const [historialPage, setHistorialPage] = useState(1);
+  const HISTORIAL_POR_PAGINA = 15;
 
   // Estado para productos del cliente
   const [_productosCliente, setProductosCliente] = useState([]);
@@ -568,6 +572,7 @@ const ClienteDetail = () => {
   // ──────────────────────────────────────────────────────────────────────────
 
   const canEdit = hasPermission('clientes', 'editar');
+  const canEditLogo = canEdit && user?.rol !== 'supervisor';
   const canDelete = hasPermission('clientes', 'eliminar');
   const canManageUsers = hasPermission('usuarios', 'ver');
 
@@ -618,9 +623,10 @@ const ClienteDetail = () => {
   const loadHistorial = useCallback(async (clienteId) => {
     setLoadingHistorial(true);
     try {
-      const response = await clientesService.getHistorial(clienteId, { limit: 50 });
+      const response = await clientesService.getHistorial(clienteId, { limit: 300 });
       if (response?.success) {
         setHistorial(response.data || []);
+        setHistorialPage(1);
       } else {
         setHistorial([]);
       }
@@ -860,7 +866,7 @@ const ClienteDetail = () => {
                     <Building2 className="w-5 h-5 sm:w-7 sm:h-7 text-orange-600 dark:text-orange-400" />
                   </div>
                 )}
-                {canEdit && (
+                {canEditLogo && (
                   <>
                     <button
                       onClick={() => logoInputRef.current?.click()}
@@ -1316,11 +1322,42 @@ const ClienteDetail = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {historial.map((actividad) => (
-                      <ActivityItem key={actividad.id} actividad={actividad} />
-                    ))}
-                  </div>
+                  <>
+                    <div className="space-y-4">
+                      {historial
+                        .slice((historialPage - 1) * HISTORIAL_POR_PAGINA, historialPage * HISTORIAL_POR_PAGINA)
+                        .map((actividad) => (
+                          <ActivityItem key={actividad.id} actividad={actividad} />
+                        ))}
+                    </div>
+                    {historial.length > HISTORIAL_POR_PAGINA && (
+                      <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-100 dark:border-slate-800">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {(historialPage - 1) * HISTORIAL_POR_PAGINA + 1}–
+                          {Math.min(historialPage * HISTORIAL_POR_PAGINA, historial.length)} de {historial.length}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setHistorialPage((p) => Math.max(1, p - 1))}
+                            disabled={historialPage === 1}
+                            className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+                          <span className="px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-300">
+                            {historialPage} / {Math.ceil(historial.length / HISTORIAL_POR_PAGINA)}
+                          </span>
+                          <button
+                            onClick={() => setHistorialPage((p) => Math.min(Math.ceil(historial.length / HISTORIAL_POR_PAGINA), p + 1))}
+                            disabled={historialPage === Math.ceil(historial.length / HISTORIAL_POR_PAGINA)}
+                            className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
