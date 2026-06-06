@@ -110,7 +110,7 @@ const ReporteSolicitudes = () => {
   if (loading && firstLoad) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-centhrix-bg dark:to-centhrix-bg">
-        <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
+        <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-10 bg-gray-200 dark:bg-centhrix-surface rounded w-64" />
             <div className="grid grid-cols-4 gap-4">
@@ -126,7 +126,7 @@ const ReporteSolicitudes = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-centhrix-bg dark:to-centhrix-bg">
-      <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
+      <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">

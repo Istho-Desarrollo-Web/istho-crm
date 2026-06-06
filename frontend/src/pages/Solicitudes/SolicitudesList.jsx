@@ -60,7 +60,7 @@ const SolicitudesList = () => {
   };
 
   return (
-    <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
+    <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">

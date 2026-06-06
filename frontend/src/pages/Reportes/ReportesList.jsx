@@ -298,7 +298,7 @@ const ReportesList = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-      <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
+      <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
         {/* Header */}
         <div id="tour-reportes-header" className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>

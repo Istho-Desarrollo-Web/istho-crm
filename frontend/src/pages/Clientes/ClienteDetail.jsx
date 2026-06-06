@@ -785,7 +785,7 @@ const ClienteDetail = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-        <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
+        <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-gray-200 dark:bg-centhrix-surface rounded w-48" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -807,7 +807,7 @@ const ClienteDetail = () => {
   if (error || !cliente) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-        <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
+        <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Building2 className="w-8 h-8 text-red-500 dark:text-red-400" />
@@ -843,7 +843,7 @@ const ClienteDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-      <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
+      <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
         {/* HEADER */}
         <div className="flex items-center justify-between mb-6 gap-2">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">

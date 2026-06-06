@@ -339,7 +339,7 @@ const SolicitudDetail = () => {
   ];
 
   return (
-    <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
+    <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
       {/* Back */}
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 mb-4 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Volver

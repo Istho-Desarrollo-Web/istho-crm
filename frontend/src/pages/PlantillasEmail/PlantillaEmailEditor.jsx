@@ -259,7 +259,7 @@ const PlantillaEmailEditor = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-        <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
+        <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-gray-200 dark:bg-centhrix-surface rounded w-64" />
             <div className="h-96 bg-gray-200 dark:bg-centhrix-surface rounded-2xl" />
@@ -271,7 +271,7 @@ const PlantillaEmailEditor = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-      <main className="pt-28 px-4 pb-8 max-w-7xl mx-auto">
+      <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
         {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
