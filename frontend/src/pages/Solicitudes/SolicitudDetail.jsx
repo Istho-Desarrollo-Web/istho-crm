@@ -250,7 +250,7 @@ const SolicitudDetail = () => {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, notifyError]);
 
   useEffect(() => { fetchSolicitud(); }, [fetchSolicitud]);
 

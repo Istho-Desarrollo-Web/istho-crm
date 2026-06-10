@@ -28,7 +28,7 @@ describe('DatePicker', () => {
   });
 
   it('muestra el ícono de calendario', () => {
-    const { container } = render(<DatePicker onChange={vi.fn()} />);
+    const { container: _container } = render(<DatePicker onChange={vi.fn()} />);
     // lucide-react renderiza SVGs; verificamos que existe al menos un svg dentro del botón
     const button = screen.getByRole('button');
     expect(button.querySelector('svg')).toBeInTheDocument();

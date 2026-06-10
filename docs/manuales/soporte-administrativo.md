@@ -87,13 +87,14 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 | 8 | **Viajes** | Rutas y asignaciones | Admin, Supervisor, Financiera, Conductor |
 | 9 | **Cajas Menores** | Fondos y saldos | Admin, Supervisor, Financiera, Conductor, Operador |
 | 10 | **Movimientos** | Egresos, ingresos, aprobación | Admin, Supervisor, Financiera, Conductor, Operador |
-| 11 | **Reportes** | Visualización y exportación | Admin, Supervisor, Financiera, Cliente |
-| 12 | **Reportes Programados** | Envío automático por email | Admin, Supervisor |
-| 13 | **Plantillas Email** | Diseño de correos | Admin, Supervisor |
-| 14 | **Configuración WMS** | Reglas de integración | Admin |
-| 15 | **Administración** | Usuarios, roles, permisos, sesiones | Admin |
-| 16 | **Perfil** | Datos personales, avatar, preferencias | Todos |
-| 17 | **Notificaciones** | Alertas en tiempo real | Todos |
+| 11 | **Solicitudes** | Avisos de ingreso y solicitudes de despacho (portal cliente) | Admin, Supervisor, Operador, Cliente |
+| 12 | **Reportes** | Visualización y exportación | Admin, Supervisor, Financiera, Cliente |
+| 13 | **Reportes Programados** | Envío automático por email | Admin, Supervisor |
+| 14 | **Plantillas Email** | Diseño de correos | Admin, Supervisor |
+| 15 | **Configuración WMS** | Reglas de integración | Admin |
+| 16 | **Administración** | Usuarios, roles, permisos, sesiones | Admin |
+| 17 | **Perfil** | Datos personales, avatar, preferencias | Todos |
+| 18 | **Notificaciones** | Alertas en tiempo real | Todos |
 
 ### 4.2 Integraciones
 
@@ -172,6 +173,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
   - Consulta de operaciones (entradas, salidas, kardex) — solo lectura
   - Visualización de reportes propios
   - Acceso a detalle de su empresa (Mi Empresa) con historial de operaciones
+  - Creación y seguimiento de solicitudes: **Aviso de Ingreso** y **Solicitud de Despacho**
   - Configuración de preferencias personales del sistema
 - **Nota técnica:** Los permisos del cliente portal se gestionan mediante la columna `permisos_cliente` en la tabla `usuarios` y el método `getPermisos()` en el modelo `Usuario`. Son independientes del sistema de roles y permisos estándar. Cambios en el seed de roles NO afectan a usuarios portal.
 

@@ -123,12 +123,12 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
           }))
         );
       }
-    } catch (err) {
+    } catch (_err) {
       error('No se pudo cargar la operación');
     } finally {
       setLoading(false);
     }
-  }, [operacionId]);
+  }, [operacionId, error]);
 
   useEffect(() => {
     if (isOpen) {
@@ -375,7 +375,7 @@ const EditarOperacionModal = ({ isOpen, operacionId, onClose, onGuardado }) => {
 
               {lineas.length === 0 ? (
                 <div className="text-center py-10 text-slate-400 dark:text-slate-500 text-sm">
-                  No hay líneas. Usa "Agregar línea" para incluir productos.
+                  No hay líneas. Usa &ldquo;Agregar línea&rdquo; para incluir productos.
                 </div>
               ) : (
                 <div className="space-y-2">

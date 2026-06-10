@@ -1,8 +1,8 @@
 # Levantamiento de Requerimientos y Mejoras Implementadas
 ## CRM CenthriX — ISTHO S.A.S.
 
-**Fecha:** 2026-05-07  
-**Versión del sistema:** 1.2.0  
+**Fecha:** 2026-06-10  
+**Versión del sistema:** 1.3.0  
 **Elaborado por:** Osman Gallego  
 **Cliente:** ISTHO S.A.S. — Centro Logístico Industrial del Norte, Girardota, Antioquia, Colombia  
 **Certificación:** ISO 9001:2015
@@ -74,6 +74,8 @@ El levantamiento identificó las brechas del sistema existente y las funcionalid
 | REQ-CLI-01 | CRUD completo de empresas clientes con contactos y logo | 🔧 Mejora | Alta |
 | REQ-CLI-02 | Portal de cliente con consulta de inventario y operaciones propias | 🔧 Mejora | Media |
 | REQ-CLI-03 | Gestión de despachos con información de transporte y documentos | 🔧 Mejora | Media |
+| REQ-CLI-04 | Módulo de solicitudes del cliente: Aviso de Ingreso y Solicitud de Despacho desde el portal | ✨ Nueva | Alta |
+| REQ-CLI-05 | Gestión de responsables (contactos asignados) por cliente con acciones de seguimiento | ✨ Nueva | Media |
 
 ### 2.5 Requerimientos de Reportería
 
@@ -107,6 +109,7 @@ El levantamiento identificó las brechas del sistema existente y las funcionalid
 | REQ-COM-04 | Interfaz responsiva y optimizada para uso en móvil | 🔧 Mejora | Alta |
 | REQ-COM-05 | Componentes de formulario consistentes (dropdowns, calendarios personalizados) | 🔧 Mejora | Alta |
 | REQ-COM-06 | Modo oscuro completo en toda la aplicación | 🔧 Mejora | Media |
+| REQ-COM-07 | Tutorial interactivo guiado por módulo para onboarding de usuarios nuevos | ✨ Nueva | Media |
 
 ### 2.8 Requerimientos de Infraestructura
 
@@ -250,8 +253,11 @@ El levantamiento identificó las brechas del sistema existente y las funcionalid
 #### ✅ Reportes con KPIs, Gráficos y Exportación
 - **Reporte de Operaciones:** KPIs + gráficos de barras por estado y pie de ingresos/salidas + tendencia mensual + variaciones % mes anterior
 - **Reporte de Inventario:** KPIs + gráficos (pie por estado, top productos por valor) + exportación
+- **Reporte de Inventario por Ubicación:** Stock agrupado por ubicación física en bodega + exportación
 - **Reporte de Clientes:** KPIs + gráficos (pie activos/inactivos, pie por tipo) + columna de productos por cliente
 - **Reporte de Averías:** KPIs (total averías, costo estimado, frecuencia) + gráficos por tipo + tabla detallada
+- **Reporte de Solicitudes:** KPIs (recibidas, en proceso, completadas, rechazadas) + tabla detallada + filtros por cliente, tipo y estado
+- **Reporte de Viajes, Gastos, Cajas Menores:** exportación con filtros de fecha y resumen financiero
 
 #### ✅ Envío por Email y Reportes Programados
 - Modal para enviar cualquier reporte con adjunto Excel, PDF o ambos
@@ -299,9 +305,18 @@ El levantamiento identificó las brechas del sistema existente y las funcionalid
 **Problema:** Los `<select>` e `<input type="date">` nativos tienen apariencia inconsistente entre sistemas operativos y no respetan el dark mode del sistema.
 
 **Solución:**
-- **`FilterDropdown`:** Componente dropdown personalizado que reemplaza todos los `<select>` del sistema. Soporta posición `fixed` para escapar stacking contexts de modales, modo compacto para barras de filtro, y navegación por teclado.
+
+- **`FilterDropdown`:** Componente dropdown personalizado que reemplaza todos los `<select>` del sistema. Soporta posición `fixed` para escapar stacking contexts de modales, modo compacto para barras de filtro, navegación por teclado y **buscador integrado** para listas largas.
 - **`DatePicker`:** Componente de calendario construido sobre `react-day-picker@9.14.0` que reemplaza todos los `<input type="date">`. Incluye navegación rápida por mes y año. Valor siempre en formato `YYYY-MM-DD` (string).
 - Reemplazados en todos los módulos: clientes, usuarios, productos, viajes, vehículos, caja menor, movimientos, plantillas, reportes, averías, WMS dashboard.
+
+#### ✅ Evidencias y Averías — Capacidad Ampliada
+
+- Soporte de **hasta 20 fotos por avería** (antes: 1 foto)
+- Soporte de **hasta 100 fotos en evidencias** de auditoría
+- **Compresión automática en el frontend** antes de subir al S3 (reduce tiempo de carga y costo de almacenamiento)
+- **Lightbox con navegación prev/next** entre fotos de la galería de evidencias y averías
+- Emails de cierre de auditoría con **presigned URLs individuales** por foto (TTL 15 min, antes enlace único)
 
 #### ✅ Accesibilidad ARIA (WCAG 2.1 AA)
 - `aria-label` en todos los botones icon-only
@@ -393,6 +408,49 @@ El levantamiento identificó las brechas del sistema existente y las funcionalid
 - Rate limiter corre **después** de CORS para que los errores 429 lleguen correctamente al navegador
 - `/socket.io` excluido del rate limiter general
 
+### 3.11 Módulo de Solicitudes del Cliente
+
+#### ✅ Portal de Solicitudes — Aviso de Ingreso y Solicitud de Despacho
+
+**Contexto:** Los clientes necesitaban un canal formal para avisar ingresos planificados de mercancía y solicitar despachos, sin depender de comunicaciones informales por WhatsApp o email.
+
+**Flujo implementado:**
+
+- El usuario con rol `cliente` crea una solicitud desde su portal (SolicitudForm) — tipo **Aviso de Ingreso** o **Solicitud de Despacho**.
+- Puede incluir tabla dinámica de productos, fecha estimada, transportista, dirección de entrega y documentos adjuntos (S3).
+- El equipo ISTHO (admin/supervisor/operador) revisa desde la vista interna (SolicitudesList con tabs por estado), agrega comentarios y actualiza el estado (recibida → en proceso → completada/rechazada).
+- La solicitud puede vincularse a una operación existente del WMS al completarse.
+
+**Modelos nuevos:**
+
+- `Solicitud` — cabecera con estado, tipo, prioridad y FK a operación resultante
+- `SolicitudDetalle` — líneas de productos con cantidades
+- `SolicitudComentario` — hilo de mensajes entre cliente e ISTHO
+- `ClienteResponsable` — personas responsables asignadas por cliente (gestión de seguimiento)
+- `SolicitudDocumento` — archivos adjuntos en S3 (carpeta `soportes/`)
+
+**Permisos:**
+
+- Solo el rol `cliente` puede **crear** solicitudes desde el portal
+- Admin, supervisor y operador pueden **revisar, comentar y cambiar estado**
+- Reporte de solicitudes disponible para roles internos (excluido del portal cliente)
+
+---
+
+### 3.12 Tutorial Interactivo (driver.js)
+
+#### ✅ Sistema de Onboarding Guiado por Módulo
+
+**Problema:** Los usuarios nuevos (especialmente de rol `cliente` y `operador`) no tenían forma de aprender el sistema sin asistencia directa del equipo de ISTHO.
+
+**Solución:** Tutorial interactivo paso a paso activado con el botón `?` en el header.
+
+- Librería: **driver.js v1.4.0** — popovers overlay que resaltan elementos del DOM
+- Configuración centralizada en `frontend/src/utils/tutorialConfig.js`: objeto `TUTORIALES` con pasos por clave de módulo + mapa `RUTAS_CON_TOUR`
+- Hook `useTutorial` con persistencia en `localStorage` (`centhrix_tour_<modulo>`) — el tour no se repite salvo que el usuario lo solicite
+- El hook filtra automáticamente pasos cuyos elementos no existen en el DOM antes de lanzar (DOM-resiliente)
+- **30+ claves de tour** activas: dashboards (3 roles), clientes, inventario, operaciones, salidas, kardex, detalles de operación, detalle de cliente, detalle de producto, viajes, vehículos, cajas menores, movimientos, reportes (11 subpáginas), administración (4 tabs), solicitudes del cliente
+
 ---
 
 ## 4. Estado Actual del Sistema
@@ -419,6 +477,9 @@ El levantamiento identificó las brechas del sistema existente y las funcionalid
 | Administración de Usuarios y Roles | ✅ Activo | Matriz de permisos con tabs |
 | Auditoría de Acciones | ✅ Activo | Snapshots antes/después |
 | Backups automáticos | ✅ Activo | GitHub Actions → Backblaze B2 |
+| Solicitudes del Cliente (Aviso Ingreso / Despacho) | ✅ Activo | Portal cliente + revisión interna + reporte |
+| Tutorial Interactivo | ✅ Activo | driver.js v1.4.0, 30+ módulos cubiertos |
+| Responsables por Cliente | ✅ Activo | CRUD de contactos responsables + historial |
 
 ### 4.2 Infraestructura Activa
 
@@ -428,8 +489,8 @@ El levantamiento identificó las brechas del sistema existente y las funcionalid
 | Base de datos | AWS RDS MySQL 8.0 (db.t3.micro) | ~$14–15 USD |
 | Almacenamiento | Amazon S3 (`istho-crm-files`) | ~$0.10 USD |
 | Frontend | Vercel (Hobby free) | $0 |
-| Email | Gmail SMTP | $0 |
-| Email transaccional | Resend (Free, 3.000/mes) | $0 |
+| Email CRM (transaccional) | Gmail SMTP (`liderti@istho.com.co`, puerto 587) | $0 |
+| Email backup (alertas de fallo) | Resend (Free, 3.000/mes — solo GitHub Actions) | $0 |
 | Backups | Backblaze B2 (Free, 10 GB) | $0 |
 | CI/CD | GitHub Actions (Free) | $0 |
 | **Total** | | **~$30–32 USD/mes** |
@@ -451,11 +512,12 @@ Los siguientes ítems fueron identificados en auditoría de calidad (2026-04-22)
 
 | ID | Descripción | Severidad | Estado |
 |----|-------------|-----------|--------|
-| BRE-01 | Tests unitarios frontend con Vitest — cobertura básica (login, permisos, roles) | Media | Parcialmente iniciado |
-| BRE-02 | Tests de integración backend — mayor cobertura de controllers | Media | Pendiente |
+| BRE-01 | Tests unitarios frontend con Vitest — cobertura básica (login, permisos, roles) | Media | ✅ Resuelto en v1.3.0 (FilterDropdown, DatePicker, forgot-password, reset-password) |
+| BRE-02 | Tests de integración backend — mayor cobertura de controllers | Media | Parcialmente resuelto (wmsOrderMapper, wmsSyncDedup — controllers pendientes) |
 | BRE-03 | Variables de entorno en `.env` no deben estar en git — verificar `.gitignore` | Alta | Pendiente verificar |
-| BRE-04 | Redis (Upstash) para Socket.IO multi-instancia en App Runner | Baja | Pendiente si se escala |
+| BRE-04 | Redis (Upstash) para Socket.IO multi-instancia en App Runner | Baja | Pendiente si se escala a múltiples instancias |
 | BRE-05 | Dependencias de hooks faltantes en `AuthContext.jsx` (`useMemo`) y `Login.jsx` (`useEffect`) | Baja | Pendiente |
+| BRE-06 | Protección DDoS — rate limiting avanzado, circuit breakers, detección de patrones | Media | Pendiente — spec disponible en `docs/superpowers/specs/2026-05-20-ddos-protection-design.md` |
 
 ---
 
@@ -467,7 +529,7 @@ Los siguientes ítems fueron identificados en auditoría de calidad (2026-04-22)
 | Backend | Node.js 22 + Express 4.18 + Sequelize 6 (ORM) |
 | Base de Datos | MySQL 8.0 (XAMPP local / AWS RDS producción) |
 | Autenticación | JWT HS256 (access 24h + refresh 7d) + TOTP (otplib v13) |
-| Email transaccional | Resend API + Nodemailer + Handlebars templates |
+| Email CRM | Nodemailer + Gmail SMTP (puerto 587, TLS) + Handlebars templates |
 | Exportaciones | ExcelJS (Excel) + PDFKit (PDF) |
 | Archivos | Multer + Amazon S3 (presigned URLs, TTL 15 min) |
 | Notificaciones | Socket.IO 4.x (polling transport) |
@@ -478,4 +540,4 @@ Los siguientes ítems fueron identificados en auditoría de calidad (2026-04-22)
 
 ---
 
-*Documento generado el 2026-05-07. Refleja el estado del sistema en la versión 1.2.0 (commit `d676127`).*
+*Documento actualizado el 2026-06-10. Refleja el estado del sistema en la versión 1.3.0 (commit `dfc7177`). Versión anterior: 1.2.0 (commit `d676127`, 2026-05-07).*

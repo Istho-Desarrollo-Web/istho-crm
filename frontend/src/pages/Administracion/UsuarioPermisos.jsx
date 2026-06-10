@@ -132,7 +132,7 @@ const UsuarioPermisos = ({ usuario, onClose, onSave }) => {
       console.error(err);
     }
     setLoading(false);
-  }, [usuario.id]);
+  }, [usuario.id, notifyError]);
 
   useEffect(() => {
     fetchData();

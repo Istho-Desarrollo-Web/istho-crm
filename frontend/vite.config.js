@@ -40,12 +40,50 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          mui: ['@mui/material'],
-          charts: ['recharts']
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            // React core
+            if (id.includes('react-dom') || id.includes('react-router-dom') || (id.includes('/react/') && !id.includes('react-'))) {
+              return 'vendor';
+            }
+            // MUI + Emotion
+            if (id.includes('@mui/') || id.includes('@emotion/')) {
+              return 'mui';
+            }
+            // Íconos (lucide-react es pesado)
+            if (id.includes('lucide-react')) {
+              return 'icons';
+            }
+            // Gráficas
+            if (id.includes('recharts') || id.includes('d3-') || id.includes('victory-')) {
+              return 'charts';
+            }
+            // WebSocket
+            if (id.includes('socket.io-client') || id.includes('engine.io-client')) {
+              return 'realtime';
+            }
+            // Tutorial interactivo
+            if (id.includes('driver.js')) {
+              return 'tutorial';
+            }
+            // Formularios
+            if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('yup')) {
+              return 'forms';
+            }
+            // Fechas
+            if (id.includes('date-fns') || id.includes('react-day-picker')) {
+              return 'dates';
+            }
+            // Notificaciones
+            if (id.includes('notistack')) {
+              return 'notifications';
+            }
+            // Todo lo demás de node_modules en un chunk utils
+            return 'utils';
+          }
         }
       }
     }

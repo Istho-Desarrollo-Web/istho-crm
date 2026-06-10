@@ -2,7 +2,7 @@
 
 ## ISTHO S.A.S.
 
-**Version:** 1.2.0 | **Fecha:** Mayo 2026
+**Version:** 1.3.0 | **Fecha:** Junio 2026
 
 **Centro Logistico Industrial del Norte** — Girardota, Antioquia, Colombia
 
@@ -53,11 +53,17 @@
    - 9.4 Ver Detalle
 10. [Reportes](#10-reportes)
     - 10.1 Vista de Reportes
-    - 10.2 Reporte de Viajes
-    - 10.3 Reporte de Cajas Menores
-    - 10.4 Reporte de Gastos
-    - 10.5 Exportar Excel / CSV
-    - 10.6 Reportes Programados
+    - 10.2 Reporte de Operaciones
+    - 10.3 Reporte de Inventario
+    - 10.4 Reporte de Inventario por Ubicacion
+    - 10.5 Reporte de Clientes
+    - 10.6 Reporte de Averias
+    - 10.7 Reporte de Solicitudes
+    - 10.8 Reporte de Viajes
+    - 10.9 Reporte de Cajas Menores
+    - 10.10 Reporte de Gastos
+    - 10.11 Exportar Excel / PDF
+    - 10.12 Reportes Programados
 11. [Configuracion WMS (Solo Admin)](#11-configuracion-wms-solo-admin)
     - 11.1 Motivos de Kardex
     - 11.2 Tipos de Orden
@@ -74,6 +80,16 @@
     - 14.1 Panel de Notificaciones
     - 14.2 Tipos de Notificaciones
 15. [Almacenamiento de Archivos (Amazon S3)](#15-almacenamiento-de-archivos-amazon-s3)
+16. [Solicitudes del Cliente (Portal)](#16-solicitudes-del-cliente-portal)
+    - 16.1 Tipos de Solicitud
+    - 16.2 Crear una Solicitud
+    - 16.3 Seguimiento de Solicitudes
+17. [Portal Cliente](#17-portal-cliente)
+    - 17.1 Acceso y Credenciales
+    - 17.2 Identificacion en el Sistema
+    - 17.3 Funciones Disponibles
+    - 17.4 Restricciones
+    - 17.5 Ver Mi Empresa
 
 ---
 
@@ -460,7 +476,7 @@ La pantalla de alertas centraliza todas las situaciones que requieren atencion i
 
 ## 5. Auditoria WMS
 
-El modulo de Auditoria WMS permite verificar y validar las operaciones sincronizadas desde el sistema Copernico. Se divide en tres tipos de documentos.
+El modulo de Auditoria WMS permite verificar y validar las operaciones sincronizadas desde el sistema WMS CenthriX. Se divide en tres tipos de documentos.
 
 ### 5.1 Entradas (CO)
 
@@ -903,45 +919,90 @@ Para acceder al modulo de reportes:
 
 3. Haga clic en la tarjeta del reporte deseado para acceder a el.
 
-### 10.2 Reporte de Viajes
+### 10.2 Reporte de Operaciones
+
+1. Haga clic en **"Reporte de Operaciones"** desde la pantalla de reportes.
+2. **KPIs:** Total operaciones, por estado (pendiente, en proceso, cerrado), por tipo (entrada, salida, kardex).
+3. **Filtros:** Rango de fechas, tipo de operacion, estado, cliente.
+4. **Tabla de datos:** Lista detallada con documento, cliente, tipo, estado, fecha.
+5. **Exportar:** Botones para descargar en Excel o PDF. Puede tambien enviarse por correo electronico.
+
+### 10.3 Reporte de Inventario
+
+1. Haga clic en **"Reporte de Inventario"**.
+2. **KPIs:** Total productos, productos con stock bajo, productos agotados.
+3. **Filtros:** Cliente, categoria, estado de alerta.
+4. **Tabla de datos:** SKU, descripcion, cliente, stock actual, stock minimo, estado.
+5. **Exportar:** Excel o PDF con los datos filtrados.
+
+### 10.4 Reporte de Inventario por Ubicacion
+
+1. Haga clic en **"Inventario por Ubicacion"**.
+2. Muestra donde esta fisicamente cada estiba en la bodega segun el WMS.
+3. **Tabla:** N° Caja, posicion (coordenada de rack), bodega, lote, cantidad.
+4. **Exportar:** Excel o PDF.
+
+### 10.5 Reporte de Clientes
+
+1. Haga clic en **"Reporte de Clientes"**.
+2. **KPIs:** Total clientes, activos, inactivos.
+3. **Tabla de datos:** Razon social, NIT, tipo, sector, estado, total productos en bodega.
+4. **Exportar:** Excel o PDF.
+
+### 10.6 Reporte de Averias
+
+1. Haga clic en **"Reporte de Averias"**.
+2. **KPIs:** Total averias registradas en el periodo, por tipo.
+3. **Filtros:** Rango de fechas, tipo de averia, cliente.
+4. **Tabla de datos:** Operacion, cliente, descripcion del dano, cantidad afectada, fecha.
+5. **Exportar:** Excel o PDF.
+
+### 10.7 Reporte de Solicitudes
+
+1. Haga clic en **"Reporte de Solicitudes"**.
+2. Consolida las solicitudes de ingreso y despacho enviadas por los clientes portal.
+3. **Filtros:** Rango de fechas, estado, tipo, cliente.
+4. **Exportar:** Excel o PDF.
+
+### 10.8 Reporte de Viajes
 
 1. Haga clic en **"Reporte de Viajes"** desde la pantalla de reportes.
 2. En la parte superior se muestran **KPIs** del periodo seleccionado: total viajes, viajes activos, completados, valor total de fletes.
 3. Utilice los filtros de fecha (desde/hasta), vehiculo, conductor o cliente para refinar los datos.
 4. **Graficos:** Se muestran visualizaciones de viajes por estado, por mes y por destino.
 5. **Tabla de datos:** Debajo de los graficos, una tabla detallada con todos los viajes que cumplen los filtros.
-6. **Exportar:** Haga clic en el boton de descarga para exportar los datos a Excel.
+6. **Exportar:** Botones para descargar en Excel o PDF.
 
-### 10.3 Reporte de Cajas Menores
+### 10.9 Reporte de Cajas Menores
 
 1. Haga clic en **"Reporte de Cajas Menores"**.
 2. **KPIs:** Total cajas del periodo, saldo total, total ingresos, total egresos.
 3. **Filtros:** Rango de fechas, estado de la caja, usuario asignado.
 4. **Graficos:** Distribucion de cajas por estado, evolucion de saldos.
 5. **Tabla de datos:** Detalle de cada caja menor con sus totales.
-6. **Exportar:** Boton de descarga a Excel.
+6. **Exportar:** Excel o PDF.
 
-### 10.4 Reporte de Gastos
+### 10.10 Reporte de Gastos
 
 1. Haga clic en **"Reporte de Gastos"**.
 2. **KPIs:** Total gastos, total aprobados, total rechazados, promedio por concepto.
 3. **Filtros:** Rango de fechas, concepto, estado de aprobacion, caja menor.
 4. **Graficos:** Gastos por concepto (barras), distribucion por estado (circular), evolucion mensual (lineas).
 5. **Tabla de datos:** Cada movimiento con su detalle completo.
-6. **Exportar:** Boton de descarga a Excel.
+6. **Exportar:** Excel o PDF.
 
-### 10.5 Exportar Excel / CSV
+### 10.11 Exportar Excel / CSV
 
 Todos los modulos del sistema permiten exportar datos:
 
 1. Ubique el boton de descarga (icono de flecha hacia abajo o icono de hoja de calculo) en la esquina superior derecha del listado o reporte.
 2. Haga clic en el boton.
-3. El sistema generara un archivo Excel (.xlsx) con los datos filtrados actualmente en pantalla.
+3. El sistema generara un archivo Excel (.xlsx) o PDF con los datos filtrados actualmente en pantalla.
 4. El archivo se descargara automaticamente en su carpeta de descargas.
 
 > **Nota:** Los datos exportados respetan los filtros activos. Si desea exportar todos los registros, asegurese de limpiar los filtros antes de descargar.
 
-### 10.6 Reportes Programados
+### 10.12 Reportes Programados
 
 Los reportes programados permiten recibir reportes automaticos por correo electronico en horarios definidos.
 
@@ -1303,7 +1364,48 @@ El sistema CRM CenthriX utiliza **Amazon S3** como servicio de almacenamiento en
 
 ---
 
-## 16. Portal Cliente
+## 16. Solicitudes del Cliente (Portal)
+
+Los usuarios con rol **cliente** pueden enviar solicitudes de servicio directamente desde el portal.
+
+### 16.1 Tipos de Solicitud
+
+| Tipo | Descripcion |
+|------|-------------|
+| **Aviso de Ingreso** | Notifica a ISTHO que llegara mercancia para almacenar. Permite adjuntar documentos de referencia |
+| **Solicitud de Despacho** | Solicita el despacho de mercancia desde la bodega. Incluye destino y productos a despachar |
+
+### 16.2 Crear una Solicitud
+
+1. En el menu lateral, haga clic en **"Solicitudes"**.
+2. Haga clic en **"+ Nueva Solicitud"**.
+3. Seleccione el tipo: **Aviso de Ingreso** o **Solicitud de Despacho**.
+4. Complete los campos del formulario segun el tipo seleccionado.
+5. Adjunte los documentos de soporte si los tiene (PDF, imágenes, ZIP).
+6. Haga clic en **"Enviar"**.
+
+El equipo de ISTHO recibira la solicitud y podra agregar comentarios o cambiar el estado.
+
+### 16.3 Seguimiento de Solicitudes
+
+Desde la pantalla de **Solicitudes** puede:
+- Ver el listado de todas sus solicitudes con estado actual.
+- Filtrar por tipo, estado o rango de fechas.
+- Hacer clic en una solicitud para ver el detalle, comentarios del equipo ISTHO y documentos adjuntos.
+
+**Estados posibles:**
+
+| Estado | Descripcion |
+|--------|-------------|
+| Pendiente | Recibida, sin respuesta del equipo aun |
+| En revision | ISTHO esta procesando la solicitud |
+| Aprobada | La solicitud fue aceptada |
+| Rechazada | La solicitud fue rechazada (con motivo en comentarios) |
+| Completada | La operacion fue realizada |
+
+---
+
+## 17. Portal Cliente
 
 El **Portal Cliente** es un acceso especial del sistema CenthriX destinado exclusivamente a los clientes de ISTHO S.A.S. Permite consultar información propia en tiempo real sin acceso a datos de otros clientes.
 
@@ -1374,5 +1476,5 @@ Si tiene preguntas o inconvenientes con el sistema, puede contactar al equipo de
 ---
 
 *ISTHO S.A.S. - ISO 9001:2015*
-*Documento actualizado: Mayo 2026*
-*CRM CenthriX v1.2.0*
+*Documento actualizado: Junio 2026*
+*CRM CenthriX v1.3.0*

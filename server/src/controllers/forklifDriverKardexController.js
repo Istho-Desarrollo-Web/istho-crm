@@ -3,7 +3,7 @@
 const { CajaInventario, Inventario, Cliente } = require('../models');
 const wmsApiService = require('../services/wmsApiService');
 const wmsSyncService = require('../services/wmsSyncService');
-const { success, serverError } = require('../utils/responses');
+const { success } = require('../utils/responses');
 const logger = require('../utils/logger');
 
 // GET /forklift-drivers/kardex/search-pallet?code=<palletCode>

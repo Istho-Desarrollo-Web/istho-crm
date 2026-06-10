@@ -10,8 +10,6 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
-
 // Crear directorios si no existen
 const createDir = (dir) => {
   if (!fs.existsSync(dir)) {
@@ -95,7 +93,7 @@ const documentFilter = (req, file, cb) => {
 };
 
 /**
- * Upload para evidencias de averías (Cloudinary vía buffer)
+ * Upload para evidencias de averías (Amazon S3 vía buffer)
  */
 const uploadAveria = multer({
   storage: storageMemory,
@@ -106,7 +104,7 @@ const uploadAveria = multer({
 });
 
 /**
- * Upload para documentos de cumplido (Cloudinary vía buffer)
+ * Upload para documentos de cumplido (Amazon S3 vía buffer)
  */
 const uploadCumplido = multer({
   storage: storageMemory,
@@ -118,7 +116,7 @@ const uploadCumplido = multer({
 
 
 /**
- * Upload para logos de clientes (Cloudinary vía buffer)
+ * Upload para logos de clientes (Amazon S3 vía buffer)
  */
 const uploadLogo = multer({
   storage: storageMemory,
@@ -129,7 +127,7 @@ const uploadLogo = multer({
 });
 
 /**
- * Upload para avatares de usuarios (Cloudinary vía buffer)
+ * Upload para avatares de usuarios (Amazon S3 vía buffer)
  */
 const uploadAvatar = multer({
   storage: storageMemory,
@@ -140,7 +138,7 @@ const uploadAvatar = multer({
 });
 
 /**
- * Upload para soportes de gastos (Cloudinary vía buffer)
+ * Upload para soportes de gastos (Amazon S3 vía buffer)
  */
 const uploadSoporte = multer({
   storage: storageMemory,

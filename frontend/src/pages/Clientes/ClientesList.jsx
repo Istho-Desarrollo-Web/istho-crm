@@ -386,7 +386,10 @@ const ClientesList = () => {
   const [statusModal, setStatusModal] = useState({ isOpen: false, cliente: null });
   const [formLoading, setFormLoading] = useState(false);
 
-  // Portal cliente → redirigir directamente a su empresa (DESPUÉS de todos los hooks)
+  const searchTimerRef = useRef(null);
+  useEffect(() => () => clearTimeout(searchTimerRef.current), []);
+
+  // Portal cliente → redirigir directamente a su empresa
   if (user?.rol === 'cliente' && user?.cliente_id) {
     return <Navigate to={`/clientes/${user.cliente_id}`} replace />;
   }
@@ -394,9 +397,6 @@ const ClientesList = () => {
   // ──────────────────────────────────────────────────────────────────────────
   // HANDLERS DE BÚSQUEDA Y FILTROS
   // ──────────────────────────────────────────────────────────────────────────
-
-  const searchTimerRef = useRef(null);
-  useEffect(() => () => clearTimeout(searchTimerRef.current), []);
 
   const handleSearch = (value) => {
     setSearchTerm(value);

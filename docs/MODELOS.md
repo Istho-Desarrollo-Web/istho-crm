@@ -537,7 +537,59 @@ despachada → disponible (suma en kardex, reactivación/devolución)
 
 ---
 
-### 16. Notificacion
+### 16. Solicitud (Portal Cliente)
+
+**Tabla:** `solicitudes` (soft delete habilitado)
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|--------------|-------------|
+| `id` | INTEGER | PK, AUTO_INCREMENT | |
+| `numero_solicitud` | STRING(20) | UNIQUE, NOT NULL | Auto-generado: SOL-2026-0001 |
+| `tipo` | ENUM | ingreso, despacho | Aviso de ingreso o solicitud de despacho |
+| `cliente_id` | INTEGER | FK → Cliente, NOT NULL | |
+| `creado_por` | INTEGER | FK → Usuario, NULL | Usuario que creó (cliente portal o interno) |
+| `estado` | ENUM | recibida, en_proceso, completada, rechazada | DEFAULT recibida |
+| `prioridad` | ENUM | normal, urgente | DEFAULT normal |
+| `fecha_estimada` | DATEONLY | | Fecha estimada de ingreso/despacho |
+| `numero_documento` | STRING(100) | | Número de documento de referencia |
+| `transportista` | STRING(150) | | Empresa transportista |
+| `direccion_entrega` | STRING(300) | | Solo para tipo `despacho` |
+| `contacto_destino` | STRING(200) | | Solo para tipo `despacho` |
+| `notas` | TEXT | | Observaciones adicionales |
+| `documento_url` | STRING(500) | | URL del documento principal (S3) |
+| `operacion_id` | INTEGER | FK → Operacion, NULL | Operación generada al completar la solicitud |
+
+**Paranoid:** Soft delete habilitado
+
+**Asociaciones:**
+
+- `Solicitud.belongsTo(Cliente, { as: 'cliente', foreignKey: 'cliente_id' })`
+- `Solicitud.belongsTo(Usuario, { as: 'creador', foreignKey: 'creado_por' })`
+- `Solicitud.belongsTo(Operacion, { as: 'operacion', foreignKey: 'operacion_id' })`
+- `Solicitud.hasMany(SolicitudDocumento, { as: 'documentos', foreignKey: 'solicitud_id' })`
+
+---
+
+### 17. SolicitudDocumento (Adjuntos de Solicitud)
+
+**Tabla:** `solicitud_documentos`
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|--------------|-------------|
+| `id` | INTEGER | PK, AUTO_INCREMENT | |
+| `solicitud_id` | INTEGER | FK → Solicitud, NOT NULL | |
+| `nombre_original` | STRING(255) | NOT NULL | Nombre original del archivo |
+| `s3_key` | STRING(500) | NOT NULL | Clave S3 del archivo (carpeta `soportes/`) |
+
+**Sin paranoid** — eliminación física
+
+**Asociaciones:**
+
+- `SolicitudDocumento.belongsTo(Solicitud, { as: 'solicitud', foreignKey: 'solicitud_id' })`
+
+---
+
+### 18. Notificacion
 
 **Tabla:** `notificaciones`
 

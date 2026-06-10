@@ -611,13 +611,14 @@ cd server
 npm start      # NODE_ENV=production
 ```
 
-### 9.2 Railway
+### 9.2 AWS App Runner + Vercel
 
-El proyecto está configurado para Railway:
-- MySQL como servicio adjunto
-- Variables de entorno en dashboard
-- SSL automático para MySQL
-- Deploy automático desde Git
+El sistema está desplegado en:
+
+- **Backend:** AWS App Runner (us-west-2) — start command `node server/server.js` desde la raíz
+- **Frontend:** Vercel — root dir `frontend`, deploy automático desde `main`
+- **Base de datos:** AWS RDS MySQL 8.0 — conectada vía VPC Connector (sin acceso público)
+- **Archivos:** Amazon S3 bucket `istho-crm-files` — IAM Instance Role en producción (sin claves en env)
 
 ### 9.3 Variables Requeridas
 

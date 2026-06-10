@@ -200,7 +200,7 @@ Acepta email o nombre de usuario en el campo `email`.
 ### POST `/auth/me/avatar`
 **Acceso:** Autenticado (multipart/form-data)
 
-Sube foto de perfil del usuario. Máximo 2MB (JPEG, PNG, WEBP). Almacenado en Cloudinary (carpeta `avatares/`) con auto-compresión.
+Sube foto de perfil del usuario. Máximo 2MB (JPEG, PNG, WEBP). Almacenado en Amazon S3 (carpeta `avatares/`).
 
 **Body:** `avatar` (file)
 
@@ -210,8 +210,8 @@ Sube foto de perfil del usuario. Máximo 2MB (JPEG, PNG, WEBP). Almacenado en Cl
   "success": true,
   "message": "Foto de perfil actualizada",
   "data": {
-    "avatar_url": "https://res.cloudinary.com/.../avatares/avatar_1.jpg",
-    "cloudinary_public_id": "avatares/avatar_1"
+    "avatar_url": "https://istho-crm-files.s3.amazonaws.com/avatares/avatar_1.jpg",
+    "s3_key": "avatares/avatar_1.jpg"
   }
 }
 ```
@@ -674,16 +674,16 @@ Descarga un archivo Excel de plantilla con encabezados correctos y 3 filas de ej
 - `cantidad`: number
 - `tipo_averia`: string
 - `descripcion`: string
-- `foto`: file (imagen, max 10MB) — almacenado en Cloudinary (carpeta `averias/`)
+- `foto`: file (imagen, max 10MB) — almacenado en Amazon S3 (carpeta `averias/{id}/`)
 
-**Respuesta incluye:** `cloudinary_public_id` para eliminación posterior
+**Respuesta incluye:** `s3_key` para referencia interna
 
 ---
 
 ### DELETE `/operaciones/:id/averias/:averiaId`
 **Acceso:** Operador+
 
-Elimina una avería y su foto de Cloudinary si existe.
+Elimina una avería y su archivo de Amazon S3 si existe.
 
 ---
 
@@ -696,7 +696,7 @@ Sube múltiples archivos de evidencia para una operación. Usa `bulkCreate` inte
 - `archivos[]`: files (máximo 15 archivos, imágenes + PDFs)
 - `descripcion`: string (opcional)
 
-Todos los archivos se almacenan en Cloudinary (carpeta `evidencias/`) con auto-compresión para imágenes.
+Todos los archivos se almacenan en Amazon S3 (carpeta `evidencias/{id}/`).
 
 **Respuesta (200):**
 ```json
@@ -706,8 +706,8 @@ Todos los archivos se almacenan en Cloudinary (carpeta `evidencias/`) con auto-c
   "data": [
     {
       "id": 1,
-      "url": "https://res.cloudinary.com/.../evidencias/ev_1.jpg",
-      "cloudinary_public_id": "evidencias/ev_1",
+      "url": "https://istho-crm-files.s3.amazonaws.com/evidencias/1/ev_1.jpg",
+      "s3_key": "evidencias/1/ev_1.jpg",
       "tipo": "imagen"
     }
   ]
@@ -719,7 +719,7 @@ Todos los archivos se almacenan en Cloudinary (carpeta `evidencias/`) con auto-c
 ### DELETE `/operaciones/:id/evidencias/:docId`
 **Acceso:** Operador+
 
-Elimina una evidencia y su archivo de Cloudinary si existe.
+Elimina una evidencia y su archivo de Amazon S3 si existe.
 
 ---
 
@@ -1734,7 +1734,7 @@ Cierra una caja menor. Permite transferir el saldo sobrante a la siguiente caja 
 #### POST `/cajas-menores/:id/movimientos`
 **Acceso:** Autenticado + permiso `movimientos:crear`
 
-Soporta archivos adjuntos (soporte/comprobante) vía multipart/form-data. Los archivos se almacenan en Cloudinary (carpeta `soportes/`).
+Soporta archivos adjuntos (soporte/comprobante) vía multipart/form-data. Los archivos se almacenan en Amazon S3 (carpeta `soportes/`).
 
 **Body (multipart/form-data):**
 - `tipo`: string (`ingreso` o `egreso`)
@@ -1762,22 +1762,30 @@ Aprueba un movimiento. Solo los movimientos aprobados afectan el saldo de la caj
 
 ---
 
-## Almacenamiento de Archivos (Cloudinary)
+## Almacenamiento de Archivos (Amazon S3)
 
-Todos los archivos subidos se almacenan en **Cloudinary** con auto-compresión para imágenes. Si Cloudinary no está configurado, se usa base64 en la base de datos como fallback.
+Todos los archivos subidos se almacenan en **Amazon S3** (bucket `istho-crm-files`, us-west-2). Los uploads van directo a S3 usando `multer.memoryStorage()` — sin escritura a disco. El acceso se realiza mediante **presigned URLs** con TTL de 15 minutos, generadas por `GET /archivos/url?key=<s3-key>`.
 
-| Endpoint | Carpeta Cloudinary | Tipo de archivo | Límite |
-|----------|-------------------|-----------------|--------|
+| Endpoint | Carpeta S3 | Tipo de archivo | Límite |
+|----------|------------|-----------------|--------|
 | `POST /auth/me/avatar` | `avatares/` | JPEG, PNG, WEBP | 2MB |
-| `POST /operaciones/:id/evidencias` | `evidencias/` | Imágenes + PDFs | 15 archivos |
-| `POST /operaciones/:id/averias` | `averias/` | Imágenes | 10MB |
-| `POST /cajas-menores/:id/movimientos` | `soportes/` | Imágenes, PDFs | Incluido en body |
+| `POST /operaciones/:id/evidencias` | `evidencias/{id}/` | Imágenes + PDFs | 15 archivos |
+| `POST /operaciones/:id/averias` | `averias/{id}/` | Imágenes | 10MB |
+| `POST /cajas-menores/:id/movimientos` | `soportes/` | Imágenes, PDFs | 10MB |
 | `POST /clientes/:id/logo` | `branding/` | Imágenes | 5MB |
 | `POST /plantillas-email/logo-firma` | `branding/` | PNG, JPEG, WEBP | 5MB |
 
-**Variables de entorno requeridas:** `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+**Variables de entorno requeridas:**
+```
+AWS_REGION=us-west-2
+AWS_S3_BUCKET=istho-crm-files
+# Desarrollo local:
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+# Producción (App Runner): IAM Instance Role — NO configurar claves en env
+```
 
-La respuesta de cada endpoint de subida incluye `cloudinary_public_id` que puede usarse para eliminar el archivo vía los endpoints DELETE correspondientes.
+La respuesta de cada endpoint de subida incluye `s3_key` (ruta relativa dentro del bucket). Para obtener una URL de acceso temporal usar `GET /archivos/url?key=<s3_key>`.
 
 ---
 

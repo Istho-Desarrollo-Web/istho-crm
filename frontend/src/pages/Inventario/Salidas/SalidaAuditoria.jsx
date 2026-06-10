@@ -36,7 +36,6 @@ import {
   Eye,
   AlertCircle,
   AlertTriangle,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Plus,

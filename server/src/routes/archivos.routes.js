@@ -27,7 +27,7 @@ router.get('/url', verificarToken, async (req, res) => {
 
     const url = await s3Service.getUrl(key, 3600);
     return success(res, { url });
-  } catch (err) {
+  } catch (_err) {
     return errorResponse(res, 'Error al generar URL de descarga', 500);
   }
 });

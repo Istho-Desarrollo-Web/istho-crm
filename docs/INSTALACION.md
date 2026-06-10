@@ -44,12 +44,12 @@ DB_PORT=3306
 DB_NAME=istho_crm
 DB_USER=root
 DB_PASSWORD=
-# Para Railway producción:
-# DB_HOST=containers-us-west-xxx.railway.app
+# Para AWS RDS (producción):
+# DB_HOST=<endpoint>.rds.amazonaws.com
 # DB_PORT=3306
-# DB_NAME=railway
-# DB_USER=root
-# DB_PASSWORD=<password>
+# DB_NAME=istho_crm
+# DB_USER=<usuario-rds>
+# DB_PASSWORD=<password-rds>
 
 # ============================================
 # JWT (JSON Web Tokens)
@@ -180,34 +180,51 @@ El frontend tiene un proxy configurado en `vite.config.js` que redirige `/api` a
 
 ---
 
-## Configuración de Producción (Railway)
+## Configuración de Producción (AWS App Runner + Vercel)
 
-### 1. Variables de Entorno en Railway
+El backend corre en **AWS App Runner** (us-west-2) y el frontend en **Vercel**. La base de datos es **AWS RDS MySQL 8.0**, conectada vía VPC Connector (red privada).
 
-Configurar todas las variables del `.env` en el dashboard de Railway, con los valores de producción:
+### 1. Variables de Entorno en App Runner
+
+Configurar en el dashboard de App Runner → Configuration → Environment variables:
 
 ```env
 NODE_ENV=production
-DB_HOST=<railway-mysql-host>
-DB_PORT=<railway-mysql-port>
-DB_NAME=railway
-DB_USER=root
-DB_PASSWORD=<railway-password>
-JWT_SECRET=<clave-segura-produccion>
-CORS_ORIGIN=https://tu-dominio.com
+DB_HOST=<endpoint>.rds.amazonaws.com
+DB_PORT=3306
+DB_NAME=istho_crm
+DB_USER=<usuario-rds>
+DB_PASSWORD=<password-rds>
+JWT_SECRET=<clave-segura-min-32-chars>
+CORS_ORIGIN=https://<proyecto>.vercel.app
+AWS_REGION=us-west-2
+AWS_S3_BUCKET=istho-crm-files
+# NO configurar PORT — App Runner lo inyecta automáticamente (8080)
+# NO configurar AWS_ACCESS_KEY_ID — usar IAM Instance Role
 ```
 
-### 2. Build del Frontend
+### 2. Start Command en App Runner
 
 ```bash
+# En App Runner Service source → Start command:
+node server/server.js
+# ⚠️ NO usar: cd server && node server.js (App Runner ejecuta sin shell)
+```
+
+### 3. Build del Frontend en Vercel
+
+Vercel ejecuta el build automáticamente al hacer push a `main`. Root dir configurado como `frontend` (sin `./`).
+
+```bash
+# Localmente para verificar:
 cd frontend
 npm run build
 # Genera carpeta dist/ con la aplicación optimizada
 ```
 
-### 3. Configuración SSL
+### 4. Configuración SSL
 
-En producción (Railway), la conexión a MySQL usa SSL automáticamente:
+AWS RDS con Sequelize en producción usa SSL automáticamente:
 
 ```javascript
 // database.js detecta NODE_ENV=production
@@ -217,14 +234,6 @@ dialectOptions: {
     rejectUnauthorized: false
   }
 }
-```
-
-### 4. Start Command
-
-```bash
-# Railway detecta automáticamente:
-npm start
-# Equivale a: node server.js
 ```
 
 ---

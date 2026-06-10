@@ -815,9 +815,9 @@ node scripts/wms-test.js
 
 ### 9.3 Almacenamiento de Archivos
 
-- **Avatares** de usuarios se almacenan en Cloudinary (carpeta `avatares/`)
-- **Soportes** de movimientos se almacenan en Cloudinary (carpeta `soportes/`)
-- URLs persistentes entre deploys (no se pierden al reiniciar el servidor)
+- **Avatares** de usuarios se almacenan en Amazon S3 (carpeta `avatares/`)
+- **Soportes** de movimientos se almacenan en Amazon S3 (carpeta `soportes/`)
+- URLs presigned (TTL 15 min) — persistentes entre deploys (no se pierden al reiniciar el servidor)
 
 ### 9.4 Cálculo de Saldo
 
@@ -936,36 +936,36 @@ Todos los archivos Excel de reporte usan **tablas nativas de Excel** (`ws.addTab
 
 ---
 
-## 11. Almacenamiento de Archivos (Cloudinary)
+## 11. Almacenamiento de Archivos (Amazon S3)
 
 ### 11.1 Descripcion General
 
-Todos los archivos del sistema (evidencias, fotos de averias, avatares, soportes de caja menor, logo de emails) se almacenan en Cloudinary, un servicio de almacenamiento en la nube. Esto garantiza URLs persistentes entre deploys y elimina la dependencia del sistema de archivos local del servidor.
+Todos los archivos del sistema (evidencias, fotos de averias, avatares, soportes de caja menor, logo de emails) se almacenan en **Amazon S3** (bucket `istho-crm-files`, región `us-west-2`). Las URLs son presigned (TTL 15 minutos) para garantizar acceso privado por usuario autenticado. El logo de emails es URL pública S3 directa.
 
 ### 11.2 Flujo de Upload
 
 ```
-Usuario sube archivo → Multer guarda en /uploads/temp/ → cloudinaryService.subir()
-  → Si es imagen: compresion automatica (1920px max, quality auto)
-  → Si es PDF/ZIP/RAR: upload raw sin transformacion
-  → URL de Cloudinary se guarda en BD → Archivo temporal se elimina
+Usuario sube archivo → Multer memory storage (sin disco) → s3Service.upload()
+  → Si es imagen: sube directamente como buffer
+  → Si es PDF/ZIP/RAR: sube sin transformacion
+  → S3 key se guarda en BD → Se genera presigned URL al servir
 ```
 
-### 11.3 Estructura de Carpetas en Cloudinary
+### 11.3 Estructura de Carpetas en S3
 
 | Carpeta | Contenido | Limites |
 |---------|-----------|---------|
-| `istho-crm/avatares/` | Fotos de perfil de usuarios | 1 imagen por usuario, se sobreescribe |
-| `istho-crm/soportes/` | Soportes de movimientos de caja menor | 1 por movimiento |
-| `istho-crm/evidencias/{operacion_id}/` | Evidencias de auditorias (fotos, PDFs, ZIP) | 10 fotos+ZIP/RAR + 5 PDFs |
-| `istho-crm/averias/{operacion_id}/` | Fotos de averias registradas en auditorias | 1 por averia |
-| `istho-crm/branding/logo-email` | Logo para emails de cierre de auditoria | Fijo, subido una vez |
+| `avatares/` | Fotos de perfil de usuarios | 1 imagen por usuario, se sobreescribe |
+| `soportes/` | Soportes de movimientos de caja menor | 1 por movimiento |
+| `evidencias/{operacion_id}/` | Evidencias de auditorias (fotos, PDFs, ZIP) | 10 fotos+ZIP/RAR + 5 PDFs |
+| `averias/{operacion_id}/` | Fotos de averias registradas en auditorias | 1 por averia |
+| `branding/` | Logo para emails de cierre de auditoria (`logo-email.png`, URL publica) | Fijo, subido una vez |
 
 ### 11.4 Tipos de Archivos Soportados
 
-- **Imagenes** (JPG, PNG, WEBP): compresion automatica a 1920px de ancho maximo, calidad automatica
-- **PDFs**: upload sin transformacion (tipo raw)
-- **Comprimidos** (ZIP, RAR): upload sin transformacion (tipo raw)
+- **Imagenes** (JPG, PNG, WEBP): upload directo como buffer
+- **PDFs**: upload sin transformacion
+- **Comprimidos** (ZIP, RAR): upload sin transformacion
 
 ### 11.5 Limites de Evidencias por Auditoria
 
@@ -976,25 +976,21 @@ Usuario sube archivo → Multer guarda en /uploads/temp/ → cloudinaryService.s
 
 ### 11.6 Email de Cierre de Auditoria
 
-- El email incluye **enlaces** a las evidencias en Cloudinary (no adjuntos)
-- Logo del email via URL de Cloudinary (no base64) para mantener el email bajo 102KB (limite Gmail)
-- Seccion "Evidencias Adjuntas" con botones "Ver archivo" que abren URLs de Cloudinary
+- El email incluye **enlaces** a las evidencias en S3 (no adjuntos)
+- Logo del email via URL S3 publica para mantener el email bajo 102KB (limite Gmail)
+- Seccion "Evidencias Adjuntas" con botones "Ver archivo" que abren presigned URLs de S3
 
-### 11.7 Fallback
-
-Si `CLOUDINARY_CLOUD_NAME` no esta configurado, el sistema vuelve al comportamiento anterior:
-- Avatares y soportes: base64 en BD
-- Evidencias y averias: rutas locales en el servidor
-
-### 11.8 Variables de Entorno
+### 11.7 Variables de Entorno
 
 ```
-CLOUDINARY_CLOUD_NAME   # Nombre del cloud en Cloudinary
-CLOUDINARY_API_KEY      # API Key de Cloudinary
-CLOUDINARY_API_SECRET   # API Secret de Cloudinary
-```
+AWS_REGION            # us-west-2
+AWS_S3_BUCKET         # istho-crm-files
 
-Las tres variables son necesarias para habilitar Cloudinary. Si alguna falta, el sistema usa el fallback a base64/local.
+# En produccion (App Runner): IAM Instance Role — NO configurar claves en env
+# En desarrollo local:
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+```
 
 ### Rendimiento
 - Las operaciones de inventario (reservar stock, confirmar movimiento) usan batch queries para evitar N+1
@@ -1083,7 +1079,7 @@ Backblaze B2 conserva los últimos 30 días. El paso `rclone delete --min-age 30
 
 ### Variables de Entorno Requeridas
 
-**Railway (backend):**
+**App Runner (backend):**
 ```
 BACKUP_API_KEY          # Clave secreta compartida con GitHub Actions
 GITHUB_TOKEN_BACKUP     # PAT de GitHub con scope workflow
@@ -1092,10 +1088,10 @@ GITHUB_REPO             # owner/repo (ej: gallego2022/istho-crm)
 
 **GitHub Secrets:**
 ```
-DB_HOST / DB_PORT / DB_USER / DB_PASS / DB_NAME   # Railway MySQL público
+DB_HOST / DB_PORT / DB_USER / DB_PASS / DB_NAME   # AWS RDS MySQL (endpoint público)
 B2_KEY_ID / B2_APP_KEY / B2_BUCKET                # Backblaze B2
-CRM_API_URL                                        # URL backend Railway + /api/v1
-BACKUP_API_KEY                                     # Misma que Railway
+CRM_API_URL                                        # URL backend App Runner + /api/v1
+BACKUP_API_KEY                                     # Misma que App Runner
 RESEND_API_KEY / BACKUP_ALERT_EMAIL / BACKUP_FROM_EMAIL  # Alertas email
 ```
 

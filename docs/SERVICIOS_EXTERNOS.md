@@ -70,31 +70,45 @@ AWS_SECRET_ACCESS_KEY
 
 ---
 
-## 4. Resend
-**Tipo:** Servicio de envío de emails transaccionales
-**Plan:** Free (3,000 emails/mes)
+## 4. Gmail SMTP
 
-Usado para todos los correos salientes del sistema.
+**Tipo:** Servicio de envío de emails transaccionales (CRM principal)
+**Protocolo:** SMTP, puerto 587, TLS
+**Plan:** Gratuito (cuenta Gmail corporativa con App Password)
+
+Usado para todos los correos salientes del CRM: notificaciones automáticas, credenciales de acceso, reportes programados y envío manual desde el panel.
 
 | Evento | Descripción |
 |--------|-------------|
 | Cierre de auditoría | Notifica a contactos del cliente con detalle de la operación |
 | Credenciales de usuario | Envía usuario y contraseña temporal al crear un usuario |
 | Reenvío de credenciales | Permite al admin reenviar accesos |
-| Alerta de backup fallido | Notifica al admin cuando el backup nocturno falla |
 | Reportes programados | Envía reportes en Excel/PDF por correo |
+| Envío manual | El admin/supervisor puede enviar emails ad-hoc desde el panel |
 
 **Variables:**
 ```
-RESEND_API_KEY
-EMAIL_FROM              # Email remitente verificado en Resend (ej: crm@dominio.com)
+SMTP_HOST       # smtp.gmail.com
+SMTP_PORT       # 587
+SMTP_USER       # Cuenta Gmail (ej: crm@istho.com.co)
+SMTP_PASS       # App Password generada en la cuenta Google
+EMAIL_FROM      # Nombre y dirección remitente (ej: "CenthriX CRM <crm@istho.com.co>")
 ```
 
-**En GitHub Secrets (para alertas de backup):**
+---
+
+## 5. Resend
+
+**Tipo:** Servicio de emails para alertas de backup (GitHub Actions)
+**Plan:** Free (3,000 emails/mes)
+
+Usado **exclusivamente** para el envío de alertas cuando el backup nocturno de MySQL falla. Este servicio es invocado desde el workflow de GitHub Actions (`.github/workflows/backup-mysql.yml`), no desde el backend del CRM.
+
+**En GitHub Secrets:**
 ```
 RESEND_API_KEY
-BACKUP_FROM_EMAIL       # Email remitente verificado
-BACKUP_ALERT_EMAIL      # Email destinatario de alertas
+BACKUP_FROM_EMAIL       # Email remitente verificado en Resend
+BACKUP_ALERT_EMAIL      # Email destinatario de alertas de backup
 ```
 
 ---
@@ -191,7 +205,8 @@ WMS_SYNC_INTERVAL   # Minutos entre polling (default: 5)
 | AWS RDS MySQL 8.0 | db.t3.micro | ~$15 USD/mes |
 | Amazon S3 | Pay-per-use | ~$1 USD/mes |
 | Vercel | Free | $0 |
-| Resend | Free | $0 |
+| Gmail SMTP | Cuenta corporativa | $0 |
+| Resend (alertas backup) | Free | $0 |
 | Backblaze B2 | Free | $0 |
 | GitHub Actions | Free | $0 |
 | WMS CenthriX | Proveedor externo | N/A |

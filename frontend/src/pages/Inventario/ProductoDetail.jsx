@@ -451,7 +451,7 @@ const ProductoDetail = () => {
   const stockMaximo =
     parseFloat(producto.stock_maximo) || (stockMinimo > 0 ? stockMinimo * 10 : 1000);
   const costoUnitario = parseFloat(producto.costo_unitario) || 0;
-  const precioVenta = parseFloat(producto.precio_venta) || 0;
+  const _precioVenta = parseFloat(producto.precio_venta) || 0;
   const clienteNombre = producto.cliente_nombre || producto.cliente?.razon_social || '-';
   const unidadMedida = producto.unidad_medida || 'UND';
   const _fechaVencimiento = producto.fecha_vencimiento || null;
@@ -1069,7 +1069,7 @@ const ProductoDetail = () => {
                       <div className="py-10 text-center">
                         <Search className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
                         <p className="text-slate-500 dark:text-slate-400 text-sm">
-                          Sin resultados para <span className="font-medium">"{busquedaCajas}"</span>
+                          Sin resultados para <span className="font-medium">&ldquo;{busquedaCajas}&rdquo;</span>
                         </p>
                       </div>
                     ) : (

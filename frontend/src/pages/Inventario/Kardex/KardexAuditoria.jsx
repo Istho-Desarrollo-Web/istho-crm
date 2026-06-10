@@ -34,7 +34,6 @@ import {
   MessageSquare,
   AlertCircle,
   AlertTriangle,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Eye,

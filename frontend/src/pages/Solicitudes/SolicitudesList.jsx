@@ -45,7 +45,7 @@ const SolicitudesList = () => {
       });
       setSolicitudes(res.data || []);
       if (res.pagination) setPagination(res.pagination);
-    } catch (err) {
+    } catch (_err) {
       error('Error al cargar solicitudes');
     } finally {
       setLoading(false);
