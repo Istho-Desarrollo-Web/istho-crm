@@ -709,7 +709,7 @@ const PlantillaEmailEditor = () => {
             </div>
             <div className="flex-1 overflow-auto p-4 bg-slate-100 dark:bg-centhrix-bg">
               <div
-                className="bg-white rounded-xl shadow-sm mx-auto max-w-2xl"
+                className="bg-white rounded-xl shadow-sm mx-auto max-w-[1700px]"
                 style={{ colorScheme: 'light' }}
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(previewHtml, {
