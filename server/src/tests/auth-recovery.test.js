@@ -93,7 +93,10 @@ describe('POST /auth/forgot-password', () => {
     // El hash SHA-256 tiene exactamente 64 caracteres hexadecimales
     expect(usuario.reset_token).toMatch(/^[a-f0-9]{64}$/);
     expect(usuario.reset_token_expires).not.toBeNull();
-    expect(new Date(usuario.reset_token_expires).getTime()).toBeGreaterThan(Date.now());
+    // dateStrings:true devuelve el datetime como string en hora local Colombia (UTC-5).
+    // Parsear con offset explícito para evitar que V8 lo interprete como UTC.
+    const expires = new Date(String(usuario.reset_token_expires).replace(' ', 'T') + '-05:00');
+    expect(expires.getTime()).toBeGreaterThan(Date.now());
   });
 
   test('llama a enviarRecuperacionPassword (no a enviarReseteoPassword)', async () => {
