@@ -45,27 +45,22 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            // React + routing: react-router v7 delega a @remix-run/router y react-router.
-            // react-is va aquí porque es parte del runtime de React.
+            // React + MUI en un solo chunk para eliminar el ciclo vendor ↔ mui.
+            // Ambos ecosistemas se importan mutuamente (React internals ↔ emotion/MUI),
+            // y separarlos causa TDZ errors en producción.
             if (
               id.includes('/react/') ||
               id.includes('react-dom') ||
               id.includes('react-router') ||
               id.includes('@remix-run') ||
               id.includes('/scheduler/') ||
-              id.includes('react-is')
-            ) {
-              return 'vendor';
-            }
-            // MUI + Emotion + Popper + react-transition-group (animaciones de MUI).
-            // react-transition-group va aquí — es una dependencia de MUI, no del core de React.
-            if (
+              id.includes('react-is') ||
+              id.includes('react-transition-group') ||
               id.includes('@mui/') ||
               id.includes('@emotion/') ||
-              id.includes('@popperjs') ||
-              id.includes('react-transition-group')
+              id.includes('@popperjs')
             ) {
-              return 'mui';
+              return 'vendor';
             }
             // Íconos
             if (id.includes('lucide-react')) return 'icons';
