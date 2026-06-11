@@ -45,44 +45,43 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            // React core — incluir react-router porque react-router-dom v7 delega a ese paquete
-            if (id.includes('react-dom') || id.includes('react-router') || (id.includes('/react/') && !id.includes('react-'))) {
+            // React + routing: react-router v7 delega a @remix-run/router y react-router.
+            // react-is va aquí porque es parte del runtime de React.
+            if (
+              id.includes('/react/') ||
+              id.includes('react-dom') ||
+              id.includes('react-router') ||
+              id.includes('@remix-run') ||
+              id.includes('/scheduler/') ||
+              id.includes('react-is')
+            ) {
               return 'vendor';
             }
-            // MUI + Emotion
-            if (id.includes('@mui/') || id.includes('@emotion/')) {
+            // MUI + Emotion + Popper + react-transition-group (animaciones de MUI).
+            // react-transition-group va aquí — es una dependencia de MUI, no del core de React.
+            if (
+              id.includes('@mui/') ||
+              id.includes('@emotion/') ||
+              id.includes('@popperjs') ||
+              id.includes('react-transition-group')
+            ) {
               return 'mui';
             }
-            // Íconos (lucide-react es pesado)
-            if (id.includes('lucide-react')) {
-              return 'icons';
-            }
+            // Íconos
+            if (id.includes('lucide-react')) return 'icons';
             // Gráficas
-            if (id.includes('recharts') || id.includes('d3-') || id.includes('victory-')) {
-              return 'charts';
-            }
+            if (id.includes('recharts') || id.includes('d3-') || id.includes('victory-')) return 'charts';
             // WebSocket
-            if (id.includes('socket.io-client') || id.includes('engine.io-client')) {
-              return 'realtime';
-            }
+            if (id.includes('socket.io-client') || id.includes('engine.io-client')) return 'realtime';
             // Tutorial interactivo
-            if (id.includes('driver.js')) {
-              return 'tutorial';
-            }
+            if (id.includes('driver.js')) return 'tutorial';
             // Formularios
-            if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('yup')) {
-              return 'forms';
-            }
+            if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('yup')) return 'forms';
             // Fechas
-            if (id.includes('date-fns') || id.includes('react-day-picker')) {
-              return 'dates';
-            }
+            if (id.includes('date-fns') || id.includes('react-day-picker')) return 'dates';
             // Notificaciones
-            if (id.includes('notistack')) {
-              return 'notifications';
-            }
-            // Todo lo demás de node_modules en un chunk utils
-            return 'utils';
+            if (id.includes('notistack')) return 'notifications';
+            // Sin catch-all: Vite divide automáticamente el resto para evitar ciclos
           }
         }
       }
