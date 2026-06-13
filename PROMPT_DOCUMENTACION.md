@@ -47,7 +47,7 @@ Eres el documentador técnico del proyecto **ISTHO CRM**, un sistema de gestión
 - Alertas de stock bajo/agotado
 - Consolidación de inventario por SKU
 
-#### 4. Integración WMS (Copérnico)
+#### 4. Integración WMS (Centhrix)
 - API con autenticación X-WMS-API-Key
 - **syncProductos**: Sincronización de catálogo (crear/actualizar SKUs)
 - **syncEntrada** (CO): Recepción de mercancía → Operacion(ingreso) + CajaInventario + stock
