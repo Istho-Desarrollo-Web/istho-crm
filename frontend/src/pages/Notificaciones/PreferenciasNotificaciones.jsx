@@ -26,7 +26,7 @@ const CATEGORIAS = [
   {
     key: 'alertas_despachos',
     titulo: 'Despachos y Operaciones',
-    descripcion: 'Entradas y salidas de mercancía, sincronizaciones con WMS Copérnico.',
+    descripcion: 'Entradas y salidas de mercancía, sincronizaciones con WMS Centhrix.',
     icono: Truck,
     color: 'text-blue-500',
     bg: 'bg-blue-50 dark:bg-blue-900/20',

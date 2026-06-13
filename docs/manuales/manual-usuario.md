@@ -1061,7 +1061,7 @@ Esta seccion define que motivos de kardex son aceptados por el CRM cuando llegan
 1. Vera una lista de motivos con las columnas: Valor WMS, Valor CRM, Requiere Detalle, Descripcion, Estado (activo/inactivo).
 2. **Agregar motivo:**
    - Haga clic en **"+ Agregar"**.
-   - Ingrese el **Valor WMS** (codigo que envia Copernico).
+   - Ingrese el **Valor WMS** (codigo que envia Centhrix).
    - Ingrese el **Valor CRM** (nombre que se mostrara en el sistema).
    - Indique si **requiere detalle** adicional al auditar.
    - Agregue una **descripcion** opcional.
@@ -1312,7 +1312,7 @@ El sistema genera notificaciones automaticas en los siguientes eventos:
 - Nueva entrada (CO) recibida del WMS.
 - Nueva salida (PK) recibida del WMS.
 - Nuevo kardex (CR) recibido del WMS.
-- Error de sincronizacion con Copernico.
+- Error de sincronizacion con Centhrix.
 
 **Aprobaciones:**
 - Movimiento de caja menor pendiente de aprobacion (notifica a financiera/admin).
