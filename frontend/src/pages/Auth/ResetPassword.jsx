@@ -175,7 +175,7 @@ const ResetPassword = () => {
               <img
                 src={logoIstho}
                 alt="ISTHO"
-                className="h-14 w-auto max-w-[140px] object-contain mx-auto"
+                className="h-14 w-auto max-w-[140px] object-contain mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none"
               />
             </div>
 
@@ -225,7 +225,7 @@ const ResetPassword = () => {
               <img
                 src={logoIstho}
                 alt="ISTHO"
-                className="h-14 w-auto max-w-[140px] object-contain mx-auto"
+                className="h-14 w-auto max-w-[140px] object-contain mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none"
               />
             </div>
 
@@ -283,7 +283,7 @@ const ResetPassword = () => {
               <img
                 src={logoIstho}
                 alt="ISTHO"
-                className="h-14 w-auto max-w-[140px] object-contain mx-auto mb-4"
+                className="h-14 w-auto max-w-[140px] object-contain mx-auto mb-4 drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none"
               />
             </div>
 

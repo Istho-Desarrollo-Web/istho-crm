@@ -477,7 +477,7 @@ const LoginPage = () => {
               <img
                 src={logoIstho}
                 alt="ISTHO"
-                className="h-16 w-auto max-w-[160px] object-contain mb-4 mx-auto"
+                className="h-16 w-auto max-w-[160px] object-contain mb-4 mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none"
               />
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{getGreeting()}</h1>
               <p className="text-gray-500 dark:text-slate-400 mt-1 text-sm">
