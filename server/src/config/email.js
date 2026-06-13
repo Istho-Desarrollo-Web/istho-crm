@@ -31,7 +31,7 @@ const defaultFrom = {
 };
 
 const smtpConfig = {
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  host: process.env.SMTP_HOST || 'smtp.office365.com',
   port: parseInt(process.env.SMTP_PORT) || 587,
   secure: parseInt(process.env.SMTP_PORT) === 465,
   family: 4, // forzar IPv4 — App Runner no enruta IPv6 saliente
@@ -214,7 +214,7 @@ const getTransporter = async () => {
     });
 
     if (error.message.includes('Invalid login') || error.message.includes('authentication')) {
-      logger.error('💡 SOLUCIÓN: Usa una Contraseña de Aplicación de Google');
+      logger.error('💡 SOLUCIÓN: Verifica que SMTP AUTH esté habilitado en el tenant de Microsoft 365 y que la contraseña sea correcta');
     }
 
     throw error;

@@ -14,8 +14,7 @@ import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Send, AlertCircle, CheckCircle, Loader2, KeyRound } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import authService from '../../api/auth.service';
-import logoNegro from '../../assets/logo-negro.png';
-import logoBlanco from '../../assets/logo-blanco.png';
+import logoIstho from '../../assets/logo-istho.png';
 
 // ============================================================================
 // CSS ANIMATIONS (injected inline)
@@ -204,14 +203,9 @@ const ForgotPassword = () => {
               style={{ animation: 'forgotSlideUp 0.4s ease-out 0.1s both' }}
             >
               <img
-                src={logoNegro}
+                src={logoIstho}
                 alt="ISTHO"
-                className="w-14 h-14 rounded-2xl shadow-lg mb-4 mx-auto dark:hidden"
-              />
-              <img
-                src={logoBlanco}
-                alt="ISTHO"
-                className="w-14 h-14 rounded-2xl shadow-lg mb-4 mx-auto hidden dark:block"
+                className="h-14 w-auto max-w-[140px] object-contain mb-4 mx-auto"
               />
             </div>
 

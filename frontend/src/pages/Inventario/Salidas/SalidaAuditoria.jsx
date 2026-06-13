@@ -1077,7 +1077,7 @@ const SalidaAuditoria = () => {
     lineaPage * LINEAS_POR_PAGINA
   );
 
-  const requiredFields = ['conductor', 'cedula', 'placa', 'telefono', 'origen', 'destino'];
+  const requiredFields = ['conductor', 'placa', 'origen', 'destino'];
   const camposConError = requiredFields.filter((f) => {
     const val = formData[f].trim();
     return val !== '' && validateLogisticaField(f, val) !== null;
@@ -1578,7 +1578,6 @@ const SalidaAuditoria = () => {
                 value={formData.cedula}
                 onChange={handleFieldChange('cedula')}
                 placeholder="Ej: 1066601726"
-                required
                 disabled={!puedeEditar}
                 error={fieldErrors.cedula}
               />
@@ -1598,7 +1597,6 @@ const SalidaAuditoria = () => {
                 value={formData.telefono}
                 onChange={handleFieldChange('telefono')}
                 placeholder="Ej: 3001234567"
-                required
                 disabled={!puedeEditar}
                 error={fieldErrors.telefono}
               />

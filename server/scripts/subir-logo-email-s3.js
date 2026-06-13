@@ -1,40 +1,35 @@
 /**
- * Script de migración: sube logo de email a S3 como objeto público.
- * Ejecutar una sola vez desde local: node server/scripts/subir-logo-email-s3.js
+ * Script: sube logo de email a S3 como objeto público.
+ * Ejecutar desde la raíz del repo: node server/scripts/subir-logo-email-s3.js
  *
- * Requisitos: AWS_S3_BUCKET y AWS_REGION en .env o variables de entorno.
+ * Requisitos: AWS_S3_BUCKET y AWS_REGION en server/.env (o variables de entorno).
+ * Credenciales: usa AWS CLI (aws configure) o variables AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY.
  */
 
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 
-const https = require('https');
+const fs = require('fs');
+const path = require('path');
 const { S3Client, PutObjectCommand, PutBucketPolicyCommand, GetBucketPolicyCommand } = require('@aws-sdk/client-s3');
 
-const LOGO_URL =
-  'https://res.cloudinary.com/dut7n03xd/image/upload/v1774472303/istho-crm/branding/logo-email.png';
+const LOGO_LOCAL = path.join(__dirname, '../../frontend/src/assets/logo-istho.png');
 const S3_KEY = 'branding/logo-email.png';
 const BUCKET = process.env.AWS_S3_BUCKET;
-const REGION = process.env.AWS_REGION || 'us-east-1';
+const REGION = process.env.AWS_REGION || 'us-west-2';
 
 if (!BUCKET) {
   console.error('❌  AWS_S3_BUCKET no está configurado');
   process.exit(1);
 }
 
+if (!fs.existsSync(LOGO_LOCAL)) {
+  console.error('❌  No se encontró el archivo:', LOGO_LOCAL);
+  process.exit(1);
+}
+
 const s3 = new S3Client({ region: REGION });
 
-const descargar = (url) =>
-  new Promise((resolve, reject) => {
-    https.get(url, (res) => {
-      const chunks = [];
-      res.on('data', (c) => chunks.push(c));
-      res.on('end', () => resolve({ buffer: Buffer.concat(chunks), contentType: res.headers['content-type'] }));
-      res.on('error', reject);
-    });
-  });
-
 const habilitarAccesoPublico = async () => {
-  // Agrega una política de bucket para permitir GetObject público en branding/*
   let policyStr = '{"Version":"2012-10-17","Statement":[]}';
   try {
     const existing = await s3.send(new GetBucketPolicyCommand({ Bucket: BUCKET }));
@@ -64,9 +59,8 @@ const habilitarAccesoPublico = async () => {
 
 (async () => {
   try {
-    console.log('⬇️   Descargando logo desde Cloudinary...');
-    const { buffer, contentType } = await descargar(LOGO_URL);
-    console.log(`    ${buffer.length} bytes, tipo: ${contentType}`);
+    const buffer = fs.readFileSync(LOGO_LOCAL);
+    console.log(`📁  Leyendo logo local: ${LOGO_LOCAL} (${buffer.length} bytes)`);
 
     console.log('⬆️   Subiendo a S3...');
     await s3.send(
@@ -74,7 +68,7 @@ const habilitarAccesoPublico = async () => {
         Bucket: BUCKET,
         Key: S3_KEY,
         Body: buffer,
-        ContentType: contentType || 'image/png',
+        ContentType: 'image/png',
       })
     );
 
@@ -83,7 +77,8 @@ const habilitarAccesoPublico = async () => {
 
     const publicUrl = `https://${BUCKET}.s3.${REGION}.amazonaws.com/${S3_KEY}`;
     console.log('\n✅  Logo subido exitosamente.');
-    console.log(`\n📋  Agrega esta variable en App Runner:`);
+    console.log(`\n📋  URL pública: ${publicUrl}`);
+    console.log(`\n    Si quieres fijar la URL en App Runner, agrega:`);
     console.log(`    LOGO_EMAIL_URL = ${publicUrl}\n`);
   } catch (err) {
     console.error('❌  Error:', err.message);

@@ -24,8 +24,7 @@ import {
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import authService from '../../api/auth.service';
-import logoNegro from '../../assets/logo-negro.png';
-import logoBlanco from '../../assets/logo-blanco.png';
+import logoIstho from '../../assets/logo-istho.png';
 
 // ============================================================================
 // ESTILOS CSS (animaciones)
@@ -174,14 +173,9 @@ const ResetPassword = () => {
             {/* Logo */}
             <div className="mb-6">
               <img
-                src={logoNegro}
+                src={logoIstho}
                 alt="ISTHO"
-                className="w-14 h-14 rounded-2xl shadow-lg mx-auto dark:hidden"
-              />
-              <img
-                src={logoBlanco}
-                alt="ISTHO"
-                className="w-14 h-14 rounded-2xl shadow-lg mx-auto hidden dark:block"
+                className="h-14 w-auto max-w-[140px] object-contain mx-auto"
               />
             </div>
 
@@ -229,14 +223,9 @@ const ResetPassword = () => {
             {/* Logo */}
             <div className="mb-6">
               <img
-                src={logoNegro}
+                src={logoIstho}
                 alt="ISTHO"
-                className="w-14 h-14 rounded-2xl shadow-lg mx-auto dark:hidden"
-              />
-              <img
-                src={logoBlanco}
-                alt="ISTHO"
-                className="w-14 h-14 rounded-2xl shadow-lg mx-auto hidden dark:block"
+                className="h-14 w-auto max-w-[140px] object-contain mx-auto"
               />
             </div>
 
@@ -292,14 +281,9 @@ const ResetPassword = () => {
             {/* Logo */}
             <div className="text-center mb-6">
               <img
-                src={logoNegro}
+                src={logoIstho}
                 alt="ISTHO"
-                className="w-14 h-14 rounded-2xl shadow-lg mx-auto mb-4 dark:hidden"
-              />
-              <img
-                src={logoBlanco}
-                alt="ISTHO"
-                className="w-14 h-14 rounded-2xl shadow-lg mx-auto mb-4 hidden dark:block"
+                className="h-14 w-auto max-w-[140px] object-contain mx-auto mb-4"
               />
             </div>
 

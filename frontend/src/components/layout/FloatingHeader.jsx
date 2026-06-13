@@ -271,8 +271,7 @@ const getMenuForRole = (rol, hasPermission) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 import { useThemeContext } from '../../context/ThemeContext';
-import logoNegro from '../../assets/logo-negro.png';
-import logoBlanco from '../../assets/logo-blanco.png';
+import logoIstho from '../../assets/logo-istho.png';
 import { getServerFileUrl } from '../../api/client';
 
 /**
@@ -866,8 +865,7 @@ const MobileMenu = ({
         <div className="sticky top-0 bg-white dark:bg-centhrix-bg border-b border-gray-100 dark:border-slate-700 px-4 py-4 z-10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <img src={logoBlanco} alt="ISTHO" className="w-8 h-8 rounded-lg dark:hidden" />
-              <img src={logoNegro} alt="ISTHO" className="w-8 h-8 rounded-lg hidden dark:block" />
+              <img src={logoIstho} alt="ISTHO" className="h-8 w-auto max-w-[96px] object-contain" />
               <span className="text-xl font-bold text-slate-800 dark:text-white">CRM</span>
             </div>
             <button
@@ -1363,14 +1361,9 @@ const FloatingHeader = () => {
                 onKeyDown={(e) => e.key === 'Enter' && navigate('/dashboard')}
               >
                 <img
-                  src={logoBlanco}
+                  src={logoIstho}
                   alt="ISTHO"
-                  className="w-10 h-10 rounded-lg shadow-lg shadow-orange-500/20 dark:hidden"
-                />
-                <img
-                  src={logoNegro}
-                  alt="ISTHO"
-                  className="w-10 h-10 rounded-lg shadow-lg shadow-orange-500/20 hidden dark:block"
+                  className="h-10 w-auto max-w-[120px] object-contain"
                 />
                 <span className="hidden sm:block text-xl font-bold text-slate-800 dark:text-white font-display">
                   CRM

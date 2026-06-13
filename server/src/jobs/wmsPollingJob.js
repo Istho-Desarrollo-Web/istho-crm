@@ -215,10 +215,17 @@ async function _ejecutarPoll() {
   try {
     logger.info('[WmsPolling] Iniciando ciclo de polling...');
 
+    // Punto de corte para ignorar órdenes históricas del WMS (ej: migración de inventario).
+    // Setear WMS_POLLING_DESDE=YYYY-MM-DD en env para excluir órdenes anteriores a esa fecha.
+    const desdeEnv = process.env.WMS_POLLING_DESDE;
+    const desdeDate = desdeEnv ? new Date(desdeEnv) : null;
+    if (desdeDate && isNaN(desdeDate.getTime())) {
+      logger.warn(`[WmsPolling] WMS_POLLING_DESDE="${desdeEnv}" no es una fecha válida — se ignorará el filtro`);
+    }
+
     let ordenes;
     try {
       const resultado = await wmsApiService.getOrdenes({ limit: 50, page: 1 });
-      // getOrdenes puede retornar { data: [], meta: {} } o []
       ordenes = Array.isArray(resultado) ? resultado : (resultado?.data ?? []);
     } catch (err) {
       const status = err.response?.status;
@@ -254,8 +261,22 @@ async function _ejecutarPoll() {
       return;
     }
 
-    const ordenesCompletadas = ordenes.filter((o) => o.orderStatus?.name === 'Finalizada');
-    logger.info(`[WmsPolling] ${ordenesCompletadas.length} órdenes finalizadas de ${ordenes.length} totales`);
+    const ordenesFinalizadas = ordenes.filter((o) => o.orderStatus?.name === 'Finalizada');
+
+    // Filtrar órdenes de migración histórica si WMS_POLLING_DESDE está configurado
+    const ordenesCompletadas = (desdeDate && !isNaN(desdeDate.getTime()))
+      ? ordenesFinalizadas.filter((o) => {
+          const fecha = o.orderDate ? new Date(o.orderDate) : null;
+          if (!fecha || isNaN(fecha.getTime())) return true; // sin fecha → incluir por precaución
+          return fecha >= desdeDate;
+        })
+      : ordenesFinalizadas;
+
+    const omitidas = ordenesFinalizadas.length - ordenesCompletadas.length;
+    logger.info(
+      `[WmsPolling] ${ordenesCompletadas.length} órdenes a procesar` +
+      ` (${ordenes.length} totales, ${omitidas} omitidas por fecha de corte)`
+    );
 
     for (const orden of ordenesCompletadas) {
       try {
