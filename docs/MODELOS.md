@@ -617,6 +617,174 @@ despachada → disponible (suma en kardex, reactivación/devolución)
 
 ---
 
+### 19. Vehiculo
+
+**Tabla:** `vehiculos`
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|--------------|-------------|
+| `id` | INTEGER | PK, AUTO_INCREMENT | |
+| `placa` | STRING(20) | UNIQUE, NOT NULL | Placa del vehículo |
+| `tipo` | STRING(50) | | camión, furgón, motocicleta, etc. |
+| `marca` | STRING(50) | | |
+| `modelo` | STRING(50) | | |
+| `anio` | INTEGER | | Año del vehículo |
+| `capacidad` | DECIMAL(10,2) | | Capacidad en toneladas |
+| `conductor_id` | INTEGER | FK → Usuario | Conductor responsable asignado |
+| `estado` | ENUM | activo, inactivo, mantenimiento | |
+
+---
+
+### 20. Viaje
+
+**Tabla:** `viajes`
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|--------------|-------------|
+| `id` | INTEGER | PK, AUTO_INCREMENT | |
+| `numero` | STRING(20) | UNIQUE | Auto-generado: VJ-2026-0001 |
+| `fecha` | DATEONLY | NOT NULL | Fecha del viaje |
+| `vehiculo_id` | INTEGER | FK → Vehiculo | |
+| `conductor_id` | INTEGER | FK → Usuario | |
+| `caja_menor_id` | INTEGER | FK → CajaMenor, NULL | Caja menor asociada |
+| `cliente_nombre` | STRING(200) | | Nombre del cliente de destino |
+| `origen` | STRING(300) | | |
+| `destino` | STRING(300) | | |
+| `estado` | ENUM | pendiente, completado, anulado | |
+| `odometro_inicio` | INTEGER | | Kilometraje inicial |
+| `odometro_fin` | INTEGER | | Kilometraje final |
+| `observaciones` | TEXT | | |
+| `creado_por` | INTEGER | FK → Usuario | |
+
+---
+
+### 21. CajaMenor
+
+**Tabla:** `cajas_menores`
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|--------------|-------------|
+| `id` | INTEGER | PK, AUTO_INCREMENT | |
+| `numero` | STRING(20) | UNIQUE | Auto-generado: CM-2026-0001 |
+| `asignado_a` | INTEGER | FK → Usuario | Conductor titular |
+| `creado_por` | INTEGER | FK → Usuario | Financiera que la abrió |
+| `saldo_inicial` | DECIMAL(15,2) | | Monto inicial asignado |
+| `saldo_actual` | DECIMAL(15,2) | | Calculado: saldo_inicial + ingresos - egresos |
+| `total_ingresos` | DECIMAL(15,2) | DEFAULT 0 | Suma de movimientos tipo ingreso aprobados |
+| `total_egresos` | DECIMAL(15,2) | DEFAULT 0 | Suma de movimientos tipo egreso aprobados |
+| `estado` | ENUM | abierta, en_revision, cerrada | |
+| `caja_anterior_id` | INTEGER | FK → CajaMenor, NULL | Referencia a caja previa (historial encadenado) |
+| `fecha_apertura` | DATEONLY | | |
+| `fecha_cierre` | DATEONLY | | |
+| `observaciones_cierre` | TEXT | | |
+
+---
+
+### 22. MovimientoCajaMenor
+
+**Tabla:** `movimientos_caja_menor`
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|--------------|-------------|
+| `id` | INTEGER | PK, AUTO_INCREMENT | |
+| `caja_menor_id` | INTEGER | FK → CajaMenor, NOT NULL | |
+| `viaje_id` | INTEGER | FK → Viaje, NULL | Viaje al que corresponde el gasto |
+| `tipo` | ENUM | ingreso, egreso | |
+| `concepto` | STRING(300) | NOT NULL | Descripción del gasto |
+| `monto` | DECIMAL(15,2) | NOT NULL | |
+| `documento_referencia` | STRING(100) | | Número de factura/recibo |
+| `soporte_url` | STRING(500) | | URL S3 del soporte documental |
+| `soporte_s3_key` | STRING(500) | | Clave S3 del soporte |
+| `estado_aprobacion` | ENUM | pendiente_aprobacion, aprobado, rechazado | DEFAULT pendiente_aprobacion |
+| `aprobado_por` | INTEGER | FK → Usuario, NULL | Financiera que aprobó/rechazó |
+| `fecha_aprobacion` | DATE | | |
+| `motivo_rechazo` | TEXT | | |
+| `registrado_por` | INTEGER | FK → Usuario | |
+
+---
+
+### 23. SolicitudDetalle (Líneas de Solicitud)
+
+**Tabla:** `solicitud_detalles`
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|--------------|-------------|
+| `id` | INTEGER | PK, AUTO_INCREMENT | |
+| `solicitud_id` | INTEGER | FK → Solicitud, NOT NULL | |
+| `sku` | STRING(50) | | |
+| `descripcion` | STRING(200) | | Descripción del producto |
+| `cantidad` | DECIMAL(12,2) | | |
+| `unidad_medida` | STRING(20) | | |
+
+---
+
+### 24. SolicitudComentario (Comentarios Internos)
+
+**Tabla:** `solicitud_comentarios`
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|--------------|-------------|
+| `id` | INTEGER | PK, AUTO_INCREMENT | |
+| `solicitud_id` | INTEGER | FK → Solicitud, NOT NULL | |
+| `usuario_id` | INTEGER | FK → Usuario | Autor del comentario |
+| `texto` | TEXT | NOT NULL | |
+
+---
+
+### 25. WmsSyncLog (Log de Sincronización WMS)
+
+**Tabla:** `wms_sync_logs`
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|--------------|-------------|
+| `id` | INTEGER | PK, AUTO_INCREMENT | |
+| `tipo_sync` | STRING(50) | | entrada, salida, kardex, polling_entrada, polling_salida |
+| `origen` | ENUM | push, polling | Origen de la sincronización |
+| `wms_order_id` | STRING(36) | | UUID de la orden en WMS |
+| `documento` | STRING(100) | | Número de documento WMS |
+| `operacion_id` | INTEGER | FK → Operacion, NULL | Operación generada |
+| `payload` | JSON | | Solo en PUSH — permite re-ejecución desde dashboard |
+| `estado` | ENUM | exito, error, duplicado | |
+| `mensaje_error` | TEXT | | Solo si estado = error |
+
+**Nota:** Logs PULL (`polling_*`) no tienen `payload` y no son re-ejecutables desde el dashboard.
+
+---
+
+### 26. ConfiguracionWms
+
+**Tabla:** `configuracion_wms`
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|--------------|-------------|
+| `id` | INTEGER | PK, AUTO_INCREMENT | |
+| `codigo` | STRING(50) | UNIQUE | Clave de configuración |
+| `nombre` | STRING(100) | | Nombre legible |
+| `valor` | TEXT | | Valor actual |
+| `tipo` | ENUM | string, boolean, number | Para parseo correcto |
+| `es_activo` | BOOLEAN | DEFAULT true | |
+
+---
+
+### 27. ReporteProgramado
+
+**Tabla:** `reportes_programados`
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|--------------|-------------|
+| `id` | INTEGER | PK, AUTO_INCREMENT | |
+| `nombre` | STRING(100) | NOT NULL | |
+| `tipo_reporte` | STRING(50) | | operaciones, inventario, clientes, etc. |
+| `filtros` | JSON | | Filtros a aplicar (fecha_desde, cliente_id, etc.) |
+| `frecuencia` | ENUM | diaria, semanal, mensual | |
+| `destinatarios` | JSON | | Array de emails |
+| `cliente_id` | INTEGER | FK → Cliente, NULL | Reporte solo para ese cliente |
+| `proximo_envio` | DATE | | Calculado automáticamente tras cada envío |
+| `activo` | BOOLEAN | DEFAULT true | |
+| `creado_por` | INTEGER | FK → Usuario | |
+
+---
+
 ## Asociaciones Completas
 
 ```javascript

@@ -12,21 +12,22 @@
 | **Backend** | Node.js + Express 4.18 + Sequelize 6 (ORM) |
 | **Base de Datos** | MySQL (XAMPP local / AWS RDS 8.0 producción) |
 | **Autenticación** | JWT con refresh tokens (HS256) |
-| **Email** | Resend API + Nodemailer + Handlebars templates |
+| **Email** | Gmail SMTP + Nodemailer + Handlebars templates (Resend como backup) |
 | **Exportaciones** | ExcelJS (Excel) + PDFKit (PDF) |
 | **Archivos** | Multer + Amazon S3 (presigned URLs, bucket `istho-crm-files`) |
 
 ## Módulos del Sistema
 
 ### 1. Autenticación y Autorización
-- Login con JWT + refresh tokens (1h acceso / 30d refresh)
-- **Login con email o nombre de usuario**
-- 4 roles: **admin**, **supervisor**, **operador**, **cliente** (portal)
-- Sistema de permisos dual: Rol→Permiso (N:M) + override por usuario
-- Bloqueo de cuenta tras 5 intentos fallidos (15 min)
+- Login con JWT + refresh tokens (24h acceso / 7d refresh). Login con email o nombre de usuario
+- **2FA/TOTP** con app autenticadora (Google Authenticator, Authy) + 8 códigos de respaldo
+- **6 roles jerárquicos:** admin(100) · supervisor(75) · financiera(60) · operador(50) · conductor(30) · cliente(10)
+- Sistema de permisos dual: Rol→Permiso (N:M tabla `rol_permisos`) + permisos granulares JSON para portal cliente (`permisos_cliente`)
+- Bloqueo de cuenta tras 5 intentos fallidos (15 min). Caché de permisos con TTL 60s
 - Forzar cambio de contraseña en primer login (modal compacto)
 - Recuperación de contraseña por email (enlace de un solo uso válido 1 hora → `/reset-password?token=…`)
-- **Foto de perfil** (avatar) con upload/eliminación
+- **Recordarme**: persiste email en localStorage (`centhrix_recordar_email`)
+- **Foto de perfil** (avatar) con upload a S3 / eliminación
 
 ### 2. Portal Cliente
 - Navegación filtrada por rol (menú `soloInternos`)
@@ -96,13 +97,42 @@
 - Resultados agrupados por módulo con navegación por teclado
 - Debounce 400ms, mínimo 2 caracteres
 
-### 12. Otros Módulos
-- **Dashboard**: KPIs consolidados con gráficos (Recharts)
-- **Clientes CRUD**: Gestión de empresas con contactos y logo
-- **Despachos**: Gestión de envíos con transporte y documentos
-- **Notificaciones**: Sistema de notificaciones en tiempo real
-- **Documentos**: Gestión documental por operación
-- **Administración**: Gestión de usuarios, roles y permisos con reseteo de contraseña + envío por email
+### 11. Viajes y Logística de Conductores
+
+- **Vehículos**: CRUD con asignación de conductor responsable
+- **Viajes**: Registro de viajes por conductor/vehículo con estados (pendiente/completado/anulado)
+- **Cajas menores**: Flujo financiero por conductor — apertura (financiera) → gastos (conductor) → aprobación (financiera) → cierre
+- **Movimientos de caja**: Cada gasto con soporte documental S3, estado de aprobación, saldo calculado automáticamente
+
+### 12. Solicitudes del Portal Cliente
+
+- Tipos: `ingreso` (aviso de llegada de mercancía) y `despacho` (solicitud de retiro)
+- Número auto-generado (`SOL-2026-XXXX`), prioridad urgente/normal
+- Adjuntos en S3 (`soportes/`), comentarios internos, historial de estados
+- Vinculación a operación cuando se procesa (`operacion_id`)
+- Vista diferenciada: cliente ve solo sus solicitudes, operadores ven todas
+
+### 13. Envío Manual de Email
+
+- Permiso: `notificaciones.enviar` (admin + supervisor)
+- Modo plantilla: `{ plantilla_id, para, cc, variables }` — renderiza Handlebars
+- Modo libre: `{ asunto, cuerpo_html, para, cc }` — HTML directo
+- Botón ✉️ en header flotante. Registro en tabla `emails_manuales`
+
+### 14. Tutorial Interactivo (driver.js)
+
+- Botón `?` fijo en el header, activo solo en rutas con tour configurado
+- 30+ módulos cubiertos con pasos anclados a elementos reales del DOM (`id="tour-*"`)
+- Progreso persistido en `localStorage` (`centhrix_tour_<modulo>`)
+- Config centralizada en `frontend/src/utils/tutorialConfig.js`
+
+### 15. Otros Módulos
+
+- **Dashboard**: 3 variantes según rol (operaciones, conductor, financiera). KPIs + gráficos Recharts
+- **Clientes CRUD**: Gestión de empresas con contactos, logo, usuarios portal y responsables internos
+- **Notificaciones**: Centro de notificaciones en tiempo real con Socket.IO + persistencia BD
+- **Administración**: Usuarios, roles, permisos, sesiones activas, dashboard de seguridad
+- **Configuración WMS**: Parámetros de integración, dashboard de logs de sincronización
 - **Modo Oscuro**: Toggle global con `Ctrl+B`
 
 ## Estructura del Proyecto
@@ -114,7 +144,7 @@ istho-crm/
 │   ├── src/
 │   │   ├── app.js                   # Configuración Express
 │   │   ├── config/                  # Configuración (DB, JWT, Email, Multer)
-│   │   ├── models/                  # Modelos Sequelize (15 modelos)
+│   │   ├── models/                  # Modelos Sequelize (33+ modelos)
 │   │   ├── controllers/             # Controladores (11 controladores)
 │   │   ├── services/                # Lógica de negocio (WMS, Email, Notificaciones)
 │   │   ├── routes/                  # Rutas Express (12 archivos)

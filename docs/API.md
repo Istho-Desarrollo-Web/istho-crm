@@ -1762,6 +1762,161 @@ Aprueba un movimiento. Solo los movimientos aprobados afectan el saldo de la caj
 
 ---
 
+## 17. Solicitudes del Portal Cliente (`/solicitudes`)
+
+> Reemplaza la sección `/despachos` (nombre legacy). Las solicitudes son el canal oficial de comunicación entre clientes portal y el equipo interno.
+
+### GET `/solicitudes`
+**Acceso:** Autenticado + permiso `solicitudes:ver`
+
+Usuarios con `rol=cliente` ven solo sus propias solicitudes (filtrado automático por `filtrarPorCliente`).
+
+**Query:** `page`, `limit`, `tipo`, `estado`, `prioridad`, `cliente_id`, `desde`, `hasta`
+
+---
+
+### GET `/solicitudes/:id`
+**Acceso:** Autenticado + permiso `solicitudes:ver`
+
+Incluye: detalles de líneas, documentos adjuntos, comentarios y operación vinculada.
+
+---
+
+### POST `/solicitudes`
+**Acceso:** Autenticado + permiso `solicitudes:crear` (multipart/form-data)
+
+**Body (form-data):**
+- `tipo`: `ingreso` | `despacho`
+- `prioridad`: `normal` | `urgente`
+- `fecha_estimada`: YYYY-MM-DD
+- `numero_documento`: string (opcional)
+- `transportista`: string (opcional)
+- `direccion_entrega`: string (solo `despacho`)
+- `notas`: string (opcional)
+- `detalles`: JSON array `[{ sku, descripcion, cantidad, unidad_medida }]`
+- `documento`: file (opcional, S3 carpeta `soportes/`)
+
+**Respuesta (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "numero_solicitud": "SOL-2026-0001",
+    "tipo": "ingreso",
+    "estado": "recibida"
+  }
+}
+```
+
+---
+
+### PATCH `/solicitudes/:id/estado`
+**Acceso:** Autenticado (rol interno, no cliente)
+
+Cambia el estado de la solicitud. Emite notificación Socket.IO al cliente.
+
+**Body:**
+```json
+{
+  "estado": "en_proceso",
+  "observaciones": "Programado para el martes"
+}
+```
+
+**Estados válidos:** `recibida` → `en_proceso` → `completada` | `rechazada`
+
+---
+
+### POST `/solicitudes/:id/vincular`
+**Acceso:** Autenticado (operador+)
+
+Vincula la solicitud a una operación existente (`operacion_id`).
+
+**Body:**
+```json
+{ "operacion_id": 42 }
+```
+
+---
+
+### POST `/solicitudes/:id/comentarios`
+**Acceso:** Autenticado + permiso `solicitudes:comentar`
+
+**Body:**
+```json
+{ "texto": "El transportista llegará mañana a las 8am" }
+```
+
+---
+
+### POST `/solicitudes/:id/documento`
+**Acceso:** Autenticado (multipart/form-data)
+
+Adjunta un documento adicional a la solicitud.
+
+**Body:** `documento` (file)
+
+---
+
+### DELETE `/solicitudes/:id`
+**Acceso:** Admin
+
+---
+
+## 18. Emails Manuales (`/emails`)
+
+> Envío manual de emails desde el sistema. Requiere permiso `notificaciones.enviar` (admin + supervisor).
+
+### POST `/emails/enviar`
+**Acceso:** Autenticado + permiso `notificaciones:enviar`
+
+Dos modos de uso:
+
+**Modo plantilla (renderiza Handlebars):**
+```json
+{
+  "plantilla_id": 3,
+  "para": ["cliente@empresa.com", "otro@empresa.com"],
+  "cc": ["copia@istho.com"],
+  "variables": {
+    "nombre": "Juan",
+    "numero_operacion": "OP-2026-0042"
+  }
+}
+```
+
+**Modo libre (HTML directo):**
+```json
+{
+  "asunto": "Actualización de tu pedido",
+  "cuerpo_html": "<h1>Hola</h1><p>Tu pedido está listo.</p>",
+  "para": ["cliente@empresa.com"],
+  "cc": []
+}
+```
+
+**Respuesta (200):** El email se envía en `setImmediate` (no bloquea). La respuesta es inmediata.
+```json
+{
+  "success": true,
+  "message": "Email enviado correctamente"
+}
+```
+
+El envío queda registrado en la tabla `emails_manuales` con: `usuario_id`, `para`, `asunto`, `plantilla_id`, `estado` (enviado/error).
+
+---
+
+### GET `/emails/historial`
+**Acceso:** Admin + Supervisor
+
+Lista el historial de emails manuales enviados.
+
+**Query:** `page`, `limit`, `desde`, `hasta`, `usuario_id`
+
+---
+
 ## Almacenamiento de Archivos (Amazon S3)
 
 Todos los archivos subidos se almacenan en **Amazon S3** (bucket `istho-crm-files`, us-west-2). Los uploads van directo a S3 usando `multer.memoryStorage()` — sin escritura a disco. El acceso se realiza mediante **presigned URLs** con TTL de 15 minutos, generadas por `GET /archivos/url?key=<s3-key>`.

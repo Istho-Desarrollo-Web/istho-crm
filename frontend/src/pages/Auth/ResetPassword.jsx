@@ -22,7 +22,7 @@ import {
   ArrowLeft,
   Shield,
 } from 'lucide-react';
-import { useSnackbar } from 'notistack';
+import useNotification from '../../hooks/useNotification';
 import authService from '../../api/auth.service';
 import logoIstho from '../../assets/logo-istho.png';
 
@@ -91,7 +91,7 @@ const ResetPassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const { enqueueSnackbar } = useSnackbar();
+  const { success: notifySuccess, error: notifyError, warning } = useNotification();
 
   const passwordStrength = useMemo(
     () => getPasswordStrength(formData.password),
@@ -110,31 +110,29 @@ const ResetPassword = () => {
     e.preventDefault();
 
     if (!token) {
-      enqueueSnackbar('Token inválido o expirado', { variant: 'error' });
+      notifyError('Token inválido o expirado');
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      enqueueSnackbar('Las contraseñas no coinciden', { variant: 'error' });
+      notifyError('Las contraseñas no coinciden');
       return;
     }
 
     if (formData.password.length < 8) {
-      enqueueSnackbar('La contraseña debe tener al menos 8 caracteres', { variant: 'warning' });
+      warning('La contraseña debe tener al menos 8 caracteres');
       return;
     }
     if (!/[A-Z]/.test(formData.password)) {
-      enqueueSnackbar('La contraseña debe contener al menos una mayúscula', { variant: 'warning' });
+      warning('La contraseña debe contener al menos una mayúscula');
       return;
     }
     if (!/[0-9]/.test(formData.password)) {
-      enqueueSnackbar('La contraseña debe contener al menos un número', { variant: 'warning' });
+      warning('La contraseña debe contener al menos un número');
       return;
     }
     if (!/[^A-Za-z0-9]/.test(formData.password)) {
-      enqueueSnackbar('La contraseña debe contener al menos un carácter especial (!@#$%)', {
-        variant: 'warning',
-      });
+      warning('La contraseña debe contener al menos un carácter especial (!@#$%)');
       return;
     }
 
@@ -145,16 +143,14 @@ const ResetPassword = () => {
 
       if (response.success) {
         setSuccess(true);
-        enqueueSnackbar('Contraseña restablecida exitosamente', { variant: 'success' });
+        notifySuccess('Contraseña restablecida exitosamente');
         setTimeout(() => navigate('/login'), 3000);
       } else {
-        enqueueSnackbar(response.message || 'Error al restablecer la contraseña', {
-          variant: 'error',
-        });
+        notifyError(response.message || 'Error al restablecer la contraseña');
       }
-    } catch (error) {
-      console.error('Error en reset password:', error);
-      enqueueSnackbar('Error de conexión. Intente nuevamente', { variant: 'error' });
+    } catch (err) {
+      console.error('Error en reset password:', err);
+      notifyError('Error de conexión. Intente nuevamente');
     } finally {
       setLoading(false);
     }
@@ -304,8 +300,8 @@ const ResetPassword = () => {
             <div className="mb-6 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-xl flex items-start gap-3">
               <Shield size={18} className="text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-blue-700 dark:text-blue-300">
-                Tu contraseña debe tener al menos 6 caracteres. Te recomendamos usar mayúsculas,
-                números y caracteres especiales.
+                Tu contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un
+                carácter especial.
               </p>
             </div>
 

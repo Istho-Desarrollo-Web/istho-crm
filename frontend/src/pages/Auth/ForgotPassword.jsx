@@ -12,7 +12,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Send, AlertCircle, CheckCircle, Loader2, KeyRound } from 'lucide-react';
-import { useSnackbar } from 'notistack';
+import useNotification from '../../hooks/useNotification';
 import authService from '../../api/auth.service';
 import logoIstho from '../../assets/logo-istho.png';
 
@@ -49,7 +49,7 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const { enqueueSnackbar } = useSnackbar();
+  const { success, error: notifyError, warning } = useNotification();
 
   // ────────────────────────────────────────────────────────────────────────
   // HANDLER
@@ -59,7 +59,7 @@ const ForgotPassword = () => {
     e.preventDefault();
 
     if (!email) {
-      enqueueSnackbar('Por favor ingresa tu correo electrónico', { variant: 'warning' });
+      warning('Por favor ingresa tu correo electrónico');
       return;
     }
 
@@ -70,16 +70,13 @@ const ForgotPassword = () => {
 
       if (response.success) {
         setSubmitted(true);
-        enqueueSnackbar(
-          'Si el correo existe, recibirás las instrucciones para restablecer tu contraseña',
-          { variant: 'success' }
-        );
+        success('Si el correo existe, recibirás las instrucciones para restablecer tu contraseña');
       } else {
-        enqueueSnackbar(response.message || 'Error al procesar la solicitud', { variant: 'error' });
+        notifyError(response.message || 'Error al procesar la solicitud');
       }
-    } catch (error) {
-      console.error('Error en forgot password:', error);
-      enqueueSnackbar('Error de conexión. Intenta nuevamente', { variant: 'error' });
+    } catch (err) {
+      console.error('Error en forgot password:', err);
+      notifyError('Error de conexión. Intenta nuevamente');
     } finally {
       setLoading(false);
     }

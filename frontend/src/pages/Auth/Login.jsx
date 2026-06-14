@@ -112,6 +112,7 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mensajePendiente, setMensajePendiente] = useState(null);
   const [politicaOpen, setPoliticaOpen] = useState(false);
+  const [recordarme, setRecordarme] = useState(() => !!localStorage.getItem('centhrix_recordar_email'));
 
   // Estado para el paso de 2FA
   const [paso2FA, setPaso2FA] = useState(null); // { temp_token, usuario_nombre }
@@ -139,7 +140,7 @@ const LoginPage = () => {
   } = useForm({
     resolver: yupResolver(loginSchema),
     defaultValues: {
-      email: '',
+      email: localStorage.getItem('centhrix_recordar_email') || '',
       password: '',
       aceptaPolitica: yaAcepto,
     },
@@ -252,12 +253,16 @@ const LoginPage = () => {
       const result = await login(data.email, data.password);
 
       if (result.requiere_2fa) {
+        if (recordarme) localStorage.setItem('centhrix_recordar_email', data.email);
+        else localStorage.removeItem('centhrix_recordar_email');
         setIsSubmitting(false);
         setPaso2FA({ temp_token: result.temp_token, usuario_nombre: result.usuario_nombre });
         return;
       }
 
       if (result.requiere_setup_2fa) {
+        if (recordarme) localStorage.setItem('centhrix_recordar_email', data.email);
+        else localStorage.removeItem('centhrix_recordar_email');
         setIsSubmitting(false);
         setPasoSetup2FA(true);
         // Iniciar el setup automáticamente
@@ -271,6 +276,8 @@ const LoginPage = () => {
       }
 
       if (result.success) {
+        if (recordarme) localStorage.setItem('centhrix_recordar_email', data.email);
+        else localStorage.removeItem('centhrix_recordar_email');
         localStorage.setItem('politica_aceptada', POLITICA_VERSION);
         const destino = getDestino(location.state?.from?.pathname);
         navigate(destino, { replace: true });
@@ -638,6 +645,8 @@ const LoginPage = () => {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
+                    checked={recordarme}
+                    onChange={(e) => setRecordarme(e.target.checked)}
                     className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-[#E74C3C] focus:ring-[#E74C3C] dark:bg-centhrix-surface"
                   />
                   <span className="text-sm text-gray-600 dark:text-slate-400">Recordarme</span>
