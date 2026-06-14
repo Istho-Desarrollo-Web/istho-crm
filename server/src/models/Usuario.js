@@ -162,10 +162,9 @@ module.exports = (sequelize) => {
 
       email: {
         type: DataTypes.STRING(100),
-        allowNull: false,
+        allowNull: true,
         unique: { msg: 'Este email ya está registrado' },
         validate: {
-          notEmpty: { msg: 'El email es requerido' },
           isEmail: { msg: 'Debe ser un email válido' },
         },
       },

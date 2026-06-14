@@ -2,3 +2,7 @@ abrir-tunel-db.bat
 
 # Git worktrees
 .worktrees/
+
+# Local environment files
+server/.env
+server/.env.rds
