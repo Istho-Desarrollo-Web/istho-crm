@@ -2,7 +2,7 @@
 
 ## ISTHO S.A.S.
 
-**Version:** 1.3.0 | **Fecha:** Junio 2026
+**Versión:** 1.5.0 | **Fecha:** Junio 2026
 
 **Centro Logistico Industrial del Norte** — Girardota, Antioquia, Colombia
 
@@ -90,6 +90,9 @@
     - 17.3 Funciones Disponibles
     - 17.4 Restricciones
     - 17.5 Ver Mi Empresa
+18. [Tutorial Interactivo](#18-tutorial-interactivo)
+19. [Busqueda Global](#19-busqueda-global)
+20. [Envio Manual de Email](#20-envio-manual-de-email)
 
 ---
 
@@ -991,7 +994,7 @@ Para acceder al modulo de reportes:
 5. **Tabla de datos:** Cada movimiento con su detalle completo.
 6. **Exportar:** Excel o PDF.
 
-### 10.11 Exportar Excel / CSV
+### 10.11 Exportar Excel / PDF
 
 Todos los modulos del sistema permiten exportar datos:
 
@@ -1124,7 +1127,7 @@ Para gestionar los usuarios del sistema:
 | Email | Correo | Si | Correo electronico |
 | Telefono | Texto | No | Numero de contacto |
 | Rol | Seleccion | Si | Admin, Supervisor, Financiera, Operador, Conductor, Cliente |
-| Contrasena | Contrasena | Si | Contrasena temporal (minimo 6 caracteres) |
+| Contrasena | Contrasena | Si | Contrasena temporal (minimo 8 caracteres, una mayuscula, un numero y un caracter especial) |
 
 3. Haga clic en **"Guardar"**.
 4. El usuario recibira sus credenciales y debera cambiar la contrasena en su primer acceso.
@@ -1228,7 +1231,7 @@ Para cambiar su contrasena:
 | Campo | Descripcion |
 |-------|-------------|
 | Contrasena Actual | Ingrese su contrasena vigente |
-| Nueva Contrasena | Ingrese la nueva contrasena (minimo 6 caracteres) |
+| Nueva Contrasena | Ingrese la nueva contrasena (minimo 8 caracteres, una mayuscula, un numero y un caracter especial) |
 | Confirmar Contrasena | Repita la nueva contrasena |
 
 3. El sistema mostrara un indicador de seguridad de la nueva contrasena.
@@ -1397,11 +1400,10 @@ Desde la pantalla de **Solicitudes** puede:
 
 | Estado | Descripcion |
 |--------|-------------|
-| Pendiente | Recibida, sin respuesta del equipo aun |
-| En revision | ISTHO esta procesando la solicitud |
-| Aprobada | La solicitud fue aceptada |
+| Recibida | Solicitud enviada, sin respuesta del equipo aun |
+| En Proceso | ISTHO esta procesando la solicitud |
+| Completada | La operacion fue realizada exitosamente |
 | Rechazada | La solicitud fue rechazada (con motivo en comentarios) |
-| Completada | La operacion fue realizada |
 
 ---
 
@@ -1409,11 +1411,11 @@ Desde la pantalla de **Solicitudes** puede:
 
 El **Portal Cliente** es un acceso especial del sistema CenthriX destinado exclusivamente a los clientes de ISTHO S.A.S. Permite consultar información propia en tiempo real sin acceso a datos de otros clientes.
 
-### 16.1 Acceso y Credenciales
+### 17.1 Acceso y Credenciales
 
 Un administrador del sistema crea las credenciales del portal y las envía al representante del cliente por correo electronico. Al primer inicio de sesion, el sistema solicitara cambiar la contrasena.
 
-### 16.2 Identificacion en el Sistema
+### 17.2 Identificacion en el Sistema
 
 Al iniciar sesion como cliente portal, el encabezado del sistema muestra:
 
@@ -1421,30 +1423,125 @@ Al iniciar sesion como cliente portal, el encabezado del sistema muestra:
 - Este badge es **clickeable** y lleva directamente al detalle de su empresa.
 - El menu de navegacion muestra unicamente las opciones disponibles para el perfil cliente.
 
-### 16.3 Funciones Disponibles
+### 17.3 Funciones Disponibles
 
 | Modulo | Que puede hacer |
 |--------|----------------|
 | Mi Empresa | Ver información general, contactos e historial de operaciones de su empresa |
 | Inventario | Consultar productos propios en bodega con cantidades y ubicaciones |
 | Operaciones | Ver entradas (CO), salidas (PK) y kardex (CR) de sus operaciones |
+| Solicitudes | Crear avisos de ingreso y solicitudes de despacho; hacer seguimiento de su estado |
 | Reportes | Visualizar reportes de sus operaciones |
 | Configuracion | Gestionar preferencias personales (idioma, zona horaria, tema, notificaciones) |
 
-### 16.4 Restricciones
+### 17.4 Restricciones
 
 - No puede ver informacion de otros clientes.
 - No puede crear, editar ni eliminar operaciones o inventario.
 - No puede acceder a modulos de administracion, viajes, cajas menores ni vehiculos.
 - Al ingresar a la seccion "Clientes", el sistema lo redirige automaticamente al detalle de su propia empresa.
 
-### 16.5 Ver Mi Empresa
+### 17.5 Ver Mi Empresa
 
 Desde la pantalla de detalle de su empresa puede consultar:
 
 1. **Informacion General** — Razon social, NIT, direccion, tipo, sector y estado del cliente.
 2. **Contactos** — Personas de contacto registradas, con opcion de filtrar por tipo de notificacion.
 3. **Historial** — Registro de operaciones cerradas con fecha y nombre del responsable del cierre.
+
+---
+
+## 18. Tutorial Interactivo
+
+El sistema incluye un tutorial guiado que explica el funcionamiento de cada modulo paso a paso.
+
+**Como acceder:**
+
+1. Ubique el boton **"?"** fijo en la esquina inferior derecha del encabezado flotante.
+2. El boton solo aparece en las paginas que tienen un tour configurado.
+3. Haga clic en **"?"** para iniciar el tutorial del modulo actual.
+
+**Como funciona:**
+
+- El tutorial resalta elementos de la pantalla con un marco iluminado y muestra globos de texto con explicaciones.
+- Navegue con los botones **"Anterior"** y **"Siguiente"** o con las teclas de flecha.
+- Puede cerrar el tutorial en cualquier momento haciendo clic fuera del globo o presionando **Escape**.
+- El sistema recuerda si ya tomo el tour del modulo y no lo volvera a mostrar automaticamente.
+
+**Modulos con tutorial disponible:**
+
+Dashboard, Clientes, Inventario, Entradas, Salidas, Kardex, Viajes, Vehiculos, Cajas Menores, Movimientos, Reportes, Administracion y mas.
+
+> **Nota:** Si desea repetir el tutorial de un modulo, haga clic en el boton **"?"** nuevamente en cualquier momento.
+
+---
+
+## 19. Busqueda Global
+
+La busqueda global permite encontrar cualquier registro del sistema sin importar en que modulo este.
+
+**Como usar:**
+
+1. Presione **Ctrl+K** (Windows/Linux) desde cualquier pantalla del sistema.
+2. Se abrira un modal de busqueda en el centro de la pantalla.
+3. Escriba al menos **2 caracteres** para iniciar la busqueda.
+4. Los resultados aparecen agrupados por tipo de registro.
+
+**Tipos de registro que busca:**
+
+| Categoria | Ejemplos |
+| --------- | -------- |
+| Inventario | Productos por nombre, SKU o codigo |
+| Clientes | Empresas por razon social o NIT |
+| Entradas | Documentos CO por numero o referencia |
+| Salidas | Documentos PK por numero o referencia |
+| Kardex | Documentos CR por numero o referencia |
+
+**Navegacion:**
+
+- Use las teclas **↑ ↓** para moverse entre resultados.
+- Presione **Enter** para ir directamente al registro seleccionado.
+- Presione **Escape** o haga clic fuera del modal para cerrarlo.
+
+> **Nota:** La busqueda tiene un retardo de 400ms para evitar multiples consultas mientras escribe.
+
+---
+
+## 20. Envio Manual de Email
+
+Los usuarios con rol **admin** o **supervisor** pueden enviar correos electronicos directamente desde el sistema.
+
+**Como acceder:**
+
+1. En el encabezado flotante, ubique el icono de sobre (**✉**).
+2. Haga clic en el icono para abrir el modal de envio de email.
+
+> **Nota:** Este icono solo es visible para usuarios con el permiso `notificaciones: enviar` (admin y supervisor).
+
+**Modos de envio:**
+
+**Modo Plantilla:**
+
+1. Seleccione una plantilla existente del sistema en el campo **"Plantilla"**.
+2. El sistema mostrara los campos de variables que requiere la plantilla.
+3. Complete los valores de cada variable.
+4. Ingrese los destinatarios en el campo **"Para"** (correos separados por coma).
+5. Opcionalmente agregue destinatarios en copia (**CC**).
+6. Haga clic en **"Enviar"**.
+
+**Modo Libre:**
+
+1. Deje el campo de plantilla vacio o seleccione "Sin plantilla".
+2. Ingrese el **Asunto** del correo.
+3. Redacte el cuerpo del mensaje en el editor de texto HTML.
+4. Ingrese destinatarios en **"Para"** y opcionalmente en **CC**.
+5. Haga clic en **"Enviar"**.
+
+**Caracteristicas:**
+
+- El envio es inmediato. El sistema confirma con una notificacion de exito.
+- Todos los envios quedan registrados en el historial de emails del sistema.
+- El email usa la firma y logo configurados en las plantillas del sistema.
 
 ---
 

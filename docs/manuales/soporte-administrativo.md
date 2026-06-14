@@ -1,8 +1,8 @@
 ﻿# Documento de Soporte Administrativo
 ## CRM CenthriX — ISTHO S.A.S.
 
-**Versión:** 1.1.0
-**Fecha:** Abril 2026
+**Versión:** 1.3.0
+**Fecha:** Junio 2026
 **Elaborado por:** Coordinación TI — ISTHO S.A.S.
 **Clasificación:** Uso interno
 
@@ -90,11 +90,15 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 | 11 | **Solicitudes** | Avisos de ingreso y solicitudes de despacho (portal cliente) | Admin, Supervisor, Operador, Cliente |
 | 12 | **Reportes** | Visualización y exportación | Admin, Supervisor, Financiera, Cliente |
 | 13 | **Reportes Programados** | Envío automático por email | Admin, Supervisor |
-| 14 | **Plantillas Email** | Diseño de correos | Admin, Supervisor |
-| 15 | **Configuración WMS** | Reglas de integración | Admin |
-| 16 | **Administración** | Usuarios, roles, permisos, sesiones | Admin |
-| 17 | **Perfil** | Datos personales, avatar, preferencias | Todos |
-| 18 | **Notificaciones** | Alertas en tiempo real | Todos |
+| 14 | **Plantillas Email** | Diseño de correos y firmas con logo | Admin, Supervisor |
+| 15 | **Email Manual** | Envío de correos ad-hoc (plantilla o libre) | Admin, Supervisor |
+| 16 | **Configuración WMS** | Reglas de integración y dashboard de logs | Admin |
+| 17 | **Administración** | Usuarios, roles, permisos, sesiones, seguridad | Admin |
+| 18 | **Auditoría de Acciones** | Log completo de todas las acciones del sistema | Admin |
+| 19 | **Perfil** | Datos personales, avatar, 2FA, preferencias | Todos |
+| 20 | **Notificaciones** | Alertas en tiempo real (WebSocket) | Todos |
+| 21 | **Tutorial Interactivo** | Tour guiado por módulo (botón ?) | Todos |
+| 22 | **Búsqueda Global** | Búsqueda cross-módulo (Ctrl+K) | Todos |
 
 ### 4.2 Integraciones
 
@@ -102,7 +106,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 |---------|------|-----------|-------------|
 | WMS CenthriX | Bidireccional | API REST + API Key (PUSH) / JWT polling (PULL) | PUSH: WMS empuja productos, entradas, salidas y kardex. PULL: CRM consulta órdenes cada 5 min y ubicaciones en tiempo real. |
 | Gmail SMTP | Saliente | SMTP 587 (TLS) | Envío de emails transaccionales, recuperación de contraseña y reportes |
-| Socket.IO | Interno | HTTP Long-polling | Notificaciones en tiempo real (conexión persistente sin WebSocket) |
+| Socket.IO | Interno | WebSocket (fallback HTTP long-polling) | Notificaciones en tiempo real. Con Redis Upstash activo: multi-instancia. Sin Redis: single-instance (actual) |
 
 ### 4.3 Infraestructura
 
@@ -179,14 +183,74 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 
 ---
 
-## 6. Requisitos Técnicos
+## 6. Funciones Administrativas Avanzadas
 
-### 6.1 Para el Usuario Final
+### 6.1 Dashboard de Seguridad (Admin)
+
+El panel de administración incluye una pestaña **"Seguridad"** con métricas de acceso del sistema:
+
+- Acceder a **"Administración"** en el menú lateral y seleccionar la pestaña **"Seguridad"**.
+- Muestra: intentos de login fallidos recientes, cuentas bloqueadas, sesiones activas por rol, e IPs de acceso.
+- Permite forzar el cierre de todas las sesiones activas de un usuario desde esta pantalla.
+- Útil para auditar accesos sospechosos o aplicar restricciones de emergencia.
+
+### 6.2 Anulación de Operaciones (Admin)
+
+Los administradores pueden anular operaciones WMS que aún no han sido cerradas:
+
+- **Estados anulables:** `pendiente` y `en_proceso`. Las operaciones en estado `cerrado` o ya `anulado` no se pueden anular.
+- Para anular: en el listado de entradas, salidas o kardex, abrir el menú de tres puntos (⋮) de la operación y seleccionar **"Anular operación"**.
+- El sistema solicitará un **motivo de anulación** obligatorio. Sin motivo no se puede confirmar.
+- Las operaciones anuladas quedan visibles en el historial con el badge **Anulado** (rojo).
+- La anulación se registra en el log de auditoría.
+
+> **Nota:** Esta función requiere rol **admin**. Los supervisores no pueden anular operaciones.
+
+### 6.3 Edición Administrativa de Operaciones (Admin)
+
+Los administradores pueden corregir el encabezado y las líneas de una operación en estado `pendiente` o `en_proceso`:
+
+- Para editar: en el menú ⋮ de la operación, seleccionar **"Editar operación"**.
+- Se abre el modal `EditarOperacionModal` que permite:
+  - Cambiar cliente, documento de referencia o fecha del encabezado.
+  - Añadir, eliminar o modificar líneas de detalle (cantidad, producto).
+- La operación queda marcada con el indicador **"Editado por admin"** en los listados y en el detalle.
+- Cada edición queda registrada en el log de auditoría con el usuario que realizó el cambio.
+
+> **Nota:** Las operaciones en estado `cerrado` no son editables.
+
+### 6.4 Dashboard de Logs WMS (Admin)
+
+El módulo **"Configuración WMS"** incluye un dashboard de monitoreo de sincronizaciones:
+
+- Muestra los logs de todas las sincronizaciones PUSH y PULL con estado (éxito/error) y timestamp.
+- Los logs PUSH incluyen el payload completo y tienen botón **"Re-ejecutar"** para reintentar sincronizaciones fallidas.
+- Los logs PULL (`polling_entrada`, `polling_salida`) no incluyen payload y no son re-ejecutables.
+- KPIs: total sincronizaciones por tipo, porcentaje de éxito, errores recientes.
+- Útil para diagnosticar problemas de integración con el WMS CenthriX.
+
+### 6.5 Gestión de Plantillas de Email
+
+Las plantillas de email permiten personalizar los correos que envía el sistema:
+
+- Acceder a **"Plantillas de Email"** en el menú lateral.
+- **Plantillas de sistema** (bienvenida, reseteo de contraseña, recuperación de contraseña): solo lectura, no editables.
+- **Plantillas operativas** (entrada CO, salida PK, kardex CR, general): editables con variables Handlebars.
+- El editor permite agregar firma corporativa y **logo de empresa** (almacenado en S3 como URL pública).
+- Preview en tiempo real del diseño del correo antes de guardar.
+
+> **Nota:** El rol supervisor puede **ver** las plantillas pero no editarlas. Solo el admin puede crear, editar y eliminar plantillas.
+
+---
+
+## 7. Requisitos Técnicos
+
+### 7.1 Para el Usuario Final
 - Navegador web moderno (Chrome 90+, Firefox 90+, Safari 15+, Edge 90+)
 - Conexión a internet
 - Resolución mínima: 360px (móvil) / 1024px (escritorio)
 
-### 6.2 Para el Administrador del Sistema
+### 7.2 Para el Administrador del Sistema
 - Acceso a la consola AWS (App Runner, RDS, S3) — región us-west-2
 - Acceso al dashboard de Vercel (frontend)
 - Acceso a la cuenta de Gmail corporativa (gestión del App Password para SMTP)
@@ -195,7 +259,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 
 ---
 
-## 7. Contacto y Soporte
+## 8. Contacto y Soporte
 
 | Concepto | Detalle |
 |----------|---------|
@@ -207,4 +271,4 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 
 ---
 
-*Documento actualizado para CRM CenthriX v1.1.0 — ISTHO S.A.S. © 2026*
+*Documento actualizado para CRM CenthriX v1.3.0 — ISTHO S.A.S. © 2026*
