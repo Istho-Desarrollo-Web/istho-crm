@@ -46,6 +46,7 @@ const {
   getClientIP,
 } = require('../utils/helpers');
 const logger = require('../utils/logger');
+const { obtenerClientesFiltrados } = require('../middleware/auth');
 
 const CAMPOS_ORDENAMIENTO = ['numero_operacion', 'fecha_operacion', 'tipo', 'estado', 'created_at'];
 
@@ -533,6 +534,20 @@ const listar = async (req, res) => {
       ];
     }
 
+    // Filtrar por clientes asignados para supervisores/operadores
+    const clientesFiltrados = await obtenerClientesFiltrados(req);
+    if (clientesFiltrados !== null) {
+      if (where.cliente_id) {
+        // Si ya hay un filtro específico, verificar que esté en la lista asignada
+        const idSolicitado = Number(where.cliente_id);
+        const permitido = clientesFiltrados.includes(idSolicitado);
+        where.cliente_id = permitido ? idSolicitado : -1;
+      } else {
+        // Sin filtro específico: restringir a todos los clientes asignados
+        where.cliente_id = { [Op.in]: clientesFiltrados.length > 0 ? clientesFiltrados : [-1] };
+      }
+    }
+
     const { count, rows } = await Operacion.findAndCountAll({
       where,
       order,
@@ -558,6 +573,17 @@ const listar = async (req, res) => {
 const estadisticas = async (req, res) => {
   try {
     const whereCliente = req.query.cliente_id ? { cliente_id: req.query.cliente_id } : {};
+
+    // Filtrar por clientes asignados para supervisores/operadores
+    const clientesFiltrados = await obtenerClientesFiltrados(req);
+    if (clientesFiltrados !== null) {
+      if (whereCliente.cliente_id) {
+        const idSolicitado = Number(whereCliente.cliente_id);
+        whereCliente.cliente_id = clientesFiltrados.includes(idSolicitado) ? idSolicitado : -1;
+      } else {
+        whereCliente.cliente_id = { [Op.in]: clientesFiltrados.length > 0 ? clientesFiltrados : [-1] };
+      }
+    }
 
     const porTipo = await Operacion.findAll({
       where: whereCliente,

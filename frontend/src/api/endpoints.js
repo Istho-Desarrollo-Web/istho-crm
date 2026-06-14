@@ -262,6 +262,8 @@ export const ADMIN_ENDPOINTS = {
   USUARIO_RESET_PASSWORD: (id) => `/admin/usuarios/${id}/resetear-password`,
   USUARIO_PERMISOS: (id) => `/admin/usuarios/${id}/permisos`,
   USUARIO_REENVIAR_CREDENCIALES: (id) => `/admin/usuarios/${id}/reenviar-credenciales`,
+  USUARIO_CLIENTES_ASIGNADOS: (id) => `/admin/usuarios/${id}/clientes-asignados`,
+  USUARIO_CLIENTE_ASIGNADO: (id, clienteId) => `/admin/usuarios/${id}/clientes-asignados/${clienteId}`,
 
   // Roles
   ROLES: '/admin/roles',

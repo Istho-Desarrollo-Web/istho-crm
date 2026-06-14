@@ -48,6 +48,7 @@ const {
 } = require('../utils/helpers');
 const logger = require('../utils/logger');
 const notificacionService = require('../services/notificacionService');
+const { obtenerClientesFiltrados } = require('../middleware/auth');
 
 // Campos permitidos para ordenamiento
 const CAMPOS_ORDENAMIENTO = [
@@ -139,6 +140,18 @@ const listar = async (req, res) => {
         { sku: { [Op.like]: `%${searchTerm}%` } },
         { codigo_barras: { [Op.like]: `%${searchTerm}%` } },
       ];
+    }
+
+    // Filtrar por clientes asignados para supervisores/operadores
+    const clientesFiltrados = await obtenerClientesFiltrados(req);
+    if (clientesFiltrados !== null) {
+      if (where.cliente_id) {
+        const idSolicitado = Number(where.cliente_id);
+        const permitido = clientesFiltrados.includes(idSolicitado);
+        where.cliente_id = permitido ? idSolicitado : -1;
+      } else {
+        where.cliente_id = { [Op.in]: clientesFiltrados.length > 0 ? clientesFiltrados : [-1] };
+      }
     }
 
     // Ejecutar consulta

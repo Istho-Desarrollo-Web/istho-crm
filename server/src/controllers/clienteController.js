@@ -20,6 +20,7 @@ const {
   sequelize,
 } = require('../models');
 const notificacionService = require('../services/notificacionService');
+const { obtenerClientesFiltrados } = require('../middleware/auth');
 const {
   success,
   successMessage,
@@ -95,6 +96,13 @@ const listar = async (req, res) => {
         { codigo_cliente: { [Op.like]: `%${searchTerm}%` } },
         { email: { [Op.like]: `%${searchTerm}%` } },
       ];
+    }
+
+    // Filtrar por clientes asignados para supervisores/operadores
+    const clientesFiltrados = await obtenerClientesFiltrados(req);
+    if (clientesFiltrados !== null) {
+      const ids = clientesFiltrados.length > 0 ? clientesFiltrados : [-1];
+      where.id = { [Op.in]: ids };
     }
 
     // Ejecutar consulta principal (sin subquery por cada fila)
@@ -1178,6 +1186,129 @@ const removeResponsable = async (req, res) => {
   }
 };
 
+// ─── GESTIÓN DE ASIGNACIONES DESDE PERSPECTIVA DE USUARIO (admin) ────────────
+
+/**
+ * GET /administracion/usuarios/:id/clientes-asignados
+ * Clientes asignados a un usuario específico
+ */
+const getClientesAsignados = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const asignaciones = await ClienteResponsable.findAll({
+      where: { usuario_id: id },
+      include: [
+        {
+          model: Cliente,
+          as: 'cliente',
+          attributes: ['id', 'codigo_cliente', 'razon_social', 'nit', 'estado'],
+        },
+      ],
+      order: [[{ model: Cliente, as: 'cliente' }, 'razon_social', 'ASC']],
+    });
+
+    return success(
+      res,
+      asignaciones.map((a) => ({
+        asignacion_id: a.id,
+        cliente_id: a.cliente_id,
+        codigo_cliente: a.cliente?.codigo_cliente,
+        razon_social: a.cliente?.razon_social,
+        nit: a.cliente?.nit,
+        estado: a.cliente?.estado,
+      }))
+    );
+  } catch (err) {
+    logger.error('Error al obtener clientes asignados:', { message: err.message });
+    return serverError(res, 'Error al obtener clientes asignados', err);
+  }
+};
+
+/**
+ * POST /administracion/usuarios/:id/clientes-asignados
+ * Asignar un cliente a un usuario (perspectiva admin desde lista de usuarios)
+ */
+const addClienteAsignado = async (req, res) => {
+  try {
+    const { id: usuario_id } = req.params;
+    const { cliente_id } = req.body;
+
+    if (!cliente_id) return errorResponse(res, 'cliente_id es requerido', 400);
+
+    const usuario = await Usuario.findByPk(usuario_id);
+    if (!usuario) return notFound(res, 'Usuario no encontrado');
+
+    const rolesPermitidos = ['admin', 'supervisor', 'operador'];
+    if (!rolesPermitidos.includes(usuario.rol)) {
+      return errorResponse(res, 'Solo se pueden asignar clientes a usuarios con rol admin, supervisor u operador', 422);
+    }
+
+    const cliente = await Cliente.findByPk(cliente_id);
+    if (!cliente) return notFound(res, 'Cliente no encontrado');
+
+    const [responsable, creado] = await ClienteResponsable.findOrCreate({
+      where: { cliente_id, usuario_id },
+      defaults: { cliente_id, usuario_id },
+    });
+
+    if (!creado) return conflict(res, 'Este cliente ya está asignado a este usuario');
+
+    await Auditoria.registrar({
+      tabla: 'cliente_responsables',
+      registro_id: responsable.id,
+      accion: 'crear',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_nuevos: { cliente_id, usuario_id },
+      ip_address: getClientIP(req),
+      descripcion: `Cliente ${cliente.razon_social} asignado a ${usuario.nombre_completo}`,
+    });
+
+    return created(res, 'Cliente asignado exitosamente', {
+      asignacion_id: responsable.id,
+      cliente_id: Number(cliente_id),
+      razon_social: cliente.razon_social,
+      codigo_cliente: cliente.codigo_cliente,
+    });
+  } catch (err) {
+    logger.error('Error al asignar cliente:', { message: err.message });
+    return serverError(res, 'Error al asignar cliente', err);
+  }
+};
+
+/**
+ * DELETE /administracion/usuarios/:id/clientes-asignados/:clienteId
+ * Remover un cliente asignado a un usuario
+ */
+const removeClienteAsignado = async (req, res) => {
+  try {
+    const { id: usuario_id, clienteId: cliente_id } = req.params;
+
+    const responsable = await ClienteResponsable.findOne({
+      where: { cliente_id, usuario_id },
+    });
+    if (!responsable) return notFound(res, 'Asignación no encontrada');
+
+    await Auditoria.registrar({
+      tabla: 'cliente_responsables',
+      registro_id: responsable.id,
+      accion: 'eliminar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_anteriores: { cliente_id, usuario_id },
+      ip_address: getClientIP(req),
+      descripcion: `Cliente ${cliente_id} removido del usuario ${usuario_id}`,
+    });
+
+    await responsable.destroy();
+    return successMessage(res, 'Asignación removida correctamente');
+  } catch (err) {
+    logger.error('Error al remover cliente asignado:', { message: err.message });
+    return serverError(res, 'Error al remover asignación', err);
+  }
+};
+
 module.exports = {
   // Clientes
   listar,
@@ -1200,4 +1331,7 @@ module.exports = {
   getResponsables,
   addResponsable,
   removeResponsable,
+  getClientesAsignados,
+  addClienteAsignado,
+  removeClienteAsignado,
 };

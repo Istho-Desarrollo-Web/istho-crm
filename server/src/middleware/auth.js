@@ -490,6 +490,24 @@ const registrarAcceso = async (req, res, next) => {
 };
 
 /**
+ * Helper: Obtener IDs de clientes filtrados para supervisores/operadores.
+ * Retorna array de cliente_ids asignados al usuario, o null si no aplica filtro.
+ * Array vacío significa "ningún cliente asignado" → el controlador debe devolver vacío.
+ */
+const obtenerClientesFiltrados = async (req) => {
+  const rolesConFiltro = ['supervisor', 'operador'];
+  if (!req.user || !rolesConFiltro.includes(req.user.rol)) return null;
+
+  const { ClienteResponsable } = require('../models');
+  const asignaciones = await ClienteResponsable.findAll({
+    where: { usuario_id: req.user.id },
+    attributes: ['cliente_id'],
+    raw: true,
+  });
+  return asignaciones.map((a) => a.cliente_id);
+};
+
+/**
  * Helper: Obtener cliente_id del contexto
  * Útil para controladores que necesitan el cliente_id
  */
@@ -525,6 +543,7 @@ module.exports = {
   // Utilidades
   registrarAcceso,
   obtenerClienteIdContexto,
+  obtenerClientesFiltrados,
 
   // Cache de permisos
   invalidarCachePermisos,

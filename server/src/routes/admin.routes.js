@@ -12,6 +12,7 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
 const configuracionWmsController = require('../controllers/configuracionWmsController');
+const clienteController = require('../controllers/clienteController');
 const { verificarToken } = require('../middleware/auth');
 const { requiereRol } = require('../middleware/roles');
 
@@ -25,6 +26,9 @@ router.use(requiereRol('admin'));
 
 router.get('/usuarios', adminController.listarUsuarios);
 router.get('/usuarios/:id', adminController.obtenerUsuario);
+router.get('/usuarios/:id/clientes-asignados', clienteController.getClientesAsignados);
+router.post('/usuarios/:id/clientes-asignados', clienteController.addClienteAsignado);
+router.delete('/usuarios/:id/clientes-asignados/:clienteId', clienteController.removeClienteAsignado);
 router.post('/usuarios', adminController.crearUsuario);
 router.put('/usuarios/:id', adminController.actualizarUsuario);
 router.put('/usuarios/:id/resetear-password', adminController.resetearPassword);

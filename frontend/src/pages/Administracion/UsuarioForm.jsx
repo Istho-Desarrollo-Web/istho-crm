@@ -1,18 +1,21 @@
-﻿/**
+/**
  * ISTHO CRM - Formulario de Usuario (Modal)
  *
  * Crear/editar usuarios del sistema.
+ * Incluye asignación de clientes para roles supervisor/operador.
  *
  * @author Coordinación TI - ISTHO S.A.S.
- * @version 1.0.0
+ * @version 2.0.0
  */
 
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { X, Plus, Trash2, Users } from 'lucide-react';
 import adminService from '../../api/admin.service';
 import clientesService from '../../api/clientes.service';
 import { FilterDropdown } from '../../components/common';
 import useNotification from '../../hooks/useNotification';
+
+const ROLES_CON_FILTRO = ['supervisor', 'operador'];
 
 const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
   const isEdit = !!usuario;
@@ -34,6 +37,12 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  // Estado para clientes asignados (supervisor/operador)
+  const [clientesAsignados, setClientesAsignados] = useState([]);
+  const [clienteSeleccionado, setClienteSeleccionado] = useState('');
+  const [loadingAsignados, setLoadingAsignados] = useState(false);
+  const [savingAsignacion, setSavingAsignacion] = useState(false);
+
   useEffect(() => {
     if (usuario) {
       setForm({
@@ -53,17 +62,38 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
 
   useEffect(() => {
     clientesService
-      .getAll({ limit: 100, estado: 'activo' })
+      .getAll({ limit: 200, estado: 'activo' })
       .then((res) => {
-        // res.data es array directo de clientes (paginated response)
-        const lista = Array.isArray(res.data) ? res.data : res.data?.clientes || [];
-        setClientes(lista);
+        const lista = res?.data?.rows || res?.data || [];
+        setClientes(Array.isArray(lista) ? lista : []);
       })
       .catch(() => {});
   }, []);
 
   const selectedRol = roles.find((r) => r.id === Number(form.rol_id));
   const showClienteSelector = selectedRol?.es_cliente;
+  const showAsignacionClientes = ROLES_CON_FILTRO.includes(selectedRol?.codigo);
+
+  const cargarClientesAsignados = useCallback(async () => {
+    if (!isEdit || !usuario?.id) return;
+    setLoadingAsignados(true);
+    try {
+      const res = await adminService.getClientesAsignados(usuario.id);
+      setClientesAsignados(res?.data || []);
+    } catch {
+      setClientesAsignados([]);
+    } finally {
+      setLoadingAsignados(false);
+    }
+  }, [isEdit, usuario?.id]);
+
+  useEffect(() => {
+    if (showAsignacionClientes) {
+      cargarClientesAsignados();
+    } else {
+      setClientesAsignados([]);
+    }
+  }, [showAsignacionClientes, cargarClientesAsignados]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -82,12 +112,11 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
         setSaving(false);
         return;
       }
-      // Don't send empty password on edit
       if (isEdit && !data.password) delete data.password;
       if (!showClienteSelector) delete data.cliente_id;
 
       if (isEdit) {
-        delete data.password; // use reset-password instead
+        delete data.password;
         await adminService.actualizarUsuario(usuario.id, data);
         success('Usuario actualizado correctamente');
       } else {
@@ -102,6 +131,36 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
     }
     setSaving(false);
   };
+
+  const handleAsignarCliente = async () => {
+    if (!clienteSeleccionado || !usuario?.id) return;
+    setSavingAsignacion(true);
+    try {
+      await adminService.asignarCliente(usuario.id, Number(clienteSeleccionado));
+      success('Cliente asignado');
+      setClienteSeleccionado('');
+      await cargarClientesAsignados();
+    } catch (err) {
+      notifyError(err.message || 'Error al asignar cliente');
+    } finally {
+      setSavingAsignacion(false);
+    }
+  };
+
+  const handleRemoverCliente = async (clienteId) => {
+    if (!usuario?.id) return;
+    try {
+      await adminService.removerClienteAsignado(usuario.id, clienteId);
+      success('Asignación removida');
+      await cargarClientesAsignados();
+    } catch (err) {
+      notifyError(err.message || 'Error al remover asignación');
+    }
+  };
+
+  // Clientes disponibles para asignar (los que no están asignados aún)
+  const asignadosIds = new Set(clientesAsignados.map((c) => c.cliente_id));
+  const clientesDisponibles = clientes.filter((c) => !asignadosIds.has(c.id));
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
@@ -148,7 +207,7 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
             {/* Email */}
             <div>
               <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
-                Email *
+                Email
               </label>
               <input
                 name="email"
@@ -156,7 +215,6 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
                 aria-label="Email"
                 value={form.email}
                 onChange={handleChange}
-                required
                 className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-700 dark:text-slate-200"
                 placeholder="correo@ejemplo.com"
               />
@@ -280,6 +338,85 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
                 }}
               />
             </div>
+          )}
+
+          {/* Clientes asignados (supervisor / operador, solo en edición) */}
+          {showAsignacionClientes && isEdit && (
+            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-slate-400" aria-hidden="true" />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Clientes asignados
+                </span>
+                <span className="text-xs text-slate-400 dark:text-slate-500">
+                  (solo verá datos de estos clientes)
+                </span>
+              </div>
+
+              {/* Lista de asignados */}
+              {loadingAsignados ? (
+                <p className="text-xs text-slate-400 py-1">Cargando...</p>
+              ) : clientesAsignados.length === 0 ? (
+                <p className="text-xs text-slate-400 dark:text-slate-500 py-1">
+                  Sin restricción — ve todos los clientes
+                </p>
+              ) : (
+                <ul className="space-y-1.5 max-h-36 overflow-y-auto">
+                  {clientesAsignados.map((c) => (
+                    <li
+                      key={c.asignacion_id || c.cliente_id}
+                      className="flex items-center justify-between px-3 py-1.5 bg-slate-50 dark:bg-centhrix-surface rounded-lg text-sm"
+                    >
+                      <span className="text-slate-700 dark:text-slate-200 truncate">
+                        {c.razon_social}
+                        <span className="ml-1.5 text-xs text-slate-400">({c.codigo_cliente})</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoverCliente(c.cliente_id)}
+                        className="ml-2 p-1 text-red-400 hover:text-red-600 rounded"
+                        aria-label={`Remover ${c.razon_social}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Agregar cliente */}
+              <div className="flex gap-2 items-center pt-1">
+                <div className="flex-1">
+                  <FilterDropdown
+                    options={[
+                      { value: '', label: 'Agregar cliente...' },
+                      ...clientesDisponibles.map((c) => ({
+                        value: String(c.id),
+                        label: `${c.razon_social} (${c.codigo_cliente})`,
+                      })),
+                    ]}
+                    value={clienteSeleccionado}
+                    onChange={setClienteSeleccionado}
+                    compact
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAsignarCliente}
+                  disabled={!clienteSeleccionado || savingAsignacion}
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 disabled:opacity-40 rounded-lg transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                  Asignar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showAsignacionClientes && !isEdit && (
+            <p className="text-xs text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-centhrix-surface px-3 py-2 rounded-lg">
+              Podrás asignar clientes a este usuario después de crearlo.
+            </p>
           )}
 
           {/* Actions */}

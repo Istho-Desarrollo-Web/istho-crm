@@ -51,6 +51,18 @@ const adminService = {
     return apiClient.put(ADMIN_ENDPOINTS.USUARIO_PERMISOS(id), data);
   },
 
+  getClientesAsignados(id) {
+    return apiClient.get(ADMIN_ENDPOINTS.USUARIO_CLIENTES_ASIGNADOS(id));
+  },
+
+  asignarCliente(id, clienteId) {
+    return apiClient.post(ADMIN_ENDPOINTS.USUARIO_CLIENTES_ASIGNADOS(id), { cliente_id: clienteId });
+  },
+
+  removerClienteAsignado(id, clienteId) {
+    return apiClient.delete(ADMIN_ENDPOINTS.USUARIO_CLIENTE_ASIGNADO(id, clienteId));
+  },
+
   // ═══════════════════════════════════════════════════════════════════════════
   // ROLES
   // ═══════════════════════════════════════════════════════════════════════════
