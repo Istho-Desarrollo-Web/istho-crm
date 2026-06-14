@@ -64,10 +64,14 @@ const UsuarioForm = ({ usuario, roles, onSave, onClose }) => {
     clientesService
       .getAll({ limit: 200, estado: 'activo' })
       .then((res) => {
-        const lista = res?.data?.rows || res?.data || [];
-        setClientes(Array.isArray(lista) ? lista : []);
+        // paginated() devuelve { success, data: [...], pagination: {...} }
+        // data es el array directamente, no { rows: [...] }
+        const lista = Array.isArray(res?.data) ? res.data : [];
+        setClientes(lista);
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error('[UsuarioForm] Error cargando clientes:', err);
+      });
   }, []);
 
   const selectedRol = roles.find((r) => r.id === Number(form.rol_id));
