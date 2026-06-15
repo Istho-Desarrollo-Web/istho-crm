@@ -361,6 +361,21 @@ export const MOVIMIENTOS_ENDPOINTS = {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
+// CONTACTOS (Directorio)
+// ════════════════════════════════════════════════════════════════════════════
+
+export const CONTACTOS_ENDPOINTS = {
+  BASE: '/contactos',
+  BY_ID: (id) => `/contactos/${id}`,
+  CLIENTES_DE_CONTACTO: (id) => `/contactos/${id}/clientes`,
+  CLIENTE_DE_CONTACTO: (contactoId, clienteId) => `/contactos/${contactoId}/clientes/${clienteId}`,
+  // Desde ClienteDetail
+  CONTACTOS_DE_CLIENTE: (clienteId) => `/clientes/${clienteId}/contactos`,
+  ASIGNAR_A_CLIENTE: (clienteId) => `/clientes/${clienteId}/contactos/asignar`,
+  DESASIGNAR_DE_CLIENTE: (clienteId, contactoId) => `/clientes/${clienteId}/contactos/${contactoId}`,
+};
+
+// ════════════════════════════════════════════════════════════════════════════
 // BACKUP
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -392,6 +407,7 @@ export const ENDPOINTS = {
   CAJAS_MENORES: CAJAS_MENORES_ENDPOINTS,
   VIAJES: VIAJES_ENDPOINTS,
   MOVIMIENTOS: MOVIMIENTOS_ENDPOINTS,
+  CONTACTOS: CONTACTOS_ENDPOINTS,
   BACKUP: BACKUP_ENDPOINTS,
 };
 
