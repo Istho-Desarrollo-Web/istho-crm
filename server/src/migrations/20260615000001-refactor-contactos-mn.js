@@ -51,7 +51,7 @@ module.exports = {
 
     // 2. Migrar relaciones existentes a la pivot
     await queryInterface.sequelize.query(`
-      INSERT INTO contacto_clientes (contacto_id, cliente_id, es_principal, created_at, updated_at)
+      INSERT IGNORE INTO contacto_clientes (contacto_id, cliente_id, es_principal, created_at, updated_at)
       SELECT id, cliente_id, es_principal, NOW(), NOW()
       FROM contactos
       WHERE cliente_id IS NOT NULL
@@ -91,6 +91,22 @@ module.exports = {
         `ALTER TABLE contactos DROP FOREIGN KEY ${fkRows[0].CONSTRAINT_NAME}`
       );
     }
+
+    // Eliminar índice sobre cliente_id si existe (MySQL retiene el índice tras DROP FOREIGN KEY)
+    const [idxRows] = await queryInterface.sequelize.query(`
+      SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = 'contactos'
+        AND COLUMN_NAME = 'cliente_id'
+        AND INDEX_NAME != 'PRIMARY'
+      LIMIT 1
+    `);
+    if (idxRows.length > 0) {
+      await queryInterface.sequelize.query(
+        `ALTER TABLE contactos DROP INDEX ${idxRows[0].INDEX_NAME}`
+      );
+    }
+
     await queryInterface.removeColumn('contactos', 'cliente_id');
     await queryInterface.removeColumn('contactos', 'es_principal');
   },
