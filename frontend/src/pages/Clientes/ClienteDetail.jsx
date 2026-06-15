@@ -15,7 +15,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   Building2,
@@ -40,12 +40,13 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
+  Star,
 } from 'lucide-react';
 
 // Layout
 
 // Components
-import { Button, StatusChip, KpiCard, ConfirmDialog, Modal, FilterDropdown } from '../../components/common';
+import { Button, StatusChip, KpiCard, ConfirmDialog, FilterDropdown } from '../../components/common';
 
 // Local Components
 import ClienteForm from './components/ClienteForm';
@@ -62,6 +63,7 @@ import inventarioService from '../../api/inventario.service';
 import clientesService from '../../api/clientes.service';
 import solicitudesService from '../../api/solicitudes.service';
 import adminService from '../../api/admin.service';
+import contactosService from '@api/contactos.service';
 import PageFooter from '@components/common/PageFooter';
 import { comprimirImagen, COMPRESS_PRESETS } from '../../utils/compressImage';
 
@@ -97,80 +99,6 @@ const formatSector = (sector) => {
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTES INTERNOS
 // ════════════════════════════════════════════════════════════════════════════
-
-/**
- * Tarjeta de contacto
- */
-const ContactCard = ({ contacto, onEdit, onDelete, canEdit }) => (
-  <div
-    className={`
-    p-4 rounded-xl border transition-colors
-    ${
-      contacto.es_principal
-        ? 'border-orange-200 dark:border-orange-800/50 bg-orange-50 dark:bg-orange-900/20'
-        : 'border-gray-100 dark:border-slate-700 bg-white dark:bg-centhrix-card hover:bg-slate-50 dark:hover:bg-centhrix-surface/50'
-    }
-  `}
-  >
-    <div className="flex items-start justify-between">
-      <div className="flex items-center gap-3">
-        <div
-          className={`
-          w-10 h-10 rounded-full flex items-center justify-center
-          ${contacto.es_principal ? 'bg-orange-200 dark:bg-orange-900/40' : 'bg-slate-200 dark:bg-centhrix-surface'}
-        `}
-        >
-          <User
-            className={`w-5 h-5 ${contacto.es_principal ? 'text-orange-700 dark:text-orange-400' : 'text-slate-600 dark:text-slate-300'}`}
-          />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <p className="font-medium text-slate-800 dark:text-slate-100">{contacto.nombre}</p>
-            {contacto.es_principal && (
-              <span className="text-xs bg-orange-200 dark:bg-orange-900/40 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-full">
-                Principal
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {contacto.cargo || 'Sin cargo'}
-          </p>
-        </div>
-      </div>
-      {canEdit && (
-        <div className="flex gap-1">
-          <button
-            onClick={() => onEdit?.(contacto)}
-            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-centhrix-surface rounded-lg"
-          >
-            <Pencil className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onDelete?.(contacto)}
-            className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-white dark:hover:bg-centhrix-surface rounded-lg"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-    </div>
-    <div className="mt-3 space-y-1.5 text-sm">
-      {contacto.telefono && (
-        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-          <Phone className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-          {contacto.telefono}
-        </div>
-      )}
-      {contacto.email && (
-        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-          <Mail className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-          {contacto.email}
-        </div>
-      )}
-    </div>
-  </div>
-);
 
 /**
  * Item de actividad/historial
@@ -288,222 +216,6 @@ const ActivityItem = ({ actividad }) => {
   );
 };
 
-/**
- * Modal de formulario de contacto
- */
-const ContactoFormModal = ({ isOpen, onClose, onSubmit, contacto, loading }) => {
-  const [formData, setFormData] = useState({});
-  const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    if (isOpen) {
-      setFormData(
-        contacto || {
-          es_principal: false,
-          recibe_notificaciones: true,
-          tipos_notificacion: ['todas'],
-        }
-      );
-      setErrors({});
-    }
-  }, [contacto, isOpen]);
-
-  const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: null }));
-    }
-  };
-
-  const validate = () => {
-    const newErrors = {};
-    if (!formData.nombre?.trim()) newErrors.nombre = 'El nombre es requerido';
-    if (!formData.telefono?.trim()) newErrors.telefono = 'El teléfono es requerido';
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = () => {
-    if (validate()) {
-      onSubmit(formData);
-    }
-  };
-
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={contacto ? 'Editar Contacto' : 'Nuevo Contacto'}
-      size="md"
-      footer={
-        <>
-          <Button variant="outline" onClick={onClose} disabled={loading}>
-            Cancelar
-          </Button>
-          <Button variant="primary" onClick={handleSubmit} loading={loading}>
-            {contacto ? 'Guardar' : 'Agregar'}
-          </Button>
-        </>
-      }
-    >
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-            Nombre Completo <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.nombre || ''}
-            onChange={(e) => handleChange('nombre', e.target.value)}
-            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
-              errors.nombre ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
-            }`}
-            placeholder="Nombre del contacto"
-          />
-          {errors.nombre && <p className="text-xs text-red-500 mt-1">{errors.nombre}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-            Cargo
-          </label>
-          <input
-            type="text"
-            value={formData.cargo || ''}
-            onChange={(e) => handleChange('cargo', e.target.value)}
-            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-            placeholder="Cargo en la empresa"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-            Teléfono <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="tel"
-            value={formData.telefono || ''}
-            onChange={(e) => handleChange('telefono', e.target.value)}
-            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
-              errors.telefono ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
-            }`}
-            placeholder="+57 300 123 4567"
-          />
-          {errors.telefono && <p className="text-xs text-red-500 mt-1">{errors.telefono}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            value={formData.email || ''}
-            onChange={(e) => handleChange('email', e.target.value)}
-            className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-centhrix-bg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
-              errors.email ? 'border-red-300' : 'border-slate-200 dark:border-slate-600'
-            }`}
-            placeholder="email@empresa.com"
-          />
-          {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
-        </div>
-
-        <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.es_principal || false}
-              onChange={(e) => handleChange('es_principal', e.target.checked)}
-              className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
-            />
-            <span className="text-sm text-slate-700 dark:text-slate-300">Contacto principal</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.recibe_notificaciones ?? true}
-              onChange={(e) => {
-                handleChange('recibe_notificaciones', e.target.checked);
-                if (e.target.checked && !formData.tipos_notificacion?.length) {
-                  handleChange('tipos_notificacion', ['todas']);
-                }
-              }}
-              className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
-            />
-            <span className="text-sm text-slate-700 dark:text-slate-300">
-              Recibe notificaciones
-            </span>
-          </label>
-        </div>
-
-        {/* Tipos de notificación (visible solo si recibe_notificaciones) */}
-        {formData.recibe_notificaciones &&
-          (() => {
-            const tipos = formData.tipos_notificacion || ['todas'];
-            const esTodas = tipos.includes('todas');
-
-            const handleTipoChange = (tipo, checked) => {
-              if (tipo === 'todas') {
-                handleChange(
-                  'tipos_notificacion',
-                  checked ? ['todas'] : ['ingreso', 'salida', 'kardex']
-                );
-                return;
-              }
-              // Si estaba en modo "todas", expandir a individuales
-              const base = esTodas ? ['ingreso', 'salida', 'kardex'] : [...tipos];
-              const sin_todas = base.filter((t) => t !== 'todas');
-              const nuevos = checked
-                ? [...new Set([...sin_todas, tipo])]
-                : sin_todas.filter((t) => t !== tipo);
-              // Si quedan todos los 3, guardar como 'todas'
-              const todos3 = ['ingreso', 'salida', 'kardex'].every((t) => nuevos.includes(t));
-              handleChange(
-                'tipos_notificacion',
-                todos3 ? ['todas'] : nuevos.length ? nuevos : ['todas']
-              );
-            };
-
-            const tiposOpciones = [
-              { value: 'todas', label: 'Todas las operaciones' },
-              { value: 'ingreso', label: 'Entradas de inventario' },
-              { value: 'salida', label: 'Salidas de inventario' },
-              { value: 'kardex', label: 'Ajustes de Kardex' },
-            ];
-
-            return (
-              <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-3 space-y-2 bg-slate-50 dark:bg-centhrix-card/50">
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Tipos de notificación
-                </p>
-                <div className="space-y-1.5">
-                  {tiposOpciones.map(({ value, label }) => {
-                    const isChecked =
-                      value === 'todas' ? esTodas : esTodas || tipos.includes(value);
-                    return (
-                      <label key={value} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) => handleTipoChange(value, e.target.checked)}
-                          className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
-                        />
-                        <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
-      </div>
-    </Modal>
-  );
-};
-
 // ════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════════════════════════════════════
@@ -525,10 +237,6 @@ const ClienteDetail = () => {
     fetchCliente,
     updateCliente,
     deleteCliente,
-    fetchContactos,
-    createContacto,
-    updateContacto,
-    deleteContacto,
   } = useClientes({ autoFetch: false });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -536,8 +244,17 @@ const ClienteDetail = () => {
   // ──────────────────────────────────────────────────────────────────────────
 
   const [activeTab, setActiveTab] = useState('info');
-  const [contactos, setContactos] = useState([]);
+
+  // Contactos M:N
+  const [contactosCliente, setContactosCliente] = useState([]);
   const [loadingContactos, setLoadingContactos] = useState(false);
+  const [contactoParaAsignar, setContactoParaAsignar] = useState('');
+  const [esPrincipalAsignar, setEsPrincipalAsignar] = useState(false);
+  const [showAsignarForm, setShowAsignarForm] = useState(false);
+  const [confirmDesasignar, setConfirmDesasignar] = useState(null); // { id, nombre }
+  const [opcionesContactos, setOpcionesContactos] = useState([]);
+  const [asignandoContacto, setAsignandoContacto] = useState(false);
+
   const [historial, setHistorial] = useState([]);
   const [loadingHistorial, setLoadingHistorial] = useState(false);
   const [historialPage, setHistorialPage] = useState(1);
@@ -563,8 +280,6 @@ const ClienteDetail = () => {
   // Modals
   const [editModal, setEditModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
-  const [contactoModal, setContactoModal] = useState({ isOpen: false, contacto: null });
-  const [deleteContactoModal, setDeleteContactoModal] = useState({ isOpen: false, contacto: null });
   const [formLoading, setFormLoading] = useState(false);
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -601,23 +316,29 @@ const ClienteDetail = () => {
   // CARGAR DATOS
   // ──────────────────────────────────────────────────────────────────────────
 
-  const loadContactos = useCallback(
-    async (clienteId) => {
-      setLoadingContactos(true);
-      try {
-        const response = await fetchContactos(clienteId);
-        if (response?.success) {
-          setContactos(response.data || []);
-        }
-      } catch (err) {
-        console.error('Error cargando contactos:', err);
-        setContactos([]);
-      } finally {
-        setLoadingContactos(false);
-      }
-    },
-    [fetchContactos]
-  );
+  const fetchContactosCliente = useCallback(async (clienteId) => {
+    setLoadingContactos(true);
+    try {
+      const res = await contactosService.getContactosCliente(clienteId);
+      setContactosCliente(res?.data?.rows ?? res?.rows ?? res ?? []);
+    } catch (err) {
+      apiError(err.message || 'Error al cargar contactos');
+      setContactosCliente([]);
+    } finally {
+      setLoadingContactos(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchOpcionesContactos = useCallback(async (clienteId) => {
+    try {
+      const res = await contactosService.getAll({ activo: true, limit: 200 });
+      const todos = res?.data?.rows ?? res?.rows ?? res ?? [];
+      setOpcionesContactos(todos);
+    } catch {
+      setOpcionesContactos([]);
+    }
+  }, []);
 
   // Cargar historial del cliente
   const loadHistorial = useCallback(async (clienteId) => {
@@ -662,11 +383,12 @@ const ClienteDetail = () => {
   useEffect(() => {
     if (id) {
       fetchCliente(id);
-      loadContactos(id);
+      fetchContactosCliente(id);
+      fetchOpcionesContactos(id);
       loadProductosCliente(id);
       loadHistorial(id);
     }
-  }, [id, fetchCliente, loadContactos, loadProductosCliente, loadHistorial]);
+  }, [id, fetchCliente, fetchContactosCliente, fetchOpcionesContactos, loadProductosCliente, loadHistorial]);
 
   const fetchSolicitudesCliente = async () => {
     if (!id) return;
@@ -745,36 +467,49 @@ const ClienteDetail = () => {
     }
   };
 
-  const handleSaveContacto = async (data) => {
-    setFormLoading(true);
+  const handleAsignarContacto = async () => {
+    if (!contactoParaAsignar) return;
+    setAsignandoContacto(true);
     try {
-      if (contactoModal.contacto) {
-        await updateContacto(id, contactoModal.contacto.id, data);
-        success('Contacto actualizado');
-      } else {
-        await createContacto(id, data);
-        success('Contacto agregado');
-      }
-      setContactoModal({ isOpen: false, contacto: null });
-      loadContactos(id);
+      await contactosService.asignarACliente(id, {
+        contacto_id: Number(contactoParaAsignar),
+        es_principal: esPrincipalAsignar,
+      });
+      success('Contacto asignado');
+      setContactoParaAsignar('');
+      setEsPrincipalAsignar(false);
+      setShowAsignarForm(false);
+      fetchContactosCliente(id);
+      fetchOpcionesContactos(id);
     } catch (err) {
-      apiError(err);
+      apiError(err.message || 'Error al asignar contacto');
     } finally {
-      setFormLoading(false);
+      setAsignandoContacto(false);
     }
   };
 
-  const handleDeleteContacto = async () => {
-    setFormLoading(true);
+  const handleDesasignarContacto = async () => {
+    if (!confirmDesasignar) return;
     try {
-      await deleteContacto(id, deleteContactoModal.contacto.id);
-      deleted('Contacto');
-      setDeleteContactoModal({ isOpen: false, contacto: null });
-      loadContactos(id);
+      await contactosService.desasignarDeCliente(id, confirmDesasignar.id);
+      success('Contacto desasignado');
+      setConfirmDesasignar(null);
+      fetchContactosCliente(id);
+      fetchOpcionesContactos(id);
     } catch (err) {
-      apiError(err);
-    } finally {
-      setFormLoading(false);
+      apiError(err.message || 'Error al desasignar contacto');
+    }
+  };
+
+  const handleMarcarPrincipal = async (contactoId) => {
+    try {
+      await contactosService.asignarACliente(id, {
+        contacto_id: contactoId,
+        es_principal: true,
+      });
+      fetchContactosCliente(id);
+    } catch (err) {
+      apiError(err.message || 'Error al marcar como principal');
     }
   };
 
@@ -833,7 +568,7 @@ const ClienteDetail = () => {
 
   const tabs = [
     { id: 'info', label: 'Información', icon: Building2 },
-    { id: 'contactos', label: `Contactos (${contactos.length})`, icon: User },
+    { id: 'contactos', label: `Contactos (${contactosCliente.length})`, icon: User },
     ...(canManageUsers ? [{ id: 'usuarios', label: 'Usuarios Portal', icon: Users }] : []),
     ...(!isCliente() ? [{ id: 'solicitudes', label: 'Solicitudes', icon: ClipboardCheck }] : []),
     { id: 'historial', label: 'Historial', icon: Clock },
@@ -943,7 +678,7 @@ const ClienteDetail = () => {
           />
           <KpiCard
             title="Contactos"
-            value={contactos.length}
+            value={contactosCliente.length}
             icon={User}
             iconBg="bg-orange-100"
             iconColor="text-orange-600"
@@ -1081,60 +816,197 @@ const ClienteDetail = () => {
             )}
 
             {/* ══════════════════════════════════════════════════════════════ */}
-            {/* Tab: Contactos */}
+            {/* Tab: Contactos (M:N - asignación) */}
             {/* ══════════════════════════════════════════════════════════════ */}
             {activeTab === 'contactos' && (
               <div>
-                {canEdit && (
-                  <div className="flex justify-end mb-4">
+                {/* Header del tab */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold text-slate-800 dark:text-slate-100">
+                      Contactos asignados
+                    </h4>
+                    <span className="text-xs bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full font-medium">
+                      {contactosCliente.length}
+                    </span>
+                  </div>
+                  {user?.rol === 'admin' && (
                     <Button
                       variant="primary"
                       icon={Plus}
                       size="sm"
-                      onClick={() => setContactoModal({ isOpen: true, contacto: null })}
+                      onClick={() => setShowAsignarForm((v) => !v)}
                     >
-                      Agregar Contacto
+                      Asignar contacto
                     </Button>
+                  )}
+                </div>
+
+                {/* Formulario de asignación (expandible) */}
+                {showAsignarForm && (
+                  <div className="mb-4 p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-centhrix-bg/50 space-y-3">
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Seleccionar contacto para asignar
+                    </p>
+                    <FilterDropdown
+                      options={[
+                        { value: '', label: 'Seleccionar contacto...' },
+                        ...opcionesContactos
+                          .filter((c) => !contactosCliente.find((a) => a.id === c.id))
+                          .map((c) => ({
+                            value: String(c.id),
+                            label: `${c.nombre}${c.cargo ? ` — ${c.cargo}` : ''}`,
+                          })),
+                      ]}
+                      value={String(contactoParaAsignar || '')}
+                      onChange={(v) => setContactoParaAsignar(v)}
+                    />
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={esPrincipalAsignar}
+                        onChange={(e) => setEsPrincipalAsignar(e.target.checked)}
+                        className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                      />
+                      <span className="text-sm text-slate-700 dark:text-slate-300">
+                        Marcar como principal
+                      </span>
+                    </label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={handleAsignarContacto}
+                        loading={asignandoContacto}
+                        disabled={!contactoParaAsignar}
+                      >
+                        Confirmar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setShowAsignarForm(false);
+                          setContactoParaAsignar('');
+                          setEsPrincipalAsignar(false);
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
                   </div>
                 )}
 
+                {/* Tabla de contactos asignados */}
                 {loadingContactos ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="space-y-2">
                     {[0, 1, 2].map((i) => (
                       <div
                         key={i}
-                        className="h-32 bg-gray-100 dark:bg-centhrix-surface rounded-xl animate-pulse"
+                        className="h-12 bg-gray-100 dark:bg-centhrix-surface rounded-xl animate-pulse"
                       />
                     ))}
                   </div>
-                ) : contactos.length === 0 ? (
+                ) : contactosCliente.length === 0 ? (
                   <div className="text-center py-12">
                     <User className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                    <p className="text-slate-500 dark:text-slate-400 mb-4">
-                      No hay contactos registrados
+                    <p className="text-slate-500 dark:text-slate-400 mb-1">
+                      No hay contactos asignados a este cliente.
                     </p>
-                    {canEdit && (
-                      <Button
-                        variant="primary"
-                        icon={Plus}
-                        size="sm"
-                        onClick={() => setContactoModal({ isOpen: true, contacto: null })}
-                      >
-                        Agregar Primer Contacto
-                      </Button>
+                    {user?.rol === 'admin' && hasPermission('contactos', 'ver') && (
+                      <p className="text-sm text-slate-400 dark:text-slate-500">
+                        Ve al{' '}
+                        <Link
+                          to="/contactos"
+                          className="text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 underline"
+                        >
+                          Directorio de Contactos
+                        </Link>{' '}
+                        para crear y gestionar el directorio global.
+                      </p>
                     )}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {contactos.map((contacto) => (
-                      <ContactCard
-                        key={contacto.id}
-                        contacto={contacto}
-                        canEdit={canEdit}
-                        onEdit={() => setContactoModal({ isOpen: true, contacto })}
-                        onDelete={() => setDeleteContactoModal({ isOpen: true, contacto })}
-                      />
-                    ))}
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-100 dark:border-slate-700">
+                          {['Nombre', 'Tipo', 'Cargo', 'Email', 'Teléfono', 'Principal', ''].map(
+                            (h) => (
+                              <th
+                                key={h}
+                                className="px-3 py-2 text-left text-xs font-semibold text-slate-500 dark:text-slate-400"
+                              >
+                                {h}
+                              </th>
+                            )
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50 dark:divide-slate-700/50">
+                        {contactosCliente.map((c) => (
+                          <tr
+                            key={c.id}
+                            className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors"
+                          >
+                            <td className="px-3 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200">
+                              {c.nombre}
+                            </td>
+                            <td className="px-3 py-2.5">
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                  c.tipo === 'istho'
+                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                                    : 'bg-slate-100 dark:bg-centhrix-surface text-slate-600 dark:text-slate-300'
+                                }`}
+                              >
+                                {c.tipo === 'istho' ? 'ISTHO' : 'Externo'}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2.5 text-sm text-slate-500 dark:text-slate-400">
+                              {c.cargo || '—'}
+                            </td>
+                            <td className="px-3 py-2.5 text-sm text-slate-500 dark:text-slate-400">
+                              {c.email || '—'}
+                            </td>
+                            <td className="px-3 py-2.5 text-sm text-slate-500 dark:text-slate-400">
+                              {c.telefono_principal || c.telefono || '—'}
+                            </td>
+                            <td className="px-3 py-2.5">
+                              {c.ClienteContacto?.es_principal || c.es_principal ? (
+                                <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-medium">
+                                  Principal
+                                </span>
+                              ) : user?.rol === 'admin' ? (
+                                <button
+                                  onClick={() => handleMarcarPrincipal(c.id)}
+                                  className="text-slate-300 hover:text-amber-400 dark:text-slate-600 dark:hover:text-amber-400 transition-colors"
+                                  title="Marcar como principal"
+                                >
+                                  <Star className="w-4 h-4" />
+                                </button>
+                              ) : (
+                                <span className="text-slate-300 dark:text-slate-600">
+                                  <Star className="w-4 h-4" />
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-3 py-2.5">
+                              {user?.rol === 'admin' && (
+                                <button
+                                  onClick={() =>
+                                    setConfirmDesasignar({ id: c.id, nombre: c.nombre })
+                                  }
+                                  className="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                >
+                                  Desasignar
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>
@@ -1395,23 +1267,14 @@ const ClienteDetail = () => {
         loading={formLoading}
       />
 
-      <ContactoFormModal
-        isOpen={contactoModal.isOpen}
-        onClose={() => setContactoModal({ isOpen: false, contacto: null })}
-        onSubmit={handleSaveContacto}
-        contacto={contactoModal.contacto}
-        loading={formLoading}
-      />
-
       <ConfirmDialog
-        isOpen={deleteContactoModal.isOpen}
-        onClose={() => setDeleteContactoModal({ isOpen: false, contacto: null })}
-        onConfirm={handleDeleteContacto}
-        title="Eliminar Contacto"
-        message={`¿Eliminar a "${deleteContactoModal.contacto?.nombre}" de los contactos?`}
-        confirmText="Eliminar"
+        isOpen={!!confirmDesasignar}
+        onClose={() => setConfirmDesasignar(null)}
+        onConfirm={handleDesasignarContacto}
+        title="Desasignar Contacto"
+        message={`¿Desasignar a "${confirmDesasignar?.nombre}" de este cliente?`}
+        confirmText="Desasignar"
         type="danger"
-        loading={formLoading}
       />
 
     </div>
