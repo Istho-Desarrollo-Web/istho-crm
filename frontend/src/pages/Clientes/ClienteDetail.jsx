@@ -507,6 +507,7 @@ const ClienteDetail = () => {
         contacto_id: contactoId,
         es_principal: true,
       });
+      success('Contacto marcado como principal');
       fetchContactosCliente(id);
     } catch (err) {
       apiError(err.message || 'Error al marcar como principal');
