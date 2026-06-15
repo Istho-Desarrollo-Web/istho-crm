@@ -1,4 +1,4 @@
-import logoIstho from '@assets/logo-istho.png';
+import logoIstho from '@assets/logo-istho.svg';
 
 const PageFooter = ({ className = '' }) => (
   <footer

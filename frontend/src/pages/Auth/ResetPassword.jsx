@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import useNotification from '../../hooks/useNotification';
 import authService from '../../api/auth.service';
-import logoIstho from '../../assets/logo-istho.png';
+import logoIstho from '../../assets/logo-istho.svg';
 
 // ============================================================================
 // ESTILOS CSS (animaciones)

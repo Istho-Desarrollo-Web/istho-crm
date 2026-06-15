@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Send, AlertCircle, CheckCircle, Loader2, KeyRound } from 'lucide-react';
 import useNotification from '../../hooks/useNotification';
 import authService from '../../api/auth.service';
-import logoIstho from '../../assets/logo-istho.png';
+import logoIstho from '../../assets/logo-istho.svg';
 
 // ============================================================================
 // CSS ANIMATIONS (injected inline)

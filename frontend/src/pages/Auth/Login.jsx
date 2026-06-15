@@ -17,7 +17,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../../context/AuthContext';
 import { getGreeting } from '../../utils/greeting';
-import logoIstho from '../../assets/logo-istho.png';
+import logoIstho from '../../assets/logo-istho.svg';
 import logoCenthrix from '../../assets/Centhrix WMS - ISTHO-03.svg';
 import LoadingScreen from '../../components/common/LoadingScreen';
 import PoliticaDatosModal from '../../components/common/PoliticaDatosModal';

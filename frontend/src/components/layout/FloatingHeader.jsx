@@ -271,7 +271,7 @@ const getMenuForRole = (rol, hasPermission) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 import { useThemeContext } from '../../context/ThemeContext';
-import logoIstho from '../../assets/logo-istho.png';
+import logoIstho from '../../assets/logo-istho.svg';
 import { getServerFileUrl } from '../../api/client';
 
 /**
