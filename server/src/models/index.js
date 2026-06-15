@@ -41,6 +41,7 @@ const SolicitudDetalleModel = require('./SolicitudDetalle');
 const SolicitudComentarioModel = require('./SolicitudComentario');
 const SolicitudDocumentoModel = require('./SolicitudDocumento');
 const ClienteResponsableModel = require('./ClienteResponsable');
+const ContactoClienteModel = require('./ContactoCliente');
 const Notificacion = require('./Notificacion')(sequelize);
 
 // Inicializar modelos
@@ -75,20 +76,45 @@ const SolicitudDetalle = SolicitudDetalleModel(sequelize);
 const SolicitudComentario = SolicitudComentarioModel(sequelize);
 const SolicitudDocumento = SolicitudDocumentoModel(sequelize);
 const ClienteResponsable = ClienteResponsableModel(sequelize);
+const ContactoCliente = ContactoClienteModel(sequelize);
 
 // ============================================
 // DEFINIR ASOCIACIONES
 // ============================================
 
-// Cliente <-> Contacto (1:N)
-Cliente.hasMany(Contacto, {
-  foreignKey: 'cliente_id',
-  as: 'contactos',
-  onDelete: 'CASCADE',
+// Cliente <-> Contacto (M:N via ContactoCliente)
+Contacto.belongsToMany(Cliente, {
+  through: ContactoCliente,
+  as: 'clientes',
+  foreignKey: 'contacto_id',
+  otherKey: 'cliente_id',
 });
-Contacto.belongsTo(Cliente, {
+Cliente.belongsToMany(Contacto, {
+  through: ContactoCliente,
+  as: 'contactos',
+  foreignKey: 'cliente_id',
+  otherKey: 'contacto_id',
+});
+
+// Contacto -> ContactoCliente (acceso directo a la pivot)
+Contacto.hasMany(ContactoCliente, {
+  foreignKey: 'contacto_id',
+  as: 'asignaciones',
+});
+ContactoCliente.belongsTo(Contacto, {
+  foreignKey: 'contacto_id',
+  as: 'contacto',
+});
+ContactoCliente.belongsTo(Cliente, {
   foreignKey: 'cliente_id',
   as: 'cliente',
+});
+
+// Contacto -> Usuario CRM (vínculo opcional)
+Contacto.belongsTo(Usuario, {
+  foreignKey: 'usuario_id',
+  as: 'usuarioCrm',
+  constraints: false,
 });
 
 // Cliente <-> Inventario (1:N)
@@ -470,6 +496,7 @@ const db = {
   SolicitudComentario,
   SolicitudDocumento,
   ClienteResponsable,
+  ContactoCliente,
 };
 
 module.exports = db;
