@@ -67,6 +67,7 @@ const PERMISOS_POR_ROL = {
     movimientos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar'],
     plantillas_email: ['ver', 'crear', 'editar', 'eliminar'],
     solicitudes: ['ver', 'comentar', 'exportar'],
+    contactos: ['ver', 'crear', 'editar', 'eliminar'],
     perfil: ['ver', 'cambiar_password'],
   },
   supervisor: {
