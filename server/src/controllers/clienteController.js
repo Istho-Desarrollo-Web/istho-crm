@@ -490,43 +490,11 @@ const eliminar = async (req, res) => {
 
 /**
  * GET /clientes/:id/contactos
- * Listar contactos de un cliente
+ * Listar contactos asignados a un cliente (delega al contactoController)
  */
 const listarContactos = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Verificar que el cliente existe
-    const cliente = await Cliente.findByPk(id);
-
-    if (!cliente) {
-      return notFound(res, 'Cliente no encontrado');
-    }
-
-    // Incluir inactivos si se solicita
-    const incluirInactivos = req.query.incluir_inactivos === 'true';
-
-    const where = { cliente_id: id };
-    if (!incluirInactivos) {
-      where.activo = true;
-    }
-
-    const contactos = await Contacto.findAll({
-      where,
-      order: [
-        ['es_principal', 'DESC'],
-        ['nombre', 'ASC'],
-      ],
-    });
-
-    return success(res, contactos);
-  } catch (error) {
-    logger.error('Error al listar contactos:', {
-      message: error.message,
-      clienteId: req.params.id,
-    });
-    return serverError(res, 'Error al obtener los contactos', error);
-  }
+  const { listarContactosCliente } = require('./contactoController');
+  return listarContactosCliente(req, res);
 };
 
 /**
@@ -1309,6 +1277,16 @@ const removeClienteAsignado = async (req, res) => {
   }
 };
 
+const asignarContactoDesdeCliente = async (req, res) => {
+  const { asignarContactoDesdeCliente: fn } = require('./contactoController');
+  return fn(req, res);
+};
+
+const desasignarContactoDesdeCliente = async (req, res) => {
+  const { desasignarContactoDesdeCliente: fn } = require('./contactoController');
+  return fn(req, res);
+};
+
 module.exports = {
   // Clientes
   listar,
@@ -1325,6 +1303,8 @@ module.exports = {
   crearContacto,
   actualizarContacto,
   eliminarContacto,
+  asignarContactoDesdeCliente,
+  desasignarContactoDesdeCliente,
   // Historial
   historial,
   // Responsables

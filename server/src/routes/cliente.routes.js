@@ -28,10 +28,12 @@ const {
   actualizarClienteValidator,
   idParamValidator,
   listarClientesValidator,
-  crearContactoValidator,
-  actualizarContactoValidator,
-  contactoParamsValidator,
 } = require('../validators/clienteValidator');
+
+const {
+  asignarContactoDesdeClienteValidator,
+  desasignarContactoDesdeClienteValidator,
+} = require('../validators/contactoValidator');
 
 // =============================================
 // Todas las rutas requieren autenticación
@@ -149,16 +151,6 @@ router.post(
   clienteController.subirLogo
 );
 
-// =============================================
-// RUTAS DE CONTACTOS (anidadas en clientes)
-// =============================================
-
-/**
- * @route   GET /clientes/:id/contactos
- * @desc    Listar contactos de un cliente
- * @access  Privado
- * @query   incluir_inactivos (true/false)
- */
 /**
  * @route   GET /clientes/:id/historial
  * @desc    Obtener historial de operaciones del cliente
@@ -166,44 +158,27 @@ router.post(
  */
 router.get('/:id/historial', idParamValidator, clienteController.historial);
 
+// ── CONTACTOS (pivot M:N) ─────────────────────────────────────────────────────
+
+// GET /clientes/:id/contactos — Listar contactos asignados (todos los roles con clientes.ver)
 router.get('/:id/contactos', idParamValidator, clienteController.listarContactos);
 
-/**
- * @route   POST /clientes/:id/contactos
- * @desc    Agregar contacto a un cliente
- * @access  Privado (operador o superior)
- */
+// POST /clientes/:id/contactos/asignar — Asignar contacto existente (solo admin)
 router.post(
-  '/:id/contactos',
+  '/:id/contactos/asignar',
   noClientes,
-  requiereRolMinimo('operador'),
-  crearContactoValidator,
-  clienteController.crearContacto
+  requiereRolMinimo('admin'),
+  asignarContactoDesdeClienteValidator,
+  clienteController.asignarContactoDesdeCliente
 );
 
-/**
- * @route   PUT /clientes/:id/contactos/:contactoId
- * @desc    Actualizar contacto de un cliente
- * @access  Privado (operador o superior)
- */
-router.put(
-  '/:id/contactos/:contactoId',
-  noClientes,
-  requiereRolMinimo('operador'),
-  actualizarContactoValidator,
-  clienteController.actualizarContacto
-);
-
-/**
- * @route   DELETE /clientes/:id/contactos/:contactoId
- * @desc    Eliminar contacto de un cliente
- * @access  Privado (supervisor o superior)
- */
+// DELETE /clientes/:id/contactos/:contactoId — Desasignar contacto (solo admin)
 router.delete(
   '/:id/contactos/:contactoId',
-  requiereRolMinimo('supervisor'),
-  contactoParamsValidator,
-  clienteController.eliminarContacto
+  noClientes,
+  requiereRolMinimo('admin'),
+  desasignarContactoDesdeClienteValidator,
+  clienteController.desasignarContactoDesdeCliente
 );
 
 // ─── RESPONSABLES ────────────────────────────────────────────────────────────
