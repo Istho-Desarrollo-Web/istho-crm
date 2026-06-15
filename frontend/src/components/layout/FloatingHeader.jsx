@@ -50,6 +50,7 @@ import {
   Download,
   Upload,
   HelpCircle,
+  BookUser,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -101,6 +102,7 @@ const allMenuConfig = [
     soloInternos: true, // No visible para rol cliente
     items: [
       { icon: Users, label: 'Lista de Clientes', href: '/clientes', shortcut: 'G C' },
+      { icon: BookUser, label: 'Directorio', href: '/contactos' },
       { icon: Mail, label: 'Plantillas de Email', href: '/plantillas-email', shortcut: 'G P' },
     ],
   },
@@ -189,7 +191,7 @@ const allMenuConfig = [
  */
 const MENU_PERMISSION_MAP = {
   dashboard: ['dashboard.ver'],
-  clientes: ['clientes.ver'],
+  clientes: ['clientes.ver', 'contactos.ver'],
   inventario: ['inventario.ver', 'inventario.alertas'],
   operaciones: ['operaciones.ver'],
   viajes: ['vehiculos.ver', 'viajes.ver', 'caja_menor.ver', 'movimientos.ver'],
@@ -247,6 +249,8 @@ const getMenuForRole = (rol, hasPermission) => {
         if (item.href === '/plantillas-email') return hasPermission('plantillas_email', 'ver');
         // Lista de clientes requiere permiso
         if (item.href === '/clientes') return hasPermission('clientes', 'ver');
+        // Directorio de contactos requiere permiso específico
+        if (item.href === '/contactos') return hasPermission('contactos', 'ver');
         // Solicitudes: label diferente por rol
         if (item.soloCliente) return rol === 'cliente' && hasPermission('solicitudes', 'ver');
         if (item.soloInternos && item.href === '/solicitudes') return rol !== 'cliente' && hasPermission('solicitudes', 'ver');

@@ -57,6 +57,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 // Clientes
 const ClientesList = lazy(() => import('./pages/Clientes/ClientesList'));
 const ClienteDetail = lazy(() => import('./pages/Clientes/ClienteDetail'));
+const ContactosList = lazy(() => import('@pages/Contactos/ContactosList'));
 
 // Inventario
 const InventarioList = lazy(() => import('./pages/Inventario/InventarioList'));
@@ -329,6 +330,18 @@ function App() {
                       element={
                         <PermissionRoute module="clientes" action="ver">
                           <MiEmpresaRedirect />
+                        </PermissionRoute>
+                      }
+                    />
+
+                    {/* ────────────────────────────────────────────────────────── */}
+                    {/* CONTACTOS - Directorio de contactos */}
+                    {/* ────────────────────────────────────────────────────────── */}
+                    <Route
+                      path="/contactos"
+                      element={
+                        <PermissionRoute module="contactos" action="ver">
+                          <ContactosList />
                         </PermissionRoute>
                       }
                     />

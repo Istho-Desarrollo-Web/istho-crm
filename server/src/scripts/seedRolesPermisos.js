@@ -439,6 +439,12 @@ const PERMISOS_CATALOGO = [
   { modulo: 'solicitudes', accion: 'comentar', descripcion: 'Comentar y gestionar solicitudes', grupo: 'Gestión' },
   { modulo: 'solicitudes', accion: 'exportar', descripcion: 'Exportar reporte de solicitudes', grupo: 'Gestión' },
 
+  // Contactos (directorio global)
+  { modulo: 'contactos', accion: 'ver', descripcion: 'Ver directorio de contactos', grupo: 'Gestión' },
+  { modulo: 'contactos', accion: 'crear', descripcion: 'Crear contactos en el directorio', grupo: 'Gestión' },
+  { modulo: 'contactos', accion: 'editar', descripcion: 'Editar contactos y asignaciones', grupo: 'Gestión' },
+  { modulo: 'contactos', accion: 'eliminar', descripcion: 'Desactivar contactos del directorio', grupo: 'Gestión' },
+
   // Perfil (disponible para todos los roles)
   { modulo: 'perfil', accion: 'ver', descripcion: 'Ver y editar perfil propio', grupo: 'General' },
   {
