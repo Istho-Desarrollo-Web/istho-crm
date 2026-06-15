@@ -487,7 +487,7 @@
         </thead>
         <tbody>
           <tr><td>WMS Centhrix</td><td>Entrante</td><td>API REST + API Key</td><td>WMS empuja productos, entradas, salidas y kardex al CRM</td></tr>
-          <tr><td>Gmail SMTP</td><td>Saliente</td><td>SMTP 587 (TLS)</td><td>Envío de emails transaccionales, recuperación de contraseña y reportes</td></tr>
+          <tr><td>Outlook SMTP</td><td>Saliente</td><td>SMTP 587 (TLS)</td><td>Envío de emails transaccionales, recuperación de contraseña y reportes</td></tr>
           <tr><td>Socket.IO</td><td>Interno</td><td>HTTP Long-polling</td><td>Notificaciones en tiempo real (conexión persistente sin WebSocket)</td></tr>
         </tbody>
       </table>
@@ -502,7 +502,7 @@
           <tr><td>Frontend</td><td>Vercel (Hobby)</td><td>React 19, Vite, Tailwind CSS 4</td><td>$0</td></tr>
           <tr><td>Base de datos</td><td>AWS RDS MySQL 8.0 (us-west-2)</td><td>db.t3.micro, 20 GB gp2, Single-AZ</td><td>~$14.54</td></tr>
           <tr><td>Almacenamiento</td><td>AWS S3 (us-west-2)</td><td>Bucket istho-crm-files — avatares, soportes, evidencias</td><td>~$0.10</td></tr>
-          <tr><td>Email</td><td>Gmail SMTP</td><td>Puerto 587, TLS — cuenta corporativa ISTHO</td><td>$0</td></tr>
+          <tr><td>Email</td><td>Outlook SMTP</td><td>Puerto 587, TLS — cuenta corporativa ISTHO</td><td>$0</td></tr>
           <tr><td><strong>Total</strong></td><td></td><td></td><td><strong>~$30/mes</strong></td></tr>
         </tbody>
       </table>
@@ -588,7 +588,7 @@
       <ul>
         <li>Acceso a la consola AWS (App Runner, RDS, S3) — región us-west-2</li>
         <li>Acceso al dashboard de Vercel (frontend)</li>
-        <li>Acceso a la cuenta de Gmail corporativa (gestión del App Password para SMTP)</li>
+        <li>Acceso a la cuenta de Microsoft Outlook corporativa (gestión de credenciales SMTP)</li>
         <li>Conocimiento básico de variables de entorno</li>
         <li>Repositorio GitHub <code>istho-crm-p</code> (los pushes a <code>main</code> activan el redespliegue automático)</li>
       </ul>

@@ -107,7 +107,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 | Sistema | Tipo | Protocolo | Descripción |
 |---------|------|-----------|-------------|
 | WMS CenthriX | Bidireccional | API REST + API Key (PUSH) / JWT polling (PULL) | PUSH: WMS empuja productos, entradas, salidas y kardex. PULL: CRM consulta órdenes cada 5 min y ubicaciones en tiempo real. |
-| Gmail SMTP | Saliente | SMTP 587 (TLS) | Envío de emails transaccionales, recuperación de contraseña y reportes |
+| Outlook SMTP | Saliente | SMTP 587 (TLS) | Envío de emails transaccionales, recuperación de contraseña y reportes |
 | Socket.IO | Interno | WebSocket (fallback HTTP long-polling) | Notificaciones en tiempo real. Con Redis Upstash activo: multi-instancia. Sin Redis: single-instance (actual) |
 
 ### 4.3 Infraestructura
@@ -118,7 +118,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 | Frontend | Vercel (Hobby) | React 19, Vite, Tailwind CSS 4 | $0 |
 | Base de datos | AWS RDS MySQL 8.0 (us-west-2) | db.t3.micro, 20 GB gp2 | ~$14.54 |
 | Almacenamiento | AWS S3 (us-west-2) | Bucket `istho-crm-files` | ~$0.10 |
-| Email | Gmail SMTP | Puerto 587, TLS | $0 |
+| Email | Outlook SMTP | Puerto 587, TLS | $0 |
 | Cache/Socket | Upstash Redis (opcional) | Socket.IO multi-instancia | $0 |
 | **Total** | | | **~$30/mes** |
 
@@ -255,7 +255,7 @@ Las plantillas de email permiten personalizar los correos que envía el sistema:
 ### 7.2 Para el Administrador del Sistema
 - Acceso a la consola AWS (App Runner, RDS, S3) — región us-west-2
 - Acceso al dashboard de Vercel (frontend)
-- Acceso a la cuenta de Gmail corporativa (gestión del App Password para SMTP)
+- Acceso a la cuenta de Microsoft Outlook corporativa (gestión de credenciales SMTP)
 - Conocimiento básico de variables de entorno
 - Repositorio GitHub `istho-crm-p` (los pushes a `main` activan el redespliegue automático)
 

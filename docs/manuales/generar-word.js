@@ -186,7 +186,7 @@ async function generarSoporteAdministrativo() {
           ['Sistema', 'Tipo', 'Protocolo', 'Descripción'],
           [
             ['WMS Centhrix', 'Entrante', 'API REST + API Key', 'WMS empuja productos, entradas, salidas y kardex al CRM'],
-            ['Gmail SMTP', 'Saliente', 'SMTP 587 (TLS)', 'Envío de emails transaccionales, recuperación de contraseña y reportes'],
+            ['Outlook SMTP', 'Saliente', 'SMTP 587 (TLS)', 'Envío de emails transaccionales, recuperación de contraseña y reportes'],
             ['Socket.IO', 'Interno', 'HTTP Long-polling', 'Notificaciones en tiempo real (conexión persistente sin WebSocket)'],
           ]
         ),
@@ -198,7 +198,7 @@ async function generarSoporteAdministrativo() {
             ['Frontend', 'Vercel (Hobby)', 'React 19, Vite, Tailwind CSS 4', '$0'],
             ['Base de datos', 'AWS RDS MySQL 8.0 (us-west-2)', 'db.t3.micro, 20 GB gp2', '~$14.54'],
             ['Almacenamiento', 'AWS S3 (us-west-2)', 'Bucket istho-crm-files', '~$0.10'],
-            ['Email', 'Gmail SMTP', 'Puerto 587, TLS', '$0'],
+            ['Email', 'Outlook SMTP', 'Puerto 587, TLS', '$0'],
             ['Total', '', '', '~$30/mes'],
           ]
         ),
@@ -228,7 +228,7 @@ async function generarSoporteAdministrativo() {
         heading('6.2 Para el Administrador del Sistema', HeadingLevel.HEADING_3),
         bullet('Acceso a la consola AWS (App Runner, RDS, S3) — región us-west-2'),
         bullet('Acceso al dashboard de Vercel (frontend)'),
-        bullet('Acceso a la cuenta de Gmail corporativa (gestión del App Password para SMTP)'),
+        bullet('Acceso a la cuenta de Microsoft Outlook corporativa (gestión de credenciales SMTP)'),
         bullet('Conocimiento básico de variables de entorno'),
         bullet('Repositorio GitHub istho-crm-p (los pushes a main activan el redespliegue automático)'),
         divider(),
