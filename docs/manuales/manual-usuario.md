@@ -2,7 +2,7 @@
 
 ## ISTHO S.A.S.
 
-**Versión:** 1.5.0 | **Fecha:** Junio 2026
+**Versión:** 1.6.0 | **Fecha:** Junio 2026
 
 **Centro Logistico Industrial del Norte** — Girardota, Antioquia, Colombia
 
@@ -25,6 +25,7 @@
    - 3.1 Listado de Clientes
    - 3.2 Detalle de Cliente
    - 3.3 Crear / Editar Cliente
+   - 3.4 Directorio de Contactos
 4. [Inventario](#4-inventario)
    - 4.1 Listado de Productos
    - 4.2 Detalle de Producto
@@ -356,7 +357,7 @@ Al hacer clic en **"Ver"** o en el nombre de un cliente:
 1. Se abre la pantalla de detalle con toda la informacion del cliente.
 2. La informacion se organiza en pestanas:
    - **Informacion General** — Razon social, NIT, email, telefono, direccion, tipo de cliente, sector, estado y observaciones.
-   - **Contactos** — Lista de personas de contacto asociadas al cliente.
+   - **Contactos** — Lista de personas de contacto vinculadas al cliente con su cargo, email y tipo de notificacion. Puede marcar un contacto como **Principal** (estrella dorada) y asignar contactos del directorio corporativo. Ver seccion 3.4 para el modulo completo de Directorio de Contactos.
    - **Inventario** — Productos almacenados que pertenecen a este cliente con cantidades en stock.
    - **Operaciones** — Historial de entradas, salidas y movimientos de kardex asociados.
 3. Desde el detalle puede hacer clic en **"Editar"** para modificar la informacion.
@@ -389,6 +390,62 @@ El formulario de cliente incluye los siguientes campos:
 1. Desde el listado o el detalle, haga clic en **"Editar"**.
 2. Modifique los campos necesarios.
 3. Haga clic en **"Guardar"**.
+
+### 3.4 Directorio de Contactos
+
+El modulo **Directorio de Contactos** centraliza todas las personas de contacto de ISTHO y sus clientes. Un contacto puede estar vinculado a uno o varios clientes (relacion muchos a muchos), y opcionalmente asociado a un usuario interno del CRM.
+
+**Acceder al Directorio de Contactos:**
+
+1. En el menu lateral, haga clic en **"Clientes" > "Directorio de Contactos"**.
+2. Vera el listado de todos los contactos registrados.
+
+**Funcionalidades del listado:**
+
+- **Buscar:** Filtre contactos por nombre, email o cargo usando la barra de busqueda superior.
+- **Filtros:** Use los desplegables para filtrar por tipo de contacto o por el cliente al que estan vinculados.
+- **Crear contacto:** Haga clic en **"+ Nuevo Contacto"** para abrir el formulario de creacion.
+- **Ver detalle:** Haga clic en el menu de tres puntos (⋮) de un contacto para acceder a sus opciones.
+
+**Formulario de Crear / Editar Contacto:**
+
+| Campo | Tipo | Obligatorio | Descripcion |
+|-------|------|-------------|-------------|
+| Nombre | Texto | Si | Nombre completo de la persona de contacto |
+| Tipo | Seleccion | Si | **Interno ISTHO** (empleado o colaborador de ISTHO) o **Externo** (contacto de un cliente) |
+| Cargo | Texto | No | Cargo o titulo del contacto (ej: Jefe de Logistica) |
+| Email | Correo | No | Correo electronico del contacto |
+| Telefono | Texto | No | Numero de contacto |
+| Tipo de Notificacion | Seleccion | No | A que tipos de correos automaticos debe recibir este contacto |
+| Usuario CRM vinculado | Buscador | No | Para contactos internos: vincula el contacto a su cuenta de usuario en el sistema |
+
+> **Nota:** El campo **"Usuario CRM vinculado"** incluye un buscador con autocompletado. Al escribir el nombre del usuario aparecen sugerencias. Una vez seleccionado, el contacto queda asociado a ese usuario del sistema.
+
+**Panel Lateral de Detalle (ContactoDrawer):**
+
+Al hacer clic en un contacto desde el listado, se abre un panel lateral con:
+
+1. **Datos basicos** — Nombre, tipo, cargo, email, telefono, tipo de notificacion.
+2. **Clientes asignados** — Lista de todos los clientes a los que esta vinculado el contacto.
+3. **Acciones:**
+   - **Editar** — Modificar datos del contacto.
+   - **Asignar a cliente** — Vincular el contacto a un cliente adicional.
+   - **Eliminar** — Eliminar el contacto permanentemente.
+
+**Gestion de Contactos desde el Detalle de un Cliente:**
+
+La pestana **"Contactos"** en la pantalla de detalle de un cliente (seccion 3.2) permite:
+
+1. **Ver los contactos asignados** — Tabla con nombre, cargo, email y columna "Principal".
+2. **Marcar como Principal:**
+   - El contacto principal aparece con una **estrella dorada rellena** (★) en la columna "Principal".
+   - Los demas contactos muestran una estrella vacia (☆) que al pasar el cursor se torna dorada.
+   - Solo los administradores pueden marcar un contacto como principal (los demas roles ven el indicador en modo lectura).
+   - Solo puede haber **un contacto principal por cliente** a la vez. Al marcar uno, el anterior pierde el estado de principal automaticamente.
+3. **Asignar contacto existente** — Desplegable para seleccionar un contacto del directorio y asignarlo al cliente actual.
+4. **Desasignar** — Eliminar la relacion entre el contacto y el cliente (sin borrar el contacto del directorio).
+
+> **Nota:** El directorio de contactos requiere el permiso `contactos: ver`. Para crear o editar se requieren los permisos `contactos: crear` o `contactos: editar` respectivamente. Solo los administradores pueden eliminar contactos.
 
 ---
 
@@ -1493,9 +1550,16 @@ La busqueda global permite encontrar cualquier registro del sistema sin importar
 | --------- | -------- |
 | Inventario | Productos por nombre, SKU o codigo |
 | Clientes | Empresas por razon social o NIT |
+| Contactos | Personas del directorio por nombre, cargo o email |
 | Entradas | Documentos CO por numero o referencia |
 | Salidas | Documentos PK por numero o referencia |
 | Kardex | Documentos CR por numero o referencia |
+| Viajes | Viajes por numero, destino o conductor |
+| Vehiculos | Vehiculos por placa, marca o modelo |
+| Cajas Menores | Cajas por numero o usuario asignado |
+| Movimientos | Movimientos de caja por concepto o usuario |
+
+> **Nota:** Solo se muestran los modulos para los cuales el usuario tiene permiso de visualizacion. Un usuario con rol cliente unicamente vera resultados de los modulos disponibles para su perfil.
 
 **Navegacion:**
 
@@ -1574,4 +1638,4 @@ Si tiene preguntas o inconvenientes con el sistema, puede contactar al equipo de
 
 *ISTHO S.A.S. - ISO 9001:2015*
 *Documento actualizado: Junio 2026*
-*CRM CenthriX v1.3.0*
+*CRM CenthriX v1.6.0*

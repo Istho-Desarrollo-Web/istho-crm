@@ -1,7 +1,7 @@
 ﻿# Documento de Soporte Administrativo
 ## CRM CenthriX — ISTHO S.A.S.
 
-**Versión:** 1.3.0
+**Versión:** 1.6.0
 **Fecha:** Junio 2026
 **Elaborado por:** Coordinación TI — ISTHO S.A.S.
 **Clasificación:** Uso interno
@@ -28,6 +28,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 
 ### 3.1 Gestión de Clientes
 - Centralizar la información de clientes corporativos con datos de contacto, documentación tributaria y estado comercial.
+- Gestionar un **Directorio de Contactos** corporativo con relaciones muchos-a-muchos (un contacto puede estar vinculado a varios clientes). Permite marcar contacto principal por cliente y vincular contactos a usuarios internos del CRM.
 - Proporcionar un portal de consulta para que los clientes accedan a su inventario y operaciones en tiempo real.
 
 ### 3.2 Control de Inventario
@@ -78,7 +79,8 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 | # | Módulo | Descripción | Roles con acceso |
 |---|--------|-------------|-----------------|
 | 1 | **Dashboard** | Panel de control con KPIs por rol | Todos |
-| 2 | **Clientes** | Gestión de clientes y contactos | Admin, Supervisor, Operador, Financiera |
+| 2 | **Clientes** | Gestión de clientes (CRUD, importar, exportar, portal) | Admin, Supervisor, Operador, Financiera |
+| 2.1 | **Directorio de Contactos** | Directorio corporativo M:N: contactos internos ISTHO y externos vinculados a uno o varios clientes. Contacto principal por cliente, vínculo a usuario CRM | Admin, Supervisor, Operador |
 | 3 | **Inventario** | Productos, stock, cajas, lotes | Admin, Supervisor, Operador, Cliente |
 | 4 | **Entradas (CO)** | Auditoría de recepciones WMS | Admin, Supervisor, Operador, Cliente |
 | 5 | **Salidas (PK)** | Auditoría de despachos WMS | Admin, Supervisor, Operador, Cliente |
@@ -98,7 +100,7 @@ Implementar y mantener un sistema CRM que permita a ISTHO S.A.S. gestionar de ma
 | 19 | **Perfil** | Datos personales, avatar, 2FA, preferencias | Todos |
 | 20 | **Notificaciones** | Alertas en tiempo real (WebSocket) | Todos |
 | 21 | **Tutorial Interactivo** | Tour guiado por módulo (botón ?) | Todos |
-| 22 | **Búsqueda Global** | Búsqueda cross-módulo (Ctrl+K) | Todos |
+| 22 | **Búsqueda Global** | Búsqueda cross-módulo (Ctrl+K): Inventario, Clientes, Contactos, Entradas, Salidas, Kardex, Viajes, Vehículos, Cajas Menores, Movimientos | Todos (filtrado por permisos) |
 
 ### 4.2 Integraciones
 
@@ -271,4 +273,4 @@ Las plantillas de email permiten personalizar los correos que envía el sistema:
 
 ---
 
-*Documento actualizado para CRM CenthriX v1.3.0 — ISTHO S.A.S. © 2026*
+*Documento actualizado para CRM CenthriX v1.6.0 — ISTHO S.A.S. © 2026*
