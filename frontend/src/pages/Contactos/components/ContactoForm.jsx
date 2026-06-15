@@ -446,8 +446,7 @@ const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
             type="submit"
             form="contacto-form"
             disabled={isSubmitting}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-60"
-            style={{ backgroundColor: isSubmitting ? undefined : '#E74C3C' }}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#E74C3C] hover:bg-[#C0392B] rounded-lg transition-colors disabled:opacity-60"
           >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
