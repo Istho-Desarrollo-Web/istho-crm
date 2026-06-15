@@ -1300,9 +1300,6 @@ module.exports = {
   descargarPlantillaImportacion,
   // Contactos
   listarContactos,
-  crearContacto,
-  actualizarContacto,
-  eliminarContacto,
   asignarContactoDesdeCliente,
   desasignarContactoDesdeCliente,
   // Historial
