@@ -53,7 +53,7 @@ const listar = async (req, res) => {
       distinct: true,
     });
 
-    return paginated(res, rows, count, parseInt(page), parseInt(limit));
+    return paginated(res, rows, { total: count, page: parseInt(page), limit: parseInt(limit) });
   } catch (err) {
     logger.error('Error al listar contactos directorio:', { message: err.message });
     return errorResponse(res, 'Error al obtener los contactos', 500);

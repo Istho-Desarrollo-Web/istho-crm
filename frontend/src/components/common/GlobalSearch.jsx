@@ -21,6 +21,7 @@ import {
   Clock,
   ChevronRight,
   X,
+  Users,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -67,6 +68,27 @@ const MODULE_CONFIG = [
         title: c.razon_social,
         subtitle: `NIT: ${c.nit || '-'}`,
         path: `/clientes/${c.id}`,
+      }));
+    },
+  },
+  {
+    key: 'contactos',
+    label: 'Contactos',
+    prefix: 'co',
+    icon: Users,
+    color: 'text-violet-500',
+    permission: { modulo: 'contactos', accion: 'ver' },
+    listPath: '/contactos',
+    searchFn: async (term, apiClient, endpoints) => {
+      const res = await apiClient.get(endpoints.CONTACTOS.BASE, {
+        params: { search: term, limit: 5 },
+      });
+      const data = Array.isArray(res?.data) ? res.data : [];
+      return data.map((c) => ({
+        id: c.id,
+        title: c.nombre,
+        subtitle: [c.cargo, c.email].filter(Boolean).join(' · '),
+        path: '/contactos',
       }));
     },
   },

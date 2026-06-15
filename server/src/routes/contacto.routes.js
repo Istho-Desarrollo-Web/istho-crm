@@ -8,7 +8,8 @@
 const express = require('express');
 const router = express.Router();
 
-const { verifyToken, cargarCachePermisos, requierePermiso, requiereRolMinimo } = require('../middleware/auth');
+const { verificarToken } = require('../middleware/auth');
+const { requierePermiso, requiereRolMinimo } = require('../middleware/roles');
 const contactoController = require('../controllers/contactoController');
 const {
   crearContactoDirectorioValidator,
@@ -19,7 +20,7 @@ const {
 } = require('../validators/contactoValidator');
 
 // Middleware de autenticación y permisos
-router.use(verifyToken, cargarCachePermisos);
+router.use(verificarToken);
 
 /**
  * GET /contactos

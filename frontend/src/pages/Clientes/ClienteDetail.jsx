@@ -320,7 +320,8 @@ const ClienteDetail = () => {
     setLoadingContactos(true);
     try {
       const res = await contactosService.getContactosCliente(clienteId);
-      setContactosCliente(res?.data?.rows ?? res?.rows ?? res ?? []);
+      const raw = res?.data;
+      setContactosCliente(Array.isArray(raw) ? raw : (raw?.rows ?? res?.rows ?? []));
     } catch (err) {
       apiError(err.message || 'Error al cargar contactos');
       setContactosCliente([]);
@@ -333,8 +334,8 @@ const ClienteDetail = () => {
   const fetchOpcionesContactos = useCallback(async (clienteId) => {
     try {
       const res = await contactosService.getAll({ activo: true, limit: 200 });
-      const todos = res?.data?.rows ?? res?.rows ?? res ?? [];
-      setOpcionesContactos(todos);
+      const raw = res?.data;
+      setOpcionesContactos(Array.isArray(raw) ? raw : (raw?.rows ?? res?.rows ?? []));
     } catch {
       setOpcionesContactos([]);
     }
@@ -974,9 +975,9 @@ const ClienteDetail = () => {
                               {c.telefono_principal || c.telefono || '—'}
                             </td>
                             <td className="px-3 py-2.5">
-                              {c.ClienteContacto?.es_principal || c.es_principal ? (
-                                <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-medium">
-                                  Principal
+                              {(c.clientes?.[0]?.ContactoCliente?.es_principal || c.ClienteContacto?.es_principal || c.es_principal) ? (
+                                <span className="text-amber-400" title="Contacto principal">
+                                  <Star className="w-4 h-4" fill="currentColor" />
                                 </span>
                               ) : user?.rol === 'admin' ? (
                                 <button

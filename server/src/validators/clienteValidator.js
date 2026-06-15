@@ -311,8 +311,9 @@ const crearContactoValidator = [
     .withMessage('El celular no puede exceder 50 caracteres'),
 
   body('email')
-    .optional()
     .trim()
+    .notEmpty()
+    .withMessage('El correo es requerido')
     .isEmail()
     .withMessage('Debe ser un email válido')
     .normalizeEmail(),

@@ -6,3 +6,7 @@ abrir-tunel-db.bat
 # Local environment files
 server/.env
 server/.env.rds
+
+
+# Superpowers
+/.superpowers/

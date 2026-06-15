@@ -103,8 +103,13 @@ const listar = async (req, res) => {
       ];
     }
 
-    // Count separado (sin JOINs, mucho más rápido)
-    const count = await MovimientoCajaMenor.count({ where });
+    // Count separado — incluye JOIN de usuario solo cuando search lo requiere
+    const countOptions = { where };
+    if (req.query.search) {
+      countOptions.include = [{ model: Usuario, as: 'usuario', attributes: [], required: false }];
+      countOptions.distinct = true;
+    }
+    const count = await MovimientoCajaMenor.count(countOptions);
 
     // Datos con includes (excluir soporte_url que es MEDIUMTEXT pesado)
     const rows = await MovimientoCajaMenor.findAll({

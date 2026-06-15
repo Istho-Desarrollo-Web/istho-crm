@@ -10,12 +10,13 @@
  * @date Junio 2026
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { X, Save, Loader2, User, Phone, Mail, FileText, Bell, Link } from 'lucide-react';
+import { X, Save, Loader2, User, Phone, Mail, FileText, Bell, Link, Search, XCircle } from 'lucide-react';
 import { FilterDropdown } from '@components/common';
 import useNotification from '@hooks/useNotification';
 import contactosService from '@api/contactos.service';
+import adminService from '@api/admin.service';
 
 // ============================================================================
 // CONSTANTES
@@ -86,6 +87,144 @@ const inputCls = (hasIcon = false, hasError = false) =>
 // COMPONENTE PRINCIPAL
 // ============================================================================
 
+// ============================================================================
+// SUBCOMPONENTE: buscador de usuarios CRM
+// ============================================================================
+
+const BuscadorUsuarioCRM = ({ value, onChange, onUsuarioSeleccionado }) => {
+  const [texto, setTexto] = useState('');
+  const [resultados, setResultados] = useState([]);
+  const [buscando, setBuscando] = useState(false);
+  const [abierto, setAbierto] = useState(false);
+  const [usuarioSel, setUsuarioSel] = useState(null);
+  const debounceRef = useRef(null);
+  const wrapperRef = useRef(null);
+
+  // Carga el usuario seleccionado cuando llega un value externo (modo edición)
+  useEffect(() => {
+    if (value && !usuarioSel) {
+      adminService.getUsuario(value).then((res) => {
+        const u = res?.data ?? res;
+        if (u?.id) setUsuarioSel(u);
+      }).catch(() => {});
+    }
+    if (!value) {
+      setUsuarioSel(null);
+      setTexto('');
+    }
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Cerrar al clic fuera
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setAbierto(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const buscar = (q) => {
+    clearTimeout(debounceRef.current);
+    if (!q.trim()) { setResultados([]); setAbierto(false); return; }
+    debounceRef.current = setTimeout(async () => {
+      setBuscando(true);
+      try {
+        const res = await adminService.getUsuarios({ search: q, limit: 8 });
+        const rows = res?.data?.usuarios ?? res?.data?.rows ?? [];
+        setResultados(Array.isArray(rows) ? rows : []);
+        setAbierto(true);
+      } catch {
+        setResultados([]);
+      } finally {
+        setBuscando(false);
+      }
+    }, 350);
+  };
+
+  const seleccionar = (u) => {
+    setUsuarioSel(u);
+    setTexto('');
+    setAbierto(false);
+    onChange(u.id);
+    onUsuarioSeleccionado?.(u);
+  };
+
+  const limpiar = () => {
+    setUsuarioSel(null);
+    setTexto('');
+    setResultados([]);
+    onChange('');
+    onUsuarioSeleccionado?.(null);
+  };
+
+  if (usuarioSel) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-centhrix-surface border border-red-300 dark:border-red-600 rounded-lg">
+        <div className="h-7 w-7 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+          <User className="h-4 w-4 text-red-500" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{usuarioSel.nombre_completo}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{usuarioSel.username} · ID {usuarioSel.id}</p>
+        </div>
+        <button type="button" onClick={limpiar} className="p-1 text-slate-400 hover:text-red-500 transition-colors">
+          <XCircle className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          {buscando ? <Loader2 className="h-4 w-4 text-slate-400 animate-spin" /> : <Search className="h-4 w-4 text-slate-400" />}
+        </div>
+        <input
+          type="text"
+          value={texto}
+          onChange={(e) => { setTexto(e.target.value); buscar(e.target.value); }}
+          onFocus={() => resultados.length > 0 && setAbierto(true)}
+          placeholder="Buscar por nombre, usuario o email..."
+          className="w-full pl-9 pr-3 py-2 bg-white dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+        />
+      </div>
+      {abierto && resultados.length > 0 && (
+        <ul className="absolute z-50 mt-1 w-full bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          {resultados.map((u) => (
+            <li key={u.id}>
+              <button
+                type="button"
+                onClick={() => seleccionar(u)}
+                className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:hover:bg-centhrix-surface text-left transition-colors"
+              >
+                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
+                  <User className="h-4 w-4 text-slate-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{u.nombre_completo}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{u.username} · {u.email}</p>
+                </div>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {abierto && !buscando && resultados.length === 0 && texto.trim().length > 0 && (
+        <div className="absolute z-50 mt-1 w-full bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
+          Sin resultados para "{texto}"
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
+
 const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
   const { success: notifySuccess, error: notifyError } = useNotification();
   const [vincularUsuario, setVincularUsuario] = useState(false);
@@ -147,6 +286,15 @@ const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
     if (!next) {
       setValue('usuario_id', '');
     }
+  };
+
+  const handleUsuarioSeleccionado = (u) => {
+    if (!u) return;
+    if (u.nombre_completo) setValue('nombre', u.nombre_completo);
+    if (u.cargo)           setValue('cargo', u.cargo);
+    if (u.telefono)        setValue('telefono', u.telefono);
+    if (u.celular)         setValue('celular', u.celular);
+    if (u.email)           setValue('email', u.email);
   };
 
   const handleToggleNotificacion = (valor) => {
@@ -271,21 +419,23 @@ const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
             </button>
           </div>
 
-          {/* 2b. Campo usuario_id si el toggle está activo */}
+          {/* 2b. Buscador de usuario CRM si el toggle está activo */}
           {vincularUsuario && (
-            <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-700 space-y-2">
-              <p className="text-xs text-amber-700 dark:text-amber-400">
-                Búsqueda de usuarios — próximamente. Por ahora puede ingresar el ID manualmente.
-              </p>
-              <InputField label="ID de usuario CRM" error={errors.usuario_id?.message}>
-                <input
-                  {...register('usuario_id')}
-                  type="number"
-                  min={1}
-                  placeholder="Ej: 12"
-                  className={inputCls(false, !!errors.usuario_id)}
-                />
-              </InputField>
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                Usuario CRM vinculado
+              </label>
+              <Controller
+                name="usuario_id"
+                control={control}
+                render={({ field }) => (
+                  <BuscadorUsuarioCRM
+                    value={field.value}
+                    onChange={(v) => field.onChange(v)}
+                    onUsuarioSeleccionado={handleUsuarioSeleccionado}
+                  />
+                )}
+              />
             </div>
           )}
 

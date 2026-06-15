@@ -30,6 +30,8 @@ import {
 import useNotification from '@hooks/useNotification';
 import { useAuth } from '@context/AuthContext';
 import contactosService from '@api/contactos.service';
+import ContactoForm from './components/ContactoForm';
+import ContactoDrawer from './components/ContactoDrawer';
 
 // ════════════════════════════════════════════════════════════════════════════
 // CONSTANTES
@@ -148,6 +150,12 @@ const ContactosList = () => {
   const [activo, setActivo] = useState(searchParams.get('activo') || '');
   const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
 
+  // Modal de formulario (crear/editar)
+  const [formModal, setFormModal] = useState({ open: false, contacto: null });
+
+  // Drawer de detalle
+  const [drawer, setDrawer] = useState({ open: false, contactoId: null });
+
   // Modal de desactivar
   const [deactivateModal, setDeactivateModal] = useState({ isOpen: false, contacto: null });
   const [actionLoading, setActionLoading] = useState(false);
@@ -176,10 +184,10 @@ const ContactosList = () => {
       if (activo !== '') params.activo = activo;
 
       const res = await contactosService.getAll(params);
-      // res puede ser { rows, count } directo o { data: { rows, count }, pagination }
-      const rows = res?.rows ?? res?.data?.rows ?? [];
-      const count = res?.count ?? res?.data?.count ?? 0;
-      const pages = res?.pagination?.totalPages ?? Math.ceil(count / LIMIT) || 1;
+      // paginated() devuelve { data: [...], pagination: { total, totalPages, ... } }
+      const rows = Array.isArray(res?.data) ? res.data : (res?.data?.rows ?? []);
+      const count = res?.pagination?.total ?? res?.count ?? 0;
+      const pages = res?.pagination?.totalPages ?? (Math.ceil(count / LIMIT) || 1);
 
       setContactos(rows);
       setTotal(count);
@@ -225,20 +233,15 @@ const ContactosList = () => {
 
   // ── Handlers CRUD ─────────────────────────────────────────────────────
   const handleNuevoContacto = () => {
-    // TODO Tarea 11: abrir ContactoForm modal
-    console.log('[ContactosList] Abrir modal ContactoForm (placeholder)');
-    success('Próximamente: formulario de nuevo contacto');
+    setFormModal({ open: true, contacto: null });
   };
 
   const handleEditarContacto = (contacto) => {
-    // TODO Tarea 11: abrir ContactoForm modal en modo edición
-    console.log('[ContactosList] Editar contacto', contacto.id, '(placeholder)');
-    success(`Próximamente: editar contacto "${contacto.nombre}"`);
+    setFormModal({ open: true, contacto });
   };
 
   const handleVerContacto = (contacto) => {
-    // TODO Tarea 12: abrir ContactoDrawer
-    console.log('[ContactosList] Ver detalle contacto', contacto.id, '(placeholder)');
+    setDrawer({ open: true, contactoId: contacto.id });
   };
 
   const handleSolicitarDesactivar = (contacto) => {
@@ -537,6 +540,25 @@ const ContactosList = () => {
           )}
         </div>
       </main>
+
+      {/* ── FORMULARIO CREAR / EDITAR ────────────────────────────────── */}
+      <ContactoForm
+        open={formModal.open}
+        onClose={() => setFormModal({ open: false, contacto: null })}
+        contacto={formModal.contacto}
+        onSuccess={() => {
+          setFormModal({ open: false, contacto: null });
+          fetchContactos();
+        }}
+      />
+
+      {/* ── DRAWER DETALLE ───────────────────────────────────────────── */}
+      <ContactoDrawer
+        open={drawer.open}
+        onClose={() => setDrawer({ open: false, contactoId: null })}
+        contactoId={drawer.contactoId}
+        onContactoUpdated={fetchContactos}
+      />
 
       {/* ── MODAL DESACTIVAR ─────────────────────────────────────────── */}
       <ConfirmDialog

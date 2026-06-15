@@ -275,7 +275,7 @@ const getMenuForRole = (rol, hasPermission) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 import { useThemeContext } from '../../context/ThemeContext';
-import logoIstho from '../../assets/logo-istho.svg';
+import logoIstho from '../../assets/logo-istho.png';
 import { getServerFileUrl } from '../../api/client';
 
 /**
@@ -869,7 +869,7 @@ const MobileMenu = ({
         <div className="sticky top-0 bg-white dark:bg-centhrix-bg border-b border-gray-100 dark:border-slate-700 px-4 py-4 z-10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <img src={logoIstho} alt="ISTHO" className="h-8 w-auto max-w-[96px] object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none" />
+              <img src={logoIstho} alt="ISTHO" className="h-8 w-auto max-w-[96px] object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none dark:brightness-0 dark:invert" />
               <span className="text-xl font-bold text-slate-800 dark:text-white">CRM</span>
             </div>
             <button
@@ -1367,7 +1367,7 @@ const FloatingHeader = () => {
                 <img
                   src={logoIstho}
                   alt="ISTHO"
-                  className="h-10 w-auto max-w-[120px] object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none"
+                  className="h-10 w-auto max-w-[120px] object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none dark:brightness-0 dark:invert"
                 />
                 <span className="hidden sm:block text-xl font-bold text-slate-800 dark:text-white font-display">
                   CRM

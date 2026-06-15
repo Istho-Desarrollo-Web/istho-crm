@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import useNotification from '../../hooks/useNotification';
 import authService from '../../api/auth.service';
-import logoIstho from '../../assets/logo-istho.svg';
+import logoIstho from '../../assets/logo-istho.png';
 
 // ============================================================================
 // ESTILOS CSS (animaciones)
@@ -171,7 +171,7 @@ const ResetPassword = () => {
               <img
                 src={logoIstho}
                 alt="ISTHO"
-                className="h-14 w-auto max-w-[140px] object-contain mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none"
+                className="h-14 w-auto max-w-[140px] object-contain mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none dark:brightness-0 dark:invert"
               />
             </div>
 
@@ -221,7 +221,7 @@ const ResetPassword = () => {
               <img
                 src={logoIstho}
                 alt="ISTHO"
-                className="h-14 w-auto max-w-[140px] object-contain mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none"
+                className="h-14 w-auto max-w-[140px] object-contain mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none dark:brightness-0 dark:invert"
               />
             </div>
 
@@ -279,7 +279,7 @@ const ResetPassword = () => {
               <img
                 src={logoIstho}
                 alt="ISTHO"
-                className="h-14 w-auto max-w-[140px] object-contain mx-auto mb-4 drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none"
+                className="h-14 w-auto max-w-[140px] object-contain mx-auto mb-4 drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none dark:brightness-0 dark:invert"
               />
             </div>
 

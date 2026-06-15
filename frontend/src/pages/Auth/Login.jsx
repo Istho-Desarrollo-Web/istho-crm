@@ -17,7 +17,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../../context/AuthContext';
 import { getGreeting } from '../../utils/greeting';
-import logoIstho from '../../assets/logo-istho.svg';
+import logoIstho from '../../assets/logo-istho.png';
 import logoCenthrix from '../../assets/Centhrix WMS - ISTHO-03.svg';
 import LoadingScreen from '../../components/common/LoadingScreen';
 import PoliticaDatosModal from '../../components/common/PoliticaDatosModal';
@@ -484,7 +484,7 @@ const LoginPage = () => {
               <img
                 src={logoIstho}
                 alt="ISTHO"
-                className="h-16 w-auto max-w-[160px] object-contain mb-4 mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none"
+                className="h-16 w-auto max-w-[160px] object-contain mb-4 mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none dark:brightness-0 dark:invert"
               />
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{getGreeting()}</h1>
               <p className="text-gray-500 dark:text-slate-400 mt-1 text-sm">

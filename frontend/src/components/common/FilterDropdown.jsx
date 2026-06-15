@@ -7,6 +7,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import { ChevronDown, Check, Search, X } from 'lucide-react';
 
@@ -63,10 +64,13 @@ const FilterDropdown = ({
     if (!isOpen) setSearch('');
   }, [isOpen, showSearch]);
 
-  // Cerrar al hacer click fuera
+  // Cerrar al hacer click fuera (el panel está en portal, hay que verificar ambas refs)
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (
+        containerRef.current && !containerRef.current.contains(event.target) &&
+        !(panelRef.current && panelRef.current.contains(event.target))
+      ) {
         setIsOpen(false);
       }
     };
@@ -147,8 +151,8 @@ const FilterDropdown = ({
         />
       </button>
 
-      {/* Panel con fixed positioning para escapar del stacking context */}
-      {isOpen && (
+      {/* Panel via portal → escapa transform/overflow de cualquier ancestro */}
+      {isOpen && createPortal(
         <div
           ref={panelRef}
           style={panelStyle}
@@ -182,7 +186,7 @@ const FilterDropdown = ({
                   <button
                     type="button"
                     onClick={() => { setSearch(''); searchRef.current?.focus(); }}
-                    className={`absolute right-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors`}
+                    className="absolute right-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                   >
                     <X className={compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
                   </button>
@@ -216,7 +220,8 @@ const FilterDropdown = ({
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

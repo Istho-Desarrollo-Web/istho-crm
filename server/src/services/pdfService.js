@@ -55,12 +55,11 @@ const agregarEncabezado = (doc, titulo, subtitulo = '') => {
   // Banda roja superior de 4pt
   doc.rect(0, 0, W, 4).fill(COLORES.acento);
 
-  // Logo
+  // Logo — versión blanca (texto blanco sobre fondo oscuro, círculo negro se funde con el header)
   try {
-    doc.image(LOGO_PATH, 20, 13, { fit: [52, 44], align: 'left', valign: 'center' });
+    doc.image(LOGO_PATH, 16, 10, { fit: [52, 50], align: 'left', valign: 'center' });
   } catch (_) {
-    // fallback: rectángulo blanco semitransparente
-    doc.rect(20, 13, 52, 44).fill('#FFFFFF').fillOpacity(0.15);
+    doc.rect(16, 10, 52, 50).fill('#FFFFFF').fillOpacity(0.15);
   }
 
   // Nombre de marca
@@ -68,17 +67,17 @@ const agregarEncabezado = (doc, titulo, subtitulo = '') => {
     .fontSize(6.5)
     .fillColor(COLORES.acento)
     .fillOpacity(1)
-    .text('ISTHO S.A.S. · CenthriX CRM', 82, 16, { continued: false });
+    .text('ISTHO S.A.S. · CenthriX CRM', 78, 16, { continued: false });
 
   // Título del reporte
-  doc.fontSize(15).fillColor(COLORES.blanco).text(titulo, 82, 26, { continued: false });
+  doc.fontSize(15).fillColor(COLORES.blanco).text(titulo, 78, 26, { continued: false });
 
   // Subtítulo (opcional)
   if (subtitulo) {
     doc
       .fontSize(8)
       .fillColor(COLORES.textoSecundario)
-      .text(subtitulo, 82, 46, { continued: false });
+      .text(subtitulo, 78, 46, { continued: false });
   }
 
   // Pill de fecha (esquina derecha)

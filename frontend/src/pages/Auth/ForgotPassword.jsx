@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Send, AlertCircle, CheckCircle, Loader2, KeyRound } from 'lucide-react';
 import useNotification from '../../hooks/useNotification';
 import authService from '../../api/auth.service';
-import logoIstho from '../../assets/logo-istho.svg';
+import logoIstho from '../../assets/logo-istho.png';
 
 // ============================================================================
 // CSS ANIMATIONS (injected inline)
@@ -202,7 +202,7 @@ const ForgotPassword = () => {
               <img
                 src={logoIstho}
                 alt="ISTHO"
-                className="h-14 w-auto max-w-[140px] object-contain mb-4 mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none"
+                className="h-14 w-auto max-w-[140px] object-contain mb-4 mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] dark:drop-shadow-none dark:brightness-0 dark:invert"
               />
             </div>
 

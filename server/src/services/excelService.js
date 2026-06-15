@@ -12,7 +12,7 @@ const ExcelJS = require('exceljs');
 const path = require('path');
 const logger = require('../utils/logger');
 
-const LOGO_PATH = path.join(__dirname, '../assets/logo-negro.png');
+const LOGO_PATH = path.join(__dirname, '../assets/logo-istho.png');
 
 // ═══════════════════════════════════════════════════════════════════════════
 // COLORES Y ESTILOS

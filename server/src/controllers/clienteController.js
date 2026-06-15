@@ -12,6 +12,7 @@ const { Op } = require('sequelize');
 const {
   Cliente,
   Contacto,
+  ContactoCliente,
   Operacion,
   Inventario,
   Usuario,
@@ -115,7 +116,7 @@ const listar = async (req, res) => {
         {
           model: Contacto,
           as: 'contactos',
-          where: { es_principal: true },
+          through: { where: { es_principal: true }, attributes: ['es_principal'] },
           required: false,
           attributes: ['id', 'nombre', 'cargo', 'telefono', 'email'],
         },
@@ -239,11 +240,8 @@ const obtenerPorId = async (req, res) => {
           model: Contacto,
           as: 'contactos',
           where: { activo: true },
+          through: { attributes: ['es_principal'] },
           required: false,
-          order: [
-            ['es_principal', 'DESC'],
-            ['nombre', 'ASC'],
-          ],
         },
       ],
     });
@@ -516,12 +514,13 @@ const crearContacto = async (req, res) => {
       return notFound(res, 'Cliente no encontrado');
     }
 
-    // Crear contacto
-    const contacto = await Contacto.create(
-      {
-        ...datos,
-        cliente_id: id,
-      },
+    // Crear contacto (sin cliente_id — ahora es M:N via pivot)
+    const { es_principal: esPrincipal = false, ...datosSinPrincipal } = datos;
+    const contacto = await Contacto.create(datosSinPrincipal, { transaction });
+
+    // Asignar al cliente via pivot
+    await ContactoCliente.create(
+      { contacto_id: contacto.id, cliente_id: parseInt(id), es_principal: esPrincipal },
       { transaction }
     );
 
@@ -532,7 +531,7 @@ const crearContacto = async (req, res) => {
       accion: 'crear',
       usuario_id: req.user.id,
       usuario_nombre: req.user.nombre_completo,
-      datos_nuevos: { ...datos, cliente_id: id },
+      datos_nuevos: { ...datosSinPrincipal, cliente_id: id },
       ip_address: getClientIP(req),
       descripcion: `Contacto creado: ${contacto.nombre} para cliente ${cliente.razon_social}`,
     });
@@ -571,11 +570,16 @@ const actualizarContacto = async (req, res) => {
       return notFound(res, 'Cliente no encontrado');
     }
 
-    // Buscar contacto
-    const contacto = await Contacto.findOne({
-      where: { id: contactoId, cliente_id: id },
+    // Verificar que el contacto pertenece al cliente via pivot
+    const pivot = await ContactoCliente.findOne({
+      where: { contacto_id: contactoId, cliente_id: id },
     });
+    if (!pivot) {
+      await transaction.rollback();
+      return notFound(res, 'Contacto no encontrado para este cliente');
+    }
 
+    const contacto = await Contacto.findByPk(contactoId);
     if (!contacto) {
       await transaction.rollback();
       return notFound(res, 'Contacto no encontrado');
@@ -584,8 +588,12 @@ const actualizarContacto = async (req, res) => {
     // Guardar datos anteriores
     const datosAnteriores = contacto.toJSON();
 
-    // Actualizar
-    await contacto.update(datos, { transaction });
+    // Actualizar campos del contacto (es_principal va a la pivot)
+    const { es_principal: esPrincipal, ...datosSinPrincipal } = datos;
+    await contacto.update(datosSinPrincipal, { transaction });
+    if (esPrincipal !== undefined) {
+      await pivot.update({ es_principal: esPrincipal }, { transaction });
+    }
 
     // Registrar en auditoría
     await Auditoria.registrar({
@@ -633,31 +641,29 @@ const eliminarContacto = async (req, res) => {
       return notFound(res, 'Cliente no encontrado');
     }
 
-    // Buscar contacto
-    const contacto = await Contacto.findOne({
-      where: { id: contactoId, cliente_id: id },
+    // Verificar relación via pivot y desasociar
+    const pivot = await ContactoCliente.findOne({
+      where: { contacto_id: contactoId, cliente_id: id },
     });
 
-    if (!contacto) {
+    if (!pivot) {
       await transaction.rollback();
-      return notFound(res, 'Contacto no encontrado');
+      return notFound(res, 'Contacto no encontrado para este cliente');
     }
 
-    const datosAnteriores = contacto.toJSON();
-
-    // Eliminar (hard delete para contactos)
-    await contacto.destroy({ transaction });
+    const contacto = await Contacto.findByPk(contactoId);
+    await pivot.destroy({ transaction });
 
     // Registrar en auditoría
     await Auditoria.registrar({
-      tabla: 'contactos',
+      tabla: 'contacto_clientes',
       registro_id: contactoId,
-      accion: 'eliminar',
+      accion: 'desasignar_contacto',
       usuario_id: req.user.id,
       usuario_nombre: req.user.nombre_completo,
-      datos_anteriores: datosAnteriores,
+      datos_anteriores: { contacto_id: contactoId, cliente_id: id },
       ip_address: getClientIP(req),
-      descripcion: `Contacto eliminado: ${contacto.nombre} del cliente ${cliente.razon_social}`,
+      descripcion: `Contacto ${contacto?.nombre ?? contactoId} desasignado del cliente ${cliente.razon_social}`,
     });
 
     await transaction.commit();

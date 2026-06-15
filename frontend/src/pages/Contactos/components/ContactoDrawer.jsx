@@ -146,8 +146,9 @@ const ContactoDrawer = ({ open, onClose, contactoId, onContactoUpdated }) => {
     setCargandoClientes(true);
     try {
       const res = await clientesService.getAll({ estado: 'activo', limit: 200 });
-      // res = { success, data: { rows: [...], count: N } } o { rows, count }
-      const rows = res?.data?.rows ?? res?.rows ?? [];
+      // paginated() devuelve { success, data: [...array...], pagination: {...} }
+      const raw = res?.data;
+      const rows = Array.isArray(raw) ? raw : (raw?.rows ?? res?.rows ?? []);
       const opciones = rows.map((c) => ({
         value: String(c.id),
         label: c.razon_social || c.nombre || `Cliente ${c.id}`,
