@@ -32,6 +32,7 @@ const {
   serverError,
 } = require('../utils/responses');
 const { parsePaginacion, parseOrdenamiento, getClientIP } = require('../utils/helpers');
+const { obtenerClientesFiltrados } = require('../middleware/auth');
 const excelService = require('../services/excelService');
 const wmsApiService = require('../services/wmsApiService');
 const logger = require('../utils/logger');
@@ -75,6 +76,17 @@ const listarEntradas = async (req, res) => {
         { documento_wms: { [Op.like]: `%${search}%` } },
         { '$cliente.razon_social$': { [Op.like]: `%${search}%` } },
       ];
+    }
+
+    // Filtro por clientes asignados para supervisores/operadores
+    const clientesFiltradosEntradas = await obtenerClientesFiltrados(req);
+    if (clientesFiltradosEntradas !== null) {
+      if (where.cliente_id) {
+        const idSolicitado = Number(where.cliente_id);
+        where.cliente_id = clientesFiltradosEntradas.includes(idSolicitado) ? idSolicitado : -1;
+      } else {
+        where.cliente_id = { [Op.in]: clientesFiltradosEntradas.length > 0 ? clientesFiltradosEntradas : [-1] };
+      }
     }
 
     // Obtener IDs paginados primero (evita el bug de LIMIT con JOINs)
@@ -282,6 +294,17 @@ const listarSalidas = async (req, res) => {
       ];
     }
 
+    // Filtro por clientes asignados para supervisores/operadores
+    const clientesFiltradosSalidas = await obtenerClientesFiltrados(req);
+    if (clientesFiltradosSalidas !== null) {
+      if (where.cliente_id) {
+        const idSolicitado = Number(where.cliente_id);
+        where.cliente_id = clientesFiltradosSalidas.includes(idSolicitado) ? idSolicitado : -1;
+      } else {
+        where.cliente_id = { [Op.in]: clientesFiltradosSalidas.length > 0 ? clientesFiltradosSalidas : [-1] };
+      }
+    }
+
     // Obtener IDs paginados primero (evita el bug de LIMIT con JOINs)
     const needsClienteJoin = search || false;
     const { count, rows: idRows } = await Operacion.findAndCountAll({
@@ -487,6 +510,17 @@ const listarKardex = async (req, res) => {
         { motivo_kardex: { [Op.like]: `%${search}%` } },
         { '$cliente.razon_social$': { [Op.like]: `%${search}%` } },
       ];
+    }
+
+    // Filtro por clientes asignados para supervisores/operadores
+    const clientesFiltradosKardex = await obtenerClientesFiltrados(req);
+    if (clientesFiltradosKardex !== null) {
+      if (where.cliente_id) {
+        const idSolicitado = Number(where.cliente_id);
+        where.cliente_id = clientesFiltradosKardex.includes(idSolicitado) ? idSolicitado : -1;
+      } else {
+        where.cliente_id = { [Op.in]: clientesFiltradosKardex.length > 0 ? clientesFiltradosKardex : [-1] };
+      }
     }
 
     const needsClienteJoin = search || false;

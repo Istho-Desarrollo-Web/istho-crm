@@ -491,8 +491,8 @@ const registrarAcceso = async (req, res, next) => {
 
 /**
  * Helper: Obtener IDs de clientes filtrados para supervisores/operadores.
- * Retorna array de cliente_ids asignados al usuario, o null si no aplica filtro.
- * Array vacío significa "ningún cliente asignado" → el controlador debe devolver vacío.
+ * Retorna array de cliente_ids asignados, o null si no aplica restricción.
+ * null = sin restricción (ve todo): usuarios no-supervisor/operador, o supervisor/operador sin asignaciones.
  */
 const obtenerClientesFiltrados = async (req) => {
   const rolesConFiltro = ['supervisor', 'operador'];
@@ -504,7 +504,8 @@ const obtenerClientesFiltrados = async (req) => {
     attributes: ['cliente_id'],
     raw: true,
   });
-  return asignaciones.map((a) => a.cliente_id);
+  const ids = asignaciones.map((a) => a.cliente_id);
+  return ids.length > 0 ? ids : null;
 };
 
 /**
