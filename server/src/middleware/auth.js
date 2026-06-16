@@ -223,7 +223,11 @@ const verificarToken = async (req, res, next) => {
         if (usuario.esAdmin()) return true;
         // Usuario cliente: verificar permisos_cliente individuales
         if (usuario.esCliente()) {
-          const permisos = usuario.permisos_cliente || Usuario.getPermisosClienteDefault();
+          // Fusionar con defaults para cubrir permisos_cliente desactualizados (sin la clave)
+          const defaults = Usuario.getPermisosClienteDefault();
+          const permisos = usuario.permisos_cliente
+            ? Object.assign({}, defaults, usuario.permisos_cliente)
+            : defaults;
           if (!permisos[modulo]) return false;
           return permisos[modulo][accion] === true;
         }

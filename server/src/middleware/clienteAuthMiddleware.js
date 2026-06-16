@@ -121,7 +121,11 @@ const verificarPermisoCliente = (modulo, accion) => {
 
       // Para usuarios cliente, verificar permisos específicos
       if (req.user.rol === 'cliente') {
-        const permisos = req.user.permisos_cliente || Usuario.getPermisosClienteDefault();
+        // Fusionar con defaults para cubrir permisos_cliente desactualizados (sin la clave)
+        const defaults = Usuario.getPermisosClienteDefault();
+        const permisos = req.user.permisos_cliente
+          ? Object.assign({}, defaults, req.user.permisos_cliente)
+          : defaults;
 
         if (!permisos[modulo] || !permisos[modulo][accion]) {
           logger.warn('Permiso de cliente denegado:', {

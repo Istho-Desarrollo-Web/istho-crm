@@ -99,7 +99,9 @@ router.post('/logout', verificarToken, authController.logout);
 router.put(
   '/cambiar-password',
   verificarToken,
-  verificarPermisoCliente('perfil', 'cambiar_password'),
+  // Sin verificarPermisoCliente: cambiar la contraseña propia es una operación
+  // de identidad (no de autorización) y DEBE funcionar aunque el usuario tenga
+  // requiere_cambio_password=true o permisos_cliente desactualizados.
   cambiarPasswordValidator,
   authController.cambiarPassword
 );
