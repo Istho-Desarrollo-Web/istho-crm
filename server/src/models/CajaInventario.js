@@ -175,6 +175,10 @@ module.exports = (sequelize) => {
           fields: ['inventario_id', 'tipo', 'estado'],
           name: 'idx_caja_inv_tipo_estado',
         },
+        // Para el polling de kardex (carga lote ordenado por última sync)
+        { fields: ['wms_pallet_id'], name: 'idx_caja_inv_wms_pallet_id' },
+        // Para la búsqueda en syncKardex (findOne por numero_caja + inventario_id)
+        { fields: ['numero_caja', 'inventario_id'], name: 'idx_caja_inv_numero_caja_inventario_id' },
       ],
     }
   );

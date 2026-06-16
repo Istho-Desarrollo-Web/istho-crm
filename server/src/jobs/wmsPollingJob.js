@@ -43,8 +43,14 @@ async function _descubrirPalletIds() {
 async function _pollKardexHistorial() {
   const { CajaInventario, Inventario, Cliente, WmsSyncLog } = getModels();
 
+  // Procesa un lote por ciclo (NULLs primero en MySQL ASC, luego más antiguas)
+  // para no saturar el WMS con miles de requests en un solo ciclo.
+  const batchSize = parseInt(process.env.WMS_KARDEX_BATCH_SIZE || '30', 10);
+
   const cajas = await CajaInventario.findAll({
     where: { wms_pallet_id: { [Op.not]: null } },
+    order: [['wms_kardex_ultima_sync', 'ASC']], // NULL < cualquier fecha en MySQL → primero las nunca sincronizadas
+    limit: batchSize,
     include: [
       {
         model: Inventario,
@@ -55,7 +61,7 @@ async function _pollKardexHistorial() {
   });
 
   if (cajas.length === 0) return;
-  logger.debug(`[WmsPolling] Revisando kardex de ${cajas.length} cajas...`);
+  logger.debug(`[WmsPolling] Revisando kardex de ${cajas.length}/${batchSize} cajas (lote)...`);
 
   // Deduplicación dentro del ciclo: evita procesar el mismo ajuste
   // si varias cajas CRM apuntan al mismo palletCode WMS
