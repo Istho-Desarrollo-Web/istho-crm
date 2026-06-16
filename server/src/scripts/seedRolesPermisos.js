@@ -550,8 +550,11 @@ async function seed({ standalone = true } = {}) {
     await Rol.sync({ alter: true });
     await Permiso.sync({ alter: true });
     await RolPermiso.sync({ alter: true });
-    // Asegurar que usuario tenga rol_id
+    // sync de usuarios deshabilitando FK checks temporalmente para evitar el error
+    // errno 22 al re-crear la FK auto-referencial de invitado_por en MySQL.
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
     await Usuario.sync({ alter: true });
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
     console.log('Tablas sincronizadas.\n');
 
     // 2. Crear/actualizar roles base
