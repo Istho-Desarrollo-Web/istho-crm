@@ -12,11 +12,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { X, Save, Loader2, User, Phone, Mail, FileText, Bell, Link, Search, XCircle } from 'lucide-react';
+import { X, Save, Loader2, User, Phone, Mail, FileText, Bell, Link, Search, XCircle, Building2, Star } from 'lucide-react';
 import { FilterDropdown } from '@components/common';
 import useNotification from '@hooks/useNotification';
 import contactosService from '@api/contactos.service';
 import adminService from '@api/admin.service';
+import clientesService from '@api/clientes.service';
 
 // ============================================================================
 // CONSTANTES
@@ -222,12 +223,108 @@ const BuscadorUsuarioCRM = ({ value, onChange, onUsuarioSeleccionado }) => {
 };
 
 // ============================================================================
+// SUBCOMPONENTE: buscador de clientes para asociar al contacto
+// ============================================================================
+
+const BuscadorClientes = ({ clientesAsignados, onAgregar }) => {
+  const [texto, setTexto] = useState('');
+  const [resultados, setResultados] = useState([]);
+  const [buscando, setBuscando] = useState(false);
+  const [abierto, setAbierto] = useState(false);
+  const debounceRef = useRef(null);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setAbierto(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const buscar = (q) => {
+    clearTimeout(debounceRef.current);
+    if (!q.trim()) { setResultados([]); setAbierto(false); return; }
+    debounceRef.current = setTimeout(async () => {
+      setBuscando(true);
+      try {
+        const res = await clientesService.getAll({ search: q, limit: 8, estado: 'activo' });
+        const raw = res?.data;
+        const rows = Array.isArray(raw) ? raw : (raw?.rows ?? res?.rows ?? []);
+        const idsYaAsignados = new Set(clientesAsignados.map((c) => c.id));
+        setResultados(rows.filter((r) => !idsYaAsignados.has(r.id)));
+        setAbierto(true);
+      } catch {
+        setResultados([]);
+      } finally {
+        setBuscando(false);
+      }
+    }, 350);
+  };
+
+  const seleccionar = (cliente) => {
+    onAgregar(cliente);
+    setTexto('');
+    setResultados([]);
+    setAbierto(false);
+  };
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          {buscando ? <Loader2 className="h-4 w-4 text-slate-400 animate-spin" /> : <Search className="h-4 w-4 text-slate-400" />}
+        </div>
+        <input
+          type="text"
+          value={texto}
+          onChange={(e) => { setTexto(e.target.value); buscar(e.target.value); }}
+          onFocus={() => resultados.length > 0 && setAbierto(true)}
+          placeholder="Buscar cliente por nombre o NIT..."
+          className="w-full pl-9 pr-3 py-2 bg-white dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+        />
+      </div>
+      {abierto && resultados.length > 0 && (
+        <ul className="absolute z-50 mt-1 w-full bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          {resultados.map((c) => (
+            <li key={c.id}>
+              <button
+                type="button"
+                onClick={() => seleccionar(c)}
+                className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:hover:bg-centhrix-surface text-left transition-colors"
+              >
+                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
+                  <Building2 className="h-4 w-4 text-slate-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{c.nombre}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate">NIT: {c.nit ?? '—'}</p>
+                </div>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {abierto && !buscando && resultados.length === 0 && texto.trim().length > 0 && (
+        <div className="absolute z-50 mt-1 w-full bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
+          Sin resultados para "{texto}"
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
 // COMPONENTE PRINCIPAL
 // ============================================================================
 
 const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
   const { success: notifySuccess, error: notifyError } = useNotification();
   const [vincularUsuario, setVincularUsuario] = useState(false);
+  const [clientesAsignados, setClientesAsignados] = useState([]);
+  const clientesOriginalesRef = useRef([]);
 
   const isEditing = !!contacto;
 
@@ -269,8 +366,18 @@ const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
           : ['todas'],
         notas: contacto.notas || '',
       });
+      const clientesActuales = (contacto.clientes ?? []).map((c) => ({
+        id: c.id,
+        nombre: c.nombre,
+        nit: c.nit,
+        es_principal: c.ContactoCliente?.es_principal ?? false,
+      }));
+      setClientesAsignados(clientesActuales);
+      clientesOriginalesRef.current = clientesActuales;
     } else {
       setVincularUsuario(false);
+      setClientesAsignados([]);
+      clientesOriginalesRef.current = [];
       reset(VALORES_POR_DEFECTO);
     }
   }, [open, contacto]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -297,8 +404,30 @@ const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
   };
 
 
+  const sincronizarClientes = async (contactoId) => {
+    const originalesIds = new Set(clientesOriginalesRef.current.map((c) => c.id));
+    const nuevosIds = new Set(clientesAsignados.map((c) => c.id));
+
+    // Eliminar los que ya no están
+    const aEliminar = clientesOriginalesRef.current.filter((c) => !nuevosIds.has(c.id));
+    await Promise.all(
+      aEliminar.map((c) => contactosService.desasignarCliente(contactoId, c.id).catch(() => {}))
+    );
+
+    // Agregar/actualizar los nuevos o modificados
+    const aUpsert = clientesAsignados.filter((c) => {
+      if (!originalesIds.has(c.id)) return true; // nuevo
+      const original = clientesOriginalesRef.current.find((o) => o.id === c.id);
+      return original?.es_principal !== c.es_principal; // cambió es_principal
+    });
+    await Promise.all(
+      aUpsert.map((c) =>
+        contactosService.asignarCliente(contactoId, { cliente_id: c.id, es_principal: c.es_principal }).catch(() => {})
+      )
+    );
+  };
+
   const onSubmit = async (data) => {
-    // Limpiar campos no relevantes
     const payload = {
       tipo: data.tipo,
       nombre: data.nombre,
@@ -316,6 +445,9 @@ const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
       const resultado = isEditing
         ? await contactosService.update(contacto.id, payload)
         : await contactosService.create(payload);
+
+      const contactoId = isEditing ? contacto.id : (resultado?.data?.id ?? resultado?.id);
+      if (contactoId) await sincronizarClientes(contactoId);
 
       notifySuccess(isEditing ? 'Contacto actualizado' : 'Contacto guardado');
       onSuccess?.(resultado);
@@ -574,7 +706,81 @@ const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
             </div>
           )}
 
-          {/* 10. Notas */}
+          {/* 10. Clientes asociados */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-slate-500" />
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                Clientes asociados
+              </label>
+            </div>
+
+            <BuscadorClientes
+              clientesAsignados={clientesAsignados}
+              onAgregar={(c) =>
+                setClientesAsignados((prev) => [
+                  ...prev,
+                  { id: c.id, nombre: c.nombre, nit: c.nit, es_principal: false },
+                ])
+              }
+            />
+
+            {clientesAsignados.length > 0 && (
+              <ul className="space-y-1.5 mt-1">
+                {clientesAsignados.map((c) => (
+                  <li
+                    key={c.id}
+                    className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-700 rounded-lg"
+                  >
+                    <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
+                        {c.nombre}
+                      </p>
+                      {c.nit && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400">NIT: {c.nit}</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      title={c.es_principal ? 'Quitar como principal' : 'Marcar como principal'}
+                      onClick={() =>
+                        setClientesAsignados((prev) =>
+                          prev.map((x) =>
+                            x.id === c.id ? { ...x, es_principal: !x.es_principal } : x
+                          )
+                        )
+                      }
+                      className={`p-1 rounded transition-colors ${
+                        c.es_principal
+                          ? 'text-amber-500'
+                          : 'text-slate-300 dark:text-slate-600 hover:text-amber-400'
+                      }`}
+                    >
+                      <Star className={`h-3.5 w-3.5 ${c.es_principal ? 'fill-amber-500' : ''}`} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setClientesAsignados((prev) => prev.filter((x) => x.id !== c.id))
+                      }
+                      className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                    >
+                      <XCircle className="h-4 w-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {clientesAsignados.length === 0 && (
+              <p className="text-xs text-slate-400 dark:text-slate-500 py-1">
+                Sin clientes asociados. Busca y agrega uno arriba.
+              </p>
+            )}
+          </div>
+
+          {/* 11. Notas */}
           <div className="space-y-1">
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               Notas

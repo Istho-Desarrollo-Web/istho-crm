@@ -146,7 +146,7 @@ const CierreAuditoriaModal = ({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl bg-white dark:bg-centhrix-card rounded-2xl shadow-2xl animate-fadeIn">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-centhrix-card rounded-2xl shadow-2xl animate-fadeIn flex flex-col max-h-[90vh]">
         {/* Header */}
         <div
           className={`flex items-center gap-3 p-5 border-b border-gray-100 dark:border-slate-700`}
@@ -174,7 +174,7 @@ const CierreAuditoriaModal = ({
         </div>
 
         {/* Content */}
-        <div className="p-5 space-y-4">
+        <div className="p-5 space-y-4 overflow-y-auto flex-1">
           {/* Toggle enviar correo */}
           <label className="flex items-center gap-3 cursor-pointer group">
             <div className="relative">
