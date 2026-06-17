@@ -146,7 +146,7 @@ const CierreAuditoriaModal = ({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-white dark:bg-centhrix-card rounded-2xl shadow-2xl animate-fadeIn">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-centhrix-card rounded-2xl shadow-2xl animate-fadeIn">
         {/* Header */}
         <div
           className={`flex items-center gap-3 p-5 border-b border-gray-100 dark:border-slate-700`}
