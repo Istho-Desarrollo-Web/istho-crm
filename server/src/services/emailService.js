@@ -316,10 +316,22 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
 
     if (operacion.averias && operacion.averias.length > 0) {
       for (const av of operacion.averias) {
-        const key = av.cloudinary_public_id || av.foto_url;
-        if (key && !key.startsWith('http') && !key.startsWith('data:')) {
-          archivosParaEnlazar.push({ key, nombre: av.foto_nombre || `averia_${av.id}.jpg`, tipo: av.foto_tipo || 'image/jpeg', filePath: null });
+        let todasFotos;
+        try {
+          todasFotos = av.fotos_urls
+            ? JSON.parse(av.fotos_urls)
+            : [av.cloudinary_public_id || av.foto_url].filter(Boolean);
+        } catch {
+          todasFotos = [av.cloudinary_public_id || av.foto_url].filter(Boolean);
         }
+        todasFotos.forEach((key, idx) => {
+          if (key && !key.startsWith('http') && !key.startsWith('data:')) {
+            const nombre = idx === 0 && av.foto_nombre
+              ? av.foto_nombre
+              : `averia_${av.id}_foto${idx + 1}.jpg`;
+            archivosParaEnlazar.push({ key, nombre, tipo: av.foto_tipo || 'image/jpeg', filePath: null });
+          }
+        });
       }
     }
 
