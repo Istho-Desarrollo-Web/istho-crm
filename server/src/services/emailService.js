@@ -21,9 +21,14 @@ const APP_URL =
   process.env.APP_URL || (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',')[0].trim();
 
 // Logo para emails — S3 URL pública (bucket istho-crm-files, carpeta branding/)
+// LOGO_EMAIL_URL     : versión blanca, para fondos oscuros (header)
+// LOGO_EMAIL_DARK_URL: versión azul oscuro, para fondos claros (footer)
 const LOGO_EMAIL_URL =
   process.env.LOGO_EMAIL_URL ||
   'https://istho-crm-files.s3.us-west-2.amazonaws.com/branding/logo-email.png';
+const LOGO_EMAIL_DARK_URL =
+  process.env.LOGO_EMAIL_DARK_URL ||
+  'https://istho-crm-files.s3.us-west-2.amazonaws.com/branding/logo-email-dark.png';
 
 // Cache de plantillas compiladas (deshabilitado en desarrollo para recargar cambios)
 const templateCache = {};
@@ -84,8 +89,9 @@ const renderFromDB = (plantilla, datos, asunto) => {
   const baseTemplate = Handlebars.compile(baseContent);
 
   const logoUrl = LOGO_EMAIL_URL;
+  const logoUrlDark = LOGO_EMAIL_DARK_URL;
   const cuerpoTemplate = Handlebars.compile(plantilla.cuerpo_html);
-  let contenido = cuerpoTemplate({ ...datos, logoUrl });
+  let contenido = cuerpoTemplate({ ...datos, logoUrl, logoUrlDark });
 
   if (plantilla.firma_habilitada) {
     const firmaSource = plantilla.firma_html || PlantillaEmail.FIRMA_DEFAULT;
@@ -97,6 +103,7 @@ const renderFromDB = (plantilla, datos, asunto) => {
     asunto: asunto || 'Notificación ISTHO CRM',
     contenido,
     logoUrl,
+    logoUrlDark,
     hasFirma: !!plantilla.firma_habilitada,
   });
 };
@@ -107,18 +114,20 @@ const renderFromDB = (plantilla, datos, asunto) => {
 const renderEmail = (templateName, data) => {
   const { contentTemplate, baseTemplate } = loadTemplate(templateName);
 
-  // Logo via URL (Cloudinary) — liviano, no base64
+  // Logo via URL — liviano, no base64
   const logoUrl = LOGO_EMAIL_URL;
+  const logoUrlDark = LOGO_EMAIL_DARK_URL;
   const logoFirmaDataUri = LOGO_EMAIL_URL;
 
   // Renderizar contenido
-  const contenido = contentTemplate({ ...data, logoUrl, logoFirmaDataUri });
+  const contenido = contentTemplate({ ...data, logoUrl, logoUrlDark, logoFirmaDataUri });
 
   // Insertar en plantilla base
   const html = baseTemplate({
     asunto: data.asunto || 'Notificación ISTHO CRM',
     contenido,
     logoUrl,
+    logoUrlDark,
     logoFirmaDataUri,
   });
 
@@ -431,10 +440,12 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
         // Usar base template del filesystem
         const { baseTemplate } = loadTemplate('operacion-cierre');
         const logoUrl = LOGO_EMAIL_URL;
+        const logoUrlDark = LOGO_EMAIL_DARK_URL;
         const htmlFinal = baseTemplate({
           asunto: asuntoCompiled(datos),
           contenido: cuerpoHtml,
           logoUrl,
+          logoUrlDark,
           hasFirma: !!plantillaCustom.firma_habilitada,
         });
 
@@ -730,6 +741,7 @@ const enviarSolicitudNueva = async (solicitud, emails, adjuntos = []) => {
     const baseContent = fs.readFileSync(basePath, 'utf8');
     const baseTemplate = Handlebars.compile(baseContent);
     const logoUrl = LOGO_EMAIL_URL;
+    const logoUrlDark = LOGO_EMAIL_DARK_URL;
 
     const filas = [
       ['N° Solicitud', numero_solicitud],
@@ -771,7 +783,7 @@ const enviarSolicitudNueva = async (solicitud, emails, adjuntos = []) => {
   <a href="${escHtml(urlSolicitud)}" style="background:#E74C3C;color:#fff;padding:11px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">Ver Solicitud</a>
 </p>`;
 
-    html = baseTemplate({ asunto, contenido, logoUrl });
+    html = baseTemplate({ asunto, contenido, logoUrl, logoUrlDark });
   }
 
   const paraStr = Array.isArray(emails) ? emails.join(', ') : emails;

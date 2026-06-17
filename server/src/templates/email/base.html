@@ -285,7 +285,20 @@ logo, colores corporativos y firma con imagen. Variables: asunto, contenido, log
                           <td style="text-align: center">
                             {{#unless hasFirma}}
                             <!-- Identidad corporativa (solo cuando el cuerpo no incluye firma) -->
-                            {{#if logoUrl}}
+                            {{#if logoUrlDark}}
+                            <img
+                              src="{{logoUrlDark}}"
+                              alt="ISTHO"
+                              width="130"
+                              style="
+                                max-width: 130px;
+                                width: 100%;
+                                height: auto;
+                                display: block;
+                                margin: 0 auto 12px;
+                              "
+                            />
+                            {{else if logoUrl}}
                             <img
                               src="{{logoUrl}}"
                               alt="ISTHO"
@@ -296,6 +309,7 @@ logo, colores corporativos y firma con imagen. Variables: asunto, contenido, log
                                 height: auto;
                                 display: block;
                                 margin: 0 auto 12px;
+                                filter: brightness(0) saturate(100%) invert(13%) sepia(20%) saturate(1318%) hue-rotate(182deg) brightness(90%);
                               "
                             />
                             {{/if}}
