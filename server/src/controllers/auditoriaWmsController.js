@@ -1029,17 +1029,23 @@ const cerrarAuditoria = async (req, res) => {
     let correosEnvio = correos_destino;
     if (!correosEnvio && enviar_correo !== false) {
       const contactos = await Contacto.findAll({
+        include: [{
+          model: ContactoCliente,
+          as: 'asignaciones',
+          where: { cliente_id: operacion.cliente_id },
+          attributes: [],
+          required: true,
+        }],
         where: {
-          cliente_id: operacion.cliente_id,
           recibe_notificaciones: true,
           activo: true,
           email: { [Op.ne]: null },
         },
+        attributes: ['email', 'tipos_notificacion'],
       });
-      // Filtrar según tipos_notificacion del contacto vs tipo de la operación
-      const tipoOp = operacion.tipo; // 'ingreso' | 'salida' | 'kardex'
+      const tipoOp = operacion.tipo;
       const contactosFiltrados = contactos.filter((c) => {
-        const tipos = c.tipos_notificacion || ['todas'];
+        const tipos = Array.isArray(c.tipos_notificacion) ? c.tipos_notificacion : ['todas'];
         return tipos.includes('todas') || tipos.includes(tipoOp);
       });
       correosEnvio = contactosFiltrados.map((c) => c.email).join(', ');
