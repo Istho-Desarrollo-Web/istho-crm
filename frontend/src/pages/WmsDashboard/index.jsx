@@ -27,6 +27,10 @@ import {
   ChevronRight,
   X,
   Zap,
+  History,
+  Search,
+  CalendarRange,
+  Box,
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import wmsDashboardService from '@api/wmsDashboard.service';
@@ -196,6 +200,337 @@ const ModalReejecutar = ({ isOpen, onClose, onConfirm, loading, tipo, setTipo })
 };
 
 // ════════════════════════════════════════════════════════════════
+// MODAL SYNC HISTÓRICO
+// ════════════════════════════════════════════════════════════════
+
+const RESULTADO_ESTADO = {
+  sincronizada: { color: 'text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 },
+  ya_existe: { color: 'text-slate-500 dark:text-slate-400', icon: Clock },
+  error: { color: 'text-red-600 dark:text-red-400', icon: XCircle },
+};
+
+const ModalSyncHistorico = ({ isOpen, onClose, onSync, loading, resultado }) => {
+  const [modo, setModo] = useState('numero'); // 'numero' | 'rango'
+  const [numeroOrden, setNumeroOrden] = useState('');
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
+
+  const handleClose = () => {
+    setNumeroOrden('');
+    setFechaDesde('');
+    setFechaHasta('');
+    setModo('numero');
+    onClose();
+  };
+
+  const handleSync = () => {
+    if (modo === 'numero') {
+      onSync({ numero_orden: numeroOrden.trim() });
+    } else {
+      onSync({ fecha_desde: fechaDesde || undefined, fecha_hasta: fechaHasta || undefined });
+    }
+  };
+
+  const puedeSync = loading
+    ? false
+    : modo === 'numero'
+      ? numeroOrden.trim().length > 0
+      : fechaDesde || fechaHasta;
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-2xl w-full max-w-lg p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+              <History className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+              Sincronizar orden histórica
+            </h3>
+          </div>
+          <button
+            onClick={handleClose}
+            disabled={loading}
+            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
+          Sincroniza órdenes del WMS que no llegaron por el ciclo automático — ya sea porque
+          eran anteriores a la fecha de corte o porque fallaron sin reintento.
+        </p>
+
+        {/* Selector de modo */}
+        <div className="flex gap-2 mb-5">
+          <button
+            onClick={() => setModo('numero')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-medium border transition-colors ${
+              modo === 'numero'
+                ? 'bg-indigo-600 border-indigo-600 text-white'
+                : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-indigo-400'
+            }`}
+          >
+            <Search className="w-4 h-4" /> Por número de orden
+          </button>
+          <button
+            onClick={() => setModo('rango')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-medium border transition-colors ${
+              modo === 'rango'
+                ? 'bg-indigo-600 border-indigo-600 text-white'
+                : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-indigo-400'
+            }`}
+          >
+            <CalendarRange className="w-4 h-4" /> Por rango de fechas
+          </button>
+        </div>
+
+        {/* Formulario */}
+        {modo === 'numero' ? (
+          <div className="mb-5">
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
+              Número de orden WMS
+            </label>
+            <input
+              type="text"
+              value={numeroOrden}
+              onChange={(e) => setNumeroOrden(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && puedeSync && handleSync()}
+              placeholder="Ej: SYS-000130 o OP-2026-0103"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-colors"
+            />
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
+              Ingresa el systemNumberOrder o customerNumberOrder que aparece en el historial del WMS.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
+                Desde
+              </label>
+              <DatePicker value={fechaDesde} onChange={setFechaDesde} placeholder="dd/mm/aaaa" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
+                Hasta
+              </label>
+              <DatePicker value={fechaHasta} onChange={setFechaHasta} placeholder="dd/mm/aaaa" />
+            </div>
+          </div>
+        )}
+
+        {/* Resultado */}
+        {resultado && (
+          <div className="mb-5 rounded-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+              <span>Candidatas: <strong className="text-slate-700 dark:text-slate-200">{resultado.candidatas}</strong></span>
+              <span className="text-emerald-600 dark:text-emerald-400">Sincronizadas: <strong>{resultado.procesadas}</strong></span>
+              {resultado.ya_existentes > 0 && <span>Ya existían: <strong>{resultado.ya_existentes}</strong></span>}
+              {resultado.errores > 0 && <span className="text-red-500">Errores: <strong>{resultado.errores}</strong></span>}
+            </div>
+            <div className="max-h-40 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-700/50">
+              {resultado.resultados.map((r, i) => {
+                const cfg = RESULTADO_ESTADO[r.estado] || RESULTADO_ESTADO.error;
+                const Icon = cfg.icon;
+                return (
+                  <div key={i} className="flex items-center gap-2 px-4 py-2 text-xs">
+                    <Icon className={`w-3.5 h-3.5 shrink-0 ${cfg.color}`} />
+                    <span className="font-mono text-slate-700 dark:text-slate-200">{r.orden}</span>
+                    {r.operacion && (
+                      <span className="text-slate-400 dark:text-slate-500">→ {r.operacion}</span>
+                    )}
+                    {r.estado === 'ya_existe' && (
+                      <span className="text-slate-400 dark:text-slate-500">ya existía</span>
+                    )}
+                    {r.error && (
+                      <span className="text-red-500 truncate" title={r.error}>{r.error}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Acciones */}
+        <div className="flex gap-3">
+          <button
+            onClick={handleClose}
+            disabled={loading}
+            className="flex-1 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm transition-colors"
+          >
+            {resultado ? 'Cerrar' : 'Cancelar'}
+          </button>
+          <button
+            onClick={handleSync}
+            disabled={!puedeSync}
+            className="flex-1 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <History className="w-4 h-4" />
+            )}
+            {loading ? 'Sincronizando...' : resultado ? 'Sincronizar de nuevo' : 'Sincronizar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ════════════════════════════════════════════════════════════════
+// MODAL SYNC KARDEX CAJA
+// ════════════════════════════════════════════════════════════════
+
+const RESULTADO_KARDEX = {
+  sincronizado: { color: 'text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 },
+  ya_existe: { color: 'text-slate-500 dark:text-slate-400', icon: Clock },
+  error: { color: 'text-red-600 dark:text-red-400', icon: XCircle },
+};
+
+const ModalSyncKardex = ({ isOpen, onClose, onSync, loading, resultado }) => {
+  const [numeroCaja, setNumeroCaja] = useState('');
+
+  const handleClose = () => {
+    setNumeroCaja('');
+    onClose();
+  };
+
+  const puedeSync = !loading && numeroCaja.trim().length > 0;
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-2xl w-full max-w-lg p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+              <Box className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+              Sincronizar kardex de caja
+            </h3>
+          </div>
+          <button
+            onClick={handleClose}
+            disabled={loading}
+            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
+          Ingresa el número de caja para recuperar todos sus movimientos de kardex del WMS
+          y sincronizar los que no existan en el CRM. Solo se procesan ajustes de tipo{' '}
+          <strong className="text-slate-600 dark:text-slate-300">Carga</strong> (las Descargas
+          llegan por el polling de órdenes).
+        </p>
+
+        {/* Input número de caja */}
+        <div className="mb-5">
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
+            Número de caja
+          </label>
+          <input
+            type="text"
+            value={numeroCaja}
+            onChange={(e) => setNumeroCaja(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && puedeSync && onSync({ numero_caja: numeroCaja.trim() })}
+            placeholder="Ej: CJ-000045 o 12345"
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-colors"
+          />
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
+            La caja debe estar registrada en el CRM con producto y cliente asignados.
+          </p>
+        </div>
+
+        {/* Resultado */}
+        {resultado && (
+          <div className="mb-5 rounded-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-700 flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+              <span>Total WMS: <strong className="text-slate-700 dark:text-slate-200">{resultado.total}</strong></span>
+              <span className="text-emerald-600 dark:text-emerald-400">Sincronizados: <strong>{resultado.procesadas}</strong></span>
+              {resultado.ya_existentes > 0 && <span>Ya existían: <strong>{resultado.ya_existentes}</strong></span>}
+              {resultado.omitidas > 0 && <span className="text-slate-400">Omitidos: <strong>{resultado.omitidas}</strong></span>}
+              {resultado.errores > 0 && <span className="text-red-500">Errores: <strong>{resultado.errores}</strong></span>}
+            </div>
+            <div className="max-h-48 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-700/50">
+              {resultado.resultados.map((r, i) => {
+                const cfg = RESULTADO_KARDEX[r.estado] || RESULTADO_KARDEX.error;
+                const Icon = cfg.icon;
+                return (
+                  <div key={i} className="flex items-start gap-2 px-4 py-2 text-xs">
+                    <Icon className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${cfg.color}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-slate-700 dark:text-slate-200 truncate">
+                          {r.motivo || '—'}
+                        </span>
+                        {r.cantidad !== undefined && (
+                          <span className="text-slate-500 dark:text-slate-400 shrink-0">
+                            ×{Number(r.cantidad).toLocaleString('es-CO', { maximumFractionDigits: 2 })}
+                          </span>
+                        )}
+                        {r.operacion && (
+                          <span className="text-emerald-600 dark:text-emerald-400 font-mono shrink-0">
+                            → {r.operacion}
+                          </span>
+                        )}
+                      </div>
+                      {r.fecha && (
+                        <span className="text-slate-400 dark:text-slate-500">
+                          {formatFecha(r.fecha)}
+                        </span>
+                      )}
+                      {r.error && (
+                        <span className="text-red-500 block truncate" title={r.error}>{r.error}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Acciones */}
+        <div className="flex gap-3">
+          <button
+            onClick={handleClose}
+            disabled={loading}
+            className="flex-1 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm transition-colors"
+          >
+            {resultado ? 'Cerrar' : 'Cancelar'}
+          </button>
+          <button
+            onClick={() => onSync({ numero_caja: numeroCaja.trim() })}
+            disabled={!puedeSync}
+            className="flex-1 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Box className="w-4 h-4" />
+            )}
+            {loading ? 'Sincronizando...' : resultado ? 'Sincronizar de nuevo' : 'Sincronizar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
 // ════════════════════════════════════════════════════════════════
 
@@ -212,7 +547,13 @@ export default function WmsDashboard() {
   const [loadingHistorial, setLoadingHistorial] = useState(true);
   const [loadingReej, setLoadingReej] = useState(false);
   const [loadingPolling, setLoadingPolling] = useState(false);
+  const [loadingHistorico, setLoadingHistorico] = useState(false);
+  const [loadingKardex, setLoadingKardex] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showModalHistorico, setShowModalHistorico] = useState(false);
+  const [showModalKardex, setShowModalKardex] = useState(false);
+  const [resultadoHistorico, setResultadoHistorico] = useState(null);
+  const [resultadoKardex, setResultadoKardex] = useState(null);
   const [tipoReej, setTipoReej] = useState('');
   const [filtros, setFiltros] = useState({
     tipo: '',
@@ -321,6 +662,46 @@ export default function WmsDashboard() {
     }
   };
 
+  const handleSyncHistorico = async (payload) => {
+    setLoadingHistorico(true);
+    try {
+      const res = await wmsDashboardService.syncHistorico(payload);
+      setResultadoHistorico(res.data);
+      const msg = res.message || `${res.data?.procesadas ?? 0} orden(es) sincronizada(s)`;
+      enqueueSnackbar(msg, {
+        variant: res.data?.procesadas > 0 ? 'success' : 'info',
+      });
+      if (res.data?.procesadas > 0) handleRefresh();
+    } catch (err) {
+      enqueueSnackbar(
+        err?.response?.data?.message || err?.message || 'Error al sincronizar histórico',
+        { variant: 'error' }
+      );
+    } finally {
+      setLoadingHistorico(false);
+    }
+  };
+
+  const handleSyncKardex = async (payload) => {
+    setLoadingKardex(true);
+    try {
+      const res = await wmsDashboardService.syncKardexCaja(payload);
+      setResultadoKardex(res.data);
+      const msg = res.message || `${res.data?.procesadas ?? 0} movimiento(s) sincronizado(s)`;
+      enqueueSnackbar(msg, {
+        variant: res.data?.procesadas > 0 ? 'success' : 'info',
+      });
+      if (res.data?.procesadas > 0) handleRefresh();
+    } catch (err) {
+      enqueueSnackbar(
+        err?.response?.data?.message || err?.message || 'Error al sincronizar kardex',
+        { variant: 'error' }
+      );
+    } finally {
+      setLoadingKardex(false);
+    }
+  };
+
   const apiOnline = status?.api_activa && !loadingStatus;
   const hayFiltros = Object.values(filtros).some(Boolean);
 
@@ -385,6 +766,20 @@ export default function WmsDashboard() {
                 <Zap className="w-4 h-4" />
               )}
               {status?.polling?.ejecutando ? 'Polling en curso...' : 'Ejecutar polling'}
+            </button>
+
+            <button
+              onClick={() => { setResultadoHistorico(null); setShowModalHistorico(true); }}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium shadow-sm transition-colors"
+            >
+              <History className="w-4 h-4" /> Sincronizar histórico
+            </button>
+
+            <button
+              onClick={() => { setResultadoKardex(null); setShowModalKardex(true); }}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium shadow-sm transition-colors"
+            >
+              <Box className="w-4 h-4" /> Kardex por caja
             </button>
 
             <button
@@ -730,6 +1125,24 @@ export default function WmsDashboard() {
         loading={loadingReej}
         tipo={tipoReej}
         setTipo={setTipoReej}
+      />
+
+      {/* ── MODAL SYNC HISTÓRICO ── */}
+      <ModalSyncHistorico
+        isOpen={showModalHistorico}
+        onClose={() => { setShowModalHistorico(false); setResultadoHistorico(null); }}
+        onSync={handleSyncHistorico}
+        loading={loadingHistorico}
+        resultado={resultadoHistorico}
+      />
+
+      {/* ── MODAL SYNC KARDEX CAJA ── */}
+      <ModalSyncKardex
+        isOpen={showModalKardex}
+        onClose={() => { setShowModalKardex(false); setResultadoKardex(null); }}
+        onSync={handleSyncKardex}
+        loading={loadingKardex}
+        resultado={resultadoKardex}
       />
     </div>
   );

@@ -41,6 +41,16 @@ router.post(
   requierePermiso('configuracion_wms', 'ver'),
   wmsDashboardController.ejecutarPolling
 );
+router.post(
+  '/sync-historico',
+  requierePermiso('configuracion_wms', 'ver'),
+  wmsDashboardController.syncHistoricoOrdenes
+);
+router.post(
+  '/sync-kardex-caja',
+  requierePermiso('configuracion_wms', 'ver'),
+  wmsDashboardController.syncHistoricoKardex
+);
 
 // Ubicación física de pallets y productos en bodega (consume WMS API directamente)
 router.get(

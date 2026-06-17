@@ -9,9 +9,10 @@
  */
 
 const { Op } = require('sequelize');
-const { WmsSyncLog, sequelize } = require('../models');
+const { WmsSyncLog, Operacion, CajaInventario, Inventario, Cliente, sequelize } = require('../models');
 const wmsSyncService = require('../services/wmsSyncService');
 const wmsApiService = require('../services/wmsApiService');
+const wmsOrderMapper = require('../services/wmsOrderMapper');
 const { success, paginated, serverError } = require('../utils/responses');
 const { parsePaginacion, buildPaginacion } = require('../utils/helpers');
 const logger = require('../utils/logger');
@@ -456,12 +457,418 @@ const getProductoInfoWms = async (req, res) => {
   }
 };
 
+// ============================================================================
+// SYNC HISTÓRICO — órdenes anteriores a la fecha de corte o por número
+// ============================================================================
+
+const syncHistoricoOrdenes = async (req, res) => {
+  const { numero_orden, fecha_desde, fecha_hasta } = req.body;
+
+  if (!numero_orden && !fecha_desde && !fecha_hasta) {
+    return res.status(400).json({
+      success: false,
+      message: 'Proporcionar numero_orden o un rango de fechas (fecha_desde / fecha_hasta)',
+    });
+  }
+
+  let desdeDate = null;
+  let hastaDate = null;
+  if (fecha_desde) {
+    desdeDate = new Date(fecha_desde + 'T00:00:00');
+    if (isNaN(desdeDate.getTime())) {
+      return res.status(400).json({ success: false, message: 'fecha_desde no es una fecha válida' });
+    }
+  }
+  if (fecha_hasta) {
+    hastaDate = new Date(fecha_hasta + 'T23:59:59');
+    if (isNaN(hastaDate.getTime())) {
+      return res.status(400).json({ success: false, message: 'fecha_hasta no es una fecha válida' });
+    }
+  }
+
+  try {
+    logger.info(`[WMS Histórico] Iniciando sync histórico — numero_orden="${numero_orden || ''}" desde="${fecha_desde || ''}" hasta="${fecha_hasta || ''}"`);
+
+    const MAX_PAGES = 20;
+    const PAGE_SIZE = 50;
+    const candidatas = [];
+
+    // Paginar el WMS para encontrar las órdenes que coincidan
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      let ordenes;
+      try {
+        const resultado = await wmsApiService.getOrdenes({ limit: PAGE_SIZE, page });
+        ordenes = Array.isArray(resultado) ? resultado : (resultado?.data ?? []);
+      } catch (err) {
+        logger.error(`[WMS Histórico] Error consultando WMS página ${page}:`, err.message);
+        break;
+      }
+
+      if (ordenes.length === 0) break;
+
+      for (const orden of ordenes) {
+        if (orden.orderStatus?.name !== 'Finalizada') continue;
+
+        if (numero_orden) {
+          const sysNum = orden.systemNumberOrder?.toString();
+          const custNum = orden.customerNumberOrder?.toString();
+          if (sysNum === numero_orden || custNum === numero_orden || orden.id === numero_orden) {
+            candidatas.push(orden);
+          }
+        } else {
+          const fecha = orden.orderDate ? new Date(orden.orderDate) : null;
+          if (!fecha || isNaN(fecha.getTime())) continue;
+          if (desdeDate && fecha < desdeDate) continue;
+          if (hastaDate && fecha > hastaDate) continue;
+          candidatas.push(orden);
+        }
+      }
+
+      // Si buscamos por número y ya lo encontramos, no seguir paginando
+      if (numero_orden && candidatas.length > 0) break;
+
+      // Heurística: si el WMS devuelve órdenes más nuevas primero y la última ya
+      // está antes de fecha_desde, no hay más candidatas en páginas siguientes
+      if (!numero_orden && desdeDate) {
+        const ultima = ordenes[ordenes.length - 1];
+        const ultimaFecha = ultima?.orderDate ? new Date(ultima.orderDate) : null;
+        if (ultimaFecha && ultimaFecha < desdeDate) break;
+      }
+    }
+
+    if (candidatas.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: numero_orden
+          ? `No se encontró la orden "${numero_orden}" en el WMS (estado Finalizada)`
+          : 'No se encontraron órdenes finalizadas en el rango de fechas indicado',
+      });
+    }
+
+    logger.info(`[WMS Histórico] ${candidatas.length} órdenes candidatas a sincronizar`);
+
+    const resultados = [];
+    let procesadas = 0;
+    let ya_existentes = 0;
+    let errores = 0;
+
+    for (const orden of candidatas) {
+      try {
+        // Deduplicación: omitir si ya existe en CRM
+        const existente = await Operacion.findOne({
+          where: {
+            [Op.or]: [
+              { wms_order_id: orden.id },
+              ...(orden.systemNumberOrder
+                ? [{ documento_wms: orden.systemNumberOrder.toString() }]
+                : []),
+              ...(orden.customerNumberOrder
+                ? [{ documento_wms: orden.customerNumberOrder.toString() }]
+                : []),
+            ],
+          },
+          paranoid: false,
+        });
+
+        if (existente) {
+          ya_existentes++;
+          resultados.push({
+            orden: orden.systemNumberOrder,
+            estado: 'ya_existe',
+            operacion: existente.numero_operacion || existente.id,
+          });
+          logger.debug(`[WMS Histórico] Orden ${orden.systemNumberOrder} ya existe → omitiendo`);
+          continue;
+        }
+
+        // Obtener detalle completo (NIT, líneas, pallets)
+        const detalle = await wmsApiService.getOrdenDetalle(orden.id);
+        const ordenCompleta = (detalle && typeof detalle === 'object' && !Array.isArray(detalle))
+          ? { ...orden, ...detalle }
+          : orden;
+        const itemsArr = Array.isArray(ordenCompleta.orderItems) ? ordenCompleta.orderItems : [];
+
+        const { tipo, payload } = await wmsOrderMapper.mapearOrden(ordenCompleta, itemsArr);
+
+        let resultado;
+        if (tipo === 'entrada') {
+          resultado = await wmsSyncService.syncEntrada(payload);
+        } else {
+          resultado = await wmsSyncService.syncSalida(payload);
+        }
+
+        await WmsSyncLog.create({
+          tipo: tipo === 'entrada' ? 'polling_entrada' : 'polling_salida',
+          documento_origen: orden.systemNumberOrder,
+          nit: ordenCompleta.customer?.nit,
+          estado: 'exitoso',
+          detalles: {
+            wms_order_id: orden.id,
+            operacion_id: resultado?.operacion_id,
+            numero_operacion: resultado?.numero_operacion,
+            sync_historico: true,
+          },
+        });
+
+        procesadas++;
+        resultados.push({
+          orden: orden.systemNumberOrder,
+          estado: 'sincronizada',
+          tipo,
+          operacion: resultado?.numero_operacion || resultado?.operacion_id,
+        });
+        logger.info(`[WMS Histórico] Orden ${orden.systemNumberOrder} sincronizada → ${resultado?.numero_operacion}`);
+      } catch (err) {
+        errores++;
+        resultados.push({
+          orden: orden.systemNumberOrder,
+          estado: 'error',
+          error: err.message,
+        });
+
+        await WmsSyncLog.create({
+          tipo: 'polling_entrada',
+          documento_origen: orden.systemNumberOrder,
+          nit: orden.customer?.nit,
+          estado: 'fallido',
+          error_mensaje: err.message,
+          detalles: { wms_order_id: orden.id, sync_historico: true },
+        }).catch(() => {});
+
+        logger.error(`[WMS Histórico] Error procesando orden ${orden.systemNumberOrder}: ${err.message}`);
+      }
+    }
+
+    const mensaje = procesadas > 0
+      ? `${procesadas} orden(es) sincronizada(s)${ya_existentes > 0 ? `, ${ya_existentes} ya existían` : ''}${errores > 0 ? `, ${errores} con error` : ''}`
+      : ya_existentes > 0
+        ? `Las ${ya_existentes} orden(es) encontradas ya estaban sincronizadas en el CRM`
+        : `Se encontraron ${candidatas.length} orden(es) pero no se pudo sincronizar ninguna`;
+
+    return success(res, { candidatas: candidatas.length, procesadas, ya_existentes, errores, resultados }, mensaje);
+  } catch (error) {
+    logger.error('[WMS Dashboard] Error en syncHistoricoOrdenes:', { message: error.message });
+    return serverError(res, 'Error al sincronizar histórico', error);
+  }
+};
+
+// ============================================================================
+// SYNC KARDEX HISTÓRICO — ajustes de una caja específica por número
+// ============================================================================
+
+const syncHistoricoKardex = async (req, res) => {
+  const { numero_caja } = req.body;
+
+  if (!numero_caja?.toString().trim()) {
+    return res.status(400).json({ success: false, message: 'Se requiere el número de caja' });
+  }
+
+  const numeroCaja = numero_caja.toString().trim();
+
+  try {
+    logger.info(`[WMS Kardex] Iniciando sync histórico kardex para caja="${numeroCaja}"`);
+
+    // 1. Buscar la caja en BD local para obtener wms_pallet_id y NIT
+    const caja = await CajaInventario.findOne({
+      where: { numero_caja: numeroCaja },
+      include: [
+        {
+          model: Inventario,
+          as: 'inventario',
+          include: [{ model: Cliente, as: 'cliente' }],
+        },
+      ],
+    });
+
+    let wmsPalletId = caja?.wms_pallet_id || null;
+    const nit = caja?.inventario?.cliente?.nit || null;
+
+    // 2. Si no hay wms_pallet_id local, buscar en WMS por código de caja
+    if (!wmsPalletId) {
+      try {
+        const palletWms = await wmsApiService.searchPalletKardex(numeroCaja);
+        wmsPalletId = palletWms?.id || null;
+      } catch (err) {
+        logger.warn(`[WMS Kardex] searchPalletKardex falló para "${numeroCaja}": ${err.message}`);
+      }
+    }
+
+    if (!wmsPalletId) {
+      return res.status(404).json({
+        success: false,
+        message: `No se encontró el pallet "${numeroCaja}" en el WMS. Verifique el número de caja.`,
+      });
+    }
+
+    if (!nit) {
+      return res.status(422).json({
+        success: false,
+        message: `La caja "${numeroCaja}" no tiene cliente asociado. Asegúrese de que esté registrada con producto y cliente asignados.`,
+      });
+    }
+
+    // 3. Obtener historial completo de kardex desde WMS (paginado)
+    const MAX_PAGES = 10;
+    const PAGE_SIZE = 100;
+    const todasLasEntradas = [];
+
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      let items;
+      try {
+        const resultado = await wmsApiService.getKardexHistory(wmsPalletId, { limit: PAGE_SIZE, page });
+        items = Array.isArray(resultado) ? resultado : [];
+      } catch (err) {
+        logger.error(`[WMS Kardex] Error obteniendo historial página ${page}: ${err.message}`);
+        break;
+      }
+      if (items.length === 0) break;
+      todasLasEntradas.push(...items);
+      if (items.length < PAGE_SIZE) break;
+    }
+
+    if (todasLasEntradas.length === 0) {
+      return success(res, {
+        caja: numeroCaja,
+        total: 0, procesadas: 0, ya_existentes: 0, omitidas: 0, errores: 0, resultados: [],
+      }, `No se encontraron movimientos de kardex para la caja "${numeroCaja}" en el WMS`);
+    }
+
+    logger.info(`[WMS Kardex] ${todasLasEntradas.length} entrada(s) en historial para caja ${numeroCaja}`);
+
+    // 4. Procesar cada entrada
+    let procesadas = 0;
+    let ya_existentes = 0;
+    let omitidas = 0;
+    let errores = 0;
+    const resultados = [];
+
+    for (const entry of todasLasEntradas) {
+      const palletCode = entry.palletCode || numeroCaja;
+
+      // Normalizar motivo (puede ser string o { name, motive })
+      const motivoRaw = typeof entry.motive === 'string'
+        ? entry.motive
+        : (entry.motive?.name || entry.motive?.motive || '');
+      const motivoNombre = motivoRaw.toLowerCase();
+
+      // Ignorar movimientos operacionales (picking/recepción cubiertos por polling de órdenes)
+      if (motivoNombre.includes('picking') || motivoNombre.includes('orden de')) {
+        omitidas++;
+        continue;
+      }
+
+      // Solo Carga; Descarga llega por polling de órdenes de picking
+      if (entry.operation !== 'Carga') {
+        omitidas++;
+        continue;
+      }
+
+      const entryKey = `${palletCode}::${entry.createdAt}::${entry.operation}::${entry.quantity}`.substring(0, 150);
+
+      // Dedup contra WmsSyncLog
+      const existeLog = await WmsSyncLog.findOne({
+        where: { tipo: 'polling_kardex', documento_origen: entryKey, estado: 'exitoso' },
+      });
+
+      if (existeLog) {
+        ya_existentes++;
+        resultados.push({
+          key: entryKey, estado: 'ya_existe', motivo: motivoRaw,
+          cantidad: entry.quantity, fecha: entry.createdAt,
+        });
+        continue;
+      }
+
+      try {
+        const resultado = await wmsSyncService.syncKardex({
+          nit,
+          motivo: motivoRaw,
+          detalles: [{
+            producto: entry.product?.sku || caja?.inventario?.sku || palletCode,
+            descripcion: entry.product?.name || caja?.inventario?.descripcion || motivoRaw,
+            caja: palletCode,
+            cantidad: Number(entry.quantity),
+            lote: caja?.lote || null,
+            unidad_medida: caja?.inventario?.unidad_medida || 'UND',
+          }],
+        });
+
+        await WmsSyncLog.create({
+          tipo: 'polling_kardex',
+          documento_origen: entryKey,
+          nit,
+          estado: 'exitoso',
+          detalles: {
+            operacion_id: resultado?.operacion_id,
+            numero_operacion: resultado?.numero_operacion,
+            motivo: motivoRaw,
+            operacion_wms: entry.operation,
+            cantidad: entry.quantity,
+            pallet_code: palletCode,
+            sync_historico: true,
+          },
+        }).catch(() => {});
+
+        procesadas++;
+        resultados.push({
+          key: entryKey,
+          estado: 'sincronizado',
+          operacion: resultado?.numero_operacion,
+          motivo: motivoRaw,
+          cantidad: entry.quantity,
+          fecha: entry.createdAt,
+        });
+
+        logger.info(`[WMS Kardex] Sincronizado: caja=${palletCode}, qty=${entry.quantity}, motivo=${motivoRaw}`);
+      } catch (entryErr) {
+        await WmsSyncLog.create({
+          tipo: 'polling_kardex',
+          documento_origen: entryKey,
+          nit,
+          estado: 'fallido',
+          error_mensaje: entryErr.message,
+          detalles: { motivo: motivoRaw, operacion_wms: entry.operation, pallet_code: palletCode, sync_historico: true },
+        }).catch(() => {});
+
+        errores++;
+        resultados.push({
+          key: entryKey, estado: 'error', error: entryErr.message,
+          motivo: motivoRaw, cantidad: entry.quantity, fecha: entry.createdAt,
+        });
+
+        logger.error(`[WMS Kardex] Error procesando entrada ${palletCode}: ${entryErr.message}`);
+      }
+    }
+
+    const mensaje = procesadas > 0
+      ? `${procesadas} movimiento(s) de kardex sincronizado(s)${ya_existentes > 0 ? `, ${ya_existentes} ya existían` : ''}${errores > 0 ? `, ${errores} con error` : ''}`
+      : ya_existentes > 0
+        ? `Los ${ya_existentes} movimiento(s) ya estaban sincronizados en el CRM`
+        : `No se sincronizó ningún movimiento${errores > 0 ? ` (${errores} error(es))` : ''}`;
+
+    return success(res, {
+      caja: numeroCaja,
+      total: todasLasEntradas.length,
+      procesadas,
+      ya_existentes,
+      omitidas,
+      errores,
+      resultados,
+    }, mensaje);
+  } catch (err) {
+    logger.error('[WMS Dashboard] Error en syncHistoricoKardex:', { message: err.message });
+    return serverError(res, 'Error al sincronizar kardex histórico', err);
+  }
+};
+
 module.exports = {
   getStatus,
   getEstadisticas,
   getHistorial,
   reejecutarUltimoSync,
   ejecutarPolling,
+  syncHistoricoOrdenes,
+  syncHistoricoKardex,
   getPalletUbicacion,
   getProductoUbicaciones,
   getProductoInfoWms,

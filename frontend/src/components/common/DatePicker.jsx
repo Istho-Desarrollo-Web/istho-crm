@@ -6,7 +6,7 @@
  * @date Mayo 2026
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { DayPicker } from 'react-day-picker';
 import { es } from 'react-day-picker/locale';
@@ -95,12 +95,9 @@ const DatePicker = ({
     }
   }, [view]);
 
-  // Calcular posición fixed al abrir
-  // useEffect en lugar de useLayoutEffect evita el forced-reflow sincrónico que bloquea el INP
-  useEffect(() => {
-    if (!isOpen || !buttonRef.current) return;
-    const raf = requestAnimationFrame(() => {
-      if (!buttonRef.current) return;
+  // Calcular posición sincrónicamente antes de abrir para evitar frame sin posición
+  const handleToggle = useCallback(() => {
+    if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       const PANEL_W = 288; // w-72
       const calendarHeight = 360;
@@ -108,8 +105,8 @@ const DatePicker = ({
       const top = spaceBelow >= calendarHeight ? rect.bottom + 6 : rect.top - calendarHeight - 6;
       const left = Math.max(4, Math.min(rect.left, window.innerWidth - PANEL_W - 4));
       setPanelStyle({ position: 'fixed', top, left, zIndex: 9999 });
-    });
-    return () => cancelAnimationFrame(raf);
+    }
+    setIsOpen((v) => !v);
   }, [isOpen]);
 
   // Cerrar al click fuera
@@ -158,7 +155,7 @@ const DatePicker = ({
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setIsOpen((v) => !v)}
+        onClick={handleToggle}
         className="flex items-center justify-between gap-2 w-full bg-white dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 px-4 py-2.5 rounded-xl text-sm"
       >
         <div className="flex items-center gap-2">

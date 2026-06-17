@@ -104,7 +104,7 @@ const ContactoDrawer = ({ open, onClose, contactoId, onContactoUpdated }) => {
   const [showAsignar, setShowAsignar] = useState(false);
   const [clienteSeleccionado, setClienteSeleccionado] = useState('');
   const [esPrincipal, setEsPrincipal] = useState(false);
-  const [opcionesClientes, setOpcionesClientes] = useState([]);
+  const [todosClientes, setTodosClientes] = useState([]);
   const [asignando, setAsignando] = useState(false);
   const [cargandoClientes, setCargandoClientes] = useState(false);
 
@@ -137,29 +137,34 @@ const ContactoDrawer = ({ open, onClose, contactoId, onContactoUpdated }) => {
       setClienteSeleccionado('');
       setEsPrincipal(false);
       setConfirmDesasignar(null);
+      setTodosClientes([]);
     }
   }, [open, contactoId, fetchContacto]);
 
   // ── Cargar clientes activos para el dropdown ──────────────────────────────
   const cargarClientes = useCallback(async () => {
-    if (opcionesClientes.length > 0) return; // ya cargados
+    if (todosClientes.length > 0) return; // ya cargados
     setCargandoClientes(true);
     try {
       const res = await clientesService.getAll({ estado: 'activo', limit: 200 });
-      // paginated() devuelve { success, data: [...array...], pagination: {...} }
       const raw = res?.data;
       const rows = Array.isArray(raw) ? raw : (raw?.rows ?? res?.rows ?? []);
-      const opciones = rows.map((c) => ({
-        value: String(c.id),
-        label: c.razon_social || c.nombre || `Cliente ${c.id}`,
-      }));
-      setOpcionesClientes(opciones);
+      setTodosClientes(rows);
     } catch (err) {
       notifyError(err?.message || 'Error al cargar clientes');
     } finally {
       setCargandoClientes(false);
     }
-  }, [opcionesClientes.length, notifyError]);
+  }, [todosClientes.length, notifyError]);
+
+  // Opciones del dropdown — excluye clientes ya asignados al contacto
+  const idsAsignados = new Set((contacto?.clientes ?? []).map((c) => c.id));
+  const opcionesClientes = todosClientes
+    .filter((c) => !idsAsignados.has(c.id))
+    .map((c) => ({
+      value: String(c.id),
+      label: c.razon_social || c.nombre || `Cliente ${c.id}`,
+    }));
 
   const handleAbrirAsignar = () => {
     setShowAsignar(true);

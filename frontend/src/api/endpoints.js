@@ -297,6 +297,8 @@ export const WMS_DASHBOARD_ENDPOINTS = {
   HISTORIAL: '/wms/dashboard/historial',
   REEJECUTAR: '/wms/dashboard/reejecutar',
   POLLING_EJECUTAR: '/wms/dashboard/polling/ejecutar',
+  SYNC_HISTORICO: '/wms/dashboard/sync-historico',
+  SYNC_KARDEX_CAJA: '/wms/dashboard/sync-kardex-caja',
   UBICACION_PALLET: (id) => `/wms/dashboard/ubicacion/pallet/${id}`,
   UBICACION_PRODUCTO: '/wms/dashboard/ubicacion/producto',
   PRODUCTO_WMS_INFO: '/wms/dashboard/producto-info',

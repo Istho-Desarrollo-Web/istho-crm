@@ -38,11 +38,9 @@ const FilterDropdown = ({
     ? options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()))
     : options;
 
-  // Calcular posición fixed al abrir para escapar del stacking context del modal
-  useEffect(() => {
-    if (!isOpen || !buttonRef.current) return;
-    const raf = requestAnimationFrame(() => {
-      if (!buttonRef.current) return;
+  // Calcular posición sincrónicamente antes de abrir para evitar frame sin posición
+  const handleToggle = useCallback(() => {
+    if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       const left = Math.max(4, Math.min(rect.left, window.innerWidth - rect.width - 4));
       setPanelStyle({
@@ -52,8 +50,8 @@ const FilterDropdown = ({
         width: rect.width,
         zIndex: 9999,
       });
-    });
-    return () => cancelAnimationFrame(raf);
+    }
+    setIsOpen((prev) => !prev);
   }, [isOpen]);
 
   // Auto-foco en el buscador al abrir
@@ -133,7 +131,7 @@ const FilterDropdown = ({
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className={`
           flex items-center justify-between gap-2 w-full
           bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600

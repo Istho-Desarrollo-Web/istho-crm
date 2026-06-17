@@ -787,7 +787,25 @@ const subirLogo = async (req, res) => {
           /* ignorar si no existe */
         }
       }
-      const resultado = await s3Service.subir(req.file, 'logos');
+
+      // Procesar logo: eliminar fondo y convertir a PNG transparente
+      let fileToUpload = req.file;
+      try {
+        const { convertirLogoTransparente } = require('../utils/imagenUtils');
+        const dataUri = await convertirLogoTransparente(req.file.buffer);
+        const processedBuffer = Buffer.from(dataUri.split(',')[1], 'base64');
+        fileToUpload = {
+          ...req.file,
+          buffer: processedBuffer,
+          mimetype: 'image/png',
+          originalname: req.file.originalname.replace(/\.[^.]+$/, '') + '.png',
+          size: processedBuffer.length,
+        };
+      } catch (err) {
+        logger.warn('No se pudo procesar fondo del logo, se sube original:', err.message);
+      }
+
+      const resultado = await s3Service.subir(fileToUpload, 'logos');
       logo_url = resultado.key;
       logger.info('Logo subido a S3:', { clienteId: id, key: logo_url });
     } else {

@@ -129,6 +129,8 @@ const renderEmail = (templateName, data) => {
     logoUrl,
     logoUrlDark,
     logoFirmaDataUri,
+    logoClienteUrl: data.logoClienteUrl || null,
+    clienteNombre: data.clienteNombre || '',
   });
 
   return html;
@@ -236,6 +238,18 @@ const enviarCorreo = async ({
  */
 const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = null) => {
   try {
+    // Resolver logo del cliente — ya viene procesado (fondo transparente) desde el upload
+    let logoClienteUrl = null;
+    if (operacion.cliente?.logo_url) {
+      try {
+        const s3Svc = require('./s3Service');
+        logoClienteUrl = await s3Svc.resolveUrl(operacion.cliente.logo_url, 604800); // 7 días
+      } catch (err) {
+        logger.warn('No se pudo resolver URL del logo del cliente para email:', err.message);
+        /* ignorar — el header mostrará solo el logo de ISTHO */
+      }
+    }
+
     // Preparar datos para la plantilla
     const datos = {
       tipoOperacion:
@@ -298,6 +312,7 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
         plain.cantidad = parseFloat(plain.cantidad) || 0;
         return plain;
       }),
+      logoClienteUrl,
     };
 
     // Adjuntar documentos y fotos de averías al correo
@@ -436,6 +451,8 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
           contenido: cuerpoHtml,
           logoUrl,
           logoUrlDark,
+          logoClienteUrl: datos.logoClienteUrl || null,
+          clienteNombre: datos.clienteNombre || '',
           hasFirma: !!plantillaCustom.firma_habilitada,
         });
 

@@ -13,6 +13,12 @@ const wmsDashboardService = {
 
   ejecutarPolling: () =>
     apiClient.post(WMS_DASHBOARD_ENDPOINTS.POLLING_EJECUTAR),
+
+  syncHistorico: (payload) =>
+    apiClient.post(WMS_DASHBOARD_ENDPOINTS.SYNC_HISTORICO, payload),
+
+  syncKardexCaja: (payload) =>
+    apiClient.post(WMS_DASHBOARD_ENDPOINTS.SYNC_KARDEX_CAJA, payload),
 };
 
 export default wmsDashboardService;
