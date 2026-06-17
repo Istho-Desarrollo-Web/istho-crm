@@ -225,32 +225,9 @@ const plantillaEntrada = {
   <p style="margin: 0 0 5px 0; font-size: 12px; color: #94a3b8;">Cerrado por: <strong style="color: #64748b;">{{cerradoPor}}</strong></p>
 </div>
 
-{{#if tieneEvidencias}}
-<h3 style="color: #1e293b; margin: 25px 0 12px 0; font-size: 15px; font-weight: 600;">🔗 Evidencias y Soportes</h3>
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-  {{#each evidenciasLinks}}
-  <tr style="border-bottom: 1px solid #f1f5f9;">
-    <td style="padding: 10px 16px;">
-      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-        <tr>
-          <td style="vertical-align: middle;">
-            <p style="margin: 0; color: #1e293b; font-size: 13px; font-weight: 500;">{{this.nombre}}</p>
-            <p style="margin: 2px 0 0 0; color: #94a3b8; font-size: 11px;">{{this.tipo}}</p>
-          </td>
-          <td style="text-align: right; vertical-align: middle;">
-            <a href="{{this.url}}" target="_blank" style="display: inline-block; padding: 6px 14px; background-color: #e74c3c; color: #ffffff; font-size: 12px; font-weight: 600; text-decoration: none; border-radius: 6px;">Ver archivo</a>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  {{/each}}
-</table>
-{{else}}
 <p style="margin: 20px 0 5px 0; font-size: 13px; color: #475569;">
-  Los documentos de cumplido y soportes se encuentran disponibles en el sistema CRM.
+  Los documentos de cumplido y soportes se adjuntan a este correo.
 </p>
-{{/if}}
 
 <p style="margin-top: 20px;">Atentamente,</p>
 <p><strong>Equipo de Operaciones<br>ISTHO S.A.S.</strong></p>`,
@@ -503,32 +480,9 @@ const plantillaSalida = {
   <p style="margin: 0 0 5px 0; font-size: 12px; color: #94a3b8;">Cerrado por: <strong style="color: #64748b;">{{cerradoPor}}</strong></p>
 </div>
 
-{{#if tieneEvidencias}}
-<h3 style="color: #1e293b; margin: 25px 0 12px 0; font-size: 15px; font-weight: 600;">🔗 Evidencias y Soportes</h3>
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-  {{#each evidenciasLinks}}
-  <tr style="border-bottom: 1px solid #f1f5f9;">
-    <td style="padding: 10px 16px;">
-      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-        <tr>
-          <td style="vertical-align: middle;">
-            <p style="margin: 0; color: #1e293b; font-size: 13px; font-weight: 500;">{{this.nombre}}</p>
-            <p style="margin: 2px 0 0 0; color: #94a3b8; font-size: 11px;">{{this.tipo}}</p>
-          </td>
-          <td style="text-align: right; vertical-align: middle;">
-            <a href="{{this.url}}" target="_blank" style="display: inline-block; padding: 6px 14px; background-color: #e74c3c; color: #ffffff; font-size: 12px; font-weight: 600; text-decoration: none; border-radius: 6px;">Ver archivo</a>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  {{/each}}
-</table>
-{{else}}
 <p style="margin: 20px 0 5px 0; font-size: 13px; color: #475569;">
-  Los documentos de cumplido, remisiones y soportes de despacho se encuentran disponibles en el sistema CRM.
+  Los documentos de cumplido, remisiones y soportes de despacho se adjuntan a este correo.
 </p>
-{{/if}}
 
 <p style="margin-top: 20px;">Atentamente,</p>
 <p><strong>Equipo de Operaciones<br>ISTHO S.A.S.</strong></p>`,
@@ -745,32 +699,9 @@ const plantillaKardex = {
   <p style="margin: 0 0 5px 0; font-size: 12px; color: #94a3b8;">Cerrado por: <strong style="color: #64748b;">{{cerradoPor}}</strong></p>
 </div>
 
-{{#if tieneEvidencias}}
-<h3 style="color: #1e293b; margin: 25px 0 12px 0; font-size: 15px; font-weight: 600;">🔗 Evidencias y Soportes</h3>
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-  {{#each evidenciasLinks}}
-  <tr style="border-bottom: 1px solid #f1f5f9;">
-    <td style="padding: 10px 16px;">
-      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-        <tr>
-          <td style="vertical-align: middle;">
-            <p style="margin: 0; color: #1e293b; font-size: 13px; font-weight: 500;">{{this.nombre}}</p>
-            <p style="margin: 2px 0 0 0; color: #94a3b8; font-size: 11px;">{{this.tipo}}</p>
-          </td>
-          <td style="text-align: right; vertical-align: middle;">
-            <a href="{{this.url}}" target="_blank" style="display: inline-block; padding: 6px 14px; background-color: #e74c3c; color: #ffffff; font-size: 12px; font-weight: 600; text-decoration: none; border-radius: 6px;">Ver archivo</a>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  {{/each}}
-</table>
-{{else}}
 <p style="margin: 20px 0 5px 0; font-size: 13px; color: #475569;">
-  Los documentos y soportes del ajuste se encuentran disponibles en el sistema CRM.
+  Los documentos y soportes del ajuste se adjuntan a este correo.
 </p>
-{{/if}}
 
 <p style="margin-top: 20px;">Atentamente,</p>
 <p><strong>Equipo de Operaciones<br>ISTHO S.A.S.</strong></p>`,

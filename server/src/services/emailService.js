@@ -300,12 +300,10 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
       }),
     };
 
-    // Generar presigned URLs para documentos y fotos de averías (sin adjuntar archivos — soporta 100+ fotos)
+    // Adjuntar documentos y fotos de averías al correo
     const adjuntos = [];
-    datos.evidenciasLinks = [];
-    datos.tieneEvidencias = false;
 
-    const LINK_EXPIRY = 6 * 24 * 3600; // 6 días — límite SigV4 de S3 es 7 días máximo
+    const LINK_EXPIRY = 3600; // 1 hora — suficiente para que nodemailer descargue el archivo al enviar
 
     const archivosParaEnlazar = [];
 
@@ -350,15 +348,11 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
       for (const archivo of archivosParaEnlazar) {
         try {
           if (archivo.key) {
-            // S3: generar presigned URL con larga vigencia
+            // S3: presigned URL — nodemailer la descarga como adjunto al momento del envío
             const url = await s3Svc.getUrl(archivo.key, LINK_EXPIRY);
-            datos.evidenciasLinks.push({
-              nombre: archivo.nombre,
-              url,
-              tipo: archivo.tipo?.startsWith('image/') ? 'Foto' : 'Documento',
-            });
+            adjuntos.push({ nombre: archivo.nombre, path: url, tipo: archivo.tipo || 'application/octet-stream' });
           } else if (archivo.filePath) {
-            // Archivo local (legacy sin S3): adjuntar directamente
+            // Archivo local (legacy sin S3): adjuntar como buffer
             const buffer = fs.readFileSync(archivo.filePath);
             adjuntos.push({ nombre: archivo.nombre, content: buffer, tipo: archivo.tipo });
           }
@@ -367,12 +361,8 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
         }
       }
 
-      if (datos.evidenciasLinks.length > 0) {
-        datos.tieneEvidencias = true;
-        logger.info(`Email cierre: ${datos.evidenciasLinks.length} enlace(s) de evidencias generados`);
-      }
       if (adjuntos.length > 0) {
-        logger.info(`Email cierre: ${adjuntos.length} adjunto(s) locales`);
+        logger.info(`Email cierre: ${adjuntos.length} adjunto(s) preparados`);
       }
     }
 
