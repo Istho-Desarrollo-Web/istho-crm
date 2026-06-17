@@ -296,7 +296,7 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
     datos.evidenciasLinks = [];
     datos.tieneEvidencias = false;
 
-    const LINK_EXPIRY = 30 * 24 * 3600; // 30 días — suficiente para que el destinatario acceda
+    const LINK_EXPIRY = 6 * 24 * 3600; // 6 días — límite SigV4 de S3 es 7 días máximo
 
     const archivosParaEnlazar = [];
 
