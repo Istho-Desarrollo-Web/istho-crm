@@ -38,7 +38,7 @@ const plantillaEntrada = {
 <!-- Resumen de la operación -->
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 25px 0; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
   <tr>
-    <td style="background: linear-gradient(135deg, #1e88e5, #1565c0); padding: 15px 20px;">
+    <td bgcolor="#1565c0" style="background-color: #1565c0; background: linear-gradient(135deg, #1e88e5, #1565c0); padding: 15px 20px;">
       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
         <tr>
           <td style="color: #ffffff; font-size: 14px; font-weight: 600;">📋 Datos de la Operación</td>
@@ -119,14 +119,14 @@ const plantillaEntrada = {
 
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
   <thead>
-    <tr style="background-color: #1e88e5;">
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">SKU</th>
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">Producto</th>
-      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600;">Caja</th>
-      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600;">Cantidad</th>
-      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600;">U.M.</th>
+    <tr>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #1e88e5;">SKU</th>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #1e88e5;">Producto</th>
+      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #1e88e5;">Caja</th>
+      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #1e88e5;">Cantidad</th>
+      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #1e88e5;">U.M.</th>
       {{#if tieneAverias}}
-      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600;">Averías</th>
+      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #1e88e5;">Averías</th>
       {{/if}}
     </tr>
   </thead>
@@ -168,11 +168,11 @@ const plantillaEntrada = {
 <h3 style="color: #e65100; margin: 25px 0 15px 0; font-size: 16px;">⚠️ Detalle de Averías</h3>
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; border: 1px solid #ffcc80; border-radius: 8px; overflow: hidden;">
   <thead>
-    <tr style="background-color: #ff9800;">
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">SKU</th>
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">Tipo de Avería</th>
-      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600;">Cant.</th>
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">Observación</th>
+    <tr>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #ff9800;">SKU</th>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #ff9800;">Tipo de Avería</th>
+      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #ff9800;">Cant.</th>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #ff9800;">Observación</th>
     </tr>
   </thead>
   <tbody>
@@ -257,7 +257,7 @@ const plantillaSalida = {
 <!-- Resumen de la operación -->
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 25px 0; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
   <tr>
-    <td style="background: linear-gradient(135deg, #e65100, #f57c00); padding: 15px 20px;">
+    <td bgcolor="#e65100" style="background-color: #e65100; background: linear-gradient(135deg, #e65100, #f57c00); padding: 15px 20px;">
       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
         <tr>
           <td style="color: #ffffff; font-size: 14px; font-weight: 600;">📋 Datos de la Operación</td>
@@ -362,14 +362,14 @@ const plantillaSalida = {
 
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
   <thead>
-    <tr style="background-color: #e65100;">
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">SKU</th>
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">Producto</th>
-      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600;">Caja</th>
-      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600;">Cantidad</th>
-      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600;">U.M.</th>
+    <tr>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #e65100;">SKU</th>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #e65100;">Producto</th>
+      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #e65100;">Caja</th>
+      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #e65100;">Cantidad</th>
+      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #e65100;">U.M.</th>
       {{#if tieneAverias}}
-      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600;">Averías</th>
+      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #e65100;">Averías</th>
       {{/if}}
     </tr>
   </thead>
@@ -411,11 +411,11 @@ const plantillaSalida = {
 <h3 style="color: #c62828; margin: 25px 0 15px 0; font-size: 16px;">⚠️ Detalle de Averías</h3>
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; border: 1px solid #ef9a9a; border-radius: 8px; overflow: hidden;">
   <thead>
-    <tr style="background-color: #ef5350;">
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">SKU</th>
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">Tipo de Avería</th>
-      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600;">Cant.</th>
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">Observación</th>
+    <tr>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #ef5350;">SKU</th>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #ef5350;">Tipo de Avería</th>
+      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #ef5350;">Cant.</th>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #ef5350;">Observación</th>
     </tr>
   </thead>
   <tbody>
@@ -512,7 +512,7 @@ const plantillaKardex = {
 <!-- Resumen de la operación -->
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 25px 0; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
   <tr>
-    <td style="background: linear-gradient(135deg, #7c3aed, #6d28d9); padding: 15px 20px;">
+    <td bgcolor="#6d28d9" style="background-color: #6d28d9; background: linear-gradient(135deg, #7c3aed, #6d28d9); padding: 15px 20px;">
       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
         <tr>
           <td style="color: #ffffff; font-size: 14px; font-weight: 600;">📋 Datos de la Operación</td>
@@ -595,14 +595,14 @@ const plantillaKardex = {
 
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
   <thead>
-    <tr style="background-color: #7c3aed;">
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">SKU</th>
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">Producto</th>
-      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600;">Caja</th>
-      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600;">Cantidad</th>
-      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600;">U.M.</th>
+    <tr>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #7c3aed;">SKU</th>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #7c3aed;">Producto</th>
+      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #7c3aed;">Caja</th>
+      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #7c3aed;">Cantidad</th>
+      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #7c3aed;">U.M.</th>
       {{#if tieneAverias}}
-      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600;">Averías</th>
+      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #7c3aed;">Averías</th>
       {{/if}}
     </tr>
   </thead>
@@ -644,11 +644,11 @@ const plantillaKardex = {
 <h3 style="color: #e65100; margin: 25px 0 15px 0; font-size: 16px;">⚠️ Detalle de Averías</h3>
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; border: 1px solid #ffcc80; border-radius: 8px; overflow: hidden;">
   <thead>
-    <tr style="background-color: #ff9800;">
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">SKU</th>
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">Tipo de Avería</th>
-      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600;">Cant.</th>
-      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600;">Observación</th>
+    <tr>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #ff9800;">SKU</th>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #ff9800;">Tipo de Avería</th>
+      <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #ff9800;">Cant.</th>
+      <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #ff9800;">Observación</th>
     </tr>
   </thead>
   <tbody>
@@ -1073,7 +1073,7 @@ const plantillaAvisoIngreso = {
 
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
   <tr>
-    <td style="background:linear-gradient(135deg,#E74C3C,#C0392B);padding:14px 20px">
+    <td bgcolor="#C0392B" style="background-color:#C0392B;background:linear-gradient(135deg,#E74C3C,#C0392B);padding:14px 20px">
       <span style="color:#fff;font-size:14px;font-weight:600">Detalle de la Solicitud</span>
     </td>
   </tr>
@@ -1145,7 +1145,7 @@ const plantillaSolicitudDespacho = {
 
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
   <tr>
-    <td style="background:linear-gradient(135deg,#E74C3C,#C0392B);padding:14px 20px">
+    <td bgcolor="#C0392B" style="background-color:#C0392B;background:linear-gradient(135deg,#E74C3C,#C0392B);padding:14px 20px">
       <span style="color:#fff;font-size:14px;font-weight:600">Detalle de la Solicitud</span>
     </td>
   </tr>
