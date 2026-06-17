@@ -299,7 +299,7 @@ const BuscadorClientes = ({ clientesAsignados, onAgregar }) => {
                   <Building2 className="h-4 w-4 text-slate-500" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{c.nombre}</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{c.razon_social || c.nombre}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 truncate">NIT: {c.nit ?? '—'}</p>
                 </div>
               </button>
@@ -368,7 +368,7 @@ const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
       });
       const clientesActuales = (contacto.clientes ?? []).map((c) => ({
         id: c.id,
-        nombre: c.nombre,
+        nombre: c.razon_social || c.nombre,
         nit: c.nit,
         es_principal: c.ContactoCliente?.es_principal ?? false,
       }));
@@ -720,7 +720,7 @@ const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
               onAgregar={(c) =>
                 setClientesAsignados((prev) => [
                   ...prev,
-                  { id: c.id, nombre: c.nombre, nit: c.nit, es_principal: false },
+                  { id: c.id, nombre: c.razon_social || c.nombre, nit: c.nit, es_principal: false },
                 ])
               }
             />
