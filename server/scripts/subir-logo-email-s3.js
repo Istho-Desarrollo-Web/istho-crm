@@ -12,8 +12,18 @@ const fs = require('fs');
 const path = require('path');
 const { S3Client, PutObjectCommand, PutBucketPolicyCommand, GetBucketPolicyCommand } = require('@aws-sdk/client-s3');
 
-const LOGO_LOCAL = path.join(__dirname, '../../frontend/src/assets/logo-istho.png');
-const S3_KEY = 'branding/logo-email.png';
+const LOGOS = [
+  {
+    local: path.join(__dirname, '../../frontend/src/assets/logo-blanco.png'),
+    key: 'branding/logo-email.png',
+    label: 'logo blanco (header)',
+  },
+  {
+    local: path.join(__dirname, '../../frontend/src/assets/logo-negro.png'),
+    key: 'branding/logo-email-dark.png',
+    label: 'logo oscuro (footer)',
+  },
+];
 const BUCKET = process.env.AWS_S3_BUCKET;
 const REGION = process.env.AWS_REGION || 'us-west-2';
 
@@ -22,9 +32,11 @@ if (!BUCKET) {
   process.exit(1);
 }
 
-if (!fs.existsSync(LOGO_LOCAL)) {
-  console.error('❌  No se encontró el archivo:', LOGO_LOCAL);
-  process.exit(1);
+for (const { local, label } of LOGOS) {
+  if (!fs.existsSync(local)) {
+    console.error(`❌  No se encontró ${label}: ${local}`);
+    process.exit(1);
+  }
 }
 
 const s3 = new S3Client({ region: REGION });
@@ -59,27 +71,32 @@ const habilitarAccesoPublico = async () => {
 
 (async () => {
   try {
-    const buffer = fs.readFileSync(LOGO_LOCAL);
-    console.log(`📁  Leyendo logo local: ${LOGO_LOCAL} (${buffer.length} bytes)`);
+    try {
+      console.log('🔓  Verificando/configurando acceso público para branding/*...');
+      await habilitarAccesoPublico();
+    } catch (policyErr) {
+      console.warn(`⚠️   Sin permisos para modificar política del bucket (${policyErr.message.split(' because')[0].split(' on resource')[0].slice(-60)}). Continuando con la subida...`);
+    }
 
-    console.log('⬆️   Subiendo a S3...');
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: BUCKET,
-        Key: S3_KEY,
-        Body: buffer,
-        ContentType: 'image/png',
-      })
-    );
+    for (const { local, key, label } of LOGOS) {
+      const buffer = fs.readFileSync(local);
+      console.log(`\n📁  ${label}: ${local} (${buffer.length} bytes)`);
+      console.log(`⬆️   Subiendo a s3://${BUCKET}/${key}...`);
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: BUCKET,
+          Key: key,
+          Body: buffer,
+          ContentType: 'image/png',
+        })
+      );
+      const publicUrl = `https://${BUCKET}.s3.${REGION}.amazonaws.com/${key}`;
+      console.log(`✅  ${publicUrl}`);
+    }
 
-    console.log('🔓  Configurando acceso público...');
-    await habilitarAccesoPublico();
-
-    const publicUrl = `https://${BUCKET}.s3.${REGION}.amazonaws.com/${S3_KEY}`;
-    console.log('\n✅  Logo subido exitosamente.');
-    console.log(`\n📋  URL pública: ${publicUrl}`);
-    console.log(`\n    Si quieres fijar la URL en App Runner, agrega:`);
-    console.log(`    LOGO_EMAIL_URL = ${publicUrl}\n`);
+    console.log('\n📋  Variables de entorno para App Runner (opcionales):');
+    console.log(`    LOGO_EMAIL_URL      = https://${BUCKET}.s3.${REGION}.amazonaws.com/branding/logo-email.png`);
+    console.log(`    LOGO_EMAIL_DARK_URL = https://${BUCKET}.s3.${REGION}.amazonaws.com/branding/logo-email-dark.png\n`);
   } catch (err) {
     console.error('❌  Error:', err.message);
     if (err.Code === 'AccessDenied') {
