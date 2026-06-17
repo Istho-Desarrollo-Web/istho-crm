@@ -1150,6 +1150,7 @@ const obtenerDestinatarios = async (req, res) => {
     const contactos = await Contacto.findAll({
       include: [{
         model: ContactoCliente,
+        as: 'asignaciones',
         where: { cliente_id: operacion.cliente_id },
         attributes: [],
         required: true,
@@ -1163,10 +1164,14 @@ const obtenerDestinatarios = async (req, res) => {
     });
 
     const tipoOp = operacion.tipo; // 'ingreso' | 'salida' | 'kardex'
+    logger.info(`[DESTINATARIOS] operacion=${id} cliente=${operacion.cliente_id} tipo=${tipoOp} contactos_bd=${contactos.length}`);
+
     const destinatarios = contactos
       .filter((c) => {
-        const tipos = c.tipos_notificacion || ['todas'];
-        return tipos.includes('todas') || tipos.includes(tipoOp);
+        const tipos = Array.isArray(c.tipos_notificacion) ? c.tipos_notificacion : ['todas'];
+        const pasa = tipos.includes('todas') || tipos.includes(tipoOp);
+        logger.info(`[DESTINATARIOS] contacto=${c.id} tipos=${JSON.stringify(tipos)} pasa=${pasa}`);
+        return pasa;
       })
       .map((c) => ({ nombre: c.nombre, cargo: c.cargo, email: c.email }));
 

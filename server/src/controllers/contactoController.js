@@ -348,7 +348,15 @@ const listarContactosCliente = async (req, res) => {
       order: [['nombre', 'ASC']],
     });
 
-    return success(res, contactos);
+    const resultado = contactos.map((c) => {
+      const plain = c.toJSON();
+      return {
+        ...plain,
+        es_principal: plain.clientes?.[0]?.ContactoCliente?.es_principal ?? false,
+      };
+    });
+
+    return success(res, resultado);
   } catch (err) {
     logger.error('Error al listar contactos del cliente:', { message: err.message, clienteId: req.params.id });
     return errorResponse(res, 'Error al obtener los contactos', 500);

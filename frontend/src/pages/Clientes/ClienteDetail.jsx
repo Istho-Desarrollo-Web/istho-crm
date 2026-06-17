@@ -1008,7 +1008,7 @@ const ClienteDetail = () => {
                               )}
                             </td>
                             <td className="px-3 py-2.5">
-                              {(c.clientes?.[0]?.ContactoCliente?.es_principal || c.ClienteContacto?.es_principal || c.es_principal) ? (
+                              {c.es_principal ? (
                                 <span className="text-amber-400" title="Contacto principal">
                                   <Star className="w-4 h-4" fill="currentColor" />
                                 </span>
