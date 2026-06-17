@@ -41,6 +41,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Star,
+  Bell,
 } from 'lucide-react';
 
 // Layout
@@ -933,7 +934,7 @@ const ClienteDetail = () => {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-gray-100 dark:border-slate-700">
-                          {['Nombre', 'Tipo', 'Cargo', 'Email', 'Teléfono', 'Principal', ''].map(
+                          {['Nombre', 'Tipo', 'Cargo', 'Email', 'Teléfono', 'Notificaciones', 'Principal', ''].map(
                             (h) => (
                               <th
                                 key={h}
@@ -973,6 +974,38 @@ const ClienteDetail = () => {
                             </td>
                             <td className="px-3 py-2.5 text-sm text-slate-500 dark:text-slate-400">
                               {c.telefono_principal || c.telefono || '—'}
+                            </td>
+                            <td className="px-3 py-2.5">
+                              {c.recibe_notificaciones ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {(c.tipos_notificacion || ['todas']).includes('todas') ? (
+                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium bg-[#E74C3C]/15 text-[#E74C3C]">
+                                      <Bell className="w-2.5 h-2.5" />
+                                      Todas
+                                    </span>
+                                  ) : (
+                                    <>
+                                      {(c.tipos_notificacion || []).includes('ingreso') && (
+                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                                          Ingreso
+                                        </span>
+                                      )}
+                                      {(c.tipos_notificacion || []).includes('salida') && (
+                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                                          Salida
+                                        </span>
+                                      )}
+                                      {(c.tipos_notificacion || []).includes('kardex') && (
+                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-violet-500/15 text-violet-600 dark:text-violet-400">
+                                          Kardex
+                                        </span>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-xs text-slate-400 dark:text-slate-600 italic">Sin notif.</span>
+                              )}
                             </td>
                             <td className="px-3 py-2.5">
                               {(c.clientes?.[0]?.ContactoCliente?.es_principal || c.ClienteContacto?.es_principal || c.es_principal) ? (

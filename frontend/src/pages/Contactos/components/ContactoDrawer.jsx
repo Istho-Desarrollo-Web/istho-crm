@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { X, Pencil, Mail, Phone, FileText, UserMinus, ChevronDown, ChevronUp, UserRound } from 'lucide-react';
+import { X, Pencil, Mail, Phone, FileText, UserMinus, ChevronDown, ChevronUp, UserRound, Bell } from 'lucide-react';
 import { FilterDropdown, ConfirmDialog } from '@components/common';
 import useNotification from '@hooks/useNotification';
 import contactosService from '@api/contactos.service';
@@ -344,6 +344,36 @@ const ContactoDrawer = ({ open, onClose, contactoId, onContactoUpdated }) => {
                     <InfoRow icon={FileText}>
                       <span className="whitespace-pre-line">{contacto.notas}</span>
                     </InfoRow>
+                  )}
+                  {contacto.tipos_notificacion?.length > 0 && (
+                    <div className="flex items-start gap-2.5">
+                      <Bell className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                      <div className="flex flex-wrap gap-1.5">
+                        {contacto.tipos_notificacion.includes('todas') ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#E74C3C]/20 text-[#E74C3C]">
+                            Todas
+                          </span>
+                        ) : (
+                          <>
+                            {contacto.tipos_notificacion.includes('ingreso') && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400">
+                                Ingreso
+                              </span>
+                            )}
+                            {contacto.tipos_notificacion.includes('salida') && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-400">
+                                Salida
+                              </span>
+                            )}
+                            {contacto.tipos_notificacion.includes('kardex') && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-violet-500/20 text-violet-400">
+                                Kardex
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
               </section>

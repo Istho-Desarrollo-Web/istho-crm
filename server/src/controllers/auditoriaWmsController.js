@@ -18,6 +18,7 @@ const {
   OperacionAveria,
   Cliente,
   Contacto,
+  ContactoCliente,
   Usuario,
   Auditoria,
   OperacionDocumento,
@@ -1147,8 +1148,13 @@ const obtenerDestinatarios = async (req, res) => {
     if (!operacion) return notFound(res, 'Auditoría no encontrada');
 
     const contactos = await Contacto.findAll({
+      include: [{
+        model: ContactoCliente,
+        where: { cliente_id: operacion.cliente_id },
+        attributes: [],
+        required: true,
+      }],
       where: {
-        cliente_id: operacion.cliente_id,
         recibe_notificaciones: true,
         activo: true,
         email: { [Op.ne]: null },

@@ -244,7 +244,6 @@ const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
   });
 
   const recibeNotificaciones = watch('recibe_notificaciones');
-  const tiposNotificacion = watch('tipos_notificacion') || [];
 
   // ──────────────────────────────────────────────────────────────────────────
   // EFECTOS
@@ -297,14 +296,6 @@ const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
     if (u.email)           setValue('email', u.email);
   };
 
-  const handleToggleNotificacion = (valor) => {
-    const actuales = tiposNotificacion || [];
-    if (actuales.includes(valor)) {
-      setValue('tipos_notificacion', actuales.filter((v) => v !== valor));
-    } else {
-      setValue('tipos_notificacion', [...actuales, valor]);
-    }
-  };
 
   const onSubmit = async (data) => {
     // Limpiar campos no relevantes
@@ -541,29 +532,45 @@ const ContactoForm = ({ open, onClose, contacto = null, onSuccess }) => {
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Tipos de notificación
               </label>
-              <div className="flex flex-wrap gap-2">
-                {TIPOS_NOTIFICACION.map((tipo) => {
-                  const seleccionado = tiposNotificacion.includes(tipo.value);
-                  return (
-                    <button
-                      key={tipo.value}
-                      type="button"
-                      onClick={() => handleToggleNotificacion(tipo.value)}
-                      className={`
-                        px-3 py-1.5 rounded-lg text-xs font-medium border transition-all
-                        ${
-                          seleccionado
-                            ? 'bg-red-500 text-white border-red-500'
-                            : 'bg-white dark:bg-centhrix-surface text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:border-red-400'
+              <Controller
+                name="tipos_notificacion"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex flex-wrap gap-2">
+                    {TIPOS_NOTIFICACION.map((tipo) => {
+                      const actuales = field.value || [];
+                      const seleccionado = actuales.includes(tipo.value);
+                      const handleClick = () => {
+                        if (actuales.includes(tipo.value)) {
+                          field.onChange(actuales.filter((v) => v !== tipo.value));
+                        } else if (tipo.value === 'todas') {
+                          field.onChange(['todas']);
+                        } else {
+                          field.onChange([...actuales.filter((v) => v !== 'todas'), tipo.value]);
                         }
-                      `}
-                      aria-pressed={seleccionado}
-                    >
-                      {tipo.label}
-                    </button>
-                  );
-                })}
-              </div>
+                      };
+                      return (
+                        <button
+                          key={tipo.value}
+                          type="button"
+                          onClick={handleClick}
+                          className={`
+                            px-3 py-1.5 rounded-lg text-xs font-medium border transition-all
+                            ${
+                              seleccionado
+                                ? 'bg-red-500 text-white border-red-500'
+                                : 'bg-white dark:bg-centhrix-surface text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:border-red-400'
+                            }
+                          `}
+                          aria-pressed={seleccionado}
+                        >
+                          {tipo.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              />
             </div>
           )}
 
