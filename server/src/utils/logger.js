@@ -30,8 +30,8 @@ const levels = {
   debug: { priority: 4, color: colors.cyan, label: 'DEBUG' },
 };
 
-// Nivel actual basado en entorno
-const currentLevel = process.env.NODE_ENV === 'production' ? 'info' : 'debug';
+// Nivel actual basado en entorno (LOG_LEVEL env var permite ajustarlo sin redeploy)
+const currentLevel = process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'http' : 'debug');
 
 /**
  * Obtener timestamp formateado
