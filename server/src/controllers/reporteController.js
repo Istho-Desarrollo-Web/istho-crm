@@ -2292,6 +2292,21 @@ const getReporteGastos = async (req, res) => {
 // INVENTARIO POR UBICACIÓN
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Normaliza lotes que llegaron de Excel como objetos Date convertidos a string completo
+function _normalizarLote(lote) {
+  if (!lote) return lote;
+  const str = String(lote);
+  if (str.length > 20) {
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) {
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      return `${dd}/${mm}/${d.getFullYear()}`;
+    }
+  }
+  return str;
+}
+
 const _fetchCajasUbicacion = async (query = {}) => {
   const invWhere = {};
   if (query.cliente_id) invWhere.cliente_id = query.cliente_id;
@@ -2320,26 +2335,21 @@ const getReporteInventarioUbicacion = async (req, res) => {
   try {
     const cajas = await _fetchCajasUbicacion(req.query);
 
-    const hoy = new Date();
     const totalCajas = cajas.length;
     const totalUnidades = cajas.reduce((s, c) => s + (parseFloat(c.cantidad) || 0), 0);
     const ubicacionesUnicas = new Set(cajas.map((c) => c.ubicacion).filter(Boolean)).size;
     const productosUnicos = new Set(cajas.map((c) => c.inventario_id)).size;
 
     const rows = cajas.map((c) => {
-      const fv = c.fecha_vencimiento ? new Date(c.fecha_vencimiento) : null;
-      const diasVencimiento = fv ? Math.ceil((fv - hoy) / (1000 * 60 * 60 * 24)) : null;
       return {
         referencia: c.inventario?.id || c.inventario_id,
+        sku: c.inventario?.sku || '',
         numero_caja: c.numero_caja,
         saldo: parseFloat(c.cantidad) || 0,
         descripcion: c.inventario?.producto || '',
         unidad_medida: c.unidad_medida || c.inventario?.unidad_medida || 'UND',
-        lote: c.lote,
-        lote_externo: c.lote_externo,
-        dias_vencimiento: diasVencimiento,
+        lote: _normalizarLote(c.lote),
         fecha_ingreso: c.fecha_movimiento,
-        fecha_vencimiento: c.fecha_vencimiento,
         ubicacion: c.ubicacion,
       };
     });
@@ -2361,7 +2371,8 @@ const getReporteInventarioUbicacion = async (req, res) => {
 const exportarInventarioUbicacionExcel = async (req, res) => {
   try {
     const cajas = await _fetchCajasUbicacion(req.query);
-    const buffer = await excelService.exportarInventarioUbicacion(cajas, req.query);
+    const cajasNorm = cajas.map((c) => { const p = c.toJSON ? c.toJSON() : { ...c }; p.lote = _normalizarLote(p.lote); return p; });
+    const buffer = await excelService.exportarInventarioUbicacion(cajasNorm, req.query);
     const filename = `inventario_ubicacion_${new Date().toISOString().split('T')[0]}.xlsx`;
     res.setHeader(
       'Content-Type',
@@ -2379,7 +2390,8 @@ const exportarInventarioUbicacionExcel = async (req, res) => {
 const exportarInventarioUbicacionPDF = async (req, res) => {
   try {
     const cajas = await _fetchCajasUbicacion(req.query);
-    const buffer = await pdfService.generarPDFInventarioUbicacion(cajas, req.query);
+    const cajasNorm = cajas.map((c) => { const p = c.toJSON ? c.toJSON() : { ...c }; p.lote = _normalizarLote(p.lote); return p; });
+    const buffer = await pdfService.generarPDFInventarioUbicacion(cajasNorm, req.query);
     const filename = `inventario_ubicacion_${new Date().toISOString().split('T')[0]}.pdf`;
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);

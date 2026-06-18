@@ -282,6 +282,9 @@ const ReporteInventarioUbicacion = () => {
                       <th className="text-right py-3 px-3 text-xs font-semibold text-slate-400 uppercase">
                         Ref.
                       </th>
+                      <th className="text-left py-3 px-3 text-xs font-semibold text-slate-400 uppercase">
+                        SKU
+                      </th>
                       <th className="text-right py-3 px-3 text-xs font-semibold text-slate-400 uppercase">
                         Caja
                       </th>
@@ -297,17 +300,8 @@ const ReporteInventarioUbicacion = () => {
                       <th className="text-right py-3 px-3 text-xs font-semibold text-slate-400 uppercase">
                         Lote
                       </th>
-                      <th className="text-right py-3 px-3 text-xs font-semibold text-slate-400 uppercase hidden lg:table-cell">
-                        Lote Ext.
-                      </th>
-                      <th className="text-right py-3 px-3 text-xs font-semibold text-slate-400 uppercase">
-                        Venc.
-                      </th>
                       <th className="text-center py-3 px-3 text-xs font-semibold text-slate-400 uppercase hidden md:table-cell">
                         F. Ingreso
-                      </th>
-                      <th className="text-center py-3 px-3 text-xs font-semibold text-slate-400 uppercase hidden lg:table-cell">
-                        F. Vencimiento
                       </th>
                       <th className="text-center py-3 px-3 text-xs font-semibold text-slate-400 uppercase">
                         Ubicación
@@ -316,16 +310,6 @@ const ReporteInventarioUbicacion = () => {
                   </thead>
                   <tbody>
                     {rows.map((r, idx) => {
-                      const diasColor =
-                        r.dias_vencimiento !== null
-                          ? r.dias_vencimiento < 0
-                            ? 'text-red-600 dark:text-red-400 font-bold'
-                            : r.dias_vencimiento <= 30
-                              ? 'text-amber-600 dark:text-amber-400 font-medium'
-                              : r.dias_vencimiento <= 90
-                                ? 'text-amber-500 dark:text-amber-300'
-                                : 'text-slate-600 dark:text-slate-300'
-                          : 'text-slate-400';
                       return (
                         <tr
                           key={idx}
@@ -334,6 +318,9 @@ const ReporteInventarioUbicacion = () => {
                           <td className="py-2.5 px-3 text-center text-slate-400">{idx + 1}</td>
                           <td className="py-2.5 px-3 text-right font-medium text-teal-600 dark:text-teal-400">
                             {r.referencia}
+                          </td>
+                          <td className="py-2.5 px-3 text-left text-slate-500 dark:text-slate-400 font-mono text-xs">
+                            {r.sku || '-'}
                           </td>
                           <td className="py-2.5 px-3 text-right text-slate-600 dark:text-slate-300">
                             {r.numero_caja}
@@ -347,20 +334,13 @@ const ReporteInventarioUbicacion = () => {
                           <td className="py-2.5 px-3 text-center text-slate-500 dark:text-slate-400">
                             {r.unidad_medida}
                           </td>
-                          <td className="py-2.5 px-3 text-right text-slate-600 dark:text-slate-300">
-                            {r.lote || '-'}
-                          </td>
-                          <td className="py-2.5 px-3 text-right text-slate-600 dark:text-slate-300 hidden lg:table-cell">
-                            {r.lote_externo || '-'}
-                          </td>
-                          <td className={`py-2.5 px-3 text-right ${diasColor}`}>
-                            {r.dias_vencimiento !== null ? r.dias_vencimiento : '-'}
+                          <td className="py-2.5 px-3 text-right text-slate-600 dark:text-slate-300 max-w-[120px]">
+                            <div className="truncate" title={r.lote || ''}>
+                              {r.lote || '-'}
+                            </div>
                           </td>
                           <td className="py-2.5 px-3 text-center text-slate-500 dark:text-slate-400 hidden md:table-cell">
                             {r.fecha_ingreso ? formatDateShort(r.fecha_ingreso) : '-'}
-                          </td>
-                          <td className="py-2.5 px-3 text-center text-slate-500 dark:text-slate-400 hidden lg:table-cell">
-                            {r.fecha_vencimiento ? formatDateShort(r.fecha_vencimiento) : '-'}
                           </td>
                           <td className="py-2.5 px-3 text-center">
                             <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300">
@@ -372,7 +352,7 @@ const ReporteInventarioUbicacion = () => {
                     })}
                     {rows.length === 0 && !loading && (
                       <tr>
-                        <td colSpan={12} className="py-8 text-center text-slate-400">
+                        <td colSpan={10} className="py-8 text-center text-slate-400">
                           No hay cajas disponibles para este cliente
                         </td>
                       </tr>

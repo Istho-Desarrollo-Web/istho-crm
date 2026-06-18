@@ -1308,15 +1308,13 @@ const exportarInventarioUbicacion = async (cajas, filtros = {}) => {
     const COLS = [
       { header: '#', key: 'num', width: 6, align: 'center' },
       { header: 'Referencia', key: 'ref', width: 11, align: 'right' },
+      { header: 'SKU', key: 'sku', width: 22, align: 'left' },
       { header: 'Caja', key: 'caja', width: 12, align: 'right' },
       { header: 'Saldo', key: 'saldo', width: 13, align: 'right' },
       { header: 'Descripción', key: 'desc', width: 36, align: 'left' },
       { header: 'Unidad', key: 'und', width: 8, align: 'center' },
       { header: 'Lote', key: 'lote', width: 12, align: 'right' },
-      { header: 'Lote Externo', key: 'lotex', width: 14, align: 'right' },
-      { header: 'Vencimiento', key: 'venc', width: 12, align: 'right' },
       { header: 'Fecha Ingreso', key: 'fi', width: 14, align: 'center' },
-      { header: 'Fecha Vencimiento', key: 'fv', width: 16, align: 'center' },
       { header: 'Ubicación', key: 'ubic', width: 14, align: 'center' },
     ];
 
@@ -1335,7 +1333,6 @@ const exportarInventarioUbicacion = async (cajas, filtros = {}) => {
 
     // Estadísticas
     const totalCajas = cajas.length;
-    const hoy = new Date();
     let totalUnidades = 0;
     const ubicacionesSet = new Set();
     const productosSet = new Set();
@@ -1360,20 +1357,16 @@ const exportarInventarioUbicacion = async (cajas, filtros = {}) => {
 
     // Filas de datos
     const filasDatos = cajas.map((c, idx) => {
-      const fv = c.fecha_vencimiento ? new Date(c.fecha_vencimiento) : null;
-      const diasVenc = fv ? Math.ceil((fv - hoy) / (1000 * 60 * 60 * 24)) : null;
       return [
         idx + 1,
         c.inventario?.id || c.inventario_id,
+        c.inventario?.sku || '',
         c.numero_caja,
         parseFloat(c.cantidad) || 0,
         c.inventario?.producto || '',
         c.unidad_medida || c.inventario?.unidad_medida || 'UND',
         c.lote,
-        c.lote_externo,
-        diasVenc,
         c.fecha_movimiento ? new Date(c.fecha_movimiento) : null,
-        fv,
         c.ubicacion || '',
       ];
     });
@@ -1385,19 +1378,8 @@ const exportarInventarioUbicacion = async (cajas, filtros = {}) => {
       filasDatos[idx].forEach((val, ci) => {
         const cell = ws.getCell(dataFila + idx, ci + 1);
         estiloCelda(cell, ci, idx, { align: COLS[ci].align });
-        if (ci === 3) cell.numFmt = '#,##0.000';
-        if (ci === 9 && val) cell.numFmt = 'DD/MM/YYYY';
-        if (ci === 10 && val) cell.numFmt = 'DD/MM/YYYY';
-        // Resaltar vencimiento cercano
-        if (ci === 8 && val !== null) {
-          if (val < 0) {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.rojoClaro } };
-            cell.font = { bold: true, color: { argb: C.rojo } };
-          } else if (val <= 30) {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.naranjaClaro } };
-            cell.font = { color: { argb: C.naranja } };
-          }
-        }
+        if (ci === 4) cell.numFmt = '#,##0.000';
+        if (ci === 8 && val) cell.numFmt = 'DD/MM/YYYY';
       });
     });
 
@@ -1406,7 +1388,7 @@ const exportarInventarioUbicacion = async (cajas, filtros = {}) => {
       dataFila + cajas.length + 1,
       [
         { col: 1, value: 'TOTALES' },
-        { col: 4, value: totalUnidades, numFmt: '#,##0.000' },
+        { col: 5, value: totalUnidades, numFmt: '#,##0.000' },
       ],
       COLS.length
     );

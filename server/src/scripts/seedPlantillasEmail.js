@@ -123,6 +123,7 @@ const plantillaEntrada = {
       <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #1e88e5;">SKU</th>
       <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #1e88e5;">Producto</th>
       <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #1e88e5;">Caja</th>
+      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #1e88e5;">Lote</th>
       <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #1e88e5;">Cantidad</th>
       <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #1e88e5;">U.M.</th>
       {{#if tieneAverias}}
@@ -133,9 +134,10 @@ const plantillaEntrada = {
   <tbody>
     {{#each productos}}
     <tr style="border-bottom: 1px solid #f1f5f9; {{#if this.cantidad_averia}}background-color: #fff8f0;{{/if}}">
-      <td style="padding: 10px 12px; font-size: 12px; color: #475569; font-family: monospace;">{{this.sku}}</td>
-      <td style="padding: 10px 12px; font-size: 12px; color: #1e293b;">{{this.producto}}</td>
+      <td style="padding: 10px 12px; font-size: 12px; color: #475569; font-family: monospace; word-break: break-all; max-width: 90px;">{{this.sku}}</td>
+      <td style="padding: 10px 12px; font-size: 12px; color: #1e293b; word-break: break-word; max-width: 180px;">{{this.producto}}</td>
       <td style="padding: 10px 12px; font-size: 12px; color: #1e88e5; text-align: center; font-weight: 600;">{{this.numero_caja}}</td>
+      <td style="padding: 10px 12px; font-size: 12px; color: #475569; text-align: center; font-family: monospace; word-break: break-all; max-width: 90px;">{{this.lote}}</td>
       <td style="padding: 10px 12px; font-size: 12px; color: #1e293b; text-align: right; font-weight: 600;">{{this.cantidad}}</td>
       <td style="padding: 10px 12px; font-size: 12px; color: #64748b; text-align: center;">{{this.unidad_medida}}</td>
       {{#if ../tieneAverias}}
@@ -148,7 +150,7 @@ const plantillaEntrada = {
   </tbody>
   <tfoot>
     <tr style="background-color: #e3f2fd;">
-      <td colspan="3" style="padding: 12px; font-size: 13px; font-weight: 700; color: #1a237e;">TOTAL</td>
+      <td colspan="4" style="padding: 12px; font-size: 13px; font-weight: 700; color: #1a237e;">TOTAL</td>
       <td style="padding: 12px; font-size: 14px; font-weight: 700; color: #1a237e; text-align: right;">{{totalUnidades}}</td>
       <td style="padding: 12px;"></td>
       {{#if tieneAverias}}
@@ -366,6 +368,7 @@ const plantillaSalida = {
       <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #e65100;">SKU</th>
       <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #e65100;">Producto</th>
       <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #e65100;">Caja</th>
+      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #e65100;">Lote</th>
       <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #e65100;">Cantidad</th>
       <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #e65100;">U.M.</th>
       {{#if tieneAverias}}
@@ -376,9 +379,10 @@ const plantillaSalida = {
   <tbody>
     {{#each productos}}
     <tr style="border-bottom: 1px solid #f1f5f9; {{#if this.cantidad_averia}}background-color: #fff8f0;{{/if}}">
-      <td style="padding: 10px 12px; font-size: 12px; color: #475569; font-family: monospace;">{{this.sku}}</td>
-      <td style="padding: 10px 12px; font-size: 12px; color: #1e293b;">{{this.producto}}</td>
+      <td style="padding: 10px 12px; font-size: 12px; color: #475569; font-family: monospace; word-break: break-all; max-width: 90px;">{{this.sku}}</td>
+      <td style="padding: 10px 12px; font-size: 12px; color: #1e293b; word-break: break-word; max-width: 180px;">{{this.producto}}</td>
       <td style="padding: 10px 12px; font-size: 12px; color: #e65100; text-align: center; font-weight: 600;">{{this.numero_caja}}</td>
+      <td style="padding: 10px 12px; font-size: 12px; color: #475569; text-align: center; font-family: monospace; word-break: break-all; max-width: 90px;">{{this.lote}}</td>
       <td style="padding: 10px 12px; font-size: 12px; color: #1e293b; text-align: right; font-weight: 600;">{{this.cantidad}}</td>
       <td style="padding: 10px 12px; font-size: 12px; color: #64748b; text-align: center;">{{this.unidad_medida}}</td>
       {{#if ../tieneAverias}}
@@ -391,7 +395,7 @@ const plantillaSalida = {
   </tbody>
   <tfoot>
     <tr style="background-color: #fff3e0;">
-      <td colspan="3" style="padding: 12px; font-size: 13px; font-weight: 700; color: #e65100;">TOTAL DESPACHADO</td>
+      <td colspan="4" style="padding: 12px; font-size: 13px; font-weight: 700; color: #e65100;">TOTAL DESPACHADO</td>
       <td style="padding: 12px; font-size: 14px; font-weight: 700; color: #e65100; text-align: right;">{{totalUnidades}}</td>
       <td style="padding: 12px;"></td>
       {{#if tieneAverias}}
@@ -599,6 +603,7 @@ const plantillaKardex = {
       <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #7c3aed;">SKU</th>
       <th style="padding: 10px 12px; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #7c3aed;">Producto</th>
       <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #7c3aed;">Caja</th>
+      <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #7c3aed;">Lote</th>
       <th style="padding: 10px 12px; text-align: right; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #7c3aed;">Cantidad</th>
       <th style="padding: 10px 12px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; background-color: #7c3aed;">U.M.</th>
       {{#if tieneAverias}}
@@ -609,9 +614,10 @@ const plantillaKardex = {
   <tbody>
     {{#each productos}}
     <tr style="border-bottom: 1px solid #f1f5f9; {{#if this.cantidad_averia}}background-color: #fff8f0;{{/if}}">
-      <td style="padding: 10px 12px; font-size: 12px; color: #475569; font-family: monospace;">{{this.sku}}</td>
-      <td style="padding: 10px 12px; font-size: 12px; color: #1e293b;">{{this.producto}}</td>
+      <td style="padding: 10px 12px; font-size: 12px; color: #475569; font-family: monospace; word-break: break-all; max-width: 90px;">{{this.sku}}</td>
+      <td style="padding: 10px 12px; font-size: 12px; color: #1e293b; word-break: break-word; max-width: 180px;">{{this.producto}}</td>
       <td style="padding: 10px 12px; font-size: 12px; color: #7c3aed; text-align: center; font-weight: 600;">{{this.numero_caja}}</td>
+      <td style="padding: 10px 12px; font-size: 12px; color: #475569; text-align: center; font-family: monospace; word-break: break-all; max-width: 90px;">{{this.lote}}</td>
       <td style="padding: 10px 12px; font-size: 12px; color: #1e293b; text-align: right; font-weight: 600;">{{this.cantidad}}</td>
       <td style="padding: 10px 12px; font-size: 12px; color: #64748b; text-align: center;">{{this.unidad_medida}}</td>
       {{#if ../tieneAverias}}
@@ -624,7 +630,7 @@ const plantillaKardex = {
   </tbody>
   <tfoot>
     <tr style="background-color: #f3e8ff;">
-      <td colspan="3" style="padding: 12px; font-size: 13px; font-weight: 700; color: #6d28d9;">TOTAL AJUSTADO</td>
+      <td colspan="4" style="padding: 12px; font-size: 13px; font-weight: 700; color: #6d28d9;">TOTAL AJUSTADO</td>
       <td style="padding: 12px; font-size: 14px; font-weight: 700; color: #6d28d9; text-align: right;">{{totalUnidades}}</td>
       <td style="padding: 12px;"></td>
       {{#if tieneAverias}}

@@ -54,6 +54,17 @@ function parsearFecha(val) {
   return null;
 }
 
+// Para celdas de texto que pueden llegar como Date (p.ej. columna Lote con fecha en Excel)
+function parsearCeldaTexto(val) {
+  if (!val) return '';
+  if (val instanceof Date) {
+    const dd = String(val.getDate()).padStart(2, '0');
+    const mm = String(val.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}/${val.getFullYear()}`;
+  }
+  return String(val).trim();
+}
+
 function parsearNumero(val) {
   if (val === null || val === undefined || val === '') return 0;
   const n = parseFloat(String(val).replace(',', '.'));
@@ -157,7 +168,7 @@ async function main() {
       nit,
       sku,
       descripcion:   String(row.getCell(colIdx.descripcion)?.value ?? '').trim() || sku,
-      lote:          colIdx.lote      ? String(row.getCell(colIdx.lote)?.value      ?? '').trim() || null : null,
+      lote:          colIdx.lote      ? parsearCeldaTexto(row.getCell(colIdx.lote)?.value) || null : null,
       numero_caja:   colIdx.caja      ? String(row.getCell(colIdx.caja)?.value      ?? '').trim() || null : null,
       saldo:         parsearNumero(row.getCell(colIdx.saldo)?.value),
       nro_orden,

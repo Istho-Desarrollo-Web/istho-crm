@@ -1044,46 +1044,43 @@ const generarPDFInventarioUbicacion = async (cajas, _filtros = {}) => {
         },
       ]);
 
-      const hoy = new Date();
       const headers = [
         '#',
         'Ref.',
+        'SKU',
         'Caja',
         'Saldo',
         'Descripción',
         'Unidad',
         'Lote',
         'Ubicación',
-        'Venc.',
       ];
       const rows = cajas.map((c, idx) => {
-        const fv = c.fecha_vencimiento ? new Date(c.fecha_vencimiento) : null;
-        const dias = fv ? Math.ceil((fv - hoy) / (1000 * 60 * 60 * 24)) : '';
         return [
           idx + 1,
           c.inventario?.id || c.inventario_id || '',
+          c.inventario?.sku || '',
           c.numero_caja || '',
           parseFloat(c.cantidad || 0).toLocaleString('es-CO'),
           (c.inventario?.producto || '').substring(0, 30),
           c.unidad_medida || c.inventario?.unidad_medida || 'UND',
           c.lote || '',
           c.ubicacion || '',
-          dias !== '' ? `${dias}d` : '',
         ];
       });
 
       const finalPage = generarTabla(doc, headers, rows, {
-        anchoColumnas: [30, 45, 60, 65, 195, 45, 70, 85, 45],
+        anchoColumnas: [28, 40, 85, 55, 60, 160, 40, 65, 80],
         alineacion: [
           'center',
           'right',
+          'left',
           'right',
           'right',
           'left',
           'center',
           'right',
           'center',
-          'right',
         ],
         etiquetaSeccion: 'Detalle por Ubicación',
         titulosContinuacion: 'INVENTARIO POR UBICACIÓN',
