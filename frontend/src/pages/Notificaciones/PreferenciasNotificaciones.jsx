@@ -255,9 +255,13 @@ export default function PreferenciasNotificaciones() {
                 {activasCount} de {CATEGORIAS.length} categorías activas
               </p>
               <button
+                type="button"
                 onClick={guardar}
                 disabled={guardando}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-centhrix-accent hover:bg-centhrix-hover text-white text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ backgroundColor: guardando ? '#C0392B' : '#E74C3C' }}
+                onMouseEnter={(e) => { if (!guardando) e.currentTarget.style.backgroundColor = '#C0392B'; }}
+                onMouseLeave={(e) => { if (!guardando) e.currentTarget.style.backgroundColor = '#E74C3C'; }}
               >
                 {guardando ? (
                   <>

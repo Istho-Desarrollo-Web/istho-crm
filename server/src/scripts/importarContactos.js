@@ -17,7 +17,8 @@
  *   telefono           | Teléfono fijo                        | No
  *   celular            | Teléfono celular                     | No
  *   email              | Correo electrónico (único)           | No
- *   nit                | NIT del cliente para vincular        | No
+ *   nit                | NIT(s) del/los clientes — separar    | No
+ *                      | múltiples con coma (ej: 800123,900X) |
  *   es_principal       | true/false — contacto principal      | No
  *   recibe_notif       | true/false (default: true)           | No
  *   notas              | Observaciones                        | No
@@ -134,7 +135,10 @@ async function main() {
       telefono:            limpiarTexto(colIdx.telefono   ? row.getCell(colIdx.telefono)?.value   : null),
       celular:             limpiarTexto(colIdx.celular    ? row.getCell(colIdx.celular)?.value     : null),
       email:               limpiarEmail(colIdx.email      ? row.getCell(colIdx.email)?.value       : null),
-      nit:                 limpiarTexto(colIdx.nit        ? row.getCell(colIdx.nit)?.value         : null),
+      nits: (() => {
+        const raw = limpiarTexto(colIdx.nit ? row.getCell(colIdx.nit)?.value : null);
+        return raw ? raw.split(/[,;]/).map(s => s.trim()).filter(Boolean) : [];
+      })(),
       es_principal:        parsearBooleano(colIdx.es_principal ? row.getCell(colIdx.es_principal)?.value : null, false),
       recibe_notificaciones: parsearBooleano(colIdx.recibe_notif ? row.getCell(colIdx.recibe_notif)?.value : null, true),
       notas:               limpiarTexto(colIdx.notas      ? row.getCell(colIdx.notas)?.value       : null),
@@ -144,7 +148,7 @@ async function main() {
   console.log(`📊 Filas válidas leídas: ${filas.length}`);
 
   // ── 3. Resolver clientes por NIT ──────────────────────────────
-  const nitsUnicos = [...new Set(filas.map(f => f.nit).filter(Boolean))];
+  const nitsUnicos = [...new Set(filas.flatMap(f => f.nits).filter(Boolean))];
   let clientePorNit = {};
 
   if (nitsUnicos.length) {
@@ -185,7 +189,7 @@ async function main() {
   if (filasOmitidas) console.log(`   → ${filasOmitidas} omitidos (email ya existe)`);
 
   if (MODO_SECO) {
-    const conCliente = filasACrear.filter(f => f.nit && clientePorNit[f.nit]).length;
+    const conCliente = filasACrear.reduce((acc, f) => acc + f.nits.filter(n => clientePorNit[n]).length, 0);
     console.log(`\n[DRY-RUN] Se crearían:`);
     console.log(`  ${filasACrear.length} contactos`);
     console.log(`  ${conCliente} vínculos con cliente`);
@@ -220,10 +224,11 @@ async function main() {
         activo:                true,
       }, { transaction });
 
-      // Vincular al cliente si viene NIT válido
-      const cliente = fila.nit ? clientePorNit[fila.nit] : null;
-      if (cliente) {
-        // Si es_principal, desmarcar los otros del mismo cliente
+      // Vincular a cada cliente por NIT (soporta múltiples NITs por fila)
+      for (const nit of fila.nits) {
+        const cliente = clientePorNit[nit];
+        if (!cliente) continue;
+
         if (fila.es_principal) {
           await ContactoCliente.update(
             { es_principal: false },

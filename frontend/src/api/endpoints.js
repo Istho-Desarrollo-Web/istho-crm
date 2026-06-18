@@ -369,6 +369,7 @@ export const MOVIMIENTOS_ENDPOINTS = {
 export const CONTACTOS_ENDPOINTS = {
   BASE: '/contactos',
   BY_ID: (id) => `/contactos/${id}`,
+  BULK: '/contactos/bulk',
   CLIENTES_DE_CONTACTO: (id) => `/contactos/${id}/clientes`,
   CLIENTE_DE_CONTACTO: (contactoId, clienteId) => `/contactos/${contactoId}/clientes/${clienteId}`,
   EXPORTAR_EXCEL: '/contactos/exportar/excel',

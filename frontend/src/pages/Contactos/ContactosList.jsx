@@ -18,12 +18,16 @@ import {
   Plus,
   Pencil,
   UserX,
+  UserCheck,
   RefreshCw,
   Download,
   Upload,
   FileSpreadsheet,
   X,
   AlertCircle,
+  Trash2,
+  Building2,
+  ChevronDown,
 } from 'lucide-react';
 
 import {
@@ -35,6 +39,7 @@ import {
 import useNotification from '@hooks/useNotification';
 import { useAuth } from '@context/AuthContext';
 import contactosService from '@api/contactos.service';
+import clientesService from '@api/clientes.service';
 import { CONTACTOS_ENDPOINTS } from '@api/endpoints';
 import { descargarArchivo, fechaDescarga } from '@utils/descargas';
 import readXlsxFile from 'read-excel-file/browser';
@@ -131,8 +136,12 @@ const ModalImportarContactos = ({ open, onClose, onSuccess }) => {
       if (!res.ok) throw new Error(json.message || 'Error al importar');
       const data = json.data ?? json;
       setResultado(data);
-      if (data.creados > 0) {
-        notifySuccess(`${data.creados} contacto${data.creados !== 1 ? 's' : ''} importado${data.creados !== 1 ? 's' : ''}`);
+      const actualizados = data.actualizados ?? 0;
+      if (data.creados > 0 || actualizados > 0) {
+        const partes = [];
+        if (data.creados > 0) partes.push(`${data.creados} creado${data.creados !== 1 ? 's' : ''}`);
+        if (actualizados > 0) partes.push(`${actualizados} actualizado${actualizados !== 1 ? 's' : ''}`);
+        notifySuccess(partes.join(', '));
         onSuccess?.();
       }
     } catch (err) {
@@ -179,12 +188,12 @@ const ModalImportarContactos = ({ open, onClose, onSuccess }) => {
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">Creados</p>
                 </div>
                 <div className="bg-blue-50 dark:bg-blue-500/10 rounded-xl p-3 text-center">
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{resultado.vinculados}</p>
-                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Vinculados</p>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{resultado.actualizados ?? 0}</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Actualizados</p>
                 </div>
-                <div className="bg-amber-50 dark:bg-amber-500/10 rounded-xl p-3 text-center">
-                  <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{resultado.omitidos}</p>
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Omitidos</p>
+                <div className="bg-purple-50 dark:bg-purple-500/10 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{resultado.vinculados}</p>
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">Vinculados</p>
                 </div>
               </div>
               {resultado.errores?.length > 0 && (
@@ -325,9 +334,14 @@ const ModalImportarContactos = ({ open, onClose, onSuccess }) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 /** Filas skeleton para estado de carga inicial */
-const SkeletonRows = () =>
+const SkeletonRows = ({ conCheckbox = false }) =>
   [...Array(8)].map((_, i) => (
     <tr key={i} className="border-b border-white/5">
+      {conCheckbox && (
+        <td className="px-3 py-3">
+          <div className="h-4 w-4 bg-slate-700/60 rounded animate-pulse mx-auto" />
+        </td>
+      )}
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-slate-700/60 animate-pulse shrink-0" />
@@ -417,7 +431,17 @@ const ContactosList = () => {
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [tipo, setTipo] = useState(searchParams.get('tipo') || '');
   const [activo, setActivo] = useState(searchParams.get('activo') || '');
+  const [clienteId, setClienteId] = useState(searchParams.get('cliente_id') || '');
   const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
+
+  // Buscador de clientes para el filtro
+  const [clienteSearch, setClienteSearch] = useState('');
+  const [clienteLabel, setClienteLabel] = useState('');
+  const [clienteOptions, setClienteOptions] = useState([]);
+  const [clienteDropOpen, setClienteDropOpen] = useState(false);
+  const [clienteBuscando, setClienteBuscando] = useState(false);
+  const clienteSearchTimer = useRef(null);
+  const clienteDropRef = useRef(null);
 
   // Modal de formulario (crear/editar)
   const [formModal, setFormModal] = useState({ open: false, contacto: null });
@@ -433,28 +457,71 @@ const ContactosList = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const [showImportar, setShowImportar] = useState(false);
 
+  // Selección múltiple
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [bulkModal, setBulkModal] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkActivarModal, setBulkActivarModal] = useState(false);
+  const [bulkActivarLoading, setBulkActivarLoading] = useState(false);
+
   // Timer de debounce para búsqueda
   const searchTimerRef = useRef(null);
   useEffect(() => () => clearTimeout(searchTimerRef.current), []);
 
   // ── Sincronizar filtros → URL ──────────────────────────────────────────
-  const syncUrl = useCallback((newSearch, newTipo, newActivo, newPage) => {
+  const syncUrl = useCallback((newSearch, newTipo, newActivo, newPage, newClienteId) => {
     const params = new URLSearchParams();
     if (newSearch) params.set('search', newSearch);
     if (newTipo) params.set('tipo', newTipo);
     if (newActivo) params.set('activo', newActivo);
+    if (newClienteId) params.set('cliente_id', newClienteId);
     if (newPage > 1) params.set('page', String(newPage));
     setSearchParams(params, { replace: true });
   }, [setSearchParams]);
 
+  // ── Buscador de clientes ───────────────────────────────────────────────
+  const buscarClientes = useCallback(async (q) => {
+    if (!q.trim()) { setClienteOptions([]); return; }
+    setClienteBuscando(true);
+    try {
+      const res = await clientesService.getAll({ search: q, limit: 8, estado: 'activo' });
+      const raw = res?.data;
+      const rows = Array.isArray(raw) ? raw : (raw?.rows ?? res?.rows ?? []);
+      setClienteOptions(rows);
+    } catch {
+      setClienteOptions([]);
+    } finally {
+      setClienteBuscando(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    clearTimeout(clienteSearchTimer.current);
+    clienteSearchTimer.current = setTimeout(() => buscarClientes(clienteSearch), 300);
+    return () => clearTimeout(clienteSearchTimer.current);
+  }, [clienteSearch, buscarClientes]);
+
+  // Cerrar dropdown de cliente al hacer clic fuera
+  useEffect(() => {
+    const handler = (e) => {
+      if (clienteDropRef.current && !clienteDropRef.current.contains(e.target)) {
+        setClienteDropOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
   // ── Fetch ─────────────────────────────────────────────────────────────
   const fetchContactos = useCallback(async () => {
+    setSelectedIds(new Set());
     setLoading(true);
     try {
       const params = { page, limit: LIMIT };
       if (search) params.search = search;
       if (tipo) params.tipo = tipo;
       if (activo !== '') params.activo = activo;
+      if (clienteId) params.cliente_id = clienteId;
 
       const res = await contactosService.getAll(params);
       // paginated() devuelve { data: [...], pagination: { total, totalPages, ... } }
@@ -471,7 +538,7 @@ const ContactosList = () => {
       setLoading(false);
       setFirstLoad(false);
     }
-  }, [page, search, tipo, activo, apiError]);
+  }, [page, search, tipo, activo, clienteId, apiError]);
 
   useEffect(() => {
     fetchContactos();
@@ -483,25 +550,45 @@ const ContactosList = () => {
     clearTimeout(searchTimerRef.current);
     searchTimerRef.current = setTimeout(() => {
       setPage(1);
-      syncUrl(value, tipo, activo, 1);
+      syncUrl(value, tipo, activo, 1, clienteId);
     }, 300);
   };
 
   const handleTipoChange = (value) => {
     setTipo(value);
     setPage(1);
-    syncUrl(search, value, activo, 1);
+    syncUrl(search, value, activo, 1, clienteId);
   };
 
   const handleActivoChange = (value) => {
     setActivo(value);
     setPage(1);
-    syncUrl(search, tipo, value, 1);
+    syncUrl(search, tipo, value, 1, clienteId);
+  };
+
+  const handleClienteSelect = (cliente) => {
+    setClienteId(String(cliente.id));
+    setClienteLabel(cliente.razon_social);
+    setClienteSearch('');
+    setClienteOptions([]);
+    setClienteDropOpen(false);
+    setPage(1);
+    syncUrl(search, tipo, activo, 1, String(cliente.id));
+  };
+
+  const handleClienteClear = () => {
+    setClienteId('');
+    setClienteLabel('');
+    setClienteSearch('');
+    setClienteOptions([]);
+    setClienteDropOpen(false);
+    setPage(1);
+    syncUrl(search, tipo, activo, 1, '');
   };
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
-    syncUrl(search, tipo, activo, newPage);
+    syncUrl(search, tipo, activo, newPage, clienteId);
   };
 
   // ── Export / Import ───────────────────────────────────────────────────
@@ -513,6 +600,7 @@ const ContactosList = () => {
       if (search) params.set('search', search);
       if (tipo) params.set('tipo', tipo);
       if (activo) params.set('activo', activo);
+      if (clienteId) params.set('cliente_id', clienteId);
       const qs = params.toString() ? `?${params.toString()}` : '';
       await descargarArchivo(
         `${baseUrl}${CONTACTOS_ENDPOINTS.EXPORTAR_EXCEL}${qs}`,
@@ -558,8 +646,68 @@ const ContactosList = () => {
     }
   };
 
+  // ── Handlers selección múltiple ───────────────────────────────────────
+  const canDelete = hasPermission('contactos', 'eliminar');
+  const todosEnPagina = contactos;
+
+  const handleToggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const todosSeleccionados = todosEnPagina.length > 0 && todosEnPagina.every((c) => selectedIds.has(c.id));
+  const algunoSeleccionado = todosEnPagina.some((c) => selectedIds.has(c.id));
+
+  const handleSelectAll = () => {
+    if (todosSeleccionados) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(todosEnPagina.map((c) => c.id)));
+    }
+  };
+
+  const activosSeleccionados = contactos.filter((c) => selectedIds.has(c.id) && c.activo !== false);
+  const inactivosSeleccionados = contactos.filter((c) => selectedIds.has(c.id) && c.activo === false);
+
+  const handleConfirmarBulkDesactivar = async () => {
+    setBulkLoading(true);
+    try {
+      const ids = activosSeleccionados.map((c) => c.id);
+      const res = await contactosService.desactivarMasivo(ids);
+      const desactivados = res?.data?.desactivados ?? ids.length;
+      success(`${desactivados} contacto${desactivados !== 1 ? 's' : ''} desactivado${desactivados !== 1 ? 's' : ''}`);
+      setBulkModal(false);
+      setSelectedIds(new Set());
+      fetchContactos();
+    } catch (err) {
+      apiError(err);
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const handleConfirmarBulkActivar = async () => {
+    setBulkActivarLoading(true);
+    try {
+      const ids = inactivosSeleccionados.map((c) => c.id);
+      const res = await contactosService.activarMasivo(ids);
+      const activados = res?.data?.activados ?? ids.length;
+      success(`${activados} contacto${activados !== 1 ? 's' : ''} activado${activados !== 1 ? 's' : ''}`);
+      setBulkActivarModal(false);
+      setSelectedIds(new Set());
+      fetchContactos();
+    } catch (err) {
+      apiError(err);
+    } finally {
+      setBulkActivarLoading(false);
+    }
+  };
+
   // ── Render ────────────────────────────────────────────────────────────
-  const hayFiltros = search || tipo || activo;
+  const hayFiltros = search || tipo || activo || clienteId;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-centhrix-bg dark:to-[#0d0e1e]">
@@ -656,6 +804,62 @@ const ContactosList = () => {
               />
             </div>
 
+            {/* Filtro por cliente */}
+            <div className="w-full lg:w-56 relative" ref={clienteDropRef}>
+              {clienteId ? (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#E74C3C]/40 bg-[#E74C3C]/5 text-sm text-slate-700 dark:text-slate-200">
+                  <Building2 className="w-3.5 h-3.5 text-[#E74C3C] shrink-0" />
+                  <span className="flex-1 truncate text-xs font-medium" title={clienteLabel}>{clienteLabel}</span>
+                  <button
+                    onClick={handleClienteClear}
+                    className="shrink-0 text-slate-400 hover:text-[#E74C3C] transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-centhrix-card text-sm text-slate-500 dark:text-slate-400 cursor-pointer hover:border-slate-300 dark:hover:border-slate-500 transition-colors"
+                    onClick={() => { setClienteDropOpen(true); }}
+                  >
+                    <Building2 className="w-3.5 h-3.5 shrink-0" />
+                    <input
+                      type="text"
+                      value={clienteSearch}
+                      onChange={(e) => { setClienteSearch(e.target.value); setClienteDropOpen(true); }}
+                      onFocus={() => setClienteDropOpen(true)}
+                      placeholder="Filtrar por cliente..."
+                      className="flex-1 bg-transparent outline-none text-xs placeholder-slate-400 dark:placeholder-slate-500 text-slate-700 dark:text-slate-200 min-w-0"
+                    />
+                    {clienteBuscando
+                      ? <RefreshCw className="w-3 h-3 animate-spin shrink-0" />
+                      : <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-50" />}
+                  </div>
+                  {clienteDropOpen && (clienteOptions.length > 0 || clienteSearch.trim()) && (
+                    <div className="absolute z-30 top-full mt-1 w-full bg-white dark:bg-centhrix-card border border-gray-100 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden">
+                      {clienteOptions.length === 0 && !clienteBuscando && (
+                        <p className="px-3 py-2.5 text-xs text-slate-400">Sin resultados</p>
+                      )}
+                      {clienteOptions.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => handleClienteSelect(c)}
+                          className="w-full text-left px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+                        >
+                          <p className="text-xs font-medium text-slate-800 dark:text-slate-100 truncate">{c.razon_social}</p>
+                          {c.codigo_cliente && (
+                            <p className="text-[10px] text-slate-400">{c.codigo_cliente}</p>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
             {/* Limpiar filtros */}
             {hayFiltros && (
               <button
@@ -663,8 +867,11 @@ const ContactosList = () => {
                   setSearch('');
                   setTipo('');
                   setActivo('');
+                  setClienteId('');
+                  setClienteLabel('');
+                  setClienteSearch('');
                   setPage(1);
-                  syncUrl('', '', '', 1);
+                  syncUrl('', '', '', 1, '');
                 }}
                 className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400 hover:text-[#E74C3C] dark:hover:text-[#E74C3C] underline underline-offset-2 transition-colors whitespace-nowrap self-center"
               >
@@ -680,6 +887,18 @@ const ContactosList = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/10 dark:border-slate-700">
+                  {canDelete && (
+                    <th className="px-3 py-3 w-10">
+                      <input
+                        type="checkbox"
+                        checked={todosSeleccionados}
+                        ref={(el) => el && (el.indeterminate = algunoSeleccionado && !todosSeleccionados)}
+                        onChange={handleSelectAll}
+                        disabled={todosEnPagina.length === 0 || firstLoad}
+                        className="w-4 h-4 rounded border-slate-400 dark:border-slate-600 text-[#E74C3C] accent-[#E74C3C] cursor-pointer disabled:cursor-default"
+                      />
+                    </th>
+                  )}
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     Nombre
                   </th>
@@ -706,10 +925,10 @@ const ContactosList = () => {
 
               <tbody className={loading && !firstLoad ? 'opacity-50 pointer-events-none' : ''}>
                 {firstLoad ? (
-                  <SkeletonRows />
+                  <SkeletonRows conCheckbox={canDelete} />
                 ) : contactos.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-16 text-center">
+                    <td colSpan={canDelete ? 8 : 7} className="px-4 py-16 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-centhrix-surface flex items-center justify-center">
                           <UserRound className="w-7 h-7 text-slate-400" />
@@ -732,12 +951,27 @@ const ContactosList = () => {
                     </td>
                   </tr>
                 ) : (
-                  contactos.map((contacto) => (
+                  contactos.map((contacto) => {
+                    const esActivo = contacto.activo !== false;
+                    const seleccionado = selectedIds.has(contacto.id);
+                    return (
                     <tr
                       key={contacto.id}
-                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors cursor-pointer"
+                      className={`border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors cursor-pointer ${seleccionado ? 'bg-[#E74C3C]/5 dark:bg-[#E74C3C]/5' : ''}`}
                       onClick={() => handleVerContacto(contacto)}
                     >
+                      {/* Checkbox selección */}
+                      {canDelete && (
+                        <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={seleccionado}
+                            onChange={() => handleToggleSelect(contacto.id)}
+                            className="w-4 h-4 rounded border-slate-400 dark:border-slate-600 text-[#E74C3C] accent-[#E74C3C] cursor-pointer"
+                          />
+                        </td>
+                      )}
+
                       {/* Nombre + badges */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -839,7 +1073,7 @@ const ContactosList = () => {
                         </div>
                       </td>
                     </tr>
-                  ))
+                  );})
                 )}
               </tbody>
             </table>
@@ -895,6 +1129,64 @@ const ContactosList = () => {
         type="warning"
         loading={actionLoading}
       />
+
+      {/* ── MODAL DESACTIVAR MASIVO ──────────────────────────────────── */}
+      <ConfirmDialog
+        isOpen={bulkModal}
+        onClose={() => setBulkModal(false)}
+        onConfirm={handleConfirmarBulkDesactivar}
+        title="Desactivar contactos seleccionados"
+        message={`¿Estás seguro de desactivar ${activosSeleccionados.length} contacto${activosSeleccionados.length !== 1 ? 's' : ''}? Dejarán de aparecer como activos.`}
+        confirmText="Desactivar"
+        type="warning"
+        loading={bulkLoading}
+      />
+
+      {/* ── MODAL ACTIVAR MASIVO ─────────────────────────────────────── */}
+      <ConfirmDialog
+        isOpen={bulkActivarModal}
+        onClose={() => setBulkActivarModal(false)}
+        onConfirm={handleConfirmarBulkActivar}
+        title="Activar contactos seleccionados"
+        message={`¿Estás seguro de activar ${inactivosSeleccionados.length} contacto${inactivosSeleccionados.length !== 1 ? 's' : ''}? Volverán a aparecer como activos.`}
+        confirmText="Activar"
+        type="warning"
+        loading={bulkActivarLoading}
+      />
+
+      {/* ── BARRA DE ACCIONES MASIVAS ────────────────────────────────── */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-5 py-3 rounded-2xl bg-slate-900 dark:bg-centhrix-card border border-slate-700 shadow-2xl animate-fade-in">
+          <span className="text-sm text-slate-300 font-medium">
+            {selectedIds.size} seleccionado{selectedIds.size !== 1 ? 's' : ''}
+          </span>
+          <div className="w-px h-4 bg-slate-700" />
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
+          >
+            Limpiar
+          </button>
+          {inactivosSeleccionados.length > 0 && (
+            <button
+              onClick={() => setBulkActivarModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors"
+            >
+              <UserCheck className="w-3.5 h-3.5" />
+              Activar ({inactivosSeleccionados.length})
+            </button>
+          )}
+          {activosSeleccionados.length > 0 && (
+            <button
+              onClick={() => setBulkModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#E74C3C] hover:bg-[#C0392B] text-white text-xs font-semibold transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Desactivar ({activosSeleccionados.length})
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

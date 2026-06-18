@@ -31,3 +31,4 @@ export { default as AccionesDropdown } from './AccionesDropdown';
 export { default as EnviarEmailModal } from './EnviarEmailModal';
 export { default as EditarOperacionModal } from './EditarOperacionModal';
 export { default as ImprimirEtiquetasModal } from './ImprimirEtiquetasModal';
+export { default as ModalReenviarCorreo } from './ModalReenviarCorreo';

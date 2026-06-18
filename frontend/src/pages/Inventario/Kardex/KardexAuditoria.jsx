@@ -46,10 +46,11 @@ import {
 } from 'lucide-react';
 
 import auditoriasService from '../../../api/auditorias.service';
+import contactosService from '../../../api/contactos.service';
 import { useAlert } from '../../../context/AlertContext';
 import { useAuth } from '../../../context/AuthContext';
 import CierreAuditoriaModal from '../../../components/common/CierreAuditoriaModal';
-import { FilterDropdown, EditarOperacionModal, ImprimirEtiquetasModal } from '../../../components/common';
+import { FilterDropdown, EditarOperacionModal, ImprimirEtiquetasModal, ModalReenviarCorreo } from '../../../components/common';
 import { formatDateShort } from '../../../utils/formatDate';
 import { getServerFileUrl } from '../../../api/client';
 import { comprimirImagen, COMPRESS_PRESETS } from '../../../utils/compressImage';
@@ -1137,44 +1138,44 @@ const KardexAuditoria = () => {
   // ──────────────────────────────────────────────────────────────────────────
 
   const [reenviando, setReenviando] = useState(false);
+  const [reenviarModalOpen, setReenviarModalOpen] = useState(false);
+  const [correosParaReenvio, setCorreosParaReenvio] = useState('');
 
   const handleReenviarCorreo = async () => {
     if (reenviando) return;
+    const correosBase = (kardexData?.correos_destino || '')
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+    try {
+      const res = await contactosService.getContactosCliente(kardexData?.cliente_id);
+      const lista = Array.isArray(res.data) ? res.data : (res.data?.rows || []);
+      const nuevos = lista
+        .filter((c) => c.recibe_notificaciones && c.activo && c.email)
+        .map((c) => c.email.trim().toLowerCase());
+      setCorreosParaReenvio([...new Set([...correosBase, ...nuevos])].join(', '));
+    } catch {
+      setCorreosParaReenvio(kardexData?.correos_destino || '');
+    }
+    setReenviarModalOpen(true);
+  };
 
-    const confirmed = await showConfirm({
-      type: 'info',
-      title: 'Reenviar correo de cierre',
-      message: 'Se reenviara el correo de notificacion a los contactos configurados del cliente.',
-      confirmText: 'Reenviar',
-      cancelText: 'Cancelar',
-    });
-
-    if (!confirmed) return;
-
+  const handleConfirmarReenvio = async (correos) => {
     setReenviando(true);
     try {
-      const result = await auditoriasService.reenviarCorreo(id);
-      const success = result?.data?.correo_enviado || result?.correo_enviado;
-      if (success) {
-        showAlert({
-          type: 'success',
-          title: 'Correo Reenviado',
-          message: 'El correo fue reenviado exitosamente.',
-        });
+      const payload = correos ? { correos_destino: correos } : {};
+      const result = await auditoriasService.reenviarCorreo(id, payload);
+      setReenviarModalOpen(false);
+      const enviado = result?.data?.correo_enviado || result?.correo_enviado;
+      if (enviado) {
+        showAlert({ type: 'success', title: 'Correo Reenviado', message: 'El correo fue reenviado exitosamente.' });
       } else {
-        showAlert({
-          type: 'warning',
-          title: 'Sin destinatarios',
-          message: 'No hay contactos con notificaciones activas para este cliente.',
-        });
+        showAlert({ type: 'warning', title: 'Sin destinatarios', message: 'No hay contactos con notificaciones activas para este cliente.' });
       }
     } catch (error) {
       console.error('Error al reenviar correo:', error);
-      showAlert({
-        type: 'error',
-        title: 'Error',
-        message: error.message || 'No se pudo reenviar el correo.',
-      });
+      setReenviarModalOpen(false);
+      showAlert({ type: 'error', title: 'Error', message: error.message || 'No se pudo reenviar el correo.' });
     } finally {
       setReenviando(false);
     }
@@ -1200,7 +1201,7 @@ const KardexAuditoria = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <main className="pt-28 px-4 pb-8 max-w-[1700px] mx-auto">
           <button
-            onClick={() => navigate('/operaciones/kardex')}
+            onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 mb-6 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -1225,7 +1226,7 @@ const KardexAuditoria = () => {
                 Reintentar
               </button>
               <button
-                onClick={() => navigate('/operaciones/kardex')}
+                onClick={() => navigate(-1)}
                 className="px-4 py-2 bg-slate-100 dark:bg-centhrix-surface hover:bg-slate-200 dark:hover:bg-centhrix-card text-slate-700 dark:text-slate-200 text-sm font-medium rounded-xl transition-colors"
               >
                 Volver al listado
@@ -1254,7 +1255,7 @@ const KardexAuditoria = () => {
       <main className="pt-28 px-4 pb-32 max-w-[1700px] mx-auto">
         {/* BACK NAVIGATION */}
         <button
-          onClick={() => navigate('/operaciones/kardex')}
+          onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 mb-6 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -2130,6 +2131,13 @@ const KardexAuditoria = () => {
         tipoOperacion="kardex"
         operacionId={id}
         sourceRef={kardexData?.documento_wms || kardexData?.documento}
+      />
+      <ModalReenviarCorreo
+        isOpen={reenviarModalOpen}
+        onClose={() => setReenviarModalOpen(false)}
+        onConfirm={handleConfirmarReenvio}
+        correosIniciales={correosParaReenvio}
+        cargando={reenviando}
       />
     </div>
   );

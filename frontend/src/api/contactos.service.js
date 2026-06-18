@@ -81,6 +81,22 @@ const contactosService = {
     }
   },
 
+  desactivarMasivo: async (ids) => {
+    try {
+      return await apiClient.delete(CONTACTOS_ENDPOINTS.BULK, { data: { ids } });
+    } catch (error) {
+      throw { success: false, message: error.message || 'Error al desactivar los contactos' };
+    }
+  },
+
+  activarMasivo: async (ids) => {
+    try {
+      return await apiClient.patch(CONTACTOS_ENDPOINTS.BULK, { ids });
+    } catch (error) {
+      throw { success: false, message: error.message || 'Error al activar los contactos' };
+    }
+  },
+
   /**
    * Asigna un cliente a un contacto
    * @param {number} contactoId - ID del contacto

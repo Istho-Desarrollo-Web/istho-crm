@@ -15,6 +15,7 @@ const listar = async (req, res) => {
       search,
       tipo,
       activo,
+      cliente_id,
     } = req.query;
 
     const where = {};
@@ -31,16 +32,28 @@ const listar = async (req, res) => {
 
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
-    const { count, rows } = await Contacto.findAndCountAll({
-      where,
-      include: [
-        {
+    // Filtrar por cliente: solo contactos vinculados a ese cliente_id
+    const includeCliente = cliente_id
+      ? {
+          model: Cliente,
+          as: 'clientes',
+          through: { attributes: ['es_principal'] },
+          attributes: ['id', 'razon_social', 'codigo_cliente'],
+          required: true,
+          where: { id: parseInt(cliente_id) },
+        }
+      : {
           model: Cliente,
           as: 'clientes',
           through: { attributes: ['es_principal'] },
           attributes: ['id', 'razon_social', 'codigo_cliente'],
           required: false,
-        },
+        };
+
+    const { count, rows } = await Contacto.findAndCountAll({
+      where,
+      include: [
+        includeCliente,
         {
           model: Usuario,
           as: 'usuarioCrm',
@@ -235,6 +248,97 @@ const desactivar = async (req, res) => {
     await transaction.rollback();
     logger.error('Error al desactivar contacto:', { message: err.message, id: req.params.id });
     return errorResponse(res, 'Error al desactivar el contacto', 500);
+  }
+};
+
+const desactivarMasivo = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      await transaction.rollback();
+      return errorResponse(res, 'Se requiere al menos un ID de contacto', 400);
+    }
+
+    const idsValidos = ids.filter((id) => Number.isInteger(Number(id)) && Number(id) > 0).map(Number);
+    if (idsValidos.length === 0) {
+      await transaction.rollback();
+      return errorResponse(res, 'IDs de contacto inválidos', 400);
+    }
+
+    const contactos = await Contacto.findAll({ where: { id: idsValidos, activo: true } });
+    if (contactos.length === 0) {
+      await transaction.rollback();
+      return success(res, { desactivados: 0 });
+    }
+
+    await Contacto.update({ activo: false }, {
+      where: { id: contactos.map((c) => c.id) },
+      transaction,
+    });
+
+    for (const contacto of contactos) {
+      await Auditoria.registrar({
+        tabla: 'contactos',
+        registro_id: contacto.id,
+        accion: 'desactivar',
+        usuario_id: req.user.id,
+        usuario_nombre: req.user.nombre_completo,
+        ip_address: req.ip,
+        descripcion: `Contacto desactivado en operación masiva: ${contacto.nombre}`,
+        transaction,
+      });
+    }
+
+    await transaction.commit();
+    return success(res, { desactivados: contactos.length });
+  } catch (err) {
+    await transaction.rollback();
+    logger.error('Error al desactivar contactos en masa:', { message: err.message });
+    return errorResponse(res, 'Error al desactivar los contactos', 500);
+  }
+};
+
+const activarMasivo = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      await transaction.rollback();
+      return errorResponse(res, 'Se requiere al menos un ID de contacto', 400);
+    }
+    const idsValidos = ids.filter((id) => Number.isInteger(Number(id)) && Number(id) > 0).map(Number);
+    if (idsValidos.length === 0) {
+      await transaction.rollback();
+      return errorResponse(res, 'IDs de contacto inválidos', 400);
+    }
+    const contactos = await Contacto.findAll({ where: { id: idsValidos, activo: false } });
+    if (contactos.length === 0) {
+      await transaction.rollback();
+      return success(res, { activados: 0 });
+    }
+    await Contacto.update({ activo: true }, {
+      where: { id: contactos.map((c) => c.id) },
+      transaction,
+    });
+    for (const contacto of contactos) {
+      await Auditoria.registrar({
+        tabla: 'contactos',
+        registro_id: contacto.id,
+        accion: 'activar',
+        usuario_id: req.user.id,
+        usuario_nombre: req.user.nombre_completo,
+        ip_address: req.ip,
+        descripcion: `Contacto activado en operación masiva: ${contacto.nombre}`,
+        transaction,
+      });
+    }
+    await transaction.commit();
+    return success(res, { activados: contactos.length });
+  } catch (err) {
+    await transaction.rollback();
+    logger.error('Error al activar contactos en masa:', { message: err.message });
+    return errorResponse(res, 'Error al activar los contactos', 500);
   }
 };
 
@@ -450,7 +554,7 @@ const desasignarContactoDesdeCliente = async (req, res) => {
 
 const exportarExcel = async (req, res) => {
   try {
-    const { search, tipo, activo } = req.query;
+    const { search, tipo, activo, cliente_id } = req.query;
     const where = {};
     if (search) {
       where[Op.or] = [
@@ -462,17 +566,26 @@ const exportarExcel = async (req, res) => {
     if (tipo && tipo !== 'todos') where.tipo = tipo;
     if (activo !== undefined && activo !== 'todos') where.activo = activo === 'true';
 
-    const contactos = await Contacto.findAll({
-      where,
-      include: [
-        {
+    const includeClienteExcel = cliente_id
+      ? {
+          model: Cliente,
+          as: 'clientes',
+          through: { attributes: ['es_principal'] },
+          attributes: ['nit', 'razon_social'],
+          required: true,
+          where: { id: parseInt(cliente_id) },
+        }
+      : {
           model: Cliente,
           as: 'clientes',
           through: { attributes: ['es_principal'] },
           attributes: ['nit', 'razon_social'],
           required: false,
-        },
-      ],
+        };
+
+    const contactos = await Contacto.findAll({
+      where,
+      include: [includeClienteExcel],
       order: [['nombre', 'ASC']],
     });
 
@@ -614,7 +727,7 @@ const descargarPlantilla = async (req, res) => {
       ['  • notas — Observaciones adicionales', false],
       ['', false],
       ['NOTAS IMPORTANTES:', true],
-      ['  • Si el email ya existe en BD, esa fila se omite sin error.', false],
+      ['  • Si el email ya existe en BD, se actualizan los datos del contacto con los del archivo.', false],
       ['  • El NIT debe corresponder a un cliente registrado en el CRM.', false],
       ['  • Los valores de es_principal y recibe_notif aceptan: true/false, si/no, 1/0.', false],
     ].forEach(([text, bold]) => {
@@ -712,42 +825,70 @@ const importarContactos = async (req, res) => {
       emailsExistentes = new Set(existentes.map(c => c.email));
     }
 
-    const contadores = { creados: 0, vinculados: 0, omitidos: 0, errores: [] };
+    const contadores = { creados: 0, actualizados: 0, vinculados: 0, errores: [] };
 
     for (const fila of filas) {
-      if (fila.email && emailsExistentes.has(fila.email)) {
-        contadores.omitidos++;
-        continue;
-      }
+      const emailYaExiste = fila.email && emailsExistentes.has(fila.email);
 
       const transaction = await sequelize.transaction();
       try {
-        const contacto = await Contacto.create({
-          tipo: fila.tipo, nombre: fila.nombre, cargo: fila.cargo,
-          telefono: fila.telefono, celular: fila.celular, email: fila.email,
-          recibe_notificaciones: fila.recibe_notificaciones,
-          tipos_notificacion: ['todas'], notas: fila.notas, activo: true,
-        }, { transaction });
+        let contacto;
+
+        if (emailYaExiste) {
+          contacto = await Contacto.findOne({ where: { email: fila.email }, transaction });
+          const datosActualizar = {};
+          if (fila.nombre) datosActualizar.nombre = fila.nombre;
+          if (fila.tipo) datosActualizar.tipo = fila.tipo;
+          if (fila.cargo !== null) datosActualizar.cargo = fila.cargo;
+          if (fila.telefono !== null) datosActualizar.telefono = fila.telefono;
+          if (fila.celular !== null) datosActualizar.celular = fila.celular;
+          if (fila.notas !== null) datosActualizar.notas = fila.notas;
+          await contacto.update(datosActualizar, { transaction });
+          contadores.actualizados++;
+        } else {
+          contacto = await Contacto.create({
+            tipo: fila.tipo, nombre: fila.nombre, cargo: fila.cargo,
+            telefono: fila.telefono, celular: fila.celular, email: fila.email,
+            recibe_notificaciones: fila.recibe_notificaciones,
+            tipos_notificacion: ['todas'], notas: fila.notas, activo: true,
+          }, { transaction });
+          contadores.creados++;
+          if (fila.email) emailsExistentes.add(fila.email);
+        }
 
         const cliente = fila.nit ? clientePorNit[fila.nit] : null;
         if (cliente) {
-          if (fila.es_principal) {
-            await ContactoCliente.update({ es_principal: false }, { where: { cliente_id: cliente.id }, transaction });
+          const yaVinculado = await ContactoCliente.findOne({
+            where: { contacto_id: contacto.id, cliente_id: cliente.id },
+            transaction,
+          });
+          if (!yaVinculado) {
+            if (fila.es_principal) {
+              await ContactoCliente.update({ es_principal: false }, { where: { cliente_id: cliente.id }, transaction });
+            }
+            await ContactoCliente.create({
+              contacto_id: contacto.id, cliente_id: cliente.id, es_principal: fila.es_principal,
+            }, { transaction });
+            contadores.vinculados++;
+          } else if (yaVinculado.es_principal !== fila.es_principal) {
+            if (fila.es_principal) {
+              await ContactoCliente.update({ es_principal: false }, { where: { cliente_id: cliente.id }, transaction });
+            }
+            await yaVinculado.update({ es_principal: fila.es_principal }, { transaction });
           }
-          await ContactoCliente.create({ contacto_id: contacto.id, cliente_id: cliente.id, es_principal: fila.es_principal }, { transaction });
-          contadores.vinculados++;
         }
 
         await Auditoria.registrar({
-          tabla: 'contactos', registro_id: contacto.id, accion: 'crear',
+          tabla: 'contactos', registro_id: contacto.id,
+          accion: emailYaExiste ? 'editar' : 'crear',
           usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo,
           datos_nuevos: { nombre: fila.nombre, tipo: fila.tipo, email: fila.email },
-          ip_address: req.ip, descripcion: `Contacto importado: ${fila.nombre}`, transaction,
+          ip_address: req.ip,
+          descripcion: `Contacto ${emailYaExiste ? 'actualizado' : 'importado'}: ${fila.nombre}`,
+          transaction,
         });
 
         await transaction.commit();
-        contadores.creados++;
-        if (fila.email) emailsExistentes.add(fila.email);
       } catch (err) {
         await transaction.rollback();
         contadores.errores.push({ fila: fila._fila, nombre: fila.nombre, error: err.message });
@@ -755,11 +896,11 @@ const importarContactos = async (req, res) => {
     }
 
     return success(res, {
-      creados:    contadores.creados,
-      vinculados: contadores.vinculados,
-      omitidos:   contadores.omitidos,
-      errores:    contadores.errores,
-      total:      filas.length,
+      creados:      contadores.creados,
+      actualizados: contadores.actualizados,
+      vinculados:   contadores.vinculados,
+      errores:      contadores.errores,
+      total:        filas.length,
     });
   } catch (err) {
     logger.error('Error al importar contactos:', { message: err.message });
@@ -773,6 +914,8 @@ module.exports = {
   crear,
   actualizar,
   desactivar,
+  desactivarMasivo,
+  activarMasivo,
   asignarCliente,
   desasignarCliente,
   listarContactosCliente,

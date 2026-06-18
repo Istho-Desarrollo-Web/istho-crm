@@ -246,7 +246,7 @@ const PAGE_SIZE = 20;
 
 const EntradasList = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const esPortal = user?.rol === 'cliente';
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
@@ -259,16 +259,26 @@ const EntradasList = () => {
     clearTimeout(searchTimerRef.current);
     searchTimerRef.current = setTimeout(() => setSearchTerm(value), 300);
   };
-  const [estadoFilter, setEstadoFilter] = useState('todos');
+  const [estadoFilter, setEstadoFilter] = useState(searchParams.get('estado') || 'todos');
   const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'cards' : 'table');
   const [loading, setLoading] = useState(true);
   const [entradas, setEntradas] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [error, setError] = useState(null);
   const { sortField, sortDir, handleSort } = useSort('created_at', 'DESC');
-  const [showFiltros, setShowFiltros] = useState(false);
-  const [filtrosDraft, setFiltrosDraft] = useState({ fecha_desde: '', fecha_hasta: '', cliente_id: '' });
-  const [filtros, setFiltros] = useState({ fecha_desde: '', fecha_hasta: '', cliente_id: '' });
+  const [showFiltros, setShowFiltros] = useState(
+    !!(searchParams.get('fecha_desde') || searchParams.get('fecha_hasta') || searchParams.get('cliente_id'))
+  );
+  const [filtrosDraft, setFiltrosDraft] = useState({
+    fecha_desde: searchParams.get('fecha_desde') || '',
+    fecha_hasta: searchParams.get('fecha_hasta') || '',
+    cliente_id: searchParams.get('cliente_id') || '',
+  });
+  const [filtros, setFiltros] = useState({
+    fecha_desde: searchParams.get('fecha_desde') || '',
+    fecha_hasta: searchParams.get('fecha_hasta') || '',
+    cliente_id: searchParams.get('cliente_id') || '',
+  });
   const [clientes, setClientes] = useState([]);
   const [loadingClientes, setLoadingClientes] = useState(false);
 
@@ -323,6 +333,16 @@ const EntradasList = () => {
   useEffect(() => {
     fetchEntradas(1);
   }, [fetchEntradas]);
+
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (searchTerm) next.set('search', searchTerm);
+    if (estadoFilter !== 'todos') next.set('estado', estadoFilter);
+    if (filtros.fecha_desde) next.set('fecha_desde', filtros.fecha_desde);
+    if (filtros.fecha_hasta) next.set('fecha_hasta', filtros.fecha_hasta);
+    if (filtros.cliente_id) next.set('cliente_id', filtros.cliente_id);
+    setSearchParams(next, { replace: true });
+  }, [searchTerm, estadoFilter, filtros, setSearchParams]);
 
   const handlePageChange = (page) => {
     fetchEntradas(page);

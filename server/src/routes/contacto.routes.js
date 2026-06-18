@@ -110,6 +110,28 @@ router.put(
 );
 
 /**
+ * PATCH /contactos/bulk
+ * Activar múltiples contactos (soft-delete reverso masivo)
+ */
+router.patch(
+  '/bulk',
+  requierePermiso('contactos', 'eliminar'),
+  requiereRolMinimo('admin'),
+  contactoController.activarMasivo
+);
+
+/**
+ * DELETE /contactos/bulk
+ * Desactivar múltiples contactos (soft delete masivo)
+ */
+router.delete(
+  '/bulk',
+  requierePermiso('contactos', 'eliminar'),
+  requiereRolMinimo('admin'),
+  contactoController.desactivarMasivo
+);
+
+/**
  * DELETE /contactos/:id
  * Desactivar un contacto (soft delete)
  */
