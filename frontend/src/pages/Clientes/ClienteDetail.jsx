@@ -833,7 +833,7 @@ const ClienteDetail = () => {
                       {contactosCliente.length}
                     </span>
                   </div>
-                  {user?.rol === 'admin' && (
+                  {hasPermission('contactos', 'editar') && (
                     <Button
                       variant="primary"
                       icon={Plus}
@@ -916,7 +916,7 @@ const ClienteDetail = () => {
                     <p className="text-slate-500 dark:text-slate-400 mb-1">
                       No hay contactos asignados a este cliente.
                     </p>
-                    {user?.rol === 'admin' && hasPermission('contactos', 'ver') && (
+                    {hasPermission('contactos', 'ver') && (
                       <p className="text-sm text-slate-400 dark:text-slate-500">
                         Ve al{' '}
                         <Link
@@ -1027,7 +1027,7 @@ const ClienteDetail = () => {
                               )}
                             </td>
                             <td className="px-3 py-2.5">
-                              {user?.rol === 'admin' && (
+                              {hasPermission('contactos', 'editar') && (
                                 <button
                                   onClick={() =>
                                     setConfirmDesasignar({ id: c.id, nombre: c.nombre })

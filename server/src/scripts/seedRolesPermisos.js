@@ -480,6 +480,7 @@ const PERMISOS_POR_ROL = {
     caja_menor: ['ver', 'crear', 'editar', 'cerrar', 'aprobar', 'eliminar', 'exportar'],
     movimientos: ['ver', 'crear', 'editar', 'eliminar', 'aprobar'],
     solicitudes: ['ver', 'comentar', 'exportar'],
+    contactos: ['ver', 'crear', 'editar', 'eliminar'],
     perfil: ['ver', 'cambiar_password'],
   },
 

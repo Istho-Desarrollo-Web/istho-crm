@@ -9,7 +9,7 @@ const express = require('express');
 const router = express.Router();
 
 const { verificarToken } = require('../middleware/auth');
-const { requierePermiso, requiereRolMinimo } = require('../middleware/roles');
+const { requierePermiso } = require('../middleware/roles');
 const contactoController = require('../controllers/contactoController');
 const {
   crearContactoDirectorioValidator,
@@ -35,7 +35,6 @@ router.use(verificarToken);
 router.get(
   '/exportar/excel',
   requierePermiso('contactos', 'ver'),
-  requiereRolMinimo('admin'),
   contactoController.exportarExcel
 );
 
@@ -46,7 +45,6 @@ router.get(
 router.get(
   '/plantilla-importacion',
   requierePermiso('contactos', 'ver'),
-  requiereRolMinimo('admin'),
   contactoController.descargarPlantilla
 );
 
@@ -57,7 +55,6 @@ router.get(
 router.post(
   '/importar',
   requierePermiso('contactos', 'crear'),
-  requiereRolMinimo('admin'),
   uploadMemory.single('archivo'),
   contactoController.importarContactos
 );
@@ -69,7 +66,6 @@ router.post(
 router.get(
   '/',
   requierePermiso('contactos', 'ver'),
-  requiereRolMinimo('admin'),
   contactoController.listar
 );
 
@@ -80,7 +76,6 @@ router.get(
 router.post(
   '/',
   requierePermiso('contactos', 'crear'),
-  requiereRolMinimo('admin'),
   crearContactoDirectorioValidator,
   contactoController.crear
 );
@@ -92,7 +87,6 @@ router.post(
 router.get(
   '/:id',
   requierePermiso('contactos', 'ver'),
-  requiereRolMinimo('admin'),
   idContactoValidator,
   contactoController.obtenerPorId
 );
@@ -104,7 +98,6 @@ router.get(
 router.put(
   '/:id',
   requierePermiso('contactos', 'editar'),
-  requiereRolMinimo('admin'),
   actualizarContactoDirectorioValidator,
   contactoController.actualizar
 );
@@ -116,7 +109,6 @@ router.put(
 router.patch(
   '/bulk',
   requierePermiso('contactos', 'eliminar'),
-  requiereRolMinimo('admin'),
   contactoController.activarMasivo
 );
 
@@ -127,7 +119,6 @@ router.patch(
 router.delete(
   '/bulk',
   requierePermiso('contactos', 'eliminar'),
-  requiereRolMinimo('admin'),
   contactoController.desactivarMasivo
 );
 
@@ -138,7 +129,6 @@ router.delete(
 router.delete(
   '/:id',
   requierePermiso('contactos', 'eliminar'),
-  requiereRolMinimo('admin'),
   idContactoValidator,
   contactoController.desactivar
 );
@@ -150,7 +140,6 @@ router.delete(
 router.post(
   '/:id/clientes',
   requierePermiso('contactos', 'editar'),
-  requiereRolMinimo('admin'),
   asignarClienteValidator,
   contactoController.asignarCliente
 );
@@ -162,7 +151,6 @@ router.post(
 router.delete(
   '/:id/clientes/:clienteId',
   requierePermiso('contactos', 'editar'),
-  requiereRolMinimo('admin'),
   desasignarClienteValidator,
   contactoController.desasignarCliente
 );
