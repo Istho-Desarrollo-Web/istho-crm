@@ -19,8 +19,48 @@ const {
   idContactoValidator,
 } = require('../validators/contactoValidator');
 
+const multer = require('multer');
+const uploadMemory = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
+
 // Middleware de autenticación y permisos
 router.use(verificarToken);
+
+/**
+ * GET /contactos/exportar/excel
+ * Exportar contactos a Excel
+ */
+router.get(
+  '/exportar/excel',
+  requierePermiso('contactos', 'ver'),
+  requiereRolMinimo('admin'),
+  contactoController.exportarExcel
+);
+
+/**
+ * GET /contactos/plantilla-importacion
+ * Descargar plantilla Excel para importación masiva
+ */
+router.get(
+  '/plantilla-importacion',
+  requierePermiso('contactos', 'ver'),
+  requiereRolMinimo('admin'),
+  contactoController.descargarPlantilla
+);
+
+/**
+ * POST /contactos/importar
+ * Importar contactos desde Excel
+ */
+router.post(
+  '/importar',
+  requierePermiso('contactos', 'crear'),
+  requiereRolMinimo('admin'),
+  uploadMemory.single('archivo'),
+  contactoController.importarContactos
+);
 
 /**
  * GET /contactos

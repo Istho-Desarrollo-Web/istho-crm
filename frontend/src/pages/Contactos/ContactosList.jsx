@@ -19,6 +19,11 @@ import {
   Pencil,
   UserX,
   RefreshCw,
+  Download,
+  Upload,
+  FileSpreadsheet,
+  X,
+  AlertCircle,
 } from 'lucide-react';
 
 import {
@@ -30,6 +35,9 @@ import {
 import useNotification from '@hooks/useNotification';
 import { useAuth } from '@context/AuthContext';
 import contactosService from '@api/contactos.service';
+import { CONTACTOS_ENDPOINTS } from '@api/endpoints';
+import { descargarArchivo, fechaDescarga } from '@utils/descargas';
+import readXlsxFile from 'read-excel-file/browser';
 import ContactoForm from './components/ContactoForm';
 import ContactoDrawer from './components/ContactoDrawer';
 
@@ -50,6 +58,267 @@ const ACTIVO_OPTIONS = [
   { value: 'true', label: 'Activos' },
   { value: 'false', label: 'Inactivos' },
 ];
+
+// ════════════════════════════════════════════════════════════════════════════
+// MODAL IMPORTAR CONTACTOS
+// ════════════════════════════════════════════════════════════════════════════
+
+const ModalImportarContactos = ({ open, onClose, onSuccess }) => {
+  const { token } = useAuth();
+  const { success: notifySuccess, error: notifyError } = useNotification();
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [archivo, setArchivo] = useState(null);
+  const [preview, setPreview] = useState([]);
+  const [resultado, setResultado] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef(null);
+
+  const resetear = () => {
+    setArchivo(null);
+    setPreview([]);
+    setResultado(null);
+    setIsDragOver(false);
+  };
+
+  const handleClose = () => { resetear(); onClose(); };
+
+  const procesarArchivo = async (file) => {
+    if (!file) return;
+    if (!file.name.match(/\.(xlsx|xls)$/i)) {
+      notifyError('Solo se aceptan archivos .xlsx o .xls');
+      return;
+    }
+    setArchivo(file);
+    setResultado(null);
+
+    // Preview con read-excel-file
+    try {
+      const rows = await readXlsxFile(file);
+      if (rows.length > 1) {
+        const headers = rows[0].map(String);
+        const data = rows.slice(1, 6).map((row) =>
+          Object.fromEntries(headers.map((h, i) => [h, row[i] ?? '']))
+        );
+        setPreview(data);
+      } else {
+        setPreview([]);
+      }
+    } catch {
+      setPreview([]);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) procesarArchivo(file);
+  };
+
+  const handleImportar = async () => {
+    if (!archivo) return;
+    setLoading(true);
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const formData = new FormData();
+      formData.append('archivo', archivo);
+      const res = await fetch(`${baseUrl}${CONTACTOS_ENDPOINTS.IMPORTAR}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('istho_token')}` },
+        body: formData,
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Error al importar');
+      const data = json.data ?? json;
+      setResultado(data);
+      if (data.creados > 0) {
+        notifySuccess(`${data.creados} contacto${data.creados !== 1 ? 's' : ''} importado${data.creados !== 1 ? 's' : ''}`);
+        onSuccess?.();
+      }
+    } catch (err) {
+      notifyError(err.message || 'Error al importar contactos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDescargarPlantilla = async () => {
+    const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+    await descargarArchivo(`${baseUrl}${CONTACTOS_ENDPOINTS.PLANTILLA_IMPORTACION}`, 'plantilla-contactos.xlsx');
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
+      <div className="relative w-full max-w-2xl bg-white dark:bg-centhrix-card rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+              <Upload className="w-5 h-5 text-emerald-500" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">Importar Contactos</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Carga masiva desde archivo Excel (.xlsx)</p>
+            </div>
+          </div>
+          <button onClick={handleClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-centhrix-surface transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* Resultado */}
+          {resultado ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{resultado.creados}</p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">Creados</p>
+                </div>
+                <div className="bg-blue-50 dark:bg-blue-500/10 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{resultado.vinculados}</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Vinculados</p>
+                </div>
+                <div className="bg-amber-50 dark:bg-amber-500/10 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{resultado.omitidos}</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Omitidos</p>
+                </div>
+              </div>
+              {resultado.errores?.length > 0 && (
+                <div className="bg-red-50 dark:bg-red-500/10 rounded-xl p-3">
+                  <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-2 flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5" /> {resultado.errores.length} error(es)
+                  </p>
+                  <ul className="space-y-1">
+                    {resultado.errores.slice(0, 5).map((e, i) => (
+                      <li key={i} className="text-xs text-red-600 dark:text-red-400">
+                        Fila {e.fila} ({e.nombre}): {e.error}
+                      </li>
+                    ))}
+                    {resultado.errores.length > 5 && (
+                      <li className="text-xs text-red-500">...y {resultado.errores.length - 5} más</li>
+                    )}
+                  </ul>
+                </div>
+              )}
+              <div className="flex gap-2 pt-1">
+                <button onClick={resetear} className="flex-1 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors">
+                  Importar otro archivo
+                </button>
+                <button onClick={handleClose} className="flex-1 px-4 py-2 rounded-xl bg-[#E74C3C] hover:bg-[#C0392B] text-white text-sm font-medium transition-colors">
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Plantilla */}
+              <div className="flex items-center justify-between bg-slate-50 dark:bg-centhrix-surface rounded-xl p-3">
+                <div className="flex items-center gap-2.5">
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    ¿No tienes el formato? Descarga la plantilla primero.
+                  </p>
+                </div>
+                <button onClick={handleDescargarPlantilla} className="shrink-0 ml-3 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline underline-offset-2">
+                  Descargar plantilla
+                </button>
+              </div>
+
+              {/* Dropzone */}
+              <div
+                onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                onDragLeave={() => setIsDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => !archivo && inputRef.current?.click()}
+                className={`relative border-2 border-dashed rounded-xl transition-colors cursor-pointer
+                  ${isDragOver ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-500/5' : 'border-slate-200 dark:border-slate-600 hover:border-emerald-300 dark:hover:border-emerald-500/50'}
+                  ${archivo ? 'bg-slate-50 dark:bg-centhrix-surface cursor-default' : 'bg-white dark:bg-centhrix-card'}`}
+              >
+                <input
+                  ref={inputRef}
+                  type="file"
+                  accept=".xlsx,.xls"
+                  className="hidden"
+                  onChange={(e) => procesarArchivo(e.target.files[0])}
+                />
+                {archivo ? (
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <FileSpreadsheet className="w-5 h-5 text-emerald-500 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{archivo.name}</p>
+                        <p className="text-xs text-slate-500">{(archivo.size / 1024).toFixed(1)} KB</p>
+                      </div>
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); resetear(); }} className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="py-8 text-center">
+                    <Upload className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                      Arrastra el archivo aquí o <span className="text-emerald-600 dark:text-emerald-400">haz clic para seleccionar</span>
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">.xlsx o .xls — máx. 10 MB</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Preview */}
+              {preview.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                    Vista previa (primeras {preview.length} filas)
+                  </p>
+                  <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-700">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="bg-slate-50 dark:bg-centhrix-surface">
+                          {Object.keys(preview[0]).slice(0, 6).map((col) => (
+                            <th key={col} className="px-3 py-2 text-left font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">{col}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {preview.map((row, i) => (
+                          <tr key={i} className="border-t border-slate-50 dark:border-slate-700/50">
+                            {Object.values(row).slice(0, 6).map((val, j) => (
+                              <td key={j} className="px-3 py-1.5 text-slate-600 dark:text-slate-300 truncate max-w-[120px]">{String(val)}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Botón importar */}
+              {archivo && (
+                <button
+                  onClick={handleImportar}
+                  disabled={loading}
+                  className="w-full px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <><RefreshCw className="w-4 h-4 animate-spin" /> Importando...</>
+                  ) : (
+                    <><Upload className="w-4 h-4" /> Importar contactos</>
+                  )}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ════════════════════════════════════════════════════════════════════════════
 // SUBCOMPONENTES
@@ -160,6 +429,10 @@ const ContactosList = () => {
   const [deactivateModal, setDeactivateModal] = useState({ isOpen: false, contacto: null });
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Export / Import
+  const [exportLoading, setExportLoading] = useState(false);
+  const [showImportar, setShowImportar] = useState(false);
+
   // Timer de debounce para búsqueda
   const searchTimerRef = useRef(null);
   useEffect(() => () => clearTimeout(searchTimerRef.current), []);
@@ -231,6 +504,27 @@ const ContactosList = () => {
     syncUrl(search, tipo, activo, newPage);
   };
 
+  // ── Export / Import ───────────────────────────────────────────────────
+  const handleExportar = async () => {
+    setExportLoading(true);
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (tipo) params.set('tipo', tipo);
+      if (activo) params.set('activo', activo);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      await descargarArchivo(
+        `${baseUrl}${CONTACTOS_ENDPOINTS.EXPORTAR_EXCEL}${qs}`,
+        `contactos-${fechaDescarga()}.xlsx`
+      );
+    } catch {
+      notifyError('Error al exportar los contactos');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   // ── Handlers CRUD ─────────────────────────────────────────────────────
   const handleNuevoContacto = () => {
     setFormModal({ open: true, contacto: null });
@@ -285,7 +579,7 @@ const ContactosList = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={fetchContactos}
               title="Actualizar"
@@ -293,6 +587,29 @@ const ContactosList = () => {
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
+
+            {hasPermission('contactos', 'ver') && (
+              <button
+                onClick={handleExportar}
+                disabled={exportLoading}
+                title="Exportar Excel"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-centhrix-surface disabled:opacity-60 transition-colors"
+              >
+                <Download className={`w-4 h-4 ${exportLoading ? 'animate-bounce' : ''}`} />
+                <span className="hidden sm:inline">Exportar</span>
+              </button>
+            )}
+
+            {hasPermission('contactos', 'crear') && (
+              <button
+                onClick={() => setShowImportar(true)}
+                title="Importar contactos"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                <span className="hidden sm:inline">Importar</span>
+              </button>
+            )}
 
             {hasPermission('contactos', 'crear') && (
               <button
@@ -558,6 +875,13 @@ const ContactosList = () => {
         onClose={() => setDrawer({ open: false, contactoId: null })}
         contactoId={drawer.contactoId}
         onContactoUpdated={fetchContactos}
+      />
+
+      {/* ── MODAL IMPORTAR ───────────────────────────────────────────── */}
+      <ModalImportarContactos
+        open={showImportar}
+        onClose={() => setShowImportar(false)}
+        onSuccess={fetchContactos}
       />
 
       {/* ── MODAL DESACTIVAR ─────────────────────────────────────────── */}

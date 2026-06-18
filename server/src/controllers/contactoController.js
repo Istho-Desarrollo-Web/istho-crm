@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const { sequelize, Contacto, ContactoCliente, Cliente, Usuario, Auditoria } = require('../models');
 const { success, paginated, error: errorResponse, notFound } = require('../utils/responses');
 const logger = require('../utils/logger');
+const ExcelJS = require('exceljs');
 
 // ─── DIRECTORIO ───────────────────────────────────────────────────────────────
 
@@ -445,6 +446,327 @@ const desasignarContactoDesdeCliente = async (req, res) => {
   }
 };
 
+// ─── EXPORTAR EXCEL ───────────────────────────────────────────────────────────
+
+const exportarExcel = async (req, res) => {
+  try {
+    const { search, tipo, activo } = req.query;
+    const where = {};
+    if (search) {
+      where[Op.or] = [
+        { nombre: { [Op.like]: `%${search}%` } },
+        { email: { [Op.like]: `%${search}%` } },
+        { cargo: { [Op.like]: `%${search}%` } },
+      ];
+    }
+    if (tipo && tipo !== 'todos') where.tipo = tipo;
+    if (activo !== undefined && activo !== 'todos') where.activo = activo === 'true';
+
+    const contactos = await Contacto.findAll({
+      where,
+      include: [
+        {
+          model: Cliente,
+          as: 'clientes',
+          through: { attributes: ['es_principal'] },
+          attributes: ['nit', 'razon_social'],
+          required: false,
+        },
+      ],
+      order: [['nombre', 'ASC']],
+    });
+
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'ISTHO CRM';
+    const ws = wb.addWorksheet('Contactos');
+
+    // Cabecera
+    ws.columns = [
+      { header: 'ID',                   key: 'id',                    width: 8  },
+      { header: 'Nombre',               key: 'nombre',                width: 30 },
+      { header: 'Tipo',                 key: 'tipo',                  width: 12 },
+      { header: 'Cargo',                key: 'cargo',                 width: 25 },
+      { header: 'Email',                key: 'email',                 width: 30 },
+      { header: 'Teléfono',             key: 'telefono',              width: 18 },
+      { header: 'Celular',              key: 'celular',               width: 18 },
+      { header: 'Clientes (NIT)',        key: 'nits',                  width: 35 },
+      { header: 'Clientes (Razón Social)', key: 'razones',            width: 50 },
+      { header: 'Recibe Notificaciones', key: 'recibe_notificaciones', width: 22 },
+      { header: 'Notas',                key: 'notas',                 width: 40 },
+      { header: 'Estado',               key: 'activo',                width: 12 },
+    ];
+
+    // Estilo cabecera
+    ws.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE74C3C' } };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+    ws.getRow(1).height = 22;
+
+    // Filas
+    contactos.forEach((c) => {
+      const clientes = c.clientes || [];
+      ws.addRow({
+        id:                    c.id,
+        nombre:                c.nombre,
+        tipo:                  c.tipo,
+        cargo:                 c.cargo || '',
+        email:                 c.email || '',
+        telefono:              c.telefono || '',
+        celular:               c.celular || '',
+        nits:                  clientes.map((cl) => cl.nit).join(', '),
+        razones:               clientes.map((cl) => cl.razon_social).join(', '),
+        recibe_notificaciones: c.recibe_notificaciones ? 'Sí' : 'No',
+        notas:                 c.notas || '',
+        activo:                c.activo ? 'Activo' : 'Inactivo',
+      });
+    });
+
+    // Bordes en todas las filas de datos
+    ws.eachRow((row, rn) => {
+      if (rn === 1) return;
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+        };
+      });
+      if (rn % 2 === 0) {
+        row.eachCell((cell) => {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+        });
+      }
+    });
+
+    const fecha = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="contactos-${fecha}.xlsx"`);
+    await wb.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    logger.error('Error al exportar contactos Excel:', { message: err.message });
+    return errorResponse(res, 'Error al exportar los contactos', 500);
+  }
+};
+
+// ─── PLANTILLA DE IMPORTACIÓN ─────────────────────────────────────────────────
+
+const descargarPlantilla = async (req, res) => {
+  try {
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'ISTHO CRM';
+
+    const ws = wb.addWorksheet('Contactos');
+    ws.columns = [
+      { header: 'nombre',       key: 'nombre',       width: 30 },
+      { header: 'tipo',         key: 'tipo',         width: 12 },
+      { header: 'cargo',        key: 'cargo',        width: 25 },
+      { header: 'email',        key: 'email',        width: 30 },
+      { header: 'telefono',     key: 'telefono',     width: 18 },
+      { header: 'celular',      key: 'celular',      width: 18 },
+      { header: 'nit',          key: 'nit',          width: 20 },
+      { header: 'es_principal', key: 'es_principal', width: 15 },
+      { header: 'recibe_notif', key: 'recibe_notif', width: 18 },
+      { header: 'notas',        key: 'notas',        width: 40 },
+    ];
+
+    // Estilo cabecera
+    ws.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE74C3C' } };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+    ws.getRow(1).height = 22;
+
+    // Fila de ejemplo
+    ws.addRow({
+      nombre:       'Juan Pérez',
+      tipo:         'externo',
+      cargo:        'Gerente Logística',
+      email:        'juan.perez@empresa.com',
+      telefono:     '(604) 123 4567',
+      celular:      '3001234567',
+      nit:          '900123456',
+      es_principal: 'true',
+      recibe_notif: 'true',
+      notas:        'Contacto principal para despachos',
+    });
+
+    // Hoja de instrucciones
+    const wsInst = wb.addWorksheet('Instrucciones');
+    wsInst.getColumn(1).width = 60;
+    [
+      ['INSTRUCCIONES DE IMPORTACIÓN MASIVA DE CONTACTOS', true],
+      ['', false],
+      ['CAMPOS REQUERIDOS:', true],
+      ['  • nombre — Nombre completo del contacto (máx. 150 caracteres)', false],
+      ['', false],
+      ['CAMPOS OPCIONALES:', true],
+      ['  • tipo — "istho" o "externo" (default: externo)', false],
+      ['  • cargo — Cargo o puesto del contacto', false],
+      ['  • email — Email único. Si ya existe en CRM, la fila se omite.', false],
+      ['  • telefono — Teléfono fijo', false],
+      ['  • celular — Teléfono celular', false],
+      ['  • nit — NIT del cliente para vincular el contacto', false],
+      ['  • es_principal — true/false. Indica si es el contacto principal del cliente.', false],
+      ['  • recibe_notif — true/false (default: true)', false],
+      ['  • notas — Observaciones adicionales', false],
+      ['', false],
+      ['NOTAS IMPORTANTES:', true],
+      ['  • Si el email ya existe en BD, esa fila se omite sin error.', false],
+      ['  • El NIT debe corresponder a un cliente registrado en el CRM.', false],
+      ['  • Los valores de es_principal y recibe_notif aceptan: true/false, si/no, 1/0.', false],
+    ].forEach(([text, bold]) => {
+      const row = wsInst.addRow([text]);
+      if (bold) row.getCell(1).font = { bold: true };
+    });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="plantilla-contactos.xlsx"');
+    await wb.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    logger.error('Error al generar plantilla de contactos:', { message: err.message });
+    return errorResponse(res, 'Error al generar la plantilla', 500);
+  }
+};
+
+// ─── IMPORTAR DESDE EXCEL ─────────────────────────────────────────────────────
+
+const importarContactos = async (req, res) => {
+  try {
+    if (!req.file) return errorResponse(res, 'No se recibió ningún archivo', 400);
+
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(req.file.buffer);
+    const ws = wb.worksheets[0];
+    if (!ws) return errorResponse(res, 'El archivo no contiene hojas de cálculo', 400);
+
+    // Mapear columnas
+    const colIdx = {};
+    ws.getRow(1).eachCell((cell, colNum) => {
+      const h = String(cell.value || '').trim().toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+      if (/^nombre$/.test(h))     colIdx.nombre       = colNum;
+      else if (/^tipo$/.test(h))  colIdx.tipo         = colNum;
+      else if (/^cargo$/.test(h)) colIdx.cargo        = colNum;
+      else if (/^email$/.test(h)) colIdx.email        = colNum;
+      else if (/^telefono$/.test(h)) colIdx.telefono  = colNum;
+      else if (/^celular$/.test(h))  colIdx.celular   = colNum;
+      else if (/^nit$/.test(h))      colIdx.nit       = colNum;
+      else if (/principal/.test(h))  colIdx.es_principal = colNum;
+      else if (/recibe/.test(h))     colIdx.recibe_notif = colNum;
+      else if (/^nota/.test(h))      colIdx.notas     = colNum;
+    });
+
+    if (!colIdx.nombre) return errorResponse(res, 'Columna "nombre" no encontrada en el archivo', 400);
+
+    const limpiar = (val) => { const s = String(val ?? '').trim(); return s || null; };
+    const limpiarEmail = (val) => { const e = limpiar(val); return e ? e.toLowerCase() : null; };
+    const parsearBool = (val, def = true) => {
+      if (val === null || val === undefined || val === '') return def;
+      const s = String(val).trim().toLowerCase();
+      return ['1','true','si','sí','yes','verdadero'].includes(s) ? true
+           : ['0','false','no','falso'].includes(s) ? false
+           : def;
+    };
+
+    // Parsear filas
+    const filas = [];
+    ws.eachRow((row, rn) => {
+      if (rn === 1) return;
+      const nombre = limpiar(row.getCell(colIdx.nombre)?.value);
+      if (!nombre) return;
+      const tipoRaw = limpiar(colIdx.tipo ? row.getCell(colIdx.tipo)?.value : null);
+      filas.push({
+        nombre,
+        tipo: tipoRaw === 'istho' ? 'istho' : 'externo',
+        cargo:    limpiar(colIdx.cargo    ? row.getCell(colIdx.cargo)?.value    : null),
+        email:    limpiarEmail(colIdx.email ? row.getCell(colIdx.email)?.value   : null),
+        telefono: limpiar(colIdx.telefono ? row.getCell(colIdx.telefono)?.value : null),
+        celular:  limpiar(colIdx.celular  ? row.getCell(colIdx.celular)?.value  : null),
+        nit:      limpiar(colIdx.nit      ? row.getCell(colIdx.nit)?.value      : null),
+        es_principal:        parsearBool(colIdx.es_principal ? row.getCell(colIdx.es_principal)?.value : null, false),
+        recibe_notificaciones: parsearBool(colIdx.recibe_notif ? row.getCell(colIdx.recibe_notif)?.value : null, true),
+        notas:    limpiar(colIdx.notas    ? row.getCell(colIdx.notas)?.value    : null),
+        _fila: rn,
+      });
+    });
+
+    if (!filas.length) return errorResponse(res, 'El archivo no contiene filas válidas', 400);
+
+    // Resolver clientes
+    const nitsUnicos = [...new Set(filas.map(f => f.nit).filter(Boolean))];
+    let clientePorNit = {};
+    if (nitsUnicos.length) {
+      const clientes = await Cliente.findAll({ where: { nit: nitsUnicos }, attributes: ['id','nit'] });
+      clientePorNit = Object.fromEntries(clientes.map(c => [c.nit, c]));
+    }
+
+    // Emails ya existentes
+    const emailsEnExcel = [...new Set(filas.map(f => f.email).filter(Boolean))];
+    let emailsExistentes = new Set();
+    if (emailsEnExcel.length) {
+      const existentes = await Contacto.findAll({ where: { email: emailsEnExcel }, attributes: ['email'] });
+      emailsExistentes = new Set(existentes.map(c => c.email));
+    }
+
+    const contadores = { creados: 0, vinculados: 0, omitidos: 0, errores: [] };
+
+    for (const fila of filas) {
+      if (fila.email && emailsExistentes.has(fila.email)) {
+        contadores.omitidos++;
+        continue;
+      }
+
+      const transaction = await sequelize.transaction();
+      try {
+        const contacto = await Contacto.create({
+          tipo: fila.tipo, nombre: fila.nombre, cargo: fila.cargo,
+          telefono: fila.telefono, celular: fila.celular, email: fila.email,
+          recibe_notificaciones: fila.recibe_notificaciones,
+          tipos_notificacion: ['todas'], notas: fila.notas, activo: true,
+        }, { transaction });
+
+        const cliente = fila.nit ? clientePorNit[fila.nit] : null;
+        if (cliente) {
+          if (fila.es_principal) {
+            await ContactoCliente.update({ es_principal: false }, { where: { cliente_id: cliente.id }, transaction });
+          }
+          await ContactoCliente.create({ contacto_id: contacto.id, cliente_id: cliente.id, es_principal: fila.es_principal }, { transaction });
+          contadores.vinculados++;
+        }
+
+        await Auditoria.registrar({
+          tabla: 'contactos', registro_id: contacto.id, accion: 'crear',
+          usuario_id: req.user.id, usuario_nombre: req.user.nombre_completo,
+          datos_nuevos: { nombre: fila.nombre, tipo: fila.tipo, email: fila.email },
+          ip_address: req.ip, descripcion: `Contacto importado: ${fila.nombre}`, transaction,
+        });
+
+        await transaction.commit();
+        contadores.creados++;
+        if (fila.email) emailsExistentes.add(fila.email);
+      } catch (err) {
+        await transaction.rollback();
+        contadores.errores.push({ fila: fila._fila, nombre: fila.nombre, error: err.message });
+      }
+    }
+
+    return success(res, {
+      creados:    contadores.creados,
+      vinculados: contadores.vinculados,
+      omitidos:   contadores.omitidos,
+      errores:    contadores.errores,
+      total:      filas.length,
+    });
+  } catch (err) {
+    logger.error('Error al importar contactos:', { message: err.message });
+    return errorResponse(res, 'Error al importar los contactos', 500);
+  }
+};
+
 module.exports = {
   listar,
   obtenerPorId,
@@ -456,4 +778,7 @@ module.exports = {
   listarContactosCliente,
   asignarContactoDesdeCliente,
   desasignarContactoDesdeCliente,
+  exportarExcel,
+  descargarPlantilla,
+  importarContactos,
 };

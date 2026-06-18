@@ -371,6 +371,9 @@ export const CONTACTOS_ENDPOINTS = {
   BY_ID: (id) => `/contactos/${id}`,
   CLIENTES_DE_CONTACTO: (id) => `/contactos/${id}/clientes`,
   CLIENTE_DE_CONTACTO: (contactoId, clienteId) => `/contactos/${contactoId}/clientes/${clienteId}`,
+  EXPORTAR_EXCEL: '/contactos/exportar/excel',
+  PLANTILLA_IMPORTACION: '/contactos/plantilla-importacion',
+  IMPORTAR: '/contactos/importar',
   // Desde ClienteDetail
   CONTACTOS_DE_CLIENTE: (clienteId) => `/clientes/${clienteId}/contactos`,
   ASIGNAR_A_CLIENTE: (clienteId) => `/clientes/${clienteId}/contactos/asignar`,
