@@ -120,6 +120,9 @@ export const NotificacionesProvider = ({ children }) => {
   const intervalRef = useRef(null);
   const retryRef = useRef(null);
   const mountedRef = useRef(true);
+  // Ref para siempre leer las preferencias actuales dentro del handler del socket
+  // (evita stale closure ya que el effect no se re-monta cuando cambia user.preferencias)
+  const prefsRef = useRef(user?.preferencias);
 
   // Fetch combinado: count + recientes en una sola función
   const fetchAll = useCallback(async () => {
@@ -278,6 +281,11 @@ export const NotificacionesProvider = ({ children }) => {
     };
   }, [user, isAuthenticated, fetchAll, fetchCount]);
 
+  // Mantener el ref actualizado cada vez que cambien las preferencias del usuario
+  useEffect(() => {
+    prefsRef.current = user?.preferencias;
+  }, [user?.preferencias]);
+
   // Escuchar notificaciones en tiempo real via WebSocket
   const socketConnected = socket?.connected;
   useEffect(() => {
@@ -295,13 +303,15 @@ export const NotificacionesProvider = ({ children }) => {
         ...prev.slice(0, 4), // Mantener máximo 5
       ]);
 
-      // Verificar si el módulo está silenciado en preferencias del usuario
-      const prefs = user?.preferencias || {};
+      // Leer preferencias desde el ref para evitar stale closure
+      // (el handler del socket no se re-crea cuando cambia user.preferencias)
+      const prefs = prefsRef.current || {};
       const MAPA_ALERTAS = {
         despacho: prefs.alertas_despachos !== false,
         inventario: prefs.alertas_inventario !== false,
         cliente: prefs.alertas_clientes !== false,
         sistema: prefs.alertas_viajes !== false,
+        reporte: prefs.alertas_reportes !== false,
       };
       const moduloHabilitado = MAPA_ALERTAS[data.tipo] !== false;
 
