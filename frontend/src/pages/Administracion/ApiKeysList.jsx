@@ -203,7 +203,8 @@ const ApiKeysList = () => {
 
   const ENDPOINTS_INFO = [
     { path: '/powerbi/kpis', desc: 'KPIs consolidados (operaciones, clientes, inventario, viajes)' },
-    { path: '/powerbi/operaciones', desc: 'Dataset de operaciones con detalle de líneas' },
+    { path: '/powerbi/operaciones', desc: 'Cabeceras de operaciones — unir con operaciones-lineas via operacion_id' },
+    { path: '/powerbi/operaciones-lineas', desc: 'Líneas de detalle por operación — una fila por producto/lote' },
     { path: '/powerbi/inventario', desc: 'Dataset de productos con stock' },
     { path: '/powerbi/clientes', desc: 'Dataset de clientes activos e inactivos' },
     { path: '/powerbi/viajes', desc: 'Dataset de viajes con conductor y vehículo' },

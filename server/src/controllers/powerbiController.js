@@ -257,4 +257,70 @@ const viajes = async (req, res) => {
   }
 };
 
-module.exports = { kpis, operaciones, inventario, clientes, viajes };
+// ─── Dataset de líneas de detalle (modelo relacional) ────────────────────────
+// Una fila por línea de detalle — unir con /operaciones via operacion_id en Power BI
+const lineas = async (req, res) => {
+  try {
+    const registros = await OperacionDetalle.findAll({
+      attributes: [
+        'id', 'operacion_id', 'sku', 'producto',
+        'cantidad', 'unidad_medida', 'lote', 'lote_externo',
+        'fecha_vencimiento', 'cantidad_averia', 'tipo_averia',
+        'numero_caja', 'documento_asociado', 'peso', 'verificado',
+      ],
+      include: [
+        {
+          model: Operacion,
+          as: 'operacion',
+          attributes: ['numero_operacion', 'tipo', 'estado', 'fecha_operacion'],
+          where: { estado: { [Op.ne]: 'anulado' } },
+          include: [
+            {
+              model: Cliente,
+              as: 'cliente',
+              attributes: ['razon_social', 'nit'],
+            },
+          ],
+        },
+      ],
+      order: [
+        [{ model: Operacion, as: 'operacion' }, 'fecha_operacion', 'DESC'],
+        ['id', 'ASC'],
+      ],
+    });
+
+    const data = registros.map((d) => ({
+      linea_id: d.id,
+      operacion_id: d.operacion_id,
+      numero_operacion: d.operacion?.numero_operacion ?? null,
+      tipo: d.operacion?.tipo ?? null,
+      estado: d.operacion?.estado ?? null,
+      fecha_operacion: d.operacion?.fecha_operacion ?? null,
+      cliente_nombre: d.operacion?.cliente?.razon_social ?? null,
+      cliente_nit: d.operacion?.cliente?.nit ?? null,
+      sku: d.sku,
+      producto: d.producto,
+      cantidad: Number(d.cantidad) || 0,
+      unidad_medida: d.unidad_medida,
+      lote: d.lote,
+      lote_externo: d.lote_externo,
+      fecha_vencimiento: d.fecha_vencimiento,
+      cantidad_averia: Number(d.cantidad_averia) || 0,
+      tipo_averia: d.tipo_averia,
+      numero_caja: d.numero_caja,
+      documento_asociado: d.documento_asociado,
+      peso_kg: d.peso != null ? Number(d.peso) : null,
+      verificado: d.verificado ?? false,
+    }));
+
+    return success(res, {
+      total: data.length,
+      generado_en: new Date().toISOString(),
+      data,
+    });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
+module.exports = { kpis, operaciones, inventario, clientes, viajes, lineas };

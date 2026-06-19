@@ -293,6 +293,7 @@ const listarSalidas = async (req, res) => {
     if (search) {
       where[Op.or] = [
         { numero_operacion: { [Op.like]: `%${search}%` } },
+        { numero_picking: { [Op.like]: `%${search}%` } },
         { documento_wms: { [Op.like]: `%${search}%` } },
         { '$cliente.razon_social$': { [Op.like]: `%${search}%` } },
       ];

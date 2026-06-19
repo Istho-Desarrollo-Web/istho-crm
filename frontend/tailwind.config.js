@@ -44,6 +44,7 @@ export default {
           card: '#1A1B3A',
           surface: '#151631',
           accent: '#E74C3C',
+          'accent-hover': '#C0392B',
           hover: '#C0392B',
         },
       },

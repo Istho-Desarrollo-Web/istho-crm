@@ -1,9 +1,6 @@
-﻿/**
+/**
  * ISTHO CRM - Reportes Programados
  * CRUD de reportes automáticos con cron
- *
- * @author Coordinación TI ISTHO
- * @version 1.0.0
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -24,14 +21,17 @@ import {
   Calendar,
   RefreshCw,
   X,
+  Filter,
+  Users,
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import { FilterDropdown } from '../../components/common';
 import reportesService from '../../api/reportes.service';
+import clientesService from '../../api/clientes.service';
 import { formatDateShort } from '../../utils/formatDate';
 
 // ════════════════════════════════════════════════════════════════
-// FRECUENCIAS PREDEFINIDAS
+// CONSTANTES
 // ════════════════════════════════════════════════════════════════
 const FRECUENCIAS = [
   { label: 'Diario a las 7:00 AM', cron: '0 7 * * *' },
@@ -51,23 +51,167 @@ const TIPOS = [
   { value: 'inventario_ubicacion', label: 'Inventario por Ubicación', icon: FileSpreadsheet },
 ];
 
+// Tipos que admiten filtro por cliente
+const TIPOS_CON_CLIENTE = ['operaciones', 'inventario', 'inventario_ubicacion'];
+
+// Filtros disponibles por tipo de reporte
+const FILTROS_POR_TIPO = {
+  operaciones: [
+    {
+      key: 'tipo',
+      label: 'Tipo de operación',
+      options: [
+        { value: '', label: 'Todos los tipos' },
+        { value: 'entrada', label: 'Entradas' },
+        { value: 'salida', label: 'Salidas' },
+        { value: 'kardex', label: 'Kardex' },
+      ],
+    },
+    {
+      key: 'estado',
+      label: 'Estado',
+      options: [
+        { value: '', label: 'Todos los estados' },
+        { value: 'pendiente', label: 'Pendiente' },
+        { value: 'en_proceso', label: 'En proceso' },
+        { value: 'cerrado', label: 'Cerrado' },
+        { value: 'anulado', label: 'Anulado' },
+      ],
+    },
+  ],
+  viajes: [
+    {
+      key: 'estado',
+      label: 'Estado',
+      options: [
+        { value: '', label: 'Todos los estados' },
+        { value: 'pendiente', label: 'Pendiente' },
+        { value: 'en_proceso', label: 'En proceso' },
+        { value: 'completado', label: 'Completado' },
+        { value: 'cancelado', label: 'Cancelado' },
+      ],
+    },
+  ],
+  cajas_menores: [
+    {
+      key: 'estado',
+      label: 'Estado',
+      options: [
+        { value: '', label: 'Todos los estados' },
+        { value: 'abierta', label: 'Abierta' },
+        { value: 'cerrada', label: 'Cerrada' },
+        { value: 'arqueo', label: 'En arqueo' },
+      ],
+    },
+  ],
+  gastos: [
+    {
+      key: 'estado',
+      label: 'Estado',
+      options: [
+        { value: '', label: 'Todos los estados' },
+        { value: 'aprobado', label: 'Aprobado' },
+        { value: 'rechazado', label: 'Rechazado' },
+        { value: 'pendiente', label: 'Pendiente' },
+      ],
+    },
+  ],
+  inventario: [],
+  clientes: [],
+  inventario_ubicacion: [],
+};
+
+// Etiquetas legibles para los valores de filtros
+const FILTRO_LABELS = {
+  tipo: { entrada: 'Entradas', salida: 'Salidas', kardex: 'Kardex' },
+  estado: {
+    pendiente: 'Pendiente',
+    en_proceso: 'En proceso',
+    cerrado: 'Cerrado',
+    anulado: 'Anulado',
+    completado: 'Completado',
+    cancelado: 'Cancelado',
+    abierta: 'Abierta',
+    cerrada: 'Cerrada',
+    arqueo: 'En arqueo',
+    aprobado: 'Aprobado',
+    rechazado: 'Rechazado',
+  },
+};
+
+// ════════════════════════════════════════════════════════════════
+// MODAL CONFIRMAR ELIMINACIÓN
+// ════════════════════════════════════════════════════════════════
+const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-sm w-full p-6 animate-zoomIn">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100">Eliminar reporte</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Esta acción no se puede deshacer</p>
+          </div>
+        </div>
+        <p className="text-sm text-slate-600 dark:text-slate-300 mb-5">
+          ¿Estás seguro de que deseas eliminar este reporte programado? Se cancelará el envío automático.
+        </p>
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-centhrix-surface rounded-xl transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-xl flex items-center gap-2 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ════════════════════════════════════════════════════════════════
 // MODAL CREAR/EDITAR
 // ════════════════════════════════════════════════════════════════
+const FORM_DEFAULT = {
+  nombre: '',
+  tipo_reporte: 'operaciones',
+  formato: 'excel',
+  frecuencia_idx: 0,
+  cron_expresion: FRECUENCIAS[0].cron,
+  frecuencia_label: FRECUENCIAS[0].label,
+  destinatarios: '',
+  filtros: {},
+};
+
 const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
-  const [form, setForm] = useState({
-    nombre: '',
-    tipo_reporte: 'operaciones',
-    formato: 'excel',
-    frecuencia_idx: 0,
-    cron_expresion: FRECUENCIAS[0].cron,
-    frecuencia_label: FRECUENCIAS[0].label,
-    destinatarios: '',
-  });
+  const [form, setForm] = useState(FORM_DEFAULT);
+  const [clientes, setClientes] = useState([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    clientesService.getAll({ limit: 500, estado: 'activo' }).then((res) => {
+      setClientes(Array.isArray(res?.data) ? res.data : (res?.data?.rows || []));
+    }).catch(() => {});
+  }, [isOpen]);
 
   useEffect(() => {
     if (reporte) {
       const freqIdx = FRECUENCIAS.findIndex((f) => f.cron === reporte.cron_expresion);
+      // filtros puede llegar como string si fue serializado incorrectamente en versiones previas
+      let filtros = reporte.filtros;
+      if (typeof filtros === 'string') {
+        try { filtros = JSON.parse(filtros); } catch { filtros = {}; }
+      }
       setForm({
         nombre: reporte.nombre || '',
         tipo_reporte: reporte.tipo_reporte || 'operaciones',
@@ -76,17 +220,16 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
         cron_expresion: reporte.cron_expresion || FRECUENCIAS[0].cron,
         frecuencia_label: reporte.frecuencia_label || FRECUENCIAS[0].label,
         destinatarios: reporte.destinatarios || '',
+        filtros: (() => {
+          if (!filtros || typeof filtros !== 'object') return {};
+          // Normalizar cliente_id a string para que coincida con los options del FilterDropdown
+          return filtros.cliente_id !== undefined
+            ? { ...filtros, cliente_id: String(filtros.cliente_id) }
+            : filtros;
+        })(),
       });
     } else {
-      setForm({
-        nombre: '',
-        tipo_reporte: 'operaciones',
-        formato: 'excel',
-        frecuencia_idx: 0,
-        cron_expresion: FRECUENCIAS[0].cron,
-        frecuencia_label: FRECUENCIAS[0].label,
-        destinatarios: '',
-      });
+      setForm(FORM_DEFAULT);
     }
   }, [reporte, isOpen]);
 
@@ -101,8 +244,40 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
     }));
   };
 
+  const handleTipoChange = (v) => {
+    setForm((prev) => ({ ...prev, tipo_reporte: v, filtros: {} }));
+  };
+
+  const handleFiltroChange = (key, value) => {
+    setForm((prev) => {
+      const filtros = { ...prev.filtros };
+      if (value) {
+        filtros[key] = value;
+      } else {
+        delete filtros[key];
+      }
+      return { ...prev, filtros };
+    });
+  };
+
+  const handleClienteFilterChange = (clienteId) => {
+    setForm((prev) => {
+      const filtros = { ...prev.filtros };
+      if (clienteId) {
+        const cliente = clientes.find((c) => String(c.id) === clienteId);
+        filtros.cliente_id = clienteId;
+        filtros.cliente_nombre = cliente?.razon_social || '';
+      } else {
+        delete filtros.cliente_id;
+        delete filtros.cliente_nombre;
+      }
+      return { ...prev, filtros };
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    const filtrosLimpios = Object.keys(form.filtros).length > 0 ? form.filtros : null;
     onSave({
       nombre: form.nombre,
       tipo_reporte: form.tipo_reporte,
@@ -110,11 +285,22 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
       cron_expresion: form.cron_expresion,
       frecuencia_label: form.frecuencia_label,
       destinatarios: form.destinatarios,
+      filtros: filtrosLimpios,
+      // Sincronizar columna cliente_id dedicada (integer FK) — más confiable que filtros JSON
+      cliente_id: filtrosLimpios?.cliente_id ? Number(filtrosLimpios.cliente_id) : null,
     });
   };
 
   const inputCls =
     'w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 bg-white dark:bg-centhrix-surface text-slate-800 dark:text-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500';
+
+  const filtrosDisponibles = FILTROS_POR_TIPO[form.tipo_reporte] || [];
+  const conFiltroCliente = TIPOS_CON_CLIENTE.includes(form.tipo_reporte);
+  const totalFiltros = filtrosDisponibles.length + (conFiltroCliente ? 1 : 0);
+  const clienteOpts = [
+    { value: '', label: 'Todos los clientes' },
+    ...clientes.map((c) => ({ value: String(c.id), label: c.razon_social })),
+  ];
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
@@ -133,6 +319,7 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {/* Nombre */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Nombre
@@ -147,6 +334,7 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
             />
           </div>
 
+          {/* Tipo y formato */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
@@ -155,7 +343,7 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
               <FilterDropdown
                 options={TIPOS}
                 value={form.tipo_reporte}
-                onChange={(v) => setForm((p) => ({ ...p, tipo_reporte: v }))}
+                onChange={handleTipoChange}
               />
             </div>
             <div>
@@ -174,6 +362,46 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
             </div>
           </div>
 
+          {/* Filtros dinámicos según tipo */}
+          {totalFiltros > 0 && (
+            <div className="bg-slate-50 dark:bg-centhrix-surface/50 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
+              <div className="flex items-center gap-2 mb-3">
+                <Filter className="w-4 h-4 text-slate-400" />
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Filtros del reporte
+                </span>
+                <span className="text-xs text-slate-400">(opcional)</span>
+              </div>
+              <div className={`grid gap-3 ${totalFiltros > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                {conFiltroCliente && (
+                  <div key="cliente_id">
+                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Cliente
+                    </label>
+                    <FilterDropdown
+                      options={clienteOpts}
+                      value={form.filtros.cliente_id || ''}
+                      onChange={handleClienteFilterChange}
+                    />
+                  </div>
+                )}
+                {filtrosDisponibles.map((filtro) => (
+                  <div key={filtro.key}>
+                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      {filtro.label}
+                    </label>
+                    <FilterDropdown
+                      options={filtro.options}
+                      value={form.filtros[filtro.key] || ''}
+                      onChange={(v) => handleFiltroChange(filtro.key, v)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Frecuencia */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Frecuencia
@@ -207,6 +435,7 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
             </div>
           </div>
 
+          {/* Destinatarios */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Destinatarios
@@ -222,6 +451,7 @@ const FormModal = ({ isOpen, onClose, onSave, reporte, loading }) => {
             <p className="text-xs text-slate-400 mt-1">Separa varios emails con coma</p>
           </div>
 
+          {/* Acciones */}
           <div className="flex gap-2 justify-end pt-2">
             <button
               type="button"
@@ -256,6 +486,7 @@ const ReportesProgramados = () => {
   const [formModal, setFormModal] = useState({ open: false, reporte: null });
   const [formLoading, setFormLoading] = useState(false);
   const [executing, setExecuting] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -292,8 +523,10 @@ const ReportesProgramados = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Eliminar este reporte programado?')) return;
+  const handleDelete = async () => {
+    if (!confirmDeleteId) return;
+    const id = confirmDeleteId;
+    setConfirmDeleteId(null);
     try {
       await reportesService.eliminarProgramado(id);
       enqueueSnackbar('Reporte eliminado', { variant: 'success' });
@@ -345,6 +578,42 @@ const ReportesProgramados = () => {
     cajas_menores: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
     gastos: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
     inventario_ubicacion: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
+  };
+
+  // Genera resumen legible de filtros activos de un reporte
+  const getFiltrosBadges = (r) => {
+    // filtros puede ser string si fue serializado incorrectamente en BD
+    let filtros = r.filtros;
+    if (typeof filtros === 'string') {
+      try { filtros = JSON.parse(filtros); } catch { filtros = null; }
+    }
+    if (!filtros || typeof filtros !== 'object' || Object.keys(filtros).length === 0) return null;
+    return Object.entries(filtros).map(([key, value]) => {
+      if (key === 'cliente_nombre') return null;
+      if (key === 'cliente_id') {
+        const nombre = filtros.cliente_nombre || r.cliente?.razon_social || value;
+        return (
+          <span
+            key={key}
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-300 border border-violet-200 dark:border-violet-700"
+          >
+            <Users className="w-2.5 h-2.5" />
+            {nombre}
+          </span>
+        );
+      }
+      if (typeof value !== 'string' && typeof value !== 'number') return null;
+      const label = FILTRO_LABELS[key]?.[value] || String(value);
+      return (
+        <span
+          key={key}
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-centhrix-surface text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600"
+        >
+          <Filter className="w-2.5 h-2.5" />
+          {label}
+        </span>
+      );
+    });
   };
 
   return (
@@ -416,7 +685,7 @@ const ReportesProgramados = () => {
                 >
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <h4 className="font-medium text-slate-800 dark:text-slate-100 truncate">
                         {r.nombre}
                       </h4>
@@ -444,7 +713,6 @@ const ReportesProgramados = () => {
                           </span>
                         )
                       )}
-                      {/* Badge de estado de última ejecución */}
                       {r.estado_ultima_ejecucion === 'exitoso' && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
                           <CheckCircle className="w-3 h-3" /> Exitoso
@@ -460,6 +728,8 @@ const ReportesProgramados = () => {
                           <Loader2 className="w-3 h-3 animate-spin" /> Ejecutando
                         </span>
                       )}
+                      {/* Badges de filtros activos */}
+                      {getFiltrosBadges(r)}
                     </div>
                     <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                       <span className="flex items-center gap-1">
@@ -474,7 +744,6 @@ const ReportesProgramados = () => {
                         <span>Último envío: {formatDateShort(r.ultima_ejecucion)}</span>
                       )}
                     </div>
-                    {/* Mensaje de error de última ejecución */}
                     {r.estado_ultima_ejecucion === 'fallido' && r.ultimo_error && (
                       <p
                         className="mt-1 text-xs text-red-500 dark:text-red-400 truncate"
@@ -485,7 +754,7 @@ const ReportesProgramados = () => {
                     )}
                   </div>
 
-                  {/* Estado */}
+                  {/* Estado toggle */}
                   <button
                     onClick={() => handleToggle(r)}
                     className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
@@ -524,7 +793,7 @@ const ReportesProgramados = () => {
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(r.id)}
+                      onClick={() => setConfirmDeleteId(r.id)}
                       className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                       title="Eliminar"
                     >
@@ -544,6 +813,12 @@ const ReportesProgramados = () => {
         onSave={handleSave}
         reporte={formModal.reporte}
         loading={formLoading}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={confirmDeleteId !== null}
+        onClose={() => setConfirmDeleteId(null)}
+        onConfirm={handleDelete}
       />
     </div>
   );

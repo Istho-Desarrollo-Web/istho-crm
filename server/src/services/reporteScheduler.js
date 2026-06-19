@@ -117,21 +117,36 @@ const ejecutarReporte = async (reporte) => {
 
     // Consultar datos una sola vez
     let datos;
-    const where = {};
-    if (reporte.cliente_id) where.cliente_id = reporte.cliente_id;
-    if (reporte.filtros?.estado) where.estado = reporte.filtros.estado;
+    const baseWhere = {};
+    // filtros puede llegar como string si fue serializado incorrectamente; parsear defensivamente
+    let filtros = reporte.filtros;
+    if (typeof filtros === 'string') {
+      try { filtros = JSON.parse(filtros); } catch { filtros = null; }
+    }
+    if (!filtros || typeof filtros !== 'object') filtros = {};
+    // Preferir columna cliente_id (INTEGER FK) sobre filtros.cliente_id (JSON, puede ser string)
+    const clienteId = reporte.cliente_id || (filtros.cliente_id ? Number(filtros.cliente_id) : null);
+    if (clienteId) baseWhere.cliente_id = clienteId;
 
     switch (reporte.tipo_reporte) {
-      case 'operaciones':
+      case 'operaciones': {
+        const opWhere = { ...baseWhere };
+        if (filtros.tipo) {
+          // El frontend usa 'entrada'/'salida'/'kardex'; la BD almacena 'ingreso'/'salida'/'kardex'
+          const tipoMap = { entrada: 'ingreso', ingreso: 'ingreso', salida: 'salida', kardex: 'kardex' };
+          opWhere.tipo = tipoMap[filtros.tipo] || filtros.tipo;
+        }
+        if (filtros.estado) opWhere.estado = filtros.estado;
         datos = await Operacion.findAll({
-          where,
+          where: opWhere,
           include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
           order: [['created_at', 'DESC']],
         });
         break;
+      }
       case 'inventario':
         datos = await Inventario.findAll({
-          where,
+          where: baseWhere,
           include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social'] }],
           order: [['producto', 'ASC']],
         });
@@ -152,9 +167,11 @@ const ejecutarReporte = async (reporte) => {
           order: [['razon_social', 'ASC']],
         });
         break;
-      case 'viajes':
+      case 'viajes': {
+        const viajeWhere = { ...baseWhere };
+        if (filtros.estado) viajeWhere.estado = filtros.estado;
         datos = await Viaje.findAll({
-          where,
+          where: viajeWhere,
           include: [
             {
               model: Usuario,
@@ -167,9 +184,12 @@ const ejecutarReporte = async (reporte) => {
           order: [['created_at', 'DESC']],
         });
         break;
-      case 'cajas_menores':
+      }
+      case 'cajas_menores': {
+        const cajaWhere = {};
+        if (filtros.estado) cajaWhere.estado = filtros.estado;
         datos = await CajaMenor.findAll({
-          where,
+          where: cajaWhere,
           include: [
             {
               model: Usuario,
@@ -185,14 +205,15 @@ const ejecutarReporte = async (reporte) => {
           order: [['created_at', 'DESC']],
         });
         break;
+      }
       case 'gastos': {
         const movWhere = {};
-        if (reporte.filtros?.estado === 'aprobado') {
+        if (filtros.estado === 'aprobado') {
           movWhere.aprobado = true;
           movWhere.rechazado = false;
-        } else if (reporte.filtros?.estado === 'rechazado') {
+        } else if (filtros.estado === 'rechazado') {
           movWhere.rechazado = true;
-        } else if (reporte.filtros?.estado === 'pendiente') {
+        } else if (filtros.estado === 'pendiente') {
           movWhere.aprobado = false;
           movWhere.rechazado = false;
         }
@@ -219,7 +240,7 @@ const ejecutarReporte = async (reporte) => {
               model: Inventario,
               as: 'inventario',
               attributes: ['id', 'producto', 'sku', 'unidad_medida', 'cliente_id'],
-              where: reporte.cliente_id ? { cliente_id: reporte.cliente_id } : undefined,
+              where: clienteId ? { cliente_id: clienteId } : undefined,
               required: true,
               include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'razon_social'] }],
             },
@@ -302,13 +323,25 @@ const ejecutarReporte = async (reporte) => {
 
     const formatoLabel = formatosAGenerar.map((f) => f.toUpperCase()).join(' + ');
 
+    // Descripción de filtros aplicados para incluir en el email
+    const filtrosPartes = [];
+    if (clienteId) {
+      const nombre = filtros.cliente_nombre || `cliente #${clienteId}`;
+      filtrosPartes.push(`cliente: ${nombre}`);
+    }
+    if (filtros.tipo) filtrosPartes.push(`tipo: ${filtros.tipo}`);
+    if (filtros.estado) filtrosPartes.push(`estado: ${filtros.estado}`);
+    const filtrosDesc = filtrosPartes.length > 0
+      ? ` Filtros aplicados: ${filtrosPartes.join(', ')}.`
+      : '';
+
     await emailService.enviarCorreo({
       para: destinatarios,
       asunto: `[ISTHO CRM] Reporte Programado: ${reporte.nombre}`,
       templateName: 'general',
       datos: {
         titulo: `Reporte: ${reporte.nombre}`,
-        mensaje: `Se adjunta el reporte "${reporte.nombre}" en formato ${formatoLabel}, generado automáticamente el ${hoy.toLocaleDateString('es-CO')}.`,
+        mensaje: `Se adjunta el reporte "${reporte.nombre}" en formato ${formatoLabel}, generado automáticamente el ${hoy.toLocaleDateString('es-CO')}.${filtrosDesc}`,
         asunto: `Reporte Programado: ${reporte.nombre}`,
       },
       adjuntos,

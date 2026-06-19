@@ -474,7 +474,7 @@ const SalidasList = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Buscar por documento o cliente..."
+                placeholder="Buscar por documento, picking o cliente..."
                 value={searchInput}
                 onChange={handleSearchChange}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-centhrix-bg border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"

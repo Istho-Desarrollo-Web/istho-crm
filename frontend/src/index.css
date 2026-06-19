@@ -16,6 +16,10 @@
   --color-orange-800: #991b1b;
   --color-orange-900: #7f1d1d;
 
+  /* Colores de acento CENTHRIX */
+  --color-centhrix-accent: #e74c3c;
+  --color-centhrix-accent-hover: #c0392b;
+
   /* Dark mode backgrounds CENTHRIX */
   --color-centhrix-bg: #0f1023;
   --color-centhrix-surface: #151631;

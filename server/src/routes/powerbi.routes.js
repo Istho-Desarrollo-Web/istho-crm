@@ -13,5 +13,6 @@ router.get('/operaciones', powerbiController.operaciones);
 router.get('/inventario', powerbiController.inventario);
 router.get('/clientes', powerbiController.clientes);
 router.get('/viajes', powerbiController.viajes);
+router.get('/operaciones-lineas', powerbiController.lineas);
 
 module.exports = router;
