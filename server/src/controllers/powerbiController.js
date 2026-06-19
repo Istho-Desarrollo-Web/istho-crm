@@ -48,7 +48,7 @@ const operaciones = async (req, res) => {
     const registros = await Operacion.findAll({
       attributes: [
         'id', 'numero_operacion', 'tipo', 'estado',
-        'documento_wms', 'documento_origen', 'numero_picking',
+        'documento_wms', 'numero_picking',
         'fecha_operacion', 'fecha_documento', 'fecha_cierre',
         'conductor_nombre', 'vehiculo_placa',
         'observaciones', 'editado_admin', 'created_at',
@@ -57,12 +57,12 @@ const operaciones = async (req, res) => {
         {
           model: Cliente,
           as: 'cliente',
-          attributes: ['id', 'nombre', 'nit', 'ciudad'],
+          attributes: ['id', 'razon_social', 'nit', 'ciudad'],
         },
         {
           model: OperacionDetalle,
           as: 'detalles',
-          attributes: ['id', 'producto', 'descripcion', 'cantidad', 'unidad_medida', 'lote'],
+          attributes: ['id', 'producto', 'cantidad', 'unidad_medida', 'lote'],
         },
       ],
       where: { estado: { [Op.ne]: 'anulado' } },
@@ -75,7 +75,6 @@ const operaciones = async (req, res) => {
       tipo: op.tipo,
       estado: op.estado,
       documento_wms: op.documento_wms,
-      documento_origen: op.documento_origen,
       numero_picking: op.numero_picking,
       fecha_operacion: op.fecha_operacion,
       fecha_documento: op.fecha_documento,
@@ -83,7 +82,7 @@ const operaciones = async (req, res) => {
       conductor: op.conductor_nombre,
       vehiculo_placa: op.vehiculo_placa,
       cliente_id: op.cliente?.id ?? null,
-      cliente_nombre: op.cliente?.nombre ?? null,
+      cliente_nombre: op.cliente?.razon_social ?? null,
       cliente_nit: op.cliente?.nit ?? null,
       cliente_ciudad: op.cliente?.ciudad ?? null,
       total_lineas: op.detalles?.length ?? 0,
@@ -119,7 +118,7 @@ const inventario = async (req, res) => {
         {
           model: Cliente,
           as: 'cliente',
-          attributes: ['id', 'nombre', 'nit'],
+          attributes: ['id', 'razon_social', 'nit'],
         },
       ],
       order: [['producto', 'ASC']],
@@ -132,7 +131,7 @@ const inventario = async (req, res) => {
       descripcion: inv.descripcion,
       categoria: inv.categoria,
       cliente_id: inv.cliente?.id ?? null,
-      cliente_nombre: inv.cliente?.nombre ?? null,
+      cliente_nombre: inv.cliente?.razon_social ?? null,
       cliente_nit: inv.cliente?.nit ?? null,
       cantidad: Number(inv.cantidad) || 0,
       stock_minimo: Number(inv.stock_minimo) || 0,
@@ -160,16 +159,16 @@ const clientes = async (req, res) => {
   try {
     const registros = await Cliente.findAll({
       attributes: [
-        'id', 'nombre', 'nit', 'email', 'telefono',
+        'id', 'razon_social', 'nit', 'email', 'telefono',
         'ciudad', 'departamento', 'direccion',
         'tipo_cliente', 'estado', 'created_at',
       ],
-      order: [['nombre', 'ASC']],
+      order: [['razon_social', 'ASC']],
     });
 
     const data = registros.map((c) => ({
       id: c.id,
-      nombre: c.nombre,
+      nombre: c.razon_social,
       nit: c.nit,
       email: c.email,
       telefono: c.telefono,
@@ -217,7 +216,7 @@ const viajes = async (req, res) => {
         {
           model: CajaMenor,
           as: 'cajaMenor',
-          attributes: ['id', 'nombre'],
+          attributes: ['id', 'numero'],
           required: false,
         },
       ],
@@ -244,7 +243,7 @@ const viajes = async (req, res) => {
       vehiculo_tipo: v.vehiculo?.tipo_vehiculo ?? null,
       conductor_nombre: v.conductor?.nombre ?? null,
       conductor_email: v.conductor?.email ?? null,
-      caja_menor_nombre: v.cajaMenor?.nombre ?? null,
+      caja_menor_numero: v.cajaMenor?.numero ?? null,
       registrado_en: v.created_at,
     }));
 
