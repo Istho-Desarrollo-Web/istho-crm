@@ -42,6 +42,7 @@ const SolicitudComentarioModel = require('./SolicitudComentario');
 const SolicitudDocumentoModel = require('./SolicitudDocumento');
 const ClienteResponsableModel = require('./ClienteResponsable');
 const ContactoClienteModel = require('./ContactoCliente');
+const ApiKeyModel = require('./ApiKey');
 const Notificacion = require('./Notificacion')(sequelize);
 
 // Inicializar modelos
@@ -77,6 +78,7 @@ const SolicitudComentario = SolicitudComentarioModel(sequelize);
 const SolicitudDocumento = SolicitudDocumentoModel(sequelize);
 const ClienteResponsable = ClienteResponsableModel(sequelize);
 const ContactoCliente = ContactoClienteModel(sequelize);
+const ApiKey = ApiKeyModel(sequelize);
 
 // ============================================
 // DEFINIR ASOCIACIONES
@@ -497,6 +499,7 @@ const db = {
   SolicitudDocumento,
   ClienteResponsable,
   ContactoCliente,
+  ApiKey,
 };
 
 module.exports = db;

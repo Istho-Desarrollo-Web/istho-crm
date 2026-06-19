@@ -255,6 +255,16 @@ export const EMAIL_ENDPOINTS = {
 // ADMINISTRACIÓN
 // ════════════════════════════════════════════════════════════════════════════
 
+// ════════════════════════════════════════════════════════════════════════════
+// API KEYS (Power BI / integraciones externas)
+// ════════════════════════════════════════════════════════════════════════════
+
+export const API_KEYS_ENDPOINTS = {
+  BASE: '/admin/api-keys',
+  TOGGLE: (id) => `/admin/api-keys/${id}/toggle`,
+  BY_ID: (id) => `/admin/api-keys/${id}`,
+};
+
 export const ADMIN_ENDPOINTS = {
   // Usuarios
   USUARIOS: '/admin/usuarios',

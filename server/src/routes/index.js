@@ -31,6 +31,7 @@ const forklifDriverKardexRoutes = require('./forklifDriverKardex.routes');
 const emailRoutes = require('./email.routes');
 const solicitudRoutes = require('./solicitud.routes');
 const contactoRoutes = require('./contacto.routes');
+const powerbiRoutes = require('./powerbi.routes');
 
 // Info de la API
 router.get('/', (req, res) => {
@@ -78,5 +79,6 @@ router.use('/forklift-drivers/kardex', forklifDriverKardexRoutes);
 router.use('/emails', emailRoutes);
 router.use('/solicitudes', solicitudRoutes);
 router.use('/contactos', contactoRoutes);
+router.use('/powerbi', powerbiRoutes);
 
 module.exports = router;

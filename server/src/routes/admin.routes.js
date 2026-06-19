@@ -12,6 +12,7 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
 const configuracionWmsController = require('../controllers/configuracionWmsController');
+const apiKeysController = require('../controllers/apiKeysController');
 const clienteController = require('../controllers/clienteController');
 const { verificarToken } = require('../middleware/auth');
 const { requiereRol } = require('../middleware/roles');
@@ -78,5 +79,14 @@ router.post('/configuracion-wms', configuracionWmsController.crear);
 router.put('/configuracion-wms/:id', configuracionWmsController.actualizar);
 router.delete('/configuracion-wms/:id', configuracionWmsController.eliminar);
 router.patch('/configuracion-wms/:id/toggle', configuracionWmsController.toggleActivo);
+
+// =============================================
+// API KEYS (Power BI / integraciones externas)
+// =============================================
+
+router.get('/api-keys', apiKeysController.listar);
+router.post('/api-keys', apiKeysController.crear);
+router.patch('/api-keys/:id/toggle', apiKeysController.toggle);
+router.delete('/api-keys/:id', apiKeysController.eliminar);
 
 module.exports = router;

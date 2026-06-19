@@ -8,11 +8,12 @@
  */
 
 import { useSearchParams } from 'react-router-dom';
-import { Users, Shield, Settings, Wifi, ShieldAlert } from 'lucide-react';
+import { Users, Shield, Settings, Wifi, ShieldAlert, Key } from 'lucide-react';
 import UsuariosList from './UsuariosList';
 import RolesList from './RolesList';
 import SesionesActivas from './SesionesActivas';
 import DashboardSeguridad from './DashboardSeguridad';
+import ApiKeysList from './ApiKeysList';
 import PageFooter from '@components/common/PageFooter';
 
 const TABS = [
@@ -20,6 +21,7 @@ const TABS = [
   { id: 'roles', label: 'Roles y Permisos', icon: Shield },
   { id: 'sesiones', label: 'Sesiones Activas', icon: Wifi },
   { id: 'seguridad', label: 'Seguridad', icon: ShieldAlert },
+  { id: 'api-keys', label: 'API Keys', icon: Key },
 ];
 
 const Administracion = () => {
@@ -76,6 +78,7 @@ const Administracion = () => {
         {activeTab === 'roles' && <RolesList />}
         {activeTab === 'sesiones' && <SesionesActivas />}
         {activeTab === 'seguridad' && <DashboardSeguridad />}
+        {activeTab === 'api-keys' && <ApiKeysList />}
 
         {/* Footer */}
         <PageFooter />
