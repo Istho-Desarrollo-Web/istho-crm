@@ -1772,6 +1772,49 @@ const editarAdmin = async (req, res) => {
   }
 };
 
+/**
+ * POST /operaciones/:id/reabrir
+ * Reabrir una operación cerrada → en_proceso (requiere supervisor+)
+ */
+const reabrirOperacion = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { id } = req.params;
+    const operacion = await Operacion.findByPk(id);
+
+    if (!operacion) {
+      await transaction.rollback();
+      return notFound(res, 'Operación no encontrada');
+    }
+
+    if (operacion.estado !== 'cerrado') {
+      await transaction.rollback();
+      return errorResponse(res, 'Solo se pueden reabrir operaciones cerradas', 400);
+    }
+
+    await operacion.update({ estado: 'en_proceso', fecha_cierre: null }, { transaction });
+
+    await Auditoria.registrar({
+      tabla: 'operaciones',
+      registro_id: operacion.id,
+      accion: 'actualizar',
+      usuario_id: req.user.id,
+      usuario_nombre: req.user.nombre_completo,
+      datos_anteriores: { estado: 'cerrado' },
+      datos_nuevos: { estado: 'en_proceso' },
+      ip_address: getClientIP(req),
+      descripcion: `Operación reabierta: ${operacion.numero_operacion} por ${req.user.nombre_completo}`,
+    });
+
+    await transaction.commit();
+    return successMessage(res, 'Operación reabierta exitosamente');
+  } catch (error) {
+    await transaction.rollback();
+    logger.error('Error al reabrir operación:', { message: error.message });
+    return serverError(res, 'Error al reabrir la operación', error);
+  }
+};
+
 module.exports = {
   listarDocumentosWMS,
   buscarDocumentoWMS,
@@ -1787,5 +1830,6 @@ module.exports = {
   cerrar,
   reenviarCorreo,
   anular,
+  reabrirOperacion,
   editarAdmin,
 };

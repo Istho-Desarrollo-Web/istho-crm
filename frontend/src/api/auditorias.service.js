@@ -408,6 +408,21 @@ const auditoriasService = {
   },
 
   /**
+   * Reabrir una operación cerrada → en_proceso (requiere supervisor+)
+   */
+  reabrirOperacion: async (operacionId) => {
+    try {
+      const response = await apiClient.post(`/operaciones/${operacionId}/reabrir`);
+      return response;
+    } catch (error) {
+      throw {
+        success: false,
+        message: error.message || 'Error al reabrir la operación',
+      };
+    }
+  },
+
+  /**
    * Anular una operación (solo admin, estados pendiente/en_proceso)
    */
   anularOperacion: async (operacionId, motivo = '') => {

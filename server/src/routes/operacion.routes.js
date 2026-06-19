@@ -115,6 +115,14 @@ router.put(
   operacionController.editarAdmin
 );
 
+// Reabrir operación cerrada → en_proceso
+router.post(
+  '/:id/reabrir',
+  noClientes,
+  requiereRolMinimo('supervisor'),
+  operacionController.reabrirOperacion
+);
+
 // Anular operación
 router.delete(
   '/:id',

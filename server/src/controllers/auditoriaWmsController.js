@@ -235,7 +235,7 @@ const obtenerEntradaPorId = async (req, res) => {
         conductor: operacion.conductor_nombre || '',
         cedula: operacion.conductor_cedula || '',
         placa: operacion.vehiculo_placa || '',
-        telefono: operacion.conductor_telefono || '',
+        tipoVehiculo: operacion.vehiculo_tipo || '',
         origen: operacion.origen || '',
         destino: operacion.destino || '',
         observaciones: operacion.observaciones || '',
@@ -456,7 +456,7 @@ const obtenerSalidaPorId = async (req, res) => {
         conductor: operacion.conductor_nombre || '',
         cedula: operacion.conductor_cedula || '',
         placa: operacion.vehiculo_placa || '',
-        telefono: operacion.conductor_telefono || '',
+        tipoVehiculo: operacion.vehiculo_tipo || '',
         origen: operacion.origen || '',
         destino: operacion.destino || '',
         observaciones: operacion.observaciones || '',
@@ -678,7 +678,7 @@ const obtenerKardexPorId = async (req, res) => {
         conductor: operacion.conductor_nombre || '',
         cedula: operacion.conductor_cedula || '',
         placa: operacion.vehiculo_placa || '',
-        telefono: operacion.conductor_telefono || '',
+        tipoVehiculo: operacion.vehiculo_tipo || '',
         origen: operacion.origen || '',
         destino: operacion.destino || '',
         observaciones: operacion.observaciones || '',
@@ -843,7 +843,7 @@ const restaurarLinea = async (req, res) => {
 const guardarDatosLogisticos = async (req, res) => {
   try {
     const { id } = req.params;
-    const { conductor, cedula, placa, telefono, origen, destino, observaciones } = req.body;
+    const { conductor, cedula, placa, tipoVehiculo, origen, destino, observaciones } = req.body;
 
     const operacion = await Operacion.findByPk(id);
     if (!operacion) {
@@ -854,7 +854,7 @@ const guardarDatosLogisticos = async (req, res) => {
       conductor_nombre: conductor || '',
       conductor_cedula: cedula || '',
       vehiculo_placa: placa || '',
-      conductor_telefono: telefono || '',
+      vehiculo_tipo: tipoVehiculo || '',
       origen: origen || '',
       destino: destino || '',
       observaciones: observaciones || '',

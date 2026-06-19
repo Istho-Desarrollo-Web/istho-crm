@@ -29,7 +29,7 @@ import {
   Truck,
   User,
   CreditCard,
-  Phone,
+  Car,
   MapPin,
   MessageSquare,
   AlertCircle,
@@ -67,6 +67,8 @@ const resolveFileUrl = (url) => {
   if (url.startsWith('http')) return url;
   return `${SERVER_BASE}${url.startsWith('/') ? '' : '/'}${url}`;
 };
+
+const TIPOS_VEHICULO = ['TRACTOMULA', 'SENCILLO', 'DOBLE TROQUE', 'TURBO', 'FURGÓN', 'CAMIONETA', 'MULA', 'MOTO'];
 
 // ════════════════════════════════════════════════════════════════════════════
 // STATUS STEPPER
@@ -682,7 +684,7 @@ const EntradaAuditoria = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showAlert, showConfirm } = useAlert();
-  const { hasPermission, isAdmin, isCliente } = useAuth();
+  const { hasPermission, isAdmin, isCliente, user } = useAuth();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [printModalOpen, setPrintModalOpen] = useState(false);
 
@@ -702,11 +704,12 @@ const EntradaAuditoria = () => {
     conductor: '',
     cedula: '',
     placa: '',
-    telefono: '',
+    tipoVehiculo: '',
     origen: '',
     destino: '',
     observaciones: '',
   });
+  const [vehiculoOpcion, setVehiculoOpcion] = useState(''); // valor del dropdown (incluye 'OTRO')
   const [fieldErrors, setFieldErrors] = useState({});
 
   // Archivos
@@ -745,15 +748,19 @@ const EntradaAuditoria = () => {
           setEstado(data.estado || 'pendiente');
           setLineas(data.lineas || []);
           if (data.logistica) {
+            const tvSaved = data.logistica.tipoVehiculo || '';
             setFormData({
               conductor: data.logistica.conductor || '',
               cedula: data.logistica.cedula || '',
               placa: data.logistica.placa || '',
-              telefono: data.logistica.telefono || '',
+              tipoVehiculo: tvSaved,
               origen: data.logistica.origen || '',
               destino: data.logistica.destino || '',
               observaciones: data.logistica.observaciones || '',
             });
+            if (tvSaved) {
+              setVehiculoOpcion(TIPOS_VEHICULO.includes(tvSaved) ? tvSaved : 'OTRO');
+            }
           }
           if (data.evidencias) {
             setFiles(
@@ -815,8 +822,6 @@ const EntradaAuditoria = () => {
           .replace(/[^A-Za-z0-9]/g, '')
           .toUpperCase()
           .slice(0, 6);
-      case 'telefono':
-        return value.replace(/\D/g, '').slice(0, 10);
       case 'conductor':
         return value.replace(/[^A-Za-záéíóúÁÉÍÓÚñÑüÜ\s]/g, '').slice(0, 100);
       case 'origen':
@@ -839,8 +844,6 @@ const EntradaAuditoria = () => {
         return !/^[A-Z]{3}[0-9]{2}[A-Z0-9]$/.test(value)
           ? 'Formato inválido (ej: ABC123 o ABC12D)'
           : null;
-      case 'telefono':
-        return value.length < 7 ? 'Mínimo 7 dígitos' : null;
       default:
         return null;
     }
@@ -1115,7 +1118,7 @@ const EntradaAuditoria = () => {
     lineaPage * LINEAS_POR_PAGINA
   );
 
-  const requiredFields = ['conductor', 'placa', 'origen', 'destino'];
+  const requiredFields = ['conductor', 'cedula', 'placa', 'tipoVehiculo', 'origen', 'destino'];
   const camposConError = requiredFields.filter((f) => {
     const val = formData[f].trim();
     return val !== '' && validateLogisticaField(f, val) !== null;
@@ -1136,6 +1139,27 @@ const EntradaAuditoria = () => {
   const isCerrado = estado === 'cerrado';
   const isAnulado = estado === 'anulado';
   const puedeEditar = hasPermission('auditoria', 'ver') && !isCerrado && !isAnulado;
+
+  const [reabriendo, setReabriendo] = useState(false);
+  const handleReabrirOperacion = async () => {
+    const confirmed = await showConfirm({
+      title: 'Reabrir operación',
+      message: '¿Desea cambiar esta operación a "En Proceso" para editarla y volver a cerrarla?',
+      confirmText: 'Reabrir',
+      cancelText: 'Cancelar',
+    });
+    if (!confirmed) return;
+    setReabriendo(true);
+    try {
+      await auditoriasService.reabrirOperacion(id);
+      setEstado('en_proceso');
+      showAlert({ type: 'success', title: 'Operación reabierta', message: 'La operación está nuevamente en proceso.' });
+    } catch (error) {
+      showAlert({ type: 'error', title: 'Error', message: error.message || 'No se pudo reabrir la operación.' });
+    } finally {
+      setReabriendo(false);
+    }
+  };
 
   const handleCerrarAuditoria = () => {
     if (!canClose || closing) return;
@@ -1628,6 +1652,7 @@ const EntradaAuditoria = () => {
                 value={formData.cedula}
                 onChange={handleFieldChange('cedula')}
                 placeholder="Ej: 1066601726"
+                required
                 disabled={!puedeEditar}
                 error={fieldErrors.cedula}
               />
@@ -1641,15 +1666,53 @@ const EntradaAuditoria = () => {
                 disabled={!puedeEditar}
                 error={fieldErrors.placa}
               />
-              <FormField
-                icon={Phone}
-                label="Teléfono del Conductor"
-                value={formData.telefono}
-                onChange={handleFieldChange('telefono')}
-                placeholder="Ej: 3001234567"
-                disabled={!puedeEditar}
-                error={fieldErrors.telefono}
-              />
+              {/* Tipo de Vehículo */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Car className="w-3.5 h-3.5 text-blue-500" />
+                    Tipo de Vehículo <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <div className={!puedeEditar ? 'pointer-events-none opacity-60' : ''}>
+                  <FilterDropdown
+                    options={[
+                      { value: '', label: '-- Seleccionar tipo --' },
+                      ...TIPOS_VEHICULO.map((t) => ({ value: t, label: t })),
+                      { value: 'OTRO', label: 'OTRO' },
+                    ]}
+                    value={vehiculoOpcion}
+                    onChange={(v) => {
+                      setVehiculoOpcion(v);
+                      if (v !== 'OTRO') {
+                        setFormData((prev) => ({ ...prev, tipoVehiculo: v }));
+                        if (logisticaTimerRef.current) clearTimeout(logisticaTimerRef.current);
+                        logisticaTimerRef.current = setTimeout(() => { guardarLogisticaRef.current?.(); }, 2000);
+                      } else {
+                        setFormData((prev) => ({ ...prev, tipoVehiculo: '' }));
+                      }
+                      setLogisticaSaved(false);
+                    }}
+                  />
+                </div>
+                {vehiculoOpcion === 'OTRO' && (
+                  <input
+                    type="text"
+                    maxLength={50}
+                    value={formData.tipoVehiculo}
+                    onChange={(e) => {
+                      const val = e.target.value.toUpperCase().slice(0, 50);
+                      setFormData((prev) => ({ ...prev, tipoVehiculo: val }));
+                      setLogisticaSaved(false);
+                      if (logisticaTimerRef.current) clearTimeout(logisticaTimerRef.current);
+                      logisticaTimerRef.current = setTimeout(() => { guardarLogisticaRef.current?.(); }, 2000);
+                    }}
+                    placeholder="Especifique el tipo de vehículo *"
+                    disabled={!puedeEditar}
+                    className="mt-2 w-full px-4 py-3 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                  />
+                )}
+              </div>
               <FormField
                 icon={MapPin}
                 label="Origen"
@@ -2127,20 +2190,36 @@ const EntradaAuditoria = () => {
               <CheckCircle2 className="w-5 h-5" />
               <span className="font-semibold">Operación completada exitosamente</span>
             </div>
-            {hasPermission('operaciones', 'reenviar_correo') && (
-              <button
-                onClick={handleReenviarCorreo}
-                disabled={reenviando}
-                className="flex items-center gap-2 px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
-              >
-                {reenviando ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Mail className="w-4 h-4" />
-                )}
-                {reenviando ? 'Enviando...' : 'Reenviar correo'}
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
+                <button
+                  onClick={handleReabrirOperacion}
+                  disabled={reabriendo}
+                  className="flex items-center gap-2 px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+                >
+                  {reabriendo ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <ArrowLeft className="w-4 h-4" />
+                  )}
+                  {reabriendo ? 'Reabriendo...' : 'Reabrir'}
+                </button>
+              )}
+              {hasPermission('operaciones', 'reenviar_correo') && (
+                <button
+                  onClick={handleReenviarCorreo}
+                  disabled={reenviando}
+                  className="flex items-center gap-2 px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+                >
+                  {reenviando ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Mail className="w-4 h-4" />
+                  )}
+                  {reenviando ? 'Enviando...' : 'Reenviar correo'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
