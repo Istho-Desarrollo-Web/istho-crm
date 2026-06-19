@@ -57,6 +57,15 @@ async function _setupRedis() {
     throw err;
   }
 
+  // El redis-adapter llama pubClient.publish() sin .catch() — si la conexión
+  // cae entre ciclos (enableOfflineQueue:false), cada publish genera un
+  // Unhandled Rejection. Lo atrapamos aquí para que sea solo un warn.
+  const _publish = pubClient.publish.bind(pubClient);
+  pubClient.publish = (...args) =>
+    Promise.resolve(_publish(...args)).catch((err) => {
+      logger.warn('[WS] Redis publish silenciado:', err.message);
+    });
+
   io.adapter(createAdapter(pubClient, subClient));
   logger.info('[WS] Redis adapter configurado — modo multi-instancia activo');
 }

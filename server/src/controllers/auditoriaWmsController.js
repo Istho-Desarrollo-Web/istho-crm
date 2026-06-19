@@ -899,16 +899,16 @@ const subirEvidencias = async (req, res) => {
       return errorResponse(res, 'No se recibieron archivos', 400);
     }
 
-    // Validar límites: max 10 fotos/ZIP + 5 PDFs
+    // Validar límites: max 100 fotos/ZIP + 10 PDFs
     const imagenes = archivos.filter(
       (f) => f.mimetype.startsWith('image/') || /\.(zip|rar)$/i.test(f.originalname)
     );
     const pdfs = archivos.filter((f) => f.mimetype === 'application/pdf');
-    if (imagenes.length > 10) {
-      return errorResponse(res, 'Máximo 10 fotos/archivos comprimidos permitidos', 400);
+    if (imagenes.length > 100) {
+      return errorResponse(res, 'Máximo 100 fotos/archivos comprimidos permitidos', 400);
     }
-    if (pdfs.length > 5) {
-      return errorResponse(res, 'Máximo 5 archivos PDF permitidos', 400);
+    if (pdfs.length > 10) {
+      return errorResponse(res, 'Máximo 10 archivos PDF permitidos', 400);
     }
 
     // Subir a S3

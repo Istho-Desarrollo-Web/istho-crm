@@ -111,6 +111,17 @@ if (process.env.NODE_ENV !== 'test') {
       },
     })
   );
+  // Log explícito de requests lentos (> 1 segundo) para diagnóstico
+  app.use((req, res, next) => {
+    const t0 = Date.now();
+    res.on('finish', () => {
+      const ms = Date.now() - t0;
+      if (ms >= 1000) {
+        logger.warn(`[SLOW] ${req.method} ${req.originalUrl} → ${res.statusCode} en ${ms} ms`);
+      }
+    });
+    next();
+  });
 }
 
 // ==============================================

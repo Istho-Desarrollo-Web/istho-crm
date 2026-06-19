@@ -210,10 +210,6 @@ const plantillaEntrada = {
     <td style="padding: 10px 20px; color: #64748b; font-size: 13px; background-color: #f8fafc;">Cédula</td>
     <td style="padding: 10px 20px; font-size: 13px; color: #1e293b;">{{conductorCedula}}</td>
   </tr>
-  <tr>
-    <td style="padding: 10px 20px; color: #64748b; font-size: 13px; background-color: #f8fafc;">Teléfono</td>
-    <td style="padding: 10px 20px; font-size: 13px; color: #1e293b;">{{conductorTelefono}}</td>
-  </tr>
 </table>
 
 {{#if observaciones}}
@@ -467,10 +463,6 @@ const plantillaSalida = {
     <td style="padding: 10px 20px; color: #64748b; font-size: 13px; background-color: #f8fafc;">Cédula</td>
     <td style="padding: 10px 20px; font-size: 13px; color: #1e293b;">{{conductorCedula}}</td>
   </tr>
-  <tr>
-    <td style="padding: 10px 20px; color: #64748b; font-size: 13px; background-color: #f8fafc;">Teléfono</td>
-    <td style="padding: 10px 20px; font-size: 13px; color: #1e293b;">{{conductorTelefono}}</td>
-  </tr>
 </table>
 
 {{#if observaciones}}
@@ -686,10 +678,6 @@ const plantillaKardex = {
   <tr style="border-bottom: 1px solid #f1f5f9;">
     <td style="padding: 10px 20px; color: #64748b; font-size: 13px; background-color: #f8fafc;">Cédula</td>
     <td style="padding: 10px 20px; font-size: 13px; color: #1e293b;">{{conductorCedula}}</td>
-  </tr>
-  <tr>
-    <td style="padding: 10px 20px; color: #64748b; font-size: 13px; background-color: #f8fafc;">Teléfono</td>
-    <td style="padding: 10px 20px; font-size: 13px; color: #1e293b;">{{conductorTelefono}}</td>
   </tr>
 </table>
 {{/if}}

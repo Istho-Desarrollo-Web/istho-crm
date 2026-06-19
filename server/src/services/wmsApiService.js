@@ -29,7 +29,7 @@ function _estaProximoAExpirar() {
 // ─── Instancia axios base ─────────────────────────────────────────────────────
 const _http = axios.create({
   baseURL: process.env.WMS_URL,
-  timeout: 30000,
+  timeout: 10000,
 });
 
 async function _login() {
