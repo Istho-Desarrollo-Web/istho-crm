@@ -86,16 +86,21 @@ async function mapearOrden(ordenWms, itemsArr) {
     throw new Error(`Orden WMS ${wmsId}: todos los ítems carecen de SKU`);
   }
 
+  // Truncar campos con límites de columna estrictos para evitar Validation error
+  const vehiculoPlaca = (ordenWms.vehicle || '').substring(0, 10) || null;
+  const conductorNombre = (ordenWms.vehicleDriver || '').substring(0, 150) || null;
+  const docOrigenTrunc = docOrigen ? docOrigen.toString().substring(0, 50) : null;
+
   if (type === 1) {
     return {
       tipo: 'entrada',
       payload: {
         nit,
-        documento_origen: docOrigen,
+        documento_origen: docOrigenTrunc,
         tipo_orden: 'CO',
         wms_order_id: wmsId,
-        conductor_nombre: ordenWms.vehicleDriver || null,
-        vehiculo_placa: ordenWms.vehicle || null,
+        conductor_nombre: conductorNombre,
+        vehiculo_placa: vehiculoPlaca,
         observaciones,
         detalles,
       },
@@ -103,16 +108,18 @@ async function mapearOrden(ordenWms, itemsArr) {
   }
 
   if (type === 2) {
+    const numeroPicking = (pickingNumber || docOrigen || '').toString().substring(0, 50) || null;
+    const documentoWms = customerNumberOrder ? customerNumberOrder.toString().substring(0, 50) : null;
     return {
       tipo: 'salida',
       payload: {
         nit,
-        numero_picking: pickingNumber || docOrigen,
-        documento_wms: customerNumberOrder || null,
+        numero_picking: numeroPicking,
+        documento_wms: documentoWms,
         tipo_orden: 'PK',
         wms_order_id: wmsId,
-        conductor_nombre: ordenWms.vehicleDriver || null,
-        vehiculo_placa: ordenWms.vehicle || null,
+        conductor_nombre: conductorNombre,
+        vehiculo_placa: vehiculoPlaca,
         sucursal_entrega: ordenWms.sucursalEntrega || ordenWms.sucursal_entrega || null,
         ciudad_destino: ordenWms.cityDestination || ordenWms.ciudad_destino || null,
         observaciones,

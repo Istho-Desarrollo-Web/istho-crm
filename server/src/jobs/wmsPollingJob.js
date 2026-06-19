@@ -343,7 +343,11 @@ async function _ejecutarPoll() {
         logger.info(`[WmsPolling] Orden ${orden.id} sincronizada → ${resultado?.numero_operacion || resultado?.operacion_id}`);
       } catch (err) {
         errores++;
-        logger.error(`[WmsPolling] Error procesando orden ${orden.id}: ${err.message}`);
+        // Detallar campos que causaron la falla (Sequelize ValidationError incluye err.errors[])
+        const errFields = err.errors?.map((e) => `${e.path}: ${e.message}`).join('; ') || '';
+        logger.error(
+          `[WmsPolling] Error procesando orden ${orden.id}: ${err.message}${errFields ? ` [${errFields}]` : ''}`
+        );
 
         const tipoLog = (orden.type === 2) ? 'polling_salida' : 'polling_entrada';
         await WmsSyncLog.create({
@@ -351,7 +355,7 @@ async function _ejecutarPoll() {
           documento_origen: orden.systemNumberOrder,
           nit: orden.customer?.nit,
           estado: 'fallido',
-          error_mensaje: err.message,
+          error_mensaje: `${err.message}${errFields ? ` [${errFields}]` : ''}`,
           detalles: { wms_order_id: orden.id },
         }).catch(() => {});
       }
