@@ -7,7 +7,7 @@
  * @version 1.1.0
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -31,9 +31,12 @@ import {
   Search,
   CalendarRange,
   Box,
+  ChevronDown,
+  Settings2,
 } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import wmsDashboardService from '@api/wmsDashboard.service';
+import clientesService from '@api/clientes.service';
 import { DatePicker, FilterDropdown } from '../../components/common';
 
 // ════════════════════════════════════════════════════════════════
@@ -206,36 +209,65 @@ const ModalReejecutar = ({ isOpen, onClose, onConfirm, loading, tipo, setTipo })
 const RESULTADO_ESTADO = {
   sincronizada: { color: 'text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 },
   ya_existe: { color: 'text-slate-500 dark:text-slate-400', icon: Clock },
+  cliente_no_coincide: { color: 'text-amber-500 dark:text-amber-400', icon: AlertTriangle },
   error: { color: 'text-red-600 dark:text-red-400', icon: XCircle },
 };
+
+const OPCIONES_TIPO = [
+  { value: '', label: 'Todos los tipos' },
+  { value: 'entrada', label: 'Solo entradas (CO)' },
+  { value: 'salida', label: 'Solo salidas (PK)' },
+];
 
 const ModalSyncHistorico = ({ isOpen, onClose, onSync, loading, resultado }) => {
   const [modo, setModo] = useState('numero'); // 'numero' | 'rango'
   const [numeroOrden, setNumeroOrden] = useState('');
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
+  const [tipoFiltro, setTipoFiltro] = useState('');
+  const [clienteId, setClienteId] = useState('');
+  const [clientes, setClientes] = useState([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    clientesService.getAll({ estado: 'activo', limit: 500 }).then((res) => {
+      const rows = Array.isArray(res?.data) ? res.data : (res?.data?.rows ?? []);
+      setClientes(rows);
+    }).catch(() => {});
+  }, [isOpen]);
+
+  const opcionesCliente = [
+    { value: '', label: 'Todos los clientes' },
+    ...clientes.map((c) => ({ value: String(c.id), label: c.razon_social })),
+  ];
 
   const handleClose = () => {
     setNumeroOrden('');
     setFechaDesde('');
     setFechaHasta('');
+    setTipoFiltro('');
+    setClienteId('');
     setModo('numero');
     onClose();
   };
 
   const handleSync = () => {
+    const extras = {
+      tipo: tipoFiltro || undefined,
+      cliente_id: clienteId ? Number(clienteId) : undefined,
+    };
     if (modo === 'numero') {
-      onSync({ numero_orden: numeroOrden.trim() });
+      onSync({ numero_orden: numeroOrden.trim() || undefined, ...extras });
     } else {
-      onSync({ fecha_desde: fechaDesde || undefined, fecha_hasta: fechaHasta || undefined });
+      onSync({ fecha_desde: fechaDesde || undefined, fecha_hasta: fechaHasta || undefined, ...extras });
     }
   };
 
   const puedeSync = loading
     ? false
     : modo === 'numero'
-      ? numeroOrden.trim().length > 0
-      : fechaDesde || fechaHasta;
+      ? numeroOrden.trim().length > 0 || !!(tipoFiltro || clienteId)
+      : !!(fechaDesde || fechaHasta || tipoFiltro || clienteId);
 
   if (!isOpen) return null;
 
@@ -267,7 +299,7 @@ const ModalSyncHistorico = ({ isOpen, onClose, onSync, loading, resultado }) => 
         </p>
 
         {/* Selector de modo */}
-        <div className="flex gap-2 mb-5">
+        <div className="flex gap-2 mb-4">
           <button
             onClick={() => setModo('numero')}
             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-medium border transition-colors ${
@@ -290,9 +322,9 @@ const ModalSyncHistorico = ({ isOpen, onClose, onSync, loading, resultado }) => 
           </button>
         </div>
 
-        {/* Formulario */}
+        {/* Formulario principal */}
         {modo === 'numero' ? (
-          <div className="mb-5">
+          <div className="mb-4">
             <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
               Número de orden WMS
             </label>
@@ -301,15 +333,15 @@ const ModalSyncHistorico = ({ isOpen, onClose, onSync, loading, resultado }) => 
               value={numeroOrden}
               onChange={(e) => setNumeroOrden(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && puedeSync && handleSync()}
-              placeholder="Ej: SYS-000130 o OP-2026-0103"
+              placeholder="Ej: SYS-000130 o 6112232015"
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-colors"
             />
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
-              Ingresa el systemNumberOrder o customerNumberOrder que aparece en el historial del WMS.
+              Ingresa el systemNumberOrder o customerNumberOrder que aparece en el WMS.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 mb-5">
+          <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
               <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
                 Desde
@@ -324,6 +356,32 @@ const ModalSyncHistorico = ({ isOpen, onClose, onSync, loading, resultado }) => 
             </div>
           </div>
         )}
+
+        {/* Filtros adicionales */}
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          <div>
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
+              Tipo de operación
+            </label>
+            <FilterDropdown
+              options={OPCIONES_TIPO}
+              value={tipoFiltro}
+              onChange={setTipoFiltro}
+              compact
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
+              Cliente
+            </label>
+            <FilterDropdown
+              options={opcionesCliente}
+              value={clienteId}
+              onChange={setClienteId}
+              compact
+            />
+          </div>
+        </div>
 
         {/* Resultado */}
         {resultado && (
@@ -347,6 +405,9 @@ const ModalSyncHistorico = ({ isOpen, onClose, onSync, loading, resultado }) => 
                     )}
                     {r.estado === 'ya_existe' && (
                       <span className="text-slate-400 dark:text-slate-500">ya existía</span>
+                    )}
+                    {r.estado === 'cliente_no_coincide' && (
+                      <span className="text-amber-500 dark:text-amber-400">cliente no coincide</span>
                     )}
                     {r.error && (
                       <span className="text-red-500 truncate" title={r.error}>{r.error}</span>
@@ -555,6 +616,9 @@ export default function WmsDashboard() {
   const [resultadoHistorico, setResultadoHistorico] = useState(null);
   const [resultadoKardex, setResultadoKardex] = useState(null);
   const [tipoReej, setTipoReej] = useState('');
+  const [openMenuAcciones, setOpenMenuAcciones] = useState(false);
+  const menuAccionesRef = useRef(null);
+
   const [filtros, setFiltros] = useState({
     tipo: '',
     estado: '',
@@ -608,6 +672,16 @@ export default function WmsDashboard() {
     cargarStatus();
     cargarEstadisticas();
   }, [cargarStatus, cargarEstadisticas]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuAccionesRef.current && !menuAccionesRef.current.contains(e.target)) {
+        setOpenMenuAcciones(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
   useEffect(() => {
     cargarHistorial();
   }, [cargarHistorial]);
@@ -731,7 +805,7 @@ export default function WmsDashboard() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
             {/* Indicador de conexión */}
             {loadingStatus ? (
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-sm">
@@ -747,47 +821,67 @@ export default function WmsDashboard() {
               </div>
             )}
 
-            <button
-              onClick={handleRefresh}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" /> Actualizar
-            </button>
+            {/* Menú de acciones agrupadas */}
+            <div className="relative" ref={menuAccionesRef}>
+              <button
+                onClick={() => setOpenMenuAcciones((v) => !v)}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium transition-colors"
+              >
+                <Settings2 className="w-4 h-4" />
+                Acciones
+                <ChevronDown className={`w-4 h-4 transition-transform duration-150 ${openMenuAcciones ? 'rotate-180' : ''}`} />
+              </button>
 
-            <button
-              onClick={handleEjecutarPolling}
-              disabled={loadingPolling || status?.polling?.ejecutando}
-              title={status?.polling?.ejecutando ? 'El polling ya está en ejecución' : 'Ejecutar ciclo de polling ahora'}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium shadow-sm transition-colors"
-            >
-              {loadingPolling || status?.polling?.ejecutando ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Zap className="w-4 h-4" />
+              {openMenuAcciones && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-50 py-1 overflow-hidden">
+                  <button
+                    onClick={() => { handleRefresh(); setOpenMenuAcciones(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+                  >
+                    <RefreshCw className="w-4 h-4 text-slate-400" /> Actualizar
+                  </button>
+
+                  <button
+                    onClick={() => { handleEjecutarPolling(); setOpenMenuAcciones(false); }}
+                    disabled={loadingPolling || status?.polling?.ejecutando}
+                    title={status?.polling?.ejecutando ? 'El polling ya está en ejecución' : 'Ejecutar ciclo de polling ahora'}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loadingPolling || status?.polling?.ejecutando ? (
+                      <RefreshCw className="w-4 h-4 text-slate-400 animate-spin" />
+                    ) : (
+                      <Zap className="w-4 h-4 text-slate-400" />
+                    )}
+                    {status?.polling?.ejecutando ? 'Polling en curso...' : 'Ejecutar polling'}
+                  </button>
+
+                  <div className="my-1 border-t border-slate-100 dark:border-slate-700" />
+
+                  <button
+                    onClick={() => { setResultadoHistorico(null); setShowModalHistorico(true); setOpenMenuAcciones(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+                  >
+                    <History className="w-4 h-4 text-slate-400" /> Sincronizar histórico
+                  </button>
+
+                  <button
+                    onClick={() => { setResultadoKardex(null); setShowModalKardex(true); setOpenMenuAcciones(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+                  >
+                    <Box className="w-4 h-4 text-slate-400" /> Kardex por caja
+                  </button>
+
+                  <div className="my-1 border-t border-slate-100 dark:border-slate-700" />
+
+                  <button
+                    onClick={() => { setShowModal(true); setOpenMenuAcciones(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#E74C3C] hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Re-ejecutar último sync
+                  </button>
+                </div>
               )}
-              {status?.polling?.ejecutando ? 'Polling en curso...' : 'Ejecutar polling'}
-            </button>
-
-            <button
-              onClick={() => { setResultadoHistorico(null); setShowModalHistorico(true); }}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium shadow-sm transition-colors"
-            >
-              <History className="w-4 h-4" /> Sincronizar histórico
-            </button>
-
-            <button
-              onClick={() => { setResultadoKardex(null); setShowModalKardex(true); }}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium shadow-sm transition-colors"
-            >
-              <Box className="w-4 h-4" /> Kardex por caja
-            </button>
-
-            <button
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-[#E74C3C] hover:bg-[#C0392B] text-white text-sm font-medium shadow-sm transition-colors"
-            >
-              <RotateCcw className="w-4 h-4" /> Re-ejecutar último sync
-            </button>
+            </div>
           </div>
         </div>
 

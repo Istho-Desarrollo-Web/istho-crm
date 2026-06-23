@@ -15,18 +15,25 @@ const configuracionWmsController = require('../controllers/configuracionWmsContr
 const apiKeysController = require('../controllers/apiKeysController');
 const clienteController = require('../controllers/clienteController');
 const { verificarToken } = require('../middleware/auth');
-const { requiereRol } = require('../middleware/roles');
+const { requiereRol, supervisorOAdmin } = require('../middleware/roles');
 
-// Todas las rutas requieren autenticación + rol admin
+// Autenticación obligatoria para todas las rutas
 router.use(verificarToken);
+
+// =============================================
+// USUARIOS — lectura abierta a supervisor+
+// (usada por el buscador de vinculación en el directorio de contactos)
+// =============================================
+
+router.get('/usuarios', supervisorOAdmin, adminController.listarUsuarios);
+router.get('/usuarios/:id', supervisorOAdmin, adminController.obtenerUsuario);
+
+// El resto de rutas requiere rol admin
 router.use(requiereRol('admin'));
 
 // =============================================
-// USUARIOS
+// USUARIOS — escritura (solo admin)
 // =============================================
-
-router.get('/usuarios', adminController.listarUsuarios);
-router.get('/usuarios/:id', adminController.obtenerUsuario);
 router.get('/usuarios/:id/clientes-asignados', clienteController.getClientesAsignados);
 router.post('/usuarios/:id/clientes-asignados', clienteController.addClienteAsignado);
 router.delete('/usuarios/:id/clientes-asignados/:clienteId', clienteController.removeClienteAsignado);

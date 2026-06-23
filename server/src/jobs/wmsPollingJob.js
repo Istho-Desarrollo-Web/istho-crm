@@ -362,14 +362,7 @@ async function _ejecutarPoll() {
     }
 
     logger.info(`[WmsPolling] Ciclo completo — procesadas: ${procesadas}, errores: ${errores}`);
-
-    // Kardex: descubrir IDs de pallets nuevos y sincronizar ajustes recientes
-    await _descubrirPalletIds().catch((err) =>
-      logger.error('[WmsPolling] Error en descubrimiento de pallets:', err.message)
-    );
-    await _pollKardexHistorial().catch((err) =>
-      logger.error('[WmsPolling] Error en polling kardex:', err.message)
-    );
+    // El kardex se sincroniza solo manualmente — no se ejecuta en el ciclo automático.
   } finally {
     _ejecutando = false;
   }

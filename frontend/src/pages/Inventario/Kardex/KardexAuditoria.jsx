@@ -2158,7 +2158,7 @@ const KardexAuditoria = () => {
               <span className="font-semibold">Operación completada exitosamente</span>
             </div>
             <div className="flex items-center gap-2">
-              {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
+              {user?.rol === 'admin' && (
                 <button
                   onClick={handleReabrirOperacion}
                   disabled={reabriendo}

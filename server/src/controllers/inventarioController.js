@@ -1007,11 +1007,10 @@ const obtenerMovimientos = async (req, res) => {
       return notFound(res, 'Item no encontrado');
     }
 
+    // Traer todos los MovimientoInventario reales (sin paginar — merge manual al final)
     const { count, rows } = await MovimientoInventario.findAndCountAll({
       where: { inventario_id: id },
       order: [['fecha_movimiento', 'DESC']],
-      limit,
-      offset,
       include: [
         {
           model: Usuario,
@@ -1021,8 +1020,50 @@ const obtenerMovimientos = async (req, res) => {
       ],
     });
 
-    // Formatear para frontend
-    const movimientos = rows.map((mov) => ({
+    // operacion_ids ya cubiertos por MovimientoInventario → no duplicar en legacy
+    const opIdsConMov = new Set(rows.map((m) => m.operacion_id).filter(Boolean));
+
+    // Buscar OperacionDetalle de operaciones que NO tienen MovimientoInventario
+    // (picks/ingresos ingresados antes de que existiera el sync WMS)
+    const whereOpLegacy = { cliente_id: item.cliente_id };
+    if (opIdsConMov.size > 0) {
+      whereOpLegacy.id = { [Op.notIn]: [...opIdsConMov] };
+    }
+
+    const detallesLegacy = await OperacionDetalle.findAll({
+      where: { [Op.or]: [{ inventario_id: id }, { sku: item.sku }] },
+      include: [
+        {
+          model: Operacion,
+          as: 'operacion',
+          where: whereOpLegacy,
+          attributes: ['id', 'numero_operacion', 'tipo', 'estado', 'fecha_operacion', 'numero_picking', 'documento_wms'],
+        },
+      ],
+      order: [[{ model: Operacion, as: 'operacion' }, 'fecha_operacion', 'DESC']],
+      attributes: ['id', 'cantidad', 'lote', 'numero_caja', 'documento_asociado'],
+    });
+
+    const movsLegacy = detallesLegacy.map((d) => ({
+      id: `leg-${d.id}`,
+      tipo: d.operacion?.tipo === 'ingreso' ? 'entrada' : 'salida',
+      cantidad: parseFloat(d.cantidad) || 0,
+      stock_anterior: 0,
+      stock_resultante: 0,
+      stockResultante: 0,
+      motivo: d.operacion?.tipo === 'ingreso' ? 'Ingreso WMS' : 'Salida WMS',
+      descripcion: d.operacion?.tipo === 'ingreso' ? 'Ingreso WMS' : 'Salida WMS',
+      documento_referencia: d.documento_asociado || d.operacion?.documento_wms || d.operacion?.numero_picking || '-',
+      documento: d.documento_asociado || d.operacion?.documento_wms || d.operacion?.numero_picking || '-',
+      observaciones: null,
+      fecha: d.operacion?.fecha_operacion,
+      created_at: d.operacion?.fecha_operacion,
+      usuario_nombre: 'Sistema',
+      responsable: 'Sistema',
+    }));
+
+    // Formatear MovimientoInventario reales
+    const movimientosReales = rows.map((mov) => ({
       id: mov.id,
       tipo: mov.tipo,
       cantidad: parseFloat(mov.cantidad),
@@ -1040,7 +1081,16 @@ const obtenerMovimientos = async (req, res) => {
       responsable: mov.usuario?.nombre_completo || 'Sistema',
     }));
 
-    return paginated(res, movimientos, buildPaginacion(count, page, limit));
+    // Si no hay legacy, usar paginación normal de BD
+    if (movsLegacy.length === 0) {
+      return paginated(res, movimientosReales.slice(offset, offset + limit), buildPaginacion(count, page, limit));
+    }
+
+    // Merge y paginación manual cuando hay registros de ambas fuentes
+    const todos = [...movimientosReales, ...movsLegacy].sort(
+      (a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0)
+    );
+    return paginated(res, todos.slice(offset, offset + limit), buildPaginacion(todos.length, page, limit));
   } catch (error) {
     logger.error('Error al obtener movimientos:', { message: error.message });
     return serverError(res, 'Error al obtener movimientos', error);
@@ -1354,56 +1404,59 @@ const obtenerCajas = async (req, res) => {
 
     // Si no hay cajas en el nuevo modelo, hacer fallback a OperacionDetalle (datos legacy)
     if (cajasDB.length === 0) {
-      const detalles = await OperacionDetalle.findAll({
-        where: {
-          [Op.or]: [{ inventario_id: id }, { sku: inventario.sku }],
-        },
+      // Traer ingresos Y salidas para calcular saldo real por caja
+      const todosDetalles = await OperacionDetalle.findAll({
+        where: { [Op.or]: [{ inventario_id: id }, { sku: inventario.sku }] },
         include: [
           {
             model: Operacion,
             as: 'operacion',
             where: { cliente_id: inventario.cliente_id },
-            attributes: [
-              'id',
-              'numero_operacion',
-              'tipo',
-              'estado',
-              'fecha_operacion',
-              'numero_picking',
-              'documento_wms',
-            ],
+            attributes: ['id', 'numero_operacion', 'tipo', 'estado', 'fecha_operacion', 'numero_picking', 'documento_wms'],
           },
         ],
         order: [[{ model: Operacion, as: 'operacion' }, 'fecha_operacion', 'DESC']],
-        attributes: [
-          'id',
-          'producto',
-          'cantidad',
-          'numero_caja',
-          'lote',
-          'lote_externo',
-          'documento_asociado',
-          'peso',
-          'created_at',
-        ],
+        attributes: ['id', 'producto', 'cantidad', 'numero_caja', 'lote', 'lote_externo', 'documento_asociado', 'peso', 'created_at'],
       });
 
-      const cajasLegacy = detalles.map((d) => ({
-        id: d.id,
-        numero_caja: d.numero_caja || '-',
-        producto: d.producto,
-        cantidad: parseFloat(d.cantidad) || 0,
-        lote: d.lote || d.lote_externo || '-',
-        ubicacion: '-',
-        documento: d.documento_asociado || d.operacion?.documento_wms || '-',
-        peso: d.peso ? parseFloat(d.peso) : null,
-        tipo: d.operacion?.tipo === 'ingreso' ? 'entrada' : 'salida',
-        estado: d.operacion?.tipo === 'ingreso' ? 'disponible' : 'despachada',
-        numero_operacion: d.operacion?.numero_operacion,
-        numero_picking: d.operacion?.numero_picking,
-        estado_operacion: d.operacion?.estado,
-        fecha: d.operacion?.fecha_operacion || d.created_at,
-      }));
+      // Agrupar por numero_caja: sumar ingresos y salidas por separado
+      const ingresosMap = {}; // nc → { d (primer ingreso para metadata), cantidadIngreso }
+      const salidasPorCaja = {}; // nc → suma salidas
+
+      for (const d of todosDetalles) {
+        const nc = d.numero_caja || '__sin_caja__';
+        const qty = parseFloat(d.cantidad) || 0;
+        const tipoOp = d.operacion?.tipo;
+
+        if (tipoOp === 'ingreso') {
+          if (!ingresosMap[nc]) ingresosMap[nc] = { d, cantidadIngreso: 0 };
+          ingresosMap[nc].cantidadIngreso += qty;
+        } else if (tipoOp === 'salida') {
+          salidasPorCaja[nc] = (salidasPorCaja[nc] || 0) + qty;
+        }
+      }
+
+      const cajasLegacy = Object.entries(ingresosMap)
+        .map(([nc, { d, cantidadIngreso }]) => {
+          const saldo = Math.max(0, cantidadIngreso - (salidasPorCaja[nc] || 0));
+          return {
+            id: d.id,
+            numero_caja: nc === '__sin_caja__' ? '-' : nc,
+            producto: d.producto,
+            cantidad: saldo,
+            lote: d.lote || d.lote_externo || '-',
+            ubicacion: '-',
+            documento: d.documento_asociado || d.operacion?.documento_wms || '-',
+            peso: d.peso ? parseFloat(d.peso) : null,
+            tipo: 'entrada',
+            estado: saldo > 0 ? 'disponible' : 'agotada',
+            numero_operacion: d.operacion?.numero_operacion,
+            numero_picking: d.operacion?.numero_picking,
+            estado_operacion: d.operacion?.estado,
+            fecha: d.operacion?.fecha_operacion || d.created_at,
+          };
+        })
+        .filter((c) => c.cantidad > 0); // ocultar cajas agotadas
 
       return success(res, cajasLegacy);
     }

@@ -462,12 +462,12 @@ const getProductoInfoWms = async (req, res) => {
 // ============================================================================
 
 const syncHistoricoOrdenes = async (req, res) => {
-  const { numero_orden, fecha_desde, fecha_hasta } = req.body;
+  const { numero_orden, fecha_desde, fecha_hasta, tipo, cliente_id } = req.body;
 
-  if (!numero_orden && !fecha_desde && !fecha_hasta) {
+  if (!numero_orden && !fecha_desde && !fecha_hasta && !tipo && !cliente_id) {
     return res.status(400).json({
       success: false,
-      message: 'Proporcionar numero_orden o un rango de fechas (fecha_desde / fecha_hasta)',
+      message: 'Proporcionar numero_orden, un rango de fechas, tipo o cliente_id',
     });
   }
 
@@ -486,53 +486,98 @@ const syncHistoricoOrdenes = async (req, res) => {
     }
   }
 
-  try {
-    logger.info(`[WMS Histórico] Iniciando sync histórico — numero_orden="${numero_orden || ''}" desde="${fecha_desde || ''}" hasta="${fecha_hasta || ''}"`);
+  // tipo: 'entrada' → WMS type=1, 'salida' → WMS type=2, vacío/undefined = todos
+  const tipoNum = tipo === 'entrada' ? 1 : tipo === 'salida' ? 2 : null;
 
-    const MAX_PAGES = 20;
-    const PAGE_SIZE = 50;
+  // Resolver NIT del cliente si se filtra por cliente
+  let clienteNit = null;
+  if (cliente_id) {
+    const cliente = await Cliente.findByPk(cliente_id, { attributes: ['nit'] });
+    if (!cliente) {
+      return res.status(404).json({ success: false, message: 'Cliente no encontrado' });
+    }
+    clienteNit = cliente.nit;
+  }
+
+  try {
+    logger.info(`[WMS Histórico] Iniciando sync histórico — numero_orden="${numero_orden || ''}" desde="${fecha_desde || ''}" hasta="${fecha_hasta || ''}" tipo="${tipo || 'todos'}" cliente_id="${cliente_id || ''}"`);
+
     const candidatas = [];
 
-    // Paginar el WMS para encontrar las órdenes que coincidan
-    for (let page = 1; page <= MAX_PAGES; page++) {
-      let ordenes;
+    if (numero_orden) {
+      // Búsqueda por número: usar list=true para obtener TODAS las órdenes del WMS
+      // (incluyendo "Finalizada") en una sola llamada. El listado paginado por defecto
+      // solo retorna órdenes activas y no incluye las finalizadas.
+      let todasOrdenes;
       try {
-        const resultado = await wmsApiService.getOrdenes({ limit: PAGE_SIZE, page });
-        ordenes = Array.isArray(resultado) ? resultado : (resultado?.data ?? []);
+        const resultado = await wmsApiService.getOrdenes({ list: true });
+        todasOrdenes = Array.isArray(resultado) ? resultado : (resultado?.data ?? resultado ?? []);
       } catch (err) {
-        logger.error(`[WMS Histórico] Error consultando WMS página ${page}:`, err.message);
-        break;
+        logger.error('[WMS Histórico] Error consultando WMS (list=true):', err.message);
+        todasOrdenes = [];
       }
 
-      if (ordenes.length === 0) break;
+      logger.info(`[WMS Histórico] list=true: ${todasOrdenes.length} órdenes totales en WMS`);
 
-      for (const orden of ordenes) {
+      for (const orden of todasOrdenes) {
+        const sysNum = orden.systemNumberOrder?.toString();
+        const custNum = orden.customerNumberOrder?.toString();
+        if (sysNum !== numero_orden && custNum !== numero_orden && orden.id !== numero_orden) continue;
+        if (tipoNum !== null && orden.type !== tipoNum) continue;
+        candidatas.push(orden);
+      }
+    } else if (cliente_id) {
+      // Filtro solo por cliente (sin número ni fechas): usar list=true para cubrir todo el
+      // historial WMS, incluyendo órdenes finalizadas más antiguas que la paginación activa.
+      let todasOrdenes;
+      try {
+        const resultado = await wmsApiService.getOrdenes({ list: true });
+        todasOrdenes = Array.isArray(resultado) ? resultado : (resultado?.data ?? resultado ?? []);
+      } catch (err) {
+        logger.error('[WMS Histórico] Error consultando WMS (list=true) para cliente:', err.message);
+        todasOrdenes = [];
+      }
+      logger.info(`[WMS Histórico] list=true (cliente_id=${cliente_id}): ${todasOrdenes.length} órdenes totales en WMS`);
+      for (const orden of todasOrdenes) {
         if (orden.orderStatus?.name !== 'Finalizada') continue;
+        if (tipoNum !== null && orden.type !== tipoNum) continue;
+        const fecha = orden.orderDate ? new Date(orden.orderDate) : null;
+        if (desdeDate && (!fecha || isNaN(fecha.getTime()) || fecha < desdeDate)) continue;
+        if (hastaDate && (!fecha || isNaN(fecha.getTime()) || fecha > hastaDate)) continue;
+        candidatas.push(orden);
+      }
+    } else {
+      // Búsqueda por rango de fechas: paginar el listado activo
+      const MAX_PAGES = 20;
+      const PAGE_SIZE = 50;
+      for (let page = 1; page <= MAX_PAGES; page++) {
+        let ordenes;
+        try {
+          const resultado = await wmsApiService.getOrdenes({ limit: PAGE_SIZE, page });
+          ordenes = Array.isArray(resultado) ? resultado : (resultado?.data ?? []);
+        } catch (err) {
+          logger.error(`[WMS Histórico] Error consultando WMS página ${page}:`, err.message);
+          break;
+        }
 
-        if (numero_orden) {
-          const sysNum = orden.systemNumberOrder?.toString();
-          const custNum = orden.customerNumberOrder?.toString();
-          if (sysNum === numero_orden || custNum === numero_orden || orden.id === numero_orden) {
-            candidatas.push(orden);
-          }
-        } else {
+        if (ordenes.length === 0) break;
+
+        for (const orden of ordenes) {
+          if (orden.orderStatus?.name !== 'Finalizada') continue;
+          if (tipoNum !== null && orden.type !== tipoNum) continue;
           const fecha = orden.orderDate ? new Date(orden.orderDate) : null;
           if (!fecha || isNaN(fecha.getTime())) continue;
           if (desdeDate && fecha < desdeDate) continue;
           if (hastaDate && fecha > hastaDate) continue;
           candidatas.push(orden);
         }
-      }
 
-      // Si buscamos por número y ya lo encontramos, no seguir paginando
-      if (numero_orden && candidatas.length > 0) break;
-
-      // Heurística: si el WMS devuelve órdenes más nuevas primero y la última ya
-      // está antes de fecha_desde, no hay más candidatas en páginas siguientes
-      if (!numero_orden && desdeDate) {
-        const ultima = ordenes[ordenes.length - 1];
-        const ultimaFecha = ultima?.orderDate ? new Date(ultima.orderDate) : null;
-        if (ultimaFecha && ultimaFecha < desdeDate) break;
+        // Si la última orden de esta página es anterior a fecha_desde, no hay más candidatas
+        if (desdeDate) {
+          const ultima = ordenes[ordenes.length - 1];
+          const ultimaFecha = ultima?.orderDate ? new Date(ultima.orderDate) : null;
+          if (ultimaFecha && ultimaFecha < desdeDate) break;
+        }
       }
     }
 
@@ -540,65 +585,134 @@ const syncHistoricoOrdenes = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: numero_orden
-          ? `No se encontró la orden "${numero_orden}" en el WMS (estado Finalizada)`
-          : 'No se encontraron órdenes finalizadas en el rango de fechas indicado',
+          ? `No se encontró la orden "${numero_orden}" en el WMS`
+          : cliente_id && !fecha_desde && !fecha_hasta
+            ? 'No se encontraron órdenes finalizadas en el WMS para ese cliente'
+            : 'No se encontraron órdenes finalizadas en el rango de fechas indicado',
       });
     }
 
     logger.info(`[WMS Histórico] ${candidatas.length} órdenes candidatas a sincronizar`);
+
+    // ── FASE 1: Batch-check de existentes (1 query en lugar de N) ─────────
+    const wmsOrderIds = candidatas.map(o => o.id).filter(Boolean);
+    const systemNums  = candidatas.map(o => o.systemNumberOrder?.toString()).filter(Boolean);
+    const custNums    = candidatas.map(o => o.customerNumberOrder?.toString()).filter(Boolean);
+
+    const orCondiciones = [];
+    if (wmsOrderIds.length) orCondiciones.push({ wms_order_id: { [Op.in]: wmsOrderIds } });
+    if (systemNums.length)  orCondiciones.push({ documento_wms: { [Op.in]: systemNums } });
+    if (custNums.length)    orCondiciones.push({ documento_wms: { [Op.in]: custNums } });
+
+    const existentesMap = new Map();
+    if (orCondiciones.length) {
+      const existentesEnBD = await Operacion.findAll({
+        where: { [Op.or]: orCondiciones },
+        attributes: ['id', 'wms_order_id', 'documento_wms', 'cliente_id', 'numero_operacion'],
+        paranoid: false,
+      });
+      for (const op of existentesEnBD) {
+        if (op.wms_order_id) existentesMap.set(op.wms_order_id, op);
+        if (op.documento_wms) existentesMap.set(op.documento_wms.trim(), op);
+      }
+      logger.info(`[WMS Histórico] Batch DB: ${existentesEnBD.length} ya en BD de ${candidatas.length} candidatas`);
+    }
+    // ──────────────────────────────────────────────────────────────────────
 
     const resultados = [];
     let procesadas = 0;
     let ya_existentes = 0;
     let errores = 0;
 
+    // ── FASE 2: Separar existentes de nuevas ──────────────────────────────
+    const nuevas = [];
     for (const orden of candidatas) {
-      try {
-        // Deduplicación: omitir si ya existe en CRM
-        const existente = await Operacion.findOne({
-          where: {
-            [Op.or]: [
-              { wms_order_id: orden.id },
-              ...(orden.systemNumberOrder
-                ? [{ documento_wms: orden.systemNumberOrder.toString() }]
-                : []),
-              ...(orden.customerNumberOrder
-                ? [{ documento_wms: orden.customerNumberOrder.toString() }]
-                : []),
-            ],
-          },
-          paranoid: false,
-        });
+      const existente = existentesMap.get(orden.id)
+        || (orden.systemNumberOrder ? existentesMap.get(orden.systemNumberOrder.toString()) : null)
+        || (orden.customerNumberOrder ? existentesMap.get(orden.customerNumberOrder.toString()) : null)
+        || null;
 
-        if (existente) {
-          ya_existentes++;
-          resultados.push({
-            orden: orden.systemNumberOrder,
-            estado: 'ya_existe',
-            operacion: existente.numero_operacion || existente.id,
-          });
-          logger.debug(`[WMS Histórico] Orden ${orden.systemNumberOrder} ya existe → omitiendo`);
+      if (existente) {
+        if (cliente_id && existente.cliente_id && existente.cliente_id !== Number(cliente_id)) {
+          logger.debug(`[WMS Histórico] Orden ${orden.systemNumberOrder} existe pero es de cliente_id=${existente.cliente_id} → ignorando`);
           continue;
         }
+        ya_existentes++;
+        resultados.push({
+          orden: orden.systemNumberOrder,
+          estado: 'ya_existe',
+          operacion: existente.numero_operacion || existente.id,
+        });
+        logger.debug(`[WMS Histórico] Orden ${orden.systemNumberOrder} ya existe → omitiendo`);
+        continue;
+      }
+      nuevas.push(orden);
+    }
 
-        // Obtener detalle completo (NIT, líneas, pallets)
-        const detalle = await wmsApiService.getOrdenDetalle(orden.id);
-        const ordenCompleta = (detalle && typeof detalle === 'object' && !Array.isArray(detalle))
-          ? { ...orden, ...detalle }
-          : orden;
-        const itemsArr = Array.isArray(ordenCompleta.orderItems) ? ordenCompleta.orderItems : [];
+    // ── FASE 3: Prefetch de detalles en paralelo (5 a la vez) ─────────────
+    // Evita 100+ llamadas WMS secuenciales (~1s c/u) que causan timeout
+    const CONCURRENCIA = 5;
+    const paraSync = [];
 
-        const { tipo, payload } = await wmsOrderMapper.mapearOrden(ordenCompleta, itemsArr);
+    for (let i = 0; i < nuevas.length; i += CONCURRENCIA) {
+      const lote = nuevas.slice(i, i + CONCURRENCIA);
+      const resultadosLote = await Promise.all(
+        lote.map(async (orden) => {
+          try {
+            const detalle = await wmsApiService.getOrdenDetalle(orden.id);
+            const ordenCompleta = (detalle && typeof detalle === 'object' && !Array.isArray(detalle))
+              ? { ...orden, ...detalle }
+              : orden;
+            const itemsArr = Array.isArray(ordenCompleta.orderItems) ? ordenCompleta.orderItems : [];
+
+            if (clienteNit) {
+              const nitWms = ordenCompleta.customer?.nit || ordenCompleta.customer?.taxId || ordenCompleta.customer?.identification;
+              if (nitWms !== clienteNit) {
+                logger.debug(`[WMS Histórico] Orden ${orden.systemNumberOrder} omitida — cliente WMS "${nitWms}" ≠ "${clienteNit}"`);
+                return null;
+              }
+            }
+            return { orden, ordenCompleta, itemsArr };
+          } catch (err) {
+            logger.error(`[WMS Histórico] Error obteniendo detalle de orden ${orden.systemNumberOrder}: ${err.message}`);
+            return { orden, error: err };
+          }
+        })
+      );
+
+      for (const r of resultadosLote) {
+        if (!r) continue;
+        if (r.error) {
+          errores++;
+          resultados.push({ orden: r.orden.systemNumberOrder, estado: 'error', error: r.error.message });
+          await WmsSyncLog.create({
+            tipo: 'polling_entrada',
+            documento_origen: r.orden.systemNumberOrder,
+            nit: r.orden.customer?.nit,
+            estado: 'fallido',
+            error_mensaje: r.error.message,
+            detalles: { wms_order_id: r.orden.id, sync_historico: true },
+          }).catch(() => {});
+          continue;
+        }
+        paraSync.push(r);
+      }
+    }
+
+    // ── FASE 4: Sincronizar las órdenes que pasaron los filtros ───────────
+    for (const { orden, ordenCompleta, itemsArr } of paraSync) {
+      try {
+        const { tipo: tipoOp, payload } = await wmsOrderMapper.mapearOrden(ordenCompleta, itemsArr);
 
         let resultado;
-        if (tipo === 'entrada') {
+        if (tipoOp === 'entrada') {
           resultado = await wmsSyncService.syncEntrada(payload);
         } else {
           resultado = await wmsSyncService.syncSalida(payload);
         }
 
         await WmsSyncLog.create({
-          tipo: tipo === 'entrada' ? 'polling_entrada' : 'polling_salida',
+          tipo: tipoOp === 'entrada' ? 'polling_entrada' : 'polling_salida',
           documento_origen: orden.systemNumberOrder,
           nit: ordenCompleta.customer?.nit,
           estado: 'exitoso',
@@ -614,7 +728,7 @@ const syncHistoricoOrdenes = async (req, res) => {
         resultados.push({
           orden: orden.systemNumberOrder,
           estado: 'sincronizada',
-          tipo,
+          tipo: tipoOp,
           operacion: resultado?.numero_operacion || resultado?.operacion_id,
         });
         logger.info(`[WMS Histórico] Orden ${orden.systemNumberOrder} sincronizada → ${resultado?.numero_operacion}`);

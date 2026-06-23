@@ -278,10 +278,25 @@ async function main() {
 
       // Crear detalle + inventario + caja por cada fila del grupo
       for (const fila of grupo.filas) {
-        // Verificar si el numero_caja ya existe (para no duplicar cajas)
+        // FindOrCreate inventario primero (necesario para dedup por inventario_id)
+        const [inventario] = await Inventario.findOrCreate({
+          where:    { cliente_id: cliente.id, sku: fila.sku },
+          defaults: {
+            producto:                  fila.descripcion,
+            cantidad:                  0,
+            unidad_medida:             'UND',
+            estado:                    'disponible',
+            ultima_sincronizacion_wms: new Date(),
+            fecha_ingreso:             fila.f_ingreso || null,
+            notas:                     'Importación inicial WMS',
+          },
+          transaction,
+        });
+
+        // Verificar si el numero_caja ya existe para ESTE inventario (evita duplicados)
         if (fila.numero_caja) {
           const cajaExistente = await CajaInventario.findOne({
-            where: { numero_caja: fila.numero_caja },
+            where: { numero_caja: fila.numero_caja, inventario_id: inventario.id },
             transaction,
           });
           if (cajaExistente) continue;
@@ -300,31 +315,15 @@ async function main() {
           documento_asociado:fila.nro_orden || null,
         }, { transaction });
 
-        // FindOrCreate inventario (sin modificar si ya existe)
-        const [inventario, creado] = await Inventario.findOrCreate({
-          where:    { cliente_id: cliente.id, sku: fila.sku },
-          defaults: {
-            producto:                  fila.descripcion,
-            cantidad:                  0,
-            unidad_medida:             'UND',
-            estado:                    'disponible',
-            ultima_sincronizacion_wms: new Date(),
-            fecha_ingreso:             fila.f_ingreso || null,
-            notas:                     'Importación inicial WMS',
-          },
-          transaction,
-        });
-
         // Vincular detalle al inventario
         await detalle.update({ inventario_id: inventario.id }, { transaction });
 
-        // Sumar cantidad al stock (tanto si es nuevo como si ya existía)
+        // Sumar cantidad al stock
         const stockAnterior = parseFloat(inventario.cantidad) || 0;
         await inventario.update({
           cantidad:                  stockAnterior + fila.saldo,
           ultima_sincronizacion_wms: new Date(),
           alertas_silenciadas:       null,
-          ...(creado ? {} : {}), // no sobrescribir nombre si ya existía
         }, { transaction });
 
         // Ubicacion combinada
