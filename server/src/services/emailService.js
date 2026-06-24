@@ -388,20 +388,39 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
 
     if (archivosParaEnlazar.length > 0) {
       const s3Svc = require('./s3Service');
+      const sharp = require('sharp');
+      const TIPOS_IMAGEN = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
       const MAX_ADJUNTOS_BYTES = 15 * 1024 * 1024; // 15 MB tope para no exceder límites SMTP
       let totalBytes = 0;
 
       // Descargar todos los archivos S3 en paralelo como buffers (más fiable que presigned URL vía nodemailer)
       const resultados = await Promise.allSettled(
         archivosParaEnlazar.map(async (archivo) => {
+          let buffer;
           if (archivo.key) {
-            const buffer = await s3Svc.getBuffer(archivo.key);
-            return { nombre: archivo.nombre, content: buffer, tipo: archivo.tipo || 'application/octet-stream' };
+            buffer = await s3Svc.getBuffer(archivo.key);
           } else if (archivo.filePath) {
-            const buffer = fs.readFileSync(archivo.filePath);
-            return { nombre: archivo.nombre, content: buffer, tipo: archivo.tipo };
+            buffer = fs.readFileSync(archivo.filePath);
+          } else {
+            return null;
           }
-          return null;
+
+          const tipoMime = (archivo.tipo || 'application/octet-stream').toLowerCase();
+          if (TIPOS_IMAGEN.has(tipoMime) && buffer.length > 200 * 1024) {
+            // Comprimir imágenes > 200 KB: máx 1920px, JPEG calidad 75
+            try {
+              const comprimido = await sharp(buffer)
+                .resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true })
+                .jpeg({ quality: 75, progressive: true })
+                .toBuffer();
+              logger.info(`Email cierre: imagen comprimida "${archivo.nombre}" ${Math.round(buffer.length / 1024)} KB → ${Math.round(comprimido.length / 1024)} KB`);
+              return { nombre: archivo.nombre.replace(/\.(png|webp)$/i, '.jpg'), content: comprimido, tipo: 'image/jpeg' };
+            } catch (sharpErr) {
+              logger.warn(`Email cierre: no se pudo comprimir "${archivo.nombre}", adjuntando original: ${sharpErr.message}`);
+            }
+          }
+
+          return { nombre: archivo.nombre, content: buffer, tipo: tipoMime };
         })
       );
 
