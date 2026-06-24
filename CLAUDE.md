@@ -150,7 +150,7 @@ import { DatePicker } from '../../../components/common';
 ## Deploy
 - **App Runner (backend, us-west-2):** NO configurar `PORT` — lo inyecta App Runner automáticamente (8080). `CORS_ORIGIN` = URL exacta de Vercel (sin `/` final). Start command DEBE ser `node server/server.js` desde raíz (NO `cd server && node server.js` — App Runner ejecuta sin shell).
 - **Vercel (frontend):** Root dir `frontend` (no `./frontend`)
-- **S3 (archivos, us-west-2):** bucket `istho-crm-files`. Carpetas: avatares/ soportes/ evidencias/{id}/ averias/{id}/ branding/ cumplidos/{id}/. En producción: IAM Instance Role, NO claves en env. Acceso via presigned URLs (15 min TTL). Logo emails = URL S3 pública (`/branding/logo-email.png`).
+- **S3 (archivos, us-west-2):** bucket `istho-crm-files`. Carpetas: avatares/ soportes/ evidencias/{id}/ averias/{id}/ branding/ cumplidos/{id}/ logos/. En producción: IAM Instance Role, NO claves en env. Acceso via presigned URLs (15 min TTL). Logo emails = URL S3 pública (`/branding/logo-email.png`).
 - **RDS MySQL 8.0** (`istho-crm-db`, db.t3.micro, sin acceso público). Conectado via VPC connector al App Runner.
 - **Redis (Upstash, opcional):** `REDIS_URL` en App Runner activa Socket.IO multi-instancia. Sin Redis = single-instance (actual).
 - Seeds se ejecutan en cada deploy automáticamente
