@@ -329,8 +329,6 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
     };
 
     // Adjuntar documentos y fotos de averías al correo
-    const LINK_EXPIRY = 3600; // 1 hora — suficiente para que nodemailer descargue el archivo al enviar
-
     const archivosParaEnlazar = [];
 
     if (operacion.documentos && operacion.documentos.length > 0) {
@@ -368,25 +366,41 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
 
     if (archivosParaEnlazar.length > 0) {
       const s3Svc = require('./s3Service');
+      const MAX_ADJUNTOS_BYTES = 15 * 1024 * 1024; // 15 MB tope para no exceder límites SMTP
+      let totalBytes = 0;
 
-      for (const archivo of archivosParaEnlazar) {
-        try {
+      // Descargar todos los archivos S3 en paralelo como buffers (más fiable que presigned URL vía nodemailer)
+      const resultados = await Promise.allSettled(
+        archivosParaEnlazar.map(async (archivo) => {
           if (archivo.key) {
-            // S3: presigned URL — nodemailer la descarga como adjunto al momento del envío
-            const url = await s3Svc.getUrl(archivo.key, LINK_EXPIRY);
-            adjuntos.push({ nombre: archivo.nombre, path: url, tipo: archivo.tipo || 'application/octet-stream' });
+            const buffer = await s3Svc.getBuffer(archivo.key);
+            return { nombre: archivo.nombre, content: buffer, tipo: archivo.tipo || 'application/octet-stream' };
           } else if (archivo.filePath) {
-            // Archivo local (legacy sin S3): adjuntar como buffer
             const buffer = fs.readFileSync(archivo.filePath);
-            adjuntos.push({ nombre: archivo.nombre, content: buffer, tipo: archivo.tipo });
+            return { nombre: archivo.nombre, content: buffer, tipo: archivo.tipo };
           }
-        } catch (err) {
-          logger.warn(`Error generando enlace para ${archivo.nombre}: ${err.message}`);
+          return null;
+        })
+      );
+
+      for (let i = 0; i < resultados.length; i++) {
+        const r = resultados[i];
+        if (r.status === 'rejected' || !r.value) {
+          logger.warn(`Email cierre: no se pudo descargar "${archivosParaEnlazar[i].nombre}": ${r.reason?.message || 'resultado vacío'}`);
+          continue;
         }
+        const adj = r.value;
+        const tamano = adj.content?.length || 0;
+        if (totalBytes + tamano > MAX_ADJUNTOS_BYTES) {
+          logger.warn(`Email cierre: omitiendo "${adj.nombre}" (${Math.round(tamano / 1024)} KB) — límite de adjuntos alcanzado`);
+          continue;
+        }
+        totalBytes += tamano;
+        adjuntos.push(adj);
       }
 
       if (adjuntos.length > 0) {
-        logger.info(`Email cierre: ${adjuntos.length} adjunto(s) preparados`);
+        logger.info(`Email cierre: ${adjuntos.length} adjunto(s) preparados (${Math.round(totalBytes / 1024)} KB total)`);
       }
     }
 
