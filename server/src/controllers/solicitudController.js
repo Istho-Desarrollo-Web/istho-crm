@@ -16,7 +16,6 @@ const {
   SolicitudDetalle,
   SolicitudComentario,
   SolicitudDocumento,
-  ClienteResponsable,
   Cliente,
   Usuario,
   Operacion,
@@ -65,13 +64,7 @@ const generarNumeroSolicitud = async (t) => {
 // ─── OBTENER IDs DE USUARIOS A NOTIFICAR ────────────────────────────────────
 
 const getResponsablesIds = async (cliente_id) => {
-  const [responsables, internos] = await Promise.all([
-    ClienteResponsable.findAll({ where: { cliente_id }, attributes: ['usuario_id'] }),
-    notificacionService.getUsuariosPorRol(['admin', 'supervisor']),
-  ]);
-  const responsablesIds = responsables.map((r) => r.usuario_id);
-  // Unión sin duplicados: responsables asignados + admins/supervisores siempre
-  return [...new Set([...responsablesIds, ...internos])];
+  return notificacionService.getUsuariosPorCliente(cliente_id);
 };
 
 // ─── CREAR SOLICITUD ────────────────────────────────────────────────────────

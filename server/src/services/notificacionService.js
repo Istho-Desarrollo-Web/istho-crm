@@ -320,8 +320,7 @@ const notificarStockBajo = async (producto) => {
   const sku = producto.sku || producto.codigo;
   const cantidad = parseFloat(producto.cantidad) || 0;
   const minimo = parseFloat(producto.stock_minimo) || 0;
-
-  return notificarAdmins({
+  const payload = {
     tipo: 'inventario',
     titulo: `Stock bajo: ${nombre}`,
     mensaje: `El producto ${sku} tiene ${cantidad} unidades, por debajo del mínimo de ${minimo}.`,
@@ -329,7 +328,8 @@ const notificarStockBajo = async (producto) => {
     accion_url: `/inventario/productos/${producto.id}`,
     accion_label: 'Ver producto',
     metadata: { producto_id: producto.id, sku, cantidad, stock_minimo: minimo },
-  });
+  };
+  return producto.cliente_id ? notificarPorCliente(producto.cliente_id, payload) : notificarAdmins(payload);
 };
 
 /**
@@ -338,8 +338,7 @@ const notificarStockBajo = async (producto) => {
 const notificarProductoAgotado = async (producto) => {
   const nombre = producto.producto || producto.nombre;
   const sku = producto.sku || producto.codigo;
-
-  return notificarAdmins({
+  const payload = {
     tipo: 'inventario',
     titulo: `Producto agotado: ${nombre}`,
     mensaje: `El producto ${sku} se ha quedado sin stock (0 unidades).`,
@@ -347,7 +346,8 @@ const notificarProductoAgotado = async (producto) => {
     accion_url: `/inventario/productos/${producto.id}`,
     accion_label: 'Ver producto',
     metadata: { producto_id: producto.id, sku },
-  });
+  };
+  return producto.cliente_id ? notificarPorCliente(producto.cliente_id, payload) : notificarAdmins(payload);
 };
 
 /**
@@ -358,8 +358,7 @@ const notificarStockSobreMaximo = async (producto) => {
   const sku = producto.sku || producto.codigo;
   const cantidad = parseFloat(producto.cantidad) || 0;
   const maximo = parseFloat(producto.stock_maximo) || 0;
-
-  return notificarAdmins({
+  const payload = {
     tipo: 'inventario',
     titulo: `Stock sobre máximo: ${nombre}`,
     mensaje: `El producto ${sku} tiene ${cantidad} unidades, superando el máximo de ${maximo}.`,
@@ -367,7 +366,8 @@ const notificarStockSobreMaximo = async (producto) => {
     accion_url: `/inventario/productos/${producto.id}`,
     accion_label: 'Ver producto',
     metadata: { producto_id: producto.id, sku, cantidad, stock_maximo: maximo },
-  });
+  };
+  return producto.cliente_id ? notificarPorCliente(producto.cliente_id, payload) : notificarAdmins(payload);
 };
 
 // ════════════════════════════════════════════════════════════════════════════
