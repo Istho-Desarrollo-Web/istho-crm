@@ -94,8 +94,12 @@ router.post(
   '/cerrar-masivo',
   noClientes,
   requiereRolMinimo('operador'),
+  uploadCumplido.array('archivos', 10),
   operacionController.cerrarMasivo
 );
+
+// Adjuntos estimados para el correo de cierre (sin llamar S3)
+router.get('/:id/adjuntos-correo', idParamValidator, operacionController.adjuntosCorreo);
 
 // Cerrar operación
 router.post(

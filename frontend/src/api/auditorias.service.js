@@ -468,12 +468,31 @@ const auditoriasService = {
     }
   },
 
-  cerrarMasivo: async (ids, observaciones_cierre = '') => {
+  cerrarMasivo: async (ids, opciones = {}) => {
     try {
-      const response = await apiClient.post(OPERACIONES_ENDPOINTS.CERRAR_MASIVO, {
-        ids,
-        observaciones_cierre,
-      });
+      const {
+        observaciones_cierre = '',
+        conductor_nombre = '',
+        conductor_cedula = '',
+        conductor_telefono = '',
+        vehiculo_placa = '',
+        vehiculo_tipo = '',
+        origen_destino = {},
+        archivos = [],
+      } = opciones;
+      const formData = new FormData();
+      formData.append('ids', JSON.stringify(ids));
+      if (observaciones_cierre) formData.append('observaciones_cierre', observaciones_cierre);
+      if (conductor_nombre) formData.append('conductor_nombre', conductor_nombre);
+      if (conductor_cedula) formData.append('conductor_cedula', conductor_cedula);
+      if (conductor_telefono) formData.append('conductor_telefono', conductor_telefono);
+      if (vehiculo_placa) formData.append('vehiculo_placa', vehiculo_placa);
+      if (vehiculo_tipo) formData.append('vehiculo_tipo', vehiculo_tipo);
+      formData.append('origen_destino', JSON.stringify(origen_destino));
+      archivos.forEach((archivo) => formData.append('archivos', archivo));
+
+      const uploadClient = createUploadClient();
+      const response = await uploadClient.post(OPERACIONES_ENDPOINTS.CERRAR_MASIVO, formData);
       return response;
     } catch (error) {
       throw {
@@ -498,6 +517,27 @@ const auditoriasService = {
         success: false,
         message: error.message || 'Error al obtener destinatarios',
         code: 'GET_DESTINATARIOS_ERROR',
+      };
+    }
+  },
+
+  /**
+   * Obtener cuántos archivos y peso estimado se adjuntarán al correo de cierre
+   * @param {string|number} operacionId - ID de la operación
+   * @returns {Promise<{total_archivos, archivos_que_entran, archivos_omitidos, tamanio_estimado_bytes, excede_limite, desglose}>}
+   */
+  getAdjuntosCorreo: async (operacionId) => {
+    try {
+      const response = await apiClient.get(`/operaciones/${operacionId}/adjuntos-correo`);
+      return response;
+    } catch {
+      return {
+        total_archivos: 0,
+        archivos_que_entran: 0,
+        archivos_omitidos: 0,
+        tamanio_estimado_bytes: 0,
+        excede_limite: false,
+        desglose: { documentos: 0, fotos_averias: 0 },
       };
     }
   },

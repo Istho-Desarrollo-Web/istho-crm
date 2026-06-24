@@ -16,6 +16,12 @@ const nodemailer = require('nodemailer');
 const { getTransporter, defaultFrom } = require('../config/email');
 const logger = require('../utils/logger');
 
+// Prefijos válidos de S3 keys en istho-crm-files
+// Cualquier valor que no empiece por uno de estos es un ID legacy de Cloudinary o URL externa
+const S3_KEY_PREFIXES = ['soportes/', 'evidencias/', 'averias/', 'avatares/', 'branding/', 'cumplidos/'];
+const isValidS3Key = (val) =>
+  !!val && S3_KEY_PREFIXES.some((p) => val.startsWith(p));
+
 // URL de la app (para botones en emails)
 const APP_URL =
   process.env.APP_URL || (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',')[0].trim();
@@ -333,28 +339,25 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
 
     if (operacion.documentos && operacion.documentos.length > 0) {
       for (const doc of operacion.documentos) {
-        const key = doc.cloudinary_public_id || doc.archivo_url;
-        if (key && !key.startsWith('http') && !key.startsWith('data:')) {
+        const key = doc.archivo_url || doc.cloudinary_public_id;
+        if (isValidS3Key(key)) {
           archivosParaEnlazar.push({ key, nombre: doc.archivo_nombre || `soporte_${doc.id}`, tipo: doc.archivo_tipo, filePath: null });
-        } else if (key && key.startsWith('/')) {
-          const filePath = path.join(__dirname, '../../', key);
-          if (fs.existsSync(filePath)) {
-            archivosParaEnlazar.push({ key: null, nombre: doc.archivo_nombre, tipo: doc.archivo_tipo, filePath });
-          }
         }
       }
     }
 
     if (operacion.averias && operacion.averias.length > 0) {
       for (const av of operacion.averias) {
-        // fotos_urls ya viene parseado (getter del modelo retorna array)
-        const rawFotos = av.fotos_urls;
+        let rawFotos = av.fotos_urls;
+        if (typeof rawFotos === 'string') {
+          try { rawFotos = JSON.parse(rawFotos); } catch { rawFotos = []; }
+        }
         const todasFotos = Array.isArray(rawFotos) && rawFotos.length > 0
           ? rawFotos
-          : [av.cloudinary_public_id || av.foto_url].filter(Boolean);
+          : [av.foto_url].filter(Boolean);
 
         todasFotos.forEach((key, idx) => {
-          if (key && !key.startsWith('http') && !key.startsWith('data:')) {
+          if (isValidS3Key(key)) {
             const nombre = idx === 0 && av.foto_nombre
               ? av.foto_nombre
               : `averia_${av.id}_foto${idx + 1}.jpg`;

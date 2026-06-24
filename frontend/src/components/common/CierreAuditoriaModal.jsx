@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Mail, CheckCircle2, FileText, Star, Loader2, X, ChevronDown, Users } from 'lucide-react';
+import { Mail, CheckCircle2, FileText, Star, Loader2, X, ChevronDown, Users, Paperclip, AlertTriangle } from 'lucide-react';
 import plantillasEmailService from '../../api/plantillasEmail.service';
 import auditoriasService from '../../api/auditorias.service';
 
@@ -28,6 +28,8 @@ const CierreAuditoriaModal = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [destinatarios, setDestinatarios] = useState([]);
   const [loadingDestinatarios, setLoadingDestinatarios] = useState(false);
+  const [adjuntosInfo, setAdjuntosInfo] = useState(null);
+  const [loadingAdjuntos, setLoadingAdjuntos] = useState(false);
 
   const colors = {
     emerald: {
@@ -102,9 +104,10 @@ const CierreAuditoriaModal = ({
       .finally(() => setLoading(false));
   }, [isOpen, tipoAuditoria]);
 
-  // Cargar destinatarios al abrir (si hay auditoriaId)
+  // Cargar destinatarios y adjuntos estimados al abrir (si hay auditoriaId)
   useEffect(() => {
     if (!isOpen || !auditoriaId) return;
+
     setLoadingDestinatarios(true);
     auditoriasService
       .getDestinatarios(auditoriaId)
@@ -114,6 +117,16 @@ const CierreAuditoriaModal = ({
       })
       .catch(() => setDestinatarios([]))
       .finally(() => setLoadingDestinatarios(false));
+
+    setLoadingAdjuntos(true);
+    auditoriasService
+      .getAdjuntosCorreo(auditoriaId)
+      .then((res) => {
+        const data = res?.data || res || {};
+        setAdjuntosInfo(data);
+      })
+      .catch(() => setAdjuntosInfo(null))
+      .finally(() => setLoadingAdjuntos(false));
   }, [isOpen, auditoriaId]);
 
   // Reset al cerrar
@@ -121,6 +134,7 @@ const CierreAuditoriaModal = ({
     if (!isOpen) {
       setShowDropdown(false);
       setDestinatarios([]);
+      setAdjuntosInfo(null);
     }
   }, [isOpen]);
 
@@ -345,6 +359,74 @@ const CierreAuditoriaModal = ({
                     </li>
                   ))}
                 </ul>
+              )}
+            </div>
+          )}
+
+          {/* Indicador de adjuntos del correo */}
+          {enviarCorreo && auditoriaId && (
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-centhrix-surface">
+              <div className="flex items-center gap-2 px-3 pt-3 pb-2">
+                <Paperclip className="w-4 h-4 flex-shrink-0 text-slate-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Archivos adjuntos al correo
+                </span>
+              </div>
+              {loadingAdjuntos ? (
+                <div className="flex items-center gap-2 px-3 pb-3">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+                  <span className="text-xs text-slate-500">Calculando adjuntos...</span>
+                </div>
+              ) : !adjuntosInfo || adjuntosInfo.total_archivos === 0 ? (
+                <p className="px-3 pb-3 text-xs text-slate-400 dark:text-slate-500">
+                  Sin archivos adjuntos para esta operación.
+                </p>
+              ) : (
+                <div className="px-3 pb-3 space-y-2">
+                  {/* Fila: conteo y peso */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {adjuntosInfo.desglose?.documentos > 0 && (
+                        <span className="text-xs text-slate-600 dark:text-slate-300">
+                          <span className="font-semibold">{adjuntosInfo.desglose.documentos}</span>{' '}
+                          {adjuntosInfo.desglose.documentos === 1 ? 'documento' : 'documentos'}
+                        </span>
+                      )}
+                      {adjuntosInfo.desglose?.fotos_averias > 0 && (
+                        <span className="text-xs text-slate-600 dark:text-slate-300">
+                          <span className="font-semibold">{adjuntosInfo.desglose.fotos_averias}</span>{' '}
+                          {adjuntosInfo.desglose.fotos_averias === 1 ? 'foto de avería' : 'fotos de averías'}
+                        </span>
+                      )}
+                    </div>
+                    {/* Badge de peso estimado */}
+                    {adjuntosInfo.tamanio_estimado_bytes > 0 && (() => {
+                      const mb = adjuntosInfo.tamanio_estimado_bytes / (1024 * 1024);
+                      const color =
+                        mb >= 14 ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                        : mb >= 10 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                        : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300';
+                      return (
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${color}`}>
+                          ≈ {mb.toFixed(1)} MB / 15 MB
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  {/* Advertencia de archivos omitidos */}
+                  {adjuntosInfo.excede_limite && (
+                    <div className="flex items-start gap-2 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
+                        {adjuntosInfo.archivos_omitidos}{' '}
+                        {adjuntosInfo.archivos_omitidos === 1
+                          ? 'archivo no se adjuntará'
+                          : 'archivos no se adjuntarán'}{' '}
+                        por superar el límite de 15 MB del correo.
+                      </p>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}

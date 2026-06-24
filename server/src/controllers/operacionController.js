@@ -20,6 +20,7 @@ const {
   OperacionDocumento,
   Cliente,
   Contacto,
+  ContactoCliente,
   Usuario,
   Inventario,
   MovimientoInventario, // ✅ AGREGADO
@@ -1044,7 +1045,7 @@ const registrarAveria = async (req, res) => {
         tipo_averia: datos.tipo_averia,
         descripcion: datos.descripcion,
         ...fotoData,
-        fotos_urls: urlsSubidas.length > 0 ? JSON.stringify(urlsSubidas) : null,
+        fotos_urls: urlsSubidas.length > 0 ? urlsSubidas : null,
         registrado_por: req.user.id,
       },
       { transaction }
@@ -1222,12 +1223,14 @@ const cerrar = async (req, res) => {
     let correosEnvio = correos_destino;
     if (!correosEnvio && enviar_correo !== false) {
       const contactos = await Contacto.findAll({
-        where: {
-          cliente_id: operacion.cliente_id,
-          recibe_notificaciones: true,
-          activo: true,
-          email: { [Op.ne]: null },
-        },
+        where: { recibe_notificaciones: true, activo: true, email: { [Op.ne]: null } },
+        include: [{
+          model: ContactoCliente,
+          as: 'asignaciones',
+          where: { cliente_id: operacion.cliente_id },
+          required: true,
+          attributes: [],
+        }],
       });
       correosEnvio = contactos.map((c) => c.email).join(', ');
     }
@@ -1500,12 +1503,14 @@ const reenviarCorreo = async (req, res) => {
         correosEnvio = operacion.correos_destino;
       } else {
         const contactos = await Contacto.findAll({
-          where: {
-            cliente_id: operacion.cliente_id,
-            recibe_notificaciones: true,
-            activo: true,
-            email: { [Op.ne]: null },
-          },
+          where: { recibe_notificaciones: true, activo: true, email: { [Op.ne]: null } },
+          include: [{
+            model: ContactoCliente,
+            as: 'asignaciones',
+            where: { cliente_id: operacion.cliente_id },
+            required: true,
+            attributes: [],
+          }],
         });
         correosEnvio = contactos.map((c) => c.email).join(', ');
       }
@@ -1822,7 +1827,18 @@ const reabrirOperacion = async (req, res) => {
  * No envía correos (para evitar spam masivo).
  */
 const cerrarMasivo = async (req, res) => {
-  const { ids, observaciones_cierre } = req.body;
+  // multer convierte campos de FormData a strings — parsear ids
+  let ids = req.body.ids;
+  if (typeof ids === 'string') {
+    try { ids = JSON.parse(ids); } catch { ids = []; }
+  }
+
+  const { observaciones_cierre, conductor_nombre, conductor_cedula, conductor_telefono, vehiculo_placa, vehiculo_tipo } = req.body;
+  let origenDestino = {};
+  if (req.body.origen_destino) {
+    try { origenDestino = JSON.parse(req.body.origen_destino); } catch { origenDestino = {}; }
+  }
+  const archivos = req.files || [];
 
   if (!Array.isArray(ids) || ids.length === 0) {
     return errorResponse(res, 'Se requiere al menos una operación para cerrar', 400);
@@ -1833,6 +1849,31 @@ const cerrarMasivo = async (req, res) => {
   }
 
   const ipAddress = getClientIP(req);
+  const s3Service = require('../services/s3Service');
+
+  // Subir evidencias una sola vez (mismos archivos para todas las operaciones)
+  const archivosSubidos = [];
+  for (const archivo of archivos) {
+    try {
+      let archivo_url;
+      if (s3Service.isConfigured()) {
+        const resultado = await s3Service.subir(archivo, 'cumplidos/masivo');
+        archivo_url = resultado.key;
+      } else {
+        const base64 = archivo.buffer.toString('base64');
+        archivo_url = `data:${archivo.mimetype};base64,${base64}`;
+      }
+      archivosSubidos.push({
+        archivo_url,
+        archivo_nombre: archivo.originalname,
+        archivo_tipo: archivo.mimetype,
+        archivo_tamanio: archivo.size,
+      });
+    } catch (err) {
+      logger.error('Error al subir evidencia masiva:', { name: archivo.originalname, message: err.message });
+    }
+  }
+
   const cerradas = [];
   const errores = [];
 
@@ -1868,15 +1909,47 @@ const cerrarMasivo = async (req, res) => {
 
       await confirmarMovimientoStock(operacion, req.user.id, ipAddress, transaction);
 
-      await operacion.update(
-        {
-          estado: 'cerrado',
-          fecha_cierre: new Date(),
-          cerrado_por: req.user.id,
-          observaciones_cierre: observaciones_cierre || null,
-        },
-        { transaction }
+      // Marcar todas las líneas como verificadas
+      await OperacionDetalle.update(
+        { verificado: true },
+        { where: { operacion_id: operacion.id }, transaction }
       );
+
+      const updateData = {
+        estado: 'cerrado',
+        fecha_cierre: new Date(),
+        cerrado_por: req.user.id,
+        observaciones_cierre: observaciones_cierre || null,
+      };
+      if (conductor_nombre) updateData.conductor_nombre = conductor_nombre;
+      if (conductor_cedula) updateData.conductor_cedula = conductor_cedula;
+      if (conductor_telefono) updateData.conductor_telefono = conductor_telefono;
+      if (vehiculo_placa) updateData.vehiculo_placa = vehiculo_placa;
+      if (vehiculo_tipo) updateData.vehiculo_tipo = vehiculo_tipo;
+      const opOrigen = origenDestino[id]?.origen;
+      const opDestino = origenDestino[id]?.destino;
+      if (opOrigen) updateData.origen = opOrigen;
+      if (opDestino) updateData.destino = opDestino;
+
+      await operacion.update(updateData, { transaction });
+
+      // Adjuntar evidencias a esta operación
+      for (const arch of archivosSubidos) {
+        await OperacionDocumento.create(
+          {
+            operacion_id: operacion.id,
+            tipo_documento: 'cumplido',
+            nombre: arch.archivo_nombre,
+            archivo_url: arch.archivo_url,
+            archivo_nombre: arch.archivo_nombre,
+            archivo_tipo: arch.archivo_tipo,
+            archivo_tamanio: arch.archivo_tamanio,
+            descripcion: 'Evidencia adjunta en cierre masivo',
+            subido_por: req.user.id,
+          },
+          { transaction }
+        );
+      }
 
       await Auditoria.registrar({
         tabla: 'operaciones',
@@ -1885,7 +1958,12 @@ const cerrarMasivo = async (req, res) => {
         usuario_id: req.user.id,
         usuario_nombre: req.user.nombre_completo,
         datos_anteriores: { estado: operacion.estado },
-        datos_nuevos: { estado: 'cerrado', stock_actualizado: true, cierre_masivo: true },
+        datos_nuevos: {
+          estado: 'cerrado',
+          stock_actualizado: true,
+          cierre_masivo: true,
+          evidencias: archivosSubidos.length,
+        },
         ip_address: ipAddress,
         descripcion: `Cierre masivo: ${operacion.numero_operacion}`,
       });
@@ -1897,6 +1975,58 @@ const cerrarMasivo = async (req, res) => {
       notificacionService
         .notificarOperacionCerrada(operacion, req.user.nombre_completo)
         .catch(() => {});
+
+      // Enviar correo de cierre individual por operación en background
+      const opId = operacion.id;
+      const clienteId = operacion.cliente_id;
+      setImmediate(async () => {
+        try {
+          const emailService = require('../services/emailService');
+          const contactos = await Contacto.findAll({
+            where: { recibe_notificaciones: true, activo: true, email: { [Op.ne]: null } },
+            include: [{
+              model: ContactoCliente,
+              as: 'asignaciones',
+              where: { cliente_id: clienteId },
+              required: true,
+              attributes: [],
+            }],
+          });
+          const correosEnvio = contactos.map((c) => c.email).join(', ');
+          if (!correosEnvio) return;
+
+          const opReload = await Operacion.findByPk(opId, {
+            include: [
+              { model: Cliente, as: 'cliente' },
+              { model: OperacionDetalle, as: 'detalles' },
+              { model: OperacionDocumento, as: 'documentos' },
+              { model: OperacionAveria, as: 'averias' },
+              { model: Usuario, as: 'cerrador', attributes: ['id', 'nombre_completo'] },
+            ],
+          });
+          if (!opReload) return;
+
+          const resultado = await emailService.enviarCierreOperacion(opReload, correosEnvio);
+          await Operacion.update(
+            {
+              correo_enviado: resultado.success,
+              fecha_correo_enviado: resultado.success ? new Date() : null,
+              correos_destino: correosEnvio,
+            },
+            { where: { id: opId } }
+          );
+          logger.info('Correo de cierre masivo enviado:', {
+            operacion_id: opId,
+            success: resultado.success,
+          });
+        } catch (emailErr) {
+          logger.error('Error al enviar correo de cierre masivo:', {
+            operacion_id: opId,
+            message: emailErr.message,
+          });
+          await Operacion.update({ correo_enviado: false }, { where: { id: opId } }).catch(() => {});
+        }
+      });
     } catch (err) {
       await transaction.rollback();
       errores.push({ id, error: err.message });
@@ -1910,6 +2040,100 @@ const cerrarMasivo = async (req, res) => {
     total_cerradas: cerradas.length,
     total_errores: errores.length,
   });
+};
+
+/**
+ * GET /operaciones/:id/adjuntos-correo
+ * Devuelve cuántos archivos y cuánto peso estimado se adjuntarán al correo de cierre.
+ * Usa tamaños almacenados en BD — no hace llamadas a S3.
+ */
+const adjuntosCorreo = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const MAX_BYTES = 15 * 1024 * 1024;
+    const S3_PREFIXES = ['soportes/', 'evidencias/', 'averias/', 'avatares/', 'branding/'];
+    const esS3Key = (v) => !!v && S3_PREFIXES.some((p) => v.startsWith(p));
+
+    const [documentos, averias] = await Promise.all([
+      OperacionDocumento.findAll({
+        where: { operacion_id: id },
+        attributes: ['id', 'archivo_url', 'cloudinary_public_id', 'archivo_nombre', 'archivo_tipo', 'archivo_tamanio'],
+        paranoid: false,
+      }),
+      OperacionAveria.findAll({
+        where: { operacion_id: id },
+        attributes: ['id', 'foto_url', 'foto_nombre', 'foto_tipo', 'foto_tamanio', 'fotos_urls'],
+        paranoid: false,
+      }),
+    ]);
+
+    const archivos = [];
+
+    for (const doc of documentos) {
+      const key = doc.archivo_url || doc.cloudinary_public_id;
+      if (esS3Key(key)) {
+        archivos.push({
+          fuente: 'documento',
+          nombre: doc.archivo_nombre || `soporte_${doc.id}`,
+          tipo: doc.archivo_tipo,
+          tamanio: doc.archivo_tamanio || 0,
+        });
+      }
+    }
+
+    for (const av of averias) {
+      let rawFotos = av.fotos_urls;
+      if (typeof rawFotos === 'string') {
+        try { rawFotos = JSON.parse(rawFotos); } catch { rawFotos = []; }
+      }
+      const todasFotos = Array.isArray(rawFotos) && rawFotos.length > 0
+        ? rawFotos
+        : [av.foto_url].filter(Boolean);
+
+      const fotosValidas = todasFotos.filter(esS3Key);
+      if (fotosValidas.length === 0) continue;
+
+      // foto_tamanio cubre la foto principal; para el resto usamos promedio como estimado
+      const tamanioPrincipal = av.foto_tamanio || 0;
+      const tamanioPromedio = fotosValidas.length > 0 ? Math.round(tamanioPrincipal / fotosValidas.length) : 0;
+
+      fotosValidas.forEach((key, idx) => {
+        archivos.push({
+          fuente: 'averia',
+          nombre: idx === 0 && av.foto_nombre ? av.foto_nombre : `averia_${av.id}_foto${idx + 1}.jpg`,
+          tipo: av.foto_tipo || 'image/jpeg',
+          tamanio: idx === 0 ? tamanioPrincipal : tamanioPromedio,
+        });
+      });
+    }
+
+    // Simular el mismo orden de corte que emailService (FIFO hasta 15 MB)
+    let acumulado = 0;
+    let omitidos = 0;
+    for (const a of archivos) {
+      if (acumulado + a.tamanio > MAX_BYTES) {
+        omitidos++;
+      } else {
+        acumulado += a.tamanio;
+      }
+    }
+
+    return success(res, {
+      total_archivos: archivos.length,
+      archivos_que_entran: archivos.length - omitidos,
+      archivos_omitidos: omitidos,
+      tamanio_estimado_bytes: acumulado,
+      excede_limite: omitidos > 0,
+      desglose: {
+        documentos: archivos.filter((a) => a.fuente === 'documento').length,
+        fotos_averias: archivos.filter((a) => a.fuente === 'averia').length,
+      },
+    });
+  } catch (error) {
+    logger.error('Error al calcular adjuntos correo:', { message: error.message });
+    return serverError(res, 'Error al calcular adjuntos', error);
+  }
 };
 
 module.exports = {
@@ -1930,4 +2154,5 @@ module.exports = {
   anular,
   reabrirOperacion,
   editarAdmin,
+  adjuntosCorreo,
 };

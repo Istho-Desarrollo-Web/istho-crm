@@ -60,6 +60,7 @@ import { formatDateShort as formatDateSafe } from '../../utils/formatDate';
 import { RUTAS_CON_TOUR } from '../../utils/tutorialConfig';
 import useTutorial from '../../hooks/useTutorial';
 import { EnviarEmailModal } from '../common';
+import S3Image from '../common/S3Image';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -921,17 +922,17 @@ const MobileMenu = ({
               }}
               className="flex items-center gap-3 mt-3 p-3 bg-violet-50 dark:bg-violet-900/20 rounded-xl border border-violet-200 dark:border-violet-800 w-full text-left hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
             >
-              {user.cliente_info.logo_url ? (
-                <img
-                  src={user.cliente_info.logo_url}
-                  alt={user.cliente_info.razon_social}
-                  className="w-10 h-10 rounded-lg object-contain bg-white border border-slate-200 dark:border-slate-600"
-                />
-              ) : (
-                <div className="w-10 h-10 bg-violet-100 dark:bg-violet-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Building2 className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-                </div>
-              )}
+              <S3Image
+                src={user.cliente_info.logo_url}
+                alt={user.cliente_info.razon_social}
+                className="w-10 h-10 rounded-lg object-contain bg-white border border-slate-200 dark:border-slate-600"
+                placeholderCls="w-10 h-10 rounded-lg"
+                fallback={
+                  <div className="w-10 h-10 bg-violet-100 dark:bg-violet-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                  </div>
+                }
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-violet-600 dark:text-violet-400">
                   Portal Cliente
@@ -1380,17 +1381,17 @@ const FloatingHeader = () => {
                   onClick={() => navigate(`/clientes/${user.cliente_id}`)}
                   className="hidden sm:flex items-center gap-2 ml-2 pl-3 border-l border-slate-200 dark:border-slate-700 hover:opacity-80 transition-opacity cursor-pointer"
                 >
-                  {user.cliente_info.logo_url ? (
-                    <img
-                      src={user.cliente_info.logo_url}
-                      alt={user.cliente_info.razon_social}
-                      className="w-7 h-7 rounded-lg object-contain bg-white border border-slate-200 dark:border-slate-600"
-                    />
-                  ) : (
-                    <div className="w-7 h-7 bg-violet-100 dark:bg-violet-900/30 rounded-lg flex items-center justify-center">
-                      <Building2 className="w-4 h-4 text-violet-600 dark:text-violet-400" />
-                    </div>
-                  )}
+                  <S3Image
+                    src={user.cliente_info.logo_url}
+                    alt={user.cliente_info.razon_social}
+                    className="w-7 h-7 rounded-lg object-contain bg-white border border-slate-200 dark:border-slate-600"
+                    placeholderCls="w-7 h-7 rounded-lg"
+                    fallback={
+                      <div className="w-7 h-7 bg-violet-100 dark:bg-violet-900/30 rounded-lg flex items-center justify-center">
+                        <Building2 className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                      </div>
+                    }
+                  />
                   <div className="flex flex-col text-left">
                     <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 leading-tight">
                       Portal Cliente

@@ -48,6 +48,7 @@ import {
 
 // Components
 import { Button, StatusChip, KpiCard, ConfirmDialog, FilterDropdown } from '../../components/common';
+import S3Image from '../../components/common/S3Image';
 
 // Local Components
 import ClienteForm from './components/ClienteForm';
@@ -593,17 +594,17 @@ const ClienteDetail = () => {
             </button>
             <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <div className="relative group flex-shrink-0">
-                {cliente.logo_url ? (
-                  <img
-                    src={cliente.logo_url}
-                    alt={cliente.razon_social}
-                    className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl object-contain bg-white dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600"
-                  />
-                ) : (
-                  <div className="w-10 h-10 sm:w-14 sm:h-14 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center">
-                    <Building2 className="w-5 h-5 sm:w-7 sm:h-7 text-orange-600 dark:text-orange-400" />
-                  </div>
-                )}
+                <S3Image
+                  src={cliente.logo_url}
+                  alt={cliente.razon_social}
+                  className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl object-contain bg-white dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600"
+                  placeholderCls="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl"
+                  fallback={
+                    <div className="w-10 h-10 sm:w-14 sm:h-14 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center">
+                      <Building2 className="w-5 h-5 sm:w-7 sm:h-7 text-orange-600 dark:text-orange-400" />
+                    </div>
+                  }
+                />
                 {canEditLogo && (
                   <>
                     <button

@@ -45,6 +45,11 @@ import {
   Trash2,
   XCircle,
   CheckSquare2,
+  Upload,
+  MapPin,
+  Paperclip,
+  Phone,
+  CreditCard,
 } from 'lucide-react';
 import clientesService from '../../../api/clientes.service';
 import { Pagination, FilterDropdown, DatePicker } from '../../../components/common';
@@ -285,7 +290,13 @@ const EntradasList = () => {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [modalCierreMasivo, setModalCierreMasivo] = useState(false);
   const [cerrandoMasivo, setCerrandoMasivo] = useState(false);
+  const [modalCedula, setModalCedula] = useState('');
+  const [modalTelefono, setModalTelefono] = useState('');
+  const [modalTipoVehiculo, setModalTipoVehiculo] = useState('');
+  const [modalOrigenDestino, setModalOrigenDestino] = useState({});
+  const [modalArchivos, setModalArchivos] = useState([]);
   const selectAllRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!esPortal) {
@@ -370,18 +381,36 @@ const EntradasList = () => {
   const closeableIds = filtered
     .filter((e) => e.estado === 'pendiente' || e.estado === 'en_proceso')
     .map((e) => e.id);
+
+  // Cliente bloqueado por la primera selección
+  const selectedCliente = (() => {
+    if (selectedIds.size === 0) return null;
+    const firstId = [...selectedIds][0];
+    return entradas.find((e) => e.id === firstId)?.cliente || null;
+  })();
+
+  // Select-all y checkbox cabecera solo cuentan operaciones del mismo cliente
+  const sameClientCloseableIds = selectedCliente
+    ? closeableIds.filter((id) => entradas.find((e) => e.id === id)?.cliente === selectedCliente)
+    : closeableIds;
+
   const allCloseableSelected =
-    closeableIds.length > 0 && closeableIds.every((id) => selectedIds.has(id));
+    sameClientCloseableIds.length > 0 && sameClientCloseableIds.every((id) => selectedIds.has(id));
 
   // Indeterminate en checkbox de cabecera
   useEffect(() => {
     if (selectAllRef.current) {
-      const some = closeableIds.some((id) => selectedIds.has(id));
+      const some = sameClientCloseableIds.some((id) => selectedIds.has(id));
       selectAllRef.current.indeterminate = some && !allCloseableSelected;
     }
   });
 
   const handleToggleSelect = (id) => {
+    const item = entradas.find((e) => e.id === id);
+    if (!selectedIds.has(id) && selectedIds.size > 0 && item?.cliente !== selectedCliente) {
+      notify.warning(`Solo puedes seleccionar operaciones del mismo cliente (${selectedCliente})`);
+      return;
+    }
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -394,14 +423,26 @@ const EntradasList = () => {
     if (allCloseableSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(closeableIds));
+      const targetCliente =
+        selectedCliente || entradas.find((e) => closeableIds.includes(e.id))?.cliente;
+      const idsToSelect = closeableIds.filter((id) => {
+        const e = entradas.find((en) => en.id === id);
+        return !targetCliente || e?.cliente === targetCliente;
+      });
+      setSelectedIds(new Set(idsToSelect));
     }
   };
 
   const handleCerrarMasivo = async () => {
     setCerrandoMasivo(true);
     try {
-      const res = await auditoriasService.cerrarMasivo([...selectedIds]);
+      const res = await auditoriasService.cerrarMasivo([...selectedIds], {
+        conductor_cedula: modalCedula,
+        conductor_telefono: modalTelefono,
+        vehiculo_tipo: modalTipoVehiculo,
+        origen_destino: modalOrigenDestino,
+        archivos: modalArchivos,
+      });
       const { total_cerradas, total_errores } = res.data;
       if (total_errores === 0) {
         notify.success(
@@ -413,6 +454,11 @@ const EntradasList = () => {
         notify.error('No se pudo cerrar ninguna operación');
       }
       setModalCierreMasivo(false);
+      setModalCedula('');
+      setModalTelefono('');
+      setModalTipoVehiculo('');
+      setModalOrigenDestino({});
+      setModalArchivos([]);
       fetchEntradas(pagination.page);
     } catch (err) {
       notify.error(err.message || 'Error al cerrar las operaciones');
@@ -682,7 +728,19 @@ const EntradasList = () => {
                 Limpiar selección
               </button>
               <button
-                onClick={() => setModalCierreMasivo(true)}
+                onClick={() => {
+                  const map = {};
+                  [...selectedIds].forEach((id) => {
+                    const e = entradas.find((en) => en.id === id);
+                    map[id] = { origen: e?.origen || '', destino: e?.destino || '' };
+                  });
+                  setModalCedula('');
+                  setModalTelefono('');
+                  setModalTipoVehiculo('');
+                  setModalOrigenDestino(map);
+                  setModalArchivos([]);
+                  setModalCierreMasivo(true);
+                }}
                 className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors"
               >
                 <CheckCircle2 className="w-4 h-4" />
@@ -964,39 +1022,217 @@ const EntradasList = () => {
 
       {/* MODAL CIERRE MASIVO */}
       {modalCierreMasivo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-md w-full mx-4 p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
-                <CheckSquare2 className="w-5 h-5 text-emerald-600" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-2xl w-full overflow-y-auto max-h-[90vh]">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-5">
+                <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+                  <CheckSquare2 className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    Cerrar {selectedIds.size} {selectedIds.size !== 1 ? 'operaciones' : 'operación'}
+                  </h3>
+                  {selectedCliente && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                      <Building2 className="w-3.5 h-3.5" />
+                      {selectedCliente}
+                    </p>
+                  )}
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                Cerrar {selectedIds.size} {selectedIds.size !== 1 ? 'operaciones' : 'operación'}
-              </h3>
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-              Se actualizará el stock de inventario para cada operación seleccionada. Esta acción no se puede deshacer.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setModalCierreMasivo(false)}
-                disabled={cerrandoMasivo}
-                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-centhrix-surface rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCerrarMasivo}
-                disabled={cerrandoMasivo}
-                className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {cerrandoMasivo ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="w-4 h-4" />
+
+              {/* Datos logísticos compartidos */}
+              <div className="mb-5">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+                  Datos logísticos <span className="normal-case font-normal text-slate-400">(aplican a todas)</span>
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Cédula</label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                      <input
+                        type="text"
+                        value={modalCedula}
+                        onChange={(e) => setModalCedula(e.target.value)}
+                        placeholder="Número de cédula"
+                        className="w-full pl-8 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Tipo de vehículo</label>
+                    <FilterDropdown
+                      options={[
+                        { value: '', label: 'Seleccionar...' },
+                        { value: 'TRACTOMULA', label: 'Tractomula' },
+                        { value: 'SENCILLO', label: 'Sencillo' },
+                        { value: 'DOBLE TROQUE', label: 'Doble Troque' },
+                        { value: 'TURBO', label: 'Turbo' },
+                        { value: 'FURGÓN', label: 'Furgón' },
+                        { value: 'CAMIONETA', label: 'Camioneta' },
+                        { value: 'MULA', label: 'Mula' },
+                        { value: 'MOTO', label: 'Moto' },
+                        { value: 'OTRO', label: 'Otro' },
+                      ]}
+                      value={modalTipoVehiculo}
+                      onChange={(v) => setModalTipoVehiculo(v)}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Teléfono del conductor</label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                      <input
+                        type="text"
+                        value={modalTelefono}
+                        onChange={(e) => setModalTelefono(e.target.value)}
+                        placeholder="Teléfono"
+                        className="w-full pl-8 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-centhrix-bg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Origen / Destino por operación */}
+              <div className="mb-5">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+                  Origen / Destino por operación
+                </p>
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {[...selectedIds].map((id) => {
+                    const entrada = entradas.find((e) => e.id === id);
+                    if (!entrada) return null;
+                    return (
+                      <div key={id} className="bg-slate-50 dark:bg-centhrix-bg rounded-xl p-3">
+                        <p className="text-xs font-mono font-semibold text-slate-600 dark:text-slate-300 mb-2">
+                          {entrada.documento_wms || entrada.documento || `#${id}`}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Origen</label>
+                            <div className="relative">
+                              <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                              <input
+                                type="text"
+                                value={modalOrigenDestino[id]?.origen || ''}
+                                onChange={(e) =>
+                                  setModalOrigenDestino((prev) => ({
+                                    ...prev,
+                                    [id]: { ...prev[id], origen: e.target.value.toUpperCase() },
+                                  }))
+                                }
+                                placeholder="Ciudad / bodega"
+                                className="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-centhrix-surface text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Destino</label>
+                            <div className="relative">
+                              <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                              <input
+                                type="text"
+                                value={modalOrigenDestino[id]?.destino || ''}
+                                onChange={(e) =>
+                                  setModalOrigenDestino((prev) => ({
+                                    ...prev,
+                                    [id]: { ...prev[id], destino: e.target.value.toUpperCase() },
+                                  }))
+                                }
+                                placeholder="Ciudad / bodega"
+                                className="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-centhrix-surface text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Evidencias */}
+              <div className="mb-5">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+                  Evidencias <span className="normal-case font-normal">(opcional, se adjuntan a todas)</span>
+                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    setModalArchivos((prev) => [...prev, ...files]);
+                    e.target.value = '';
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:border-emerald-400 dark:hover:border-emerald-600 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  Seleccionar archivos
+                </button>
+                {modalArchivos.length > 0 && (
+                  <ul className="mt-2 space-y-1">
+                    {modalArchivos.map((file, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-center justify-between gap-2 px-3 py-1.5 bg-slate-50 dark:bg-centhrix-bg rounded-lg"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Paperclip className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                          <span className="text-xs text-slate-700 dark:text-slate-300 truncate">
+                            {file.name}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setModalArchivos((prev) => prev.filter((_, i) => i !== idx))}
+                          className="text-slate-400 hover:text-red-500 flex-shrink-0 transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 )}
-                {cerrandoMasivo ? 'Cerrando...' : 'Confirmar cierre'}
-              </button>
+              </div>
+
+              {/* Advertencia */}
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">
+                Se actualizará el stock de inventario para cada operación. Esta acción no se puede deshacer.
+              </p>
+
+              {/* Botones */}
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setModalCierreMasivo(false)}
+                  disabled={cerrandoMasivo}
+                  className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-centhrix-surface rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleCerrarMasivo}
+                  disabled={cerrandoMasivo}
+                  className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {cerrandoMasivo ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4" />
+                  )}
+                  {cerrandoMasivo ? 'Cerrando...' : 'Confirmar cierre'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
