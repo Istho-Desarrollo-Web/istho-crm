@@ -190,6 +190,7 @@ const enviarCorreo = async ({
         filename: adj.nombre || (adj.path ? path.basename(adj.path) : 'adjunto'),
         ...(adj.content ? { content: adj.content } : { path: adj.path }),
         contentType: adj.tipo,
+        ...(adj.cid ? { cid: adj.cid } : {}),
       }));
     }
 
@@ -238,14 +239,26 @@ const enviarCorreo = async ({
  */
 const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = null) => {
   try {
-    // Resolver logo del cliente — ya viene procesado (fondo transparente) desde el upload
+    // adjuntos se llena a lo largo de la función (logo CID + documentos + fotos averías)
+    const adjuntos = [];
+
+    // Resolver logo del cliente — adjunto inline (CID) para máxima compatibilidad de clientes de correo
     let logoClienteUrl = null;
     if (operacion.cliente?.logo_url) {
       try {
         const s3Svc = require('./s3Service');
-        logoClienteUrl = await s3Svc.resolveUrl(operacion.cliente.logo_url, 604800); // 7 días
+        const logoKey = operacion.cliente.logo_url;
+        if (s3Svc.isS3Key(logoKey)) {
+          const buffer = await s3Svc.getBuffer(logoKey);
+          const ext = logoKey.split('.').pop().toLowerCase();
+          const mime = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+          adjuntos.push({ nombre: 'logo-cliente', content: buffer, tipo: mime, cid: 'logo-cliente@istho.crm' });
+          logoClienteUrl = 'cid:logo-cliente@istho.crm';
+        } else if (logoKey && !logoKey.startsWith('data:')) {
+          logoClienteUrl = logoKey;
+        }
       } catch (err) {
-        logger.warn('No se pudo resolver URL del logo del cliente para email:', err.message);
+        logger.warn('No se pudo cargar logo del cliente para email:', err.message);
         /* ignorar — el header mostrará solo el logo de ISTHO */
       }
     }
@@ -316,8 +329,6 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
     };
 
     // Adjuntar documentos y fotos de averías al correo
-    const adjuntos = [];
-
     const LINK_EXPIRY = 3600; // 1 hora — suficiente para que nodemailer descargue el archivo al enviar
 
     const archivosParaEnlazar = [];
@@ -338,14 +349,12 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
 
     if (operacion.averias && operacion.averias.length > 0) {
       for (const av of operacion.averias) {
-        let todasFotos;
-        try {
-          todasFotos = av.fotos_urls
-            ? JSON.parse(av.fotos_urls)
-            : [av.cloudinary_public_id || av.foto_url].filter(Boolean);
-        } catch {
-          todasFotos = [av.cloudinary_public_id || av.foto_url].filter(Boolean);
-        }
+        // fotos_urls ya viene parseado (getter del modelo retorna array)
+        const rawFotos = av.fotos_urls;
+        const todasFotos = Array.isArray(rawFotos) && rawFotos.length > 0
+          ? rawFotos
+          : [av.cloudinary_public_id || av.foto_url].filter(Boolean);
+
         todasFotos.forEach((key, idx) => {
           if (key && !key.startsWith('http') && !key.startsWith('data:')) {
             const nombre = idx === 0 && av.foto_nombre
@@ -470,6 +479,7 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
             filename: adj.nombre || (adj.path ? path.basename(adj.path) : 'adjunto'),
             ...(adj.content ? { content: adj.content } : { path: adj.path }),
             contentType: adj.tipo,
+            ...(adj.cid ? { cid: adj.cid } : {}),
           }));
         }
 

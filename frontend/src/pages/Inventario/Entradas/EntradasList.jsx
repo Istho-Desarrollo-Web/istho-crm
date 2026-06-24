@@ -44,6 +44,7 @@ import {
   Pencil,
   Trash2,
   XCircle,
+  CheckSquare2,
 } from 'lucide-react';
 import clientesService from '../../../api/clientes.service';
 import { Pagination, FilterDropdown, DatePicker } from '../../../components/common';
@@ -281,6 +282,10 @@ const EntradasList = () => {
   });
   const [clientes, setClientes] = useState([]);
   const [loadingClientes, setLoadingClientes] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [modalCierreMasivo, setModalCierreMasivo] = useState(false);
+  const [cerrandoMasivo, setCerrandoMasivo] = useState(false);
+  const selectAllRef = useRef(null);
 
   useEffect(() => {
     if (!esPortal) {
@@ -299,6 +304,7 @@ const EntradasList = () => {
   // Cargar datos desde API
   const fetchEntradas = useCallback(
     async (page = 1) => {
+      setSelectedIds(new Set());
       setLoading(true);
       setError(null);
       try {
@@ -359,6 +365,61 @@ const EntradasList = () => {
   };
 
   const filtered = entradas;
+
+  // Selección masiva
+  const closeableIds = filtered
+    .filter((e) => e.estado === 'pendiente' || e.estado === 'en_proceso')
+    .map((e) => e.id);
+  const allCloseableSelected =
+    closeableIds.length > 0 && closeableIds.every((id) => selectedIds.has(id));
+
+  // Indeterminate en checkbox de cabecera
+  useEffect(() => {
+    if (selectAllRef.current) {
+      const some = closeableIds.some((id) => selectedIds.has(id));
+      selectAllRef.current.indeterminate = some && !allCloseableSelected;
+    }
+  });
+
+  const handleToggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (allCloseableSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(closeableIds));
+    }
+  };
+
+  const handleCerrarMasivo = async () => {
+    setCerrandoMasivo(true);
+    try {
+      const res = await auditoriasService.cerrarMasivo([...selectedIds]);
+      const { total_cerradas, total_errores } = res.data;
+      if (total_errores === 0) {
+        notify.success(
+          `${total_cerradas} operación${total_cerradas !== 1 ? 'es' : ''} cerrada${total_cerradas !== 1 ? 's' : ''} correctamente`
+        );
+      } else if (total_cerradas > 0) {
+        notify.warning(`${total_cerradas} cerrada${total_cerradas !== 1 ? 's' : ''}, ${total_errores} con error`);
+      } else {
+        notify.error('No se pudo cerrar ninguna operación');
+      }
+      setModalCierreMasivo(false);
+      fetchEntradas(pagination.page);
+    } catch (err) {
+      notify.error(err.message || 'Error al cerrar las operaciones');
+    } finally {
+      setCerrandoMasivo(false);
+    }
+  };
 
   // KPIs
   const totalPendientes = entradas.filter((e) => e.estado === 'pendiente').length;
@@ -604,6 +665,33 @@ const EntradasList = () => {
           )}
         </div>
 
+        {/* BULK ACTION BAR */}
+        {selectedIds.size > 0 && (
+          <div className="mb-4 flex items-center justify-between gap-3 px-4 py-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+            <div className="flex items-center gap-2">
+              <CheckSquare2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                {selectedIds.size} operación{selectedIds.size !== 1 ? 'es' : ''} seleccionada{selectedIds.size !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors"
+              >
+                Limpiar selección
+              </button>
+              <button
+                onClick={() => setModalCierreMasivo(true)}
+                className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Cerrar {selectedIds.size} {selectedIds.size !== 1 ? 'operaciones' : 'operación'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* RESULTS COUNT + VIEW TOGGLE */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -652,6 +740,18 @@ const EntradasList = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-slate-700">
+                    <th className="py-3 pl-4 pr-2 w-10" onClick={(e) => e.stopPropagation()}>
+                      {closeableIds.length > 0 && (
+                        <input
+                          ref={selectAllRef}
+                          type="checkbox"
+                          checked={allCloseableSelected}
+                          onChange={handleSelectAll}
+                          className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 accent-emerald-500 cursor-pointer"
+                          title="Seleccionar todos los cerrables"
+                        />
+                      )}
+                    </th>
                     <th
                       className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-centhrix-surface/50"
                       onClick={() => handleSort('numero_operacion')}
@@ -705,9 +805,19 @@ const EntradasList = () => {
                   {filtered.map((entrada) => (
                     <tr
                       key={entrada.id}
-                      className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors cursor-pointer group"
+                      className={`border-b border-gray-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-centhrix-surface/30 transition-colors cursor-pointer group ${selectedIds.has(entrada.id) ? 'bg-emerald-50/40 dark:bg-emerald-900/10' : ''}`}
                       onClick={() => handleView(entrada)}
                     >
+                      <td className="py-4 pl-4 pr-2" onClick={(e) => e.stopPropagation()}>
+                        {(entrada.estado === 'pendiente' || entrada.estado === 'en_proceso') && (
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(entrada.id)}
+                            onChange={() => handleToggleSelect(entrada.id)}
+                            className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 accent-emerald-500 cursor-pointer"
+                          />
+                        )}
+                      </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -851,6 +961,46 @@ const EntradasList = () => {
         {/* FOOTER */}
         <PageFooter />
       </main>
+
+      {/* MODAL CIERRE MASIVO */}
+      {modalCierreMasivo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-xl max-w-md w-full mx-4 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+                <CheckSquare2 className="w-5 h-5 text-emerald-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Cerrar {selectedIds.size} {selectedIds.size !== 1 ? 'operaciones' : 'operación'}
+              </h3>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+              Se actualizará el stock de inventario para cada operación seleccionada. Esta acción no se puede deshacer.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setModalCierreMasivo(false)}
+                disabled={cerrandoMasivo}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-centhrix-surface rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCerrarMasivo}
+                disabled={cerrandoMasivo}
+                className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {cerrandoMasivo ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4" />
+                )}
+                {cerrandoMasivo ? 'Cerrando...' : 'Confirmar cierre'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MODAL ANULAR OPERACIÓN */}
       {anularModal.open && (

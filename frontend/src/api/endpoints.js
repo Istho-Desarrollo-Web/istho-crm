@@ -105,6 +105,7 @@ export const OPERACIONES_ENDPOINTS = {
   AVERIAS: (id) => `/operaciones/${id}/averias`,
   DOCUMENTOS: (id) => `/operaciones/${id}/documentos`,
   CERRAR: (id) => `/operaciones/${id}/cerrar`,
+  CERRAR_MASIVO: '/operaciones/cerrar-masivo',
   REENVIAR_CORREO: (id) => `/operaciones/${id}/reenviar-correo`,
   TRANSPORTE: (id) => `/operaciones/${id}/transporte`,
 };

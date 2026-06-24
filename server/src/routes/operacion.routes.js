@@ -89,6 +89,14 @@ router.post(
   operacionController.subirDocumento
 );
 
+// Cerrar múltiples operaciones (masivo) — debe ir ANTES de /:id/cerrar
+router.post(
+  '/cerrar-masivo',
+  noClientes,
+  requiereRolMinimo('operador'),
+  operacionController.cerrarMasivo
+);
+
 // Cerrar operación
 router.post(
   '/:id/cerrar',
@@ -98,12 +106,12 @@ router.post(
   operacionController.cerrar
 );
 
-// Reenviar correo de cierre (requiere permiso auditoria.reenviar_correo)
+// Reenviar correo de cierre (requiere permiso operaciones.reenviar_correo)
 router.post(
   '/:id/reenviar-correo',
   noClientes,
   requiereRolMinimo('operador'),
-  verificarPermisoCliente('auditoria', 'reenviar_correo'),
+  verificarPermisoCliente('operaciones', 'reenviar_correo'),
   operacionController.reenviarCorreo
 );
 

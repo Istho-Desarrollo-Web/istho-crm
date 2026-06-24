@@ -468,6 +468,22 @@ const auditoriasService = {
     }
   },
 
+  cerrarMasivo: async (ids, observaciones_cierre = '') => {
+    try {
+      const response = await apiClient.post(OPERACIONES_ENDPOINTS.CERRAR_MASIVO, {
+        ids,
+        observaciones_cierre,
+      });
+      return response;
+    } catch (error) {
+      throw {
+        success: false,
+        message: error.message || 'Error al cerrar las operaciones',
+        code: 'CERRAR_MASIVO_ERROR',
+      };
+    }
+  },
+
   /**
    * Obtener contactos que recibirán el correo de cierre de una auditoría
    * @param {string} auditoriaId - ID de la auditoría

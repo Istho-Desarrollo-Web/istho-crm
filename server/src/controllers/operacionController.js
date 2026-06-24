@@ -1815,6 +1815,103 @@ const reabrirOperacion = async (req, res) => {
   }
 };
 
+/**
+ * POST /operaciones/cerrar-masivo
+ * Cierra múltiples operaciones en una sola llamada.
+ * Cada operación se procesa en su propia transacción para permitir éxito parcial.
+ * No envía correos (para evitar spam masivo).
+ */
+const cerrarMasivo = async (req, res) => {
+  const { ids, observaciones_cierre } = req.body;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return errorResponse(res, 'Se requiere al menos una operación para cerrar', 400);
+  }
+
+  if (ids.length > 50) {
+    return errorResponse(res, 'Se permite cerrar máximo 50 operaciones a la vez', 400);
+  }
+
+  const ipAddress = getClientIP(req);
+  const cerradas = [];
+  const errores = [];
+
+  for (const id of ids) {
+    const transaction = await sequelize.transaction();
+    try {
+      const operacion = await Operacion.findByPk(id, {
+        include: [
+          { model: Cliente, as: 'cliente' },
+          { model: OperacionDetalle, as: 'detalles' },
+          { model: OperacionDocumento, as: 'documentos' },
+        ],
+        transaction,
+      });
+
+      if (!operacion) {
+        await transaction.rollback();
+        errores.push({ id, error: 'Operación no encontrada' });
+        continue;
+      }
+
+      if (operacion.estado === 'cerrado') {
+        await transaction.rollback();
+        errores.push({ id, documento: operacion.numero_operacion, error: 'Ya está cerrada' });
+        continue;
+      }
+
+      if (operacion.estado === 'anulado') {
+        await transaction.rollback();
+        errores.push({ id, documento: operacion.numero_operacion, error: 'Operación anulada' });
+        continue;
+      }
+
+      await confirmarMovimientoStock(operacion, req.user.id, ipAddress, transaction);
+
+      await operacion.update(
+        {
+          estado: 'cerrado',
+          fecha_cierre: new Date(),
+          cerrado_por: req.user.id,
+          observaciones_cierre: observaciones_cierre || null,
+        },
+        { transaction }
+      );
+
+      await Auditoria.registrar({
+        tabla: 'operaciones',
+        registro_id: operacion.id,
+        accion: 'actualizar',
+        usuario_id: req.user.id,
+        usuario_nombre: req.user.nombre_completo,
+        datos_anteriores: { estado: operacion.estado },
+        datos_nuevos: { estado: 'cerrado', stock_actualizado: true, cierre_masivo: true },
+        ip_address: ipAddress,
+        descripcion: `Cierre masivo: ${operacion.numero_operacion}`,
+      });
+
+      await transaction.commit();
+
+      cerradas.push({ id: operacion.id, documento: operacion.numero_operacion });
+
+      notificacionService
+        .notificarOperacionCerrada(operacion, req.user.nombre_completo)
+        .catch(() => {});
+    } catch (err) {
+      await transaction.rollback();
+      errores.push({ id, error: err.message });
+      logger.error('Error en cierre masivo:', { id, message: err.message });
+    }
+  }
+
+  return success(res, {
+    cerradas,
+    errores,
+    total_cerradas: cerradas.length,
+    total_errores: errores.length,
+  });
+};
+
 module.exports = {
   listarDocumentosWMS,
   buscarDocumentoWMS,
@@ -1828,6 +1925,7 @@ module.exports = {
   listarAverias,
   subirDocumento,
   cerrar,
+  cerrarMasivo,
   reenviarCorreo,
   anular,
   reabrirOperacion,

@@ -10,7 +10,7 @@
  * @date Marzo 2026
  */
 
-const { Notificacion, Usuario } = require('../models');
+const { Notificacion, Usuario, ClienteResponsable } = require('../models');
 const { Op } = require('sequelize');
 const socketService = require('./socketService');
 
@@ -91,22 +91,58 @@ const getUsuariosPorRol = async (roles = ['admin', 'supervisor']) => {
 };
 
 /**
- * Obtener IDs de usuarios vinculados a un cliente específico
- * Incluye usuarios con rol 'cliente' de ese cliente + admins/supervisores
+ * Obtener IDs de usuarios vinculados a un cliente específico.
+ * - Usuarios portal (rol=cliente) con ese cliente_id: siempre incluidos.
+ * - Admins (rol=admin): siempre incluidos (visibilidad total).
+ * - Supervisores/operadores: incluidos solo si NO tienen clientes asignados en
+ *   ClienteResponsable (sin restricción) O si tienen ese clienteId asignado.
  */
 const getUsuariosPorCliente = async (clienteId, { incluirAdmins = true } = {}) => {
-  const where = { activo: true };
+  // Usuarios portal del cliente
+  const usuariosPortal = await Usuario.findAll({
+    where: { activo: true, cliente_id: clienteId },
+    attributes: ['id'],
+  });
+  const ids = new Set(usuariosPortal.map((u) => u.id));
 
-  if (incluirAdmins) {
-    // Usuarios del cliente + admins/supervisores
-    where[Op.or] = [{ cliente_id: clienteId }, { rol: { [Op.in]: ['admin', 'supervisor'] } }];
-  } else {
-    // Solo usuarios del cliente
-    where.cliente_id = clienteId;
+  if (!incluirAdmins) return [...ids];
+
+  // Admins: siempre incluidos
+  const admins = await Usuario.findAll({
+    where: { activo: true, rol: 'admin' },
+    attributes: ['id'],
+  });
+  admins.forEach((u) => ids.add(u.id));
+
+  // Supervisores y operadores activos
+  const internos = await Usuario.findAll({
+    where: { activo: true, rol: { [Op.in]: ['supervisor', 'operador'] } },
+    attributes: ['id'],
+  });
+
+  if (internos.length) {
+    // Usuarios internos que tienen al menos un cliente asignado
+    const conRestricciones = await ClienteResponsable.findAll({
+      where: { usuario_id: { [Op.in]: internos.map((u) => u.id) } },
+      attributes: ['usuario_id', 'cliente_id'],
+    });
+
+    const clientesPorUsuario = new Map();
+    for (const r of conRestricciones) {
+      if (!clientesPorUsuario.has(r.usuario_id)) clientesPorUsuario.set(r.usuario_id, new Set());
+      clientesPorUsuario.get(r.usuario_id).add(r.cliente_id);
+    }
+
+    for (const u of internos) {
+      const asignados = clientesPorUsuario.get(u.id);
+      // Sin restricciones (ningún cliente asignado) → ve todo
+      if (!asignados) { ids.add(u.id); continue; }
+      // Con restricciones → solo si este cliente está en su lista
+      if (asignados.has(clienteId)) ids.add(u.id);
+    }
   }
 
-  const usuarios = await Usuario.findAll({ where, attributes: ['id'] });
-  return usuarios.map((u) => u.id);
+  return [...ids];
 };
 
 /**

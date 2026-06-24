@@ -42,6 +42,8 @@ import {
   ChevronUp,
   ChevronDown,
   ChevronsUpDown,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 // Layout
@@ -429,6 +431,7 @@ const ProductoDetail = () => {
   const [loadingCajas, setLoadingCajas] = useState(false);
   const [busquedaCajas, setBusquedaCajas] = useState('');
   const [sortCajas, setSortCajas] = useState({ campo: 'fecha', dir: 'desc' });
+  const [paginaCajas, setPaginaCajas] = useState(1);
   const [ubicacionWms, setUbicacionWms] = useState([]);
   const [loadingUbicacion, setLoadingUbicacion] = useState(false);
   const [errorUbicacion, setErrorUbicacion] = useState(false);
@@ -580,6 +583,13 @@ const ProductoDetail = () => {
     });
   }, [cajas, busquedaCajas, sortCajas]);
 
+  const CAJAS_POR_PAGINA = 20;
+  const totalPaginasCajas = Math.ceil(cajasFiltradas.length / CAJAS_POR_PAGINA);
+  const cajasPagina = cajasFiltradas.slice(
+    (paginaCajas - 1) * CAJAS_POR_PAGINA,
+    paginaCajas * CAJAS_POR_PAGINA
+  );
+
   // Excluir movimientos de Kardex WMS Descarga (tipo salida generado por ajuste WMS)
   const movimientosFiltrados = useMemo(
     () =>
@@ -652,6 +662,7 @@ const ProductoDetail = () => {
   // ──────────────────────────────────────────────────────────────────────────
 
   const handleSortCajas = (campo) => {
+    setPaginaCajas(1);
     setSortCajas((prev) =>
       prev.campo === campo
         ? { campo, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
@@ -1034,13 +1045,13 @@ const ProductoDetail = () => {
                         <input
                           type="text"
                           value={busquedaCajas}
-                          onChange={(e) => setBusquedaCajas(e.target.value)}
+                          onChange={(e) => { setBusquedaCajas(e.target.value); setPaginaCajas(1); }}
                           placeholder="Buscar por N° caja, lote o documento..."
                           className="w-full pl-9 pr-9 py-2 text-sm bg-slate-50 dark:bg-centhrix-surface border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400 dark:focus:border-orange-500 transition-colors"
                         />
                         {busquedaCajas && (
                           <button
-                            onClick={() => setBusquedaCajas('')}
+                            onClick={() => { setBusquedaCajas(''); setPaginaCajas(1); }}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                           >
                             <X className="w-4 h-4" />
@@ -1086,7 +1097,7 @@ const ProductoDetail = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {cajasFiltradas.map((caja) => (
+                            {cajasPagina.map((caja) => (
                               <tr
                                 key={caja.id}
                                 className="border-b border-gray-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-centhrix-surface/50 transition-colors"
@@ -1137,11 +1148,58 @@ const ProductoDetail = () => {
                             ))}
                           </tbody>
                         </table>
-                        {busquedaCajas && (
-                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 text-right">
-                            {cajasFiltradas.length} de {cajas.length} cajas
+                        {/* Footer: contador + paginación */}
+                        <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-100 dark:border-slate-700">
+                          <p className="text-xs text-slate-400 dark:text-slate-500">
+                            {cajasFiltradas.length === 0
+                              ? '0 cajas'
+                              : `${(paginaCajas - 1) * CAJAS_POR_PAGINA + 1}–${Math.min(paginaCajas * CAJAS_POR_PAGINA, cajasFiltradas.length)} de ${cajasFiltradas.length} caja${cajasFiltradas.length !== 1 ? 's' : ''}${busquedaCajas ? ` (filtradas de ${cajas.length})` : ''}`
+                            }
                           </p>
-                        )}
+                          {totalPaginasCajas > 1 && (
+                            <div className="flex items-center gap-0.5">
+                              <button
+                                onClick={() => setPaginaCajas((p) => Math.max(1, p - 1))}
+                                disabled={paginaCajas === 1}
+                                className="p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                              >
+                                <ChevronLeft className="w-3.5 h-3.5" />
+                              </button>
+                              {Array.from({ length: totalPaginasCajas }, (_, i) => i + 1)
+                                .filter((p) => p === 1 || p === totalPaginasCajas || Math.abs(p - paginaCajas) <= 1)
+                                .reduce((acc, p, i, arr) => {
+                                  if (i > 0 && p - arr[i - 1] > 1) acc.push('ellipsis-' + p);
+                                  acc.push(p);
+                                  return acc;
+                                }, [])
+                                .map((p) =>
+                                  typeof p === 'string' ? (
+                                    <span key={p} className="px-1 text-xs text-slate-400 dark:text-slate-500">…</span>
+                                  ) : (
+                                    <button
+                                      key={p}
+                                      onClick={() => setPaginaCajas(p)}
+                                      className={`w-7 h-7 text-xs rounded-lg transition-colors ${
+                                        paginaCajas === p
+                                          ? 'bg-orange-500 text-white font-semibold'
+                                          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-surface'
+                                      }`}
+                                    >
+                                      {p}
+                                    </button>
+                                  )
+                                )
+                              }
+                              <button
+                                onClick={() => setPaginaCajas((p) => Math.min(totalPaginasCajas, p + 1))}
+                                disabled={paginaCajas === totalPaginasCajas}
+                                className="p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-centhrix-surface disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                              >
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
