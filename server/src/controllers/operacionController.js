@@ -1245,7 +1245,9 @@ const cerrar = async (req, res) => {
         fecha_cierre: new Date(),
         cerrado_por: req.user.id,
         observaciones_cierre,
-        correos_destino: correosEnvio,
+        correos_destino: correosEnvio || null,
+        // null = en cola para emailCierreJob; false = no aplica envío
+        correo_enviado: (enviar_correo !== false && correosEnvio) ? null : false,
       },
       { transaction }
     );
@@ -1276,42 +1278,8 @@ const cerrar = async (req, res) => {
         });
       });
 
-    // Enviar correo en background (NO bloquea la respuesta)
-    // setTimeout de 8s para dar margen a uploads de fotos de averías concurrentes que
-    // pueden estar en tránsito al momento del cierre (race condition avería → fotos_urls)
-    if (enviar_correo !== false && correosEnvio) {
-      const opId = operacion.id;
-      setTimeout(async () => {
-        try {
-          await operacion.reload({
-            include: [
-              { model: Cliente, as: 'cliente' },
-              { model: OperacionDetalle, as: 'detalles' },
-              { model: OperacionDocumento, as: 'documentos' },
-              { model: OperacionAveria, as: 'averias' },
-              { model: Usuario, as: 'cerrador', attributes: ['id', 'nombre_completo'] },
-            ],
-          });
-          const resultado = await emailService.enviarCierreOperacion(operacion, correosEnvio);
-          await operacion.update({
-            correo_enviado: resultado.success,
-            fecha_correo_enviado: resultado.success ? new Date() : null,
-          });
-          logger.info('Correo de cierre enviado en background:', {
-            operacion_id: opId,
-            success: resultado.success,
-          });
-        } catch (emailErr) {
-          logger.error('Error al enviar correo de cierre en background:', {
-            operacion_id: opId,
-            message: emailErr.message,
-          });
-          await Operacion.update({ correo_enviado: false }, { where: { id: opId } }).catch(
-            () => {}
-          );
-        }
-      }, 8000);
-    }
+    // El correo de cierre lo despacha emailCierreJob (cada 1 min, 90s tras cierre)
+    // para garantizar que todos los uploads de fotos de averías hayan terminado.
 
     logger.info('Operación cerrada:', {
       operacionId: id,

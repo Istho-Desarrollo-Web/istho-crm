@@ -198,6 +198,10 @@ async function initializeDatabase() {
       logger.warn('⚠️  WMS_URL/WMS_EMAIL no configurados. Polling WMS desactivado.');
     }
 
+    // Inicializar job de correos de cierre en background
+    const emailCierreJob = require('./src/jobs/emailCierreJob');
+    emailCierreJob.iniciarEmailCierreJob();
+
     dbReady = true;
     logger.info('✅ Base de datos inicializada correctamente');
     console.log('\n   Servidor listo para recibir peticiones\n');
@@ -279,6 +283,7 @@ const crearOperadorPorDefecto = async () => {
 process.on('SIGTERM', async () => {
   logger.info('🛑 Cerrando servidor (SIGTERM)...');
   try { require('./src/jobs/wmsPollingJob').detenerPollingWms(); } catch {}
+  try { require('./src/jobs/emailCierreJob').detenerEmailCierreJob(); } catch {}
   await db.sequelize.close();
   process.exit(0);
 });
@@ -286,6 +291,7 @@ process.on('SIGTERM', async () => {
 process.on('SIGINT', async () => {
   logger.info('🛑 Cerrando servidor (Ctrl+C)...');
   try { require('./src/jobs/wmsPollingJob').detenerPollingWms(); } catch {}
+  try { require('./src/jobs/emailCierreJob').detenerEmailCierreJob(); } catch {}
   await db.sequelize.close();
   process.exit(0);
 });
