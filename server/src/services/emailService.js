@@ -248,30 +248,18 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
     // adjuntos se llena a lo largo de la función (logo CID + documentos + fotos averías)
     const adjuntos = [];
 
-    // Resolver logo del cliente — adjunto inline (CID) para máxima compatibilidad de clientes de correo
+    // Resolver logo del cliente como URL (igual que el logo de ISTHO) para máxima compatibilidad
     let logoClienteUrl = null;
     if (operacion.cliente?.logo_url) {
       try {
         const s3Svc = require('./s3Service');
-        const axios = require('axios');
         const logoKey = operacion.cliente.logo_url;
-        let logoBuffer = null;
-        let logoMime = 'image/png';
 
         if (s3Svc.isS3Key(logoKey)) {
-          // S3 key directa (logos/, avatares/, etc.)
-          logoBuffer = await s3Svc.getBuffer(logoKey);
-          const ext = logoKey.split('.').pop().toLowerCase();
-          logoMime = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
-        } else if (logoKey.startsWith('data:')) {
-          // base64 data URI (fallback cuando S3 no estaba configurado)
-          const match = logoKey.match(/^data:([^;]+);base64,(.+)$/);
-          if (match) {
-            logoMime = match[1];
-            logoBuffer = Buffer.from(match[2], 'base64');
-          }
+          // S3 key → URL presignada de 7 días (máximo para IAM role)
+          logoClienteUrl = await s3Svc.getUrl(logoKey, 604800);
         } else if (logoKey.startsWith('https://')) {
-          // URL externa (Cloudinary legacy, S3 presigned, etc.) — solo hosts conocidos
+          // URL externa ya resuelta (Cloudinary legacy, S3 público, etc.)
           const LOGO_HOST_ALLOWLIST = [
             'res.cloudinary.com',
             `${process.env.AWS_S3_BUCKET || 'istho-crm-files'}.s3.amazonaws.com`,
@@ -281,28 +269,21 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
           const parsedUrl = new URL(logoKey);
           const hostname = parsedUrl.hostname.toLowerCase().replace(/\.$/, '');
           if (LOGO_HOST_ALLOWLIST.includes(hostname)) {
-            const resp = await axios.get(logoKey, {
-              responseType: 'arraybuffer',
-              timeout: 5000,
-              maxRedirects: 0,
-              maxContentLength: 2 * 1024 * 1024, // 2 MB máx
-            });
-            const ct = resp.headers['content-type']?.split(';')[0] || '';
-            if (ct.startsWith('image/')) {
-              logoMime = ct;
-              logoBuffer = Buffer.from(resp.data);
-            }
+            logoClienteUrl = logoKey;
           } else {
             logger.warn('Logo del cliente rechazado: host no permitido', { hostname });
           }
-        }
-
-        if (logoBuffer) {
-          adjuntos.push({ nombre: 'logo-cliente', content: logoBuffer, tipo: logoMime, cid: 'logo-cliente@istho.crm' });
-          logoClienteUrl = 'cid:logo-cliente@istho.crm';
+        } else if (logoKey.startsWith('data:')) {
+          // data: URI legacy — adjunto CID como último recurso
+          const match = logoKey.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) {
+            const logoBuffer = Buffer.from(match[2], 'base64');
+            adjuntos.push({ nombre: 'logo-cliente', content: logoBuffer, tipo: match[1], cid: 'logo-cliente@istho.crm' });
+            logoClienteUrl = 'cid:logo-cliente@istho.crm';
+          }
         }
       } catch (err) {
-        logger.warn('No se pudo cargar logo del cliente para email:', err.message);
+        logger.warn('No se pudo resolver logo del cliente para email:', err.message);
         /* ignorar — el header mostrará solo el logo de ISTHO */
       }
     }

@@ -1277,9 +1277,11 @@ const cerrar = async (req, res) => {
       });
 
     // Enviar correo en background (NO bloquea la respuesta)
+    // setTimeout de 8s para dar margen a uploads de fotos de averías concurrentes que
+    // pueden estar en tránsito al momento del cierre (race condition avería → fotos_urls)
     if (enviar_correo !== false && correosEnvio) {
       const opId = operacion.id;
-      setImmediate(async () => {
+      setTimeout(async () => {
         try {
           await operacion.reload({
             include: [
@@ -1308,7 +1310,7 @@ const cerrar = async (req, res) => {
             () => {}
           );
         }
-      });
+      }, 8000);
     }
 
     logger.info('Operación cerrada:', {
