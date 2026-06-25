@@ -317,6 +317,7 @@ const MovimientoItem = ({ movimiento }) => {
   const documentoRef = movimiento.documento_referencia || movimiento.documento || 'N/A';
   const usuarioNombre = movimiento.usuario_nombre || movimiento.responsable || 'Sistema';
   const fecha = movimiento.fecha || movimiento.created_at;
+  const numeroCaja = movimiento.numero_caja || null;
 
   return (
     <div className="flex items-start gap-4 py-4 border-b border-gray-100 dark:border-slate-700 last:border-0">
@@ -360,6 +361,12 @@ const MovimientoItem = ({ movimiento }) => {
             <FileText className="w-3 h-3" />
             {documentoRef}
           </span>
+          {numeroCaja && (
+            <span className="flex items-center gap-1">
+              <BoxIcon className="w-3 h-3" />
+              Caja: {numeroCaja}
+            </span>
+          )}
           <span>{usuarioNombre}</span>
         </div>
       </div>

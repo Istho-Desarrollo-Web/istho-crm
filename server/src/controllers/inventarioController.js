@@ -1020,6 +1020,17 @@ const obtenerMovimientos = async (req, res) => {
       ],
     });
 
+    // Obtener número de caja por operacion_id para movimientos reales
+    const opIds = [...new Set(rows.map((m) => m.operacion_id).filter(Boolean))];
+    let cajaMap = {};
+    if (opIds.length > 0) {
+      const cajas = await CajaInventario.findAll({
+        where: { inventario_id: id, operacion_id: { [Op.in]: opIds } },
+        attributes: ['operacion_id', 'numero_caja'],
+      });
+      cajas.forEach((c) => { cajaMap[c.operacion_id] = c.numero_caja; });
+    }
+
     // operacion_ids ya cubiertos por MovimientoInventario → no duplicar en legacy
     const opIdsConMov = new Set(rows.map((m) => m.operacion_id).filter(Boolean));
 
@@ -1060,6 +1071,7 @@ const obtenerMovimientos = async (req, res) => {
       created_at: d.operacion?.fecha_operacion,
       usuario_nombre: 'Sistema',
       responsable: 'Sistema',
+      numero_caja: d.numero_caja || null,
     }));
 
     // Formatear MovimientoInventario reales
@@ -1079,6 +1091,7 @@ const obtenerMovimientos = async (req, res) => {
       created_at: mov.fecha_movimiento,
       usuario_nombre: mov.usuario?.nombre_completo || 'Sistema',
       responsable: mov.usuario?.nombre_completo || 'Sistema',
+      numero_caja: mov.operacion_id ? (cajaMap[mov.operacion_id] || null) : null,
     }));
 
     // Si no hay legacy, usar paginación normal de BD
@@ -1477,6 +1490,19 @@ const obtenerCajas = async (req, res) => {
       estado_operacion: c.operacion?.estado,
       fecha: c.fecha_movimiento || c.operacion?.fecha_operacion || c.created_at,
     }));
+
+    // Cruzar con inventario.cantidad (fuente de verdad) para detectar stock
+    // consumido por salidas CRM que no actualizan caja_inventario directamente
+    const stockReal = parseFloat(inventario.cantidad) || 0;
+    const totalCajas = cajas.reduce((sum, c) => sum + c.cantidad, 0);
+    if (totalCajas > stockReal) {
+      let restante = stockReal;
+      return success(res, cajas.map((c) => {
+        const qty = Math.min(c.cantidad, restante);
+        restante = Math.max(0, restante - c.cantidad);
+        return { ...c, cantidad: qty, estado: qty > 0 ? c.estado : 'agotada' };
+      }));
+    }
 
     return success(res, cajas);
   } catch (error) {

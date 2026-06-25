@@ -118,7 +118,7 @@ const ReporteInventario = () => {
       if (filters.cliente_id) params.cliente_id = filters.cliente_id;
       const [dashResponse, alertasResponse, inventarioResponse] = await Promise.all([
         reportesService.getDashboard(params),
-        inventarioService.getAlertas().catch(() => ({ data: [] })),
+        inventarioService.getAlertas(params).catch(() => ({ data: [] })),
         inventarioService.getAll({ ...params, limit: 100 }).catch(() => ({ data: [] })),
       ]);
 
