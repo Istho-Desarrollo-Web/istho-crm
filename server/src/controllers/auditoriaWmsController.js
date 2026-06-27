@@ -65,6 +65,11 @@ const listarEntradas = async (req, res) => {
       where.estado = estado;
     }
 
+    // Usuarios portal no ven operaciones anuladas
+    if (req.user.esCliente && (!where.estado || where.estado === 'anulado')) {
+      where.estado = { [Op.ne]: 'anulado' };
+    }
+
     if (fecha_desde || fecha_hasta) {
       where.fecha_operacion = {};
       if (fecha_desde) where.fecha_operacion[Op.gte] = new Date(fecha_desde + 'T00:00:00');
@@ -282,6 +287,11 @@ const listarSalidas = async (req, res) => {
 
     if (estado && estado !== 'todos') {
       where.estado = estado;
+    }
+
+    // Usuarios portal no ven operaciones anuladas
+    if (req.user.esCliente && (!where.estado || where.estado === 'anulado')) {
+      where.estado = { [Op.ne]: 'anulado' };
     }
 
     if (fecha_desde || fecha_hasta) {
@@ -503,6 +513,11 @@ const listarKardex = async (req, res) => {
 
     if (estado && estado !== 'todos') {
       where.estado = estado;
+    }
+
+    // Usuarios portal no ven operaciones anuladas
+    if (req.user.esCliente && (!where.estado || where.estado === 'anulado')) {
+      where.estado = { [Op.ne]: 'anulado' };
     }
 
     if (fecha_desde || fecha_hasta) {
