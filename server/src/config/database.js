@@ -2,10 +2,11 @@
  * ISTHO CRM - Configuración de Base de Datos
  *
  * Este archivo configura la conexión a MySQL usando Sequelize ORM.
- * Soporta conexión local (XAMPP) y Railway (producción).
+ * Producción: AWS App Runner + RDS MySQL 8.0 (VPC privada, us-west-2).
+ * Desarrollo: XAMPP local o cualquier MySQL accesible.
  *
  * @author Coordinación TI - ISTHO S.A.S.
- * @version 2.0.0
+ * @version 2.1.0
  */
 
 const { Sequelize } = require('sequelize');
@@ -18,13 +19,13 @@ const commonOptions = {
   // Logging: true en desarrollo, false en producción
   logging: process.env.DB_LOGGING === 'true' ? (msg) => console.log(`[DB] ${msg}`) : false,
 
-  // Pool de conexiones (optimizado para Railway proxy que cierra conexiones idle)
+  // Pool de conexiones (calibrado para RDS MySQL en VPC privada)
   pool: {
     max: parseInt(process.env.DB_POOL_MAX) || 5,
-    min: 0, // No mantener conexiones idle (Railway las mata)
+    min: 0,
     acquire: 30000, // 30s para adquirir conexión
-    idle: 1000, // Liberar conexiones idle después de 1s
-    evict: 1000, // Verificar conexiones muertas cada 1s
+    idle: 10000,   // Liberar conexiones idle tras 10s (RDS es estable en VPC)
+    evict: 5000,   // Verificar conexiones muertas cada 5s
   },
 
   // Reintentar queries fallidas automáticamente
@@ -46,7 +47,8 @@ const commonOptions = {
 
   // Opciones de dialecto MySQL
   dialectOptions: {
-    // SSL solo si explícitamente habilitado
+    // SSL solo si explícitamente habilitado.
+    // rejectUnauthorized: false es intencional para RDS en VPC privada sin CA pública.
     ...(process.env.DB_SSL === 'true' && {
       ssl: {
         require: true,
