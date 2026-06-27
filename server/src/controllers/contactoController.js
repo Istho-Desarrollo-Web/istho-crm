@@ -434,30 +434,39 @@ const listarContactosCliente = async (req, res) => {
     const cliente = await Cliente.findByPk(clienteId);
     if (!cliente) return notFound(res, 'Cliente no encontrado');
 
-    const contactos = await Contacto.findAll({
-      include: [
-        {
-          model: Cliente,
-          as: 'clientes',
-          through: { attributes: ['es_principal'], where: { cliente_id: clienteId } },
-          attributes: [],
-          required: true,
-        },
-        {
-          model: Usuario,
-          as: 'usuarioCrm',
-          attributes: ['id', 'nombre_completo', 'rol'],
-          required: false,
-        },
-      ],
-      order: [['nombre', 'ASC']],
-    });
+    const [contactos, pivotes] = await Promise.all([
+      Contacto.findAll({
+        include: [
+          {
+            model: Cliente,
+            as: 'clientes',
+            through: { attributes: [], where: { cliente_id: clienteId } },
+            attributes: ['id'],
+            required: true,
+          },
+          {
+            model: Usuario,
+            as: 'usuarioCrm',
+            attributes: ['id', 'nombre_completo', 'rol'],
+            required: false,
+          },
+        ],
+        order: [['nombre', 'ASC']],
+      }),
+      ContactoCliente.findAll({
+        where: { cliente_id: clienteId },
+        attributes: ['contacto_id', 'es_principal'],
+        raw: true,
+      }),
+    ]);
+
+    const pivotMap = Object.fromEntries(pivotes.map((p) => [p.contacto_id, !!p.es_principal]));
 
     const resultado = contactos.map((c) => {
       const plain = c.toJSON();
       return {
         ...plain,
-        es_principal: plain.clientes?.[0]?.ContactoCliente?.es_principal ?? false,
+        es_principal: pivotMap[plain.id] ?? false,
       };
     });
 

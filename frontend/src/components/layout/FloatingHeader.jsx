@@ -502,7 +502,7 @@ const KeyboardShortcutsModal = ({ isOpen, onClose }) => {
       items: [
         { keys: ['Ctrl', 'K'], description: 'Abrir búsqueda' },
         { keys: ['Ctrl', 'B'], description: 'Toggle modo oscuro' },
-        { keys: ['Ctrl', '/'], description: 'Ver atajos de teclado' },
+        { keys: ['F1'], description: 'Ver atajos de teclado' },
         { keys: ['ESC'], description: 'Cerrar modal/menú' },
       ],
     },
@@ -1310,6 +1310,7 @@ const FloatingHeader = () => {
   const shortcuts = [
     { key: 'CMD+B', action: toggleDark },
     { key: 'CMD+/', action: () => setIsShortcutsOpen(true) },
+    { key: 'F1', action: () => setIsShortcutsOpen(true) },
     // Navegación
     ...menuConfig.flatMap((menu) =>
       menu.items

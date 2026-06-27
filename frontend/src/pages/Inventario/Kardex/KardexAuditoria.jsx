@@ -1319,7 +1319,7 @@ const KardexAuditoria = () => {
                   <span>Kardex</span>
                   <span>•</span>
                   <span>{formatDateShort(kardexData.fecha_ingreso)}</span>
-                  {kardexData.editado_admin && (
+                  {kardexData.editado_admin && user?.rol !== 'cliente' && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
                       <Pencil className="w-3 h-3" /> Editado por admin
                     </span>

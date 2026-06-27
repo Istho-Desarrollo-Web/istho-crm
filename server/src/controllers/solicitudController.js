@@ -606,7 +606,8 @@ const agregarComentario = async (req, res) => {
 
     const payload = { ...comentario.toJSON(), autor };
     const destinatariosComentario = await getResponsablesIds(solicitud.cliente_id);
-    if (solicitud.creado_por) destinatariosComentario.push(solicitud.creado_por);
+    // No enviar comentarios internos al creador portal (es_interno solo visible para ISTHO)
+    if (solicitud.creado_por && !comentario.es_interno) destinatariosComentario.push(solicitud.creado_por);
     socketService.emitToUsers([...new Set(destinatariosComentario)], 'solicitud:comentario_nuevo', { solicitud_id: Number(id), comentario: payload });
 
     return created(res, 'Comentario agregado', payload);

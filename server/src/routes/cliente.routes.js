@@ -15,7 +15,7 @@ const clienteController = require('../controllers/clienteController');
 const usuarioClienteRoutes = require('./usuarioClienteRoutes');
 
 // Middleware
-const { verificarToken } = require('../middleware/auth');
+const { verificarToken, filtrarPorCliente } = require('../middleware/auth');
 const { requiereRolMinimo, noClientes } = require('../middleware/roles');
 
 // Upload
@@ -39,6 +39,7 @@ const {
 // Todas las rutas requieren autenticación
 // =============================================
 router.use(verificarToken);
+router.use(filtrarPorCliente);
 
 // =============================================
 // RUTAS DE CLIENTES

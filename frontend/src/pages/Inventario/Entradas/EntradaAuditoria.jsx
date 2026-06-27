@@ -1370,7 +1370,7 @@ const EntradaAuditoria = () => {
                   <span>{entradaData.tipo_documento}</span>
                   <span className="hidden sm:inline">•</span>
                   <span>{formatDateShort(entradaData.fecha_ingreso)}</span>
-                  {entradaData.editado_admin && (
+                  {entradaData.editado_admin && user?.rol !== 'cliente' && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
                       <Pencil className="w-3 h-3" /> Editado por admin
                     </span>

@@ -387,11 +387,12 @@ const ClienteDetail = () => {
     if (id) {
       fetchCliente(id);
       fetchContactosCliente(id);
-      fetchOpcionesContactos(id);
+      // Portal clients can't assign contacts → no requierePermiso('contactos','ver') needed
+      if (!isCliente) fetchOpcionesContactos(id);
       loadProductosCliente(id);
       loadHistorial(id);
     }
-  }, [id, fetchCliente, fetchContactosCliente, fetchOpcionesContactos, loadProductosCliente, loadHistorial]);
+  }, [id, fetchCliente, fetchContactosCliente, fetchOpcionesContactos, loadProductosCliente, loadHistorial, isCliente]);
 
   const fetchSolicitudesCliente = async () => {
     if (!id) return;
@@ -1010,8 +1011,9 @@ const ClienteDetail = () => {
                             </td>
                             <td className="px-3 py-2.5">
                               {c.es_principal ? (
-                                <span className="text-amber-400" title="Contacto principal">
-                                  <Star className="w-4 h-4" fill="currentColor" />
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-xs font-medium">
+                                  <Star className="w-3 h-3" fill="currentColor" />
+                                  Principal
                                 </span>
                               ) : user?.rol === 'admin' ? (
                                 <button
@@ -1022,9 +1024,7 @@ const ClienteDetail = () => {
                                   <Star className="w-4 h-4" />
                                 </button>
                               ) : (
-                                <span className="text-slate-300 dark:text-slate-600">
-                                  <Star className="w-4 h-4" />
-                                </span>
+                                <span className="text-slate-200 dark:text-slate-700">—</span>
                               )}
                             </td>
                             <td className="px-3 py-2.5">

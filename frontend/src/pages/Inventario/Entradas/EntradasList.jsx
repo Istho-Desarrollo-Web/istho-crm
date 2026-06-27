@@ -36,6 +36,7 @@ import {
   Building2,
   FileText,
   ArrowDownCircle,
+  RefreshCw,
   List,
   LayoutGrid,
   Filter,
@@ -542,8 +543,16 @@ const EntradasList = () => {
               </p>
             </div>
           </div>
-          {filtered.length > 0 && (
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => fetchEntradas(1)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-centhrix-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-centhrix-surface transition-colors"
+              title="Actualizar"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Actualizar
+            </button>
+            {filtered.length > 0 && (
               <button
                 id="tour-ops-exportar"
                 onClick={handleExportExcel}
@@ -552,8 +561,8 @@ const EntradasList = () => {
                 <FileSpreadsheet className="w-4 h-4" />
                 Excel
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* KPI CARDS */}
@@ -888,7 +897,7 @@ const EntradasList = () => {
                             <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
                               {entrada.documento}
                             </p>
-                            {entrada.editado_admin && (
+                            {entrada.editado_admin && user?.rol !== 'cliente' && (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 mt-1 rounded text-[10px] font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
                                 <Pencil className="w-3 h-3" /> Editado
                               </span>

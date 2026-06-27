@@ -266,6 +266,7 @@ const SolicitudDetail = () => {
 
     const onComentario = ({ solicitud_id, comentario }) => {
       if (solicitud_id !== numId) return;
+      if (comentario.es_interno && user?.rol === 'cliente') return;
       setSolicitud((prev) => prev ? { ...prev, comentarios: [...(prev.comentarios || []), comentario] } : prev);
     };
 

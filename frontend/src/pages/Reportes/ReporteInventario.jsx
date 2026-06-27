@@ -79,7 +79,7 @@ const AlertaItem = ({ alerta }) => {
 const ReporteInventario = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   const canDownload =
     hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
@@ -281,7 +281,7 @@ const ReporteInventario = () => {
                   label: 'Enviar',
                   icon: Mail,
                   onClick: () => setEmailModal(true),
-                  hidden: !canDownload,
+                  hidden: !canDownload || user?.rol === 'cliente',
                 },
                 {
                   label: 'Excel',

@@ -40,7 +40,7 @@ import { descargarArchivo, fechaDescarga } from '../../utils/descargas';
 const ReporteDespachos = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
   const canDownload =
     hasPermission('reportes', 'exportar') || hasPermission('reportes', 'descargar');
   const { enqueueSnackbar } = useSnackbar();
@@ -188,7 +188,7 @@ const ReporteDespachos = () => {
                   label: 'Enviar',
                   icon: Mail,
                   onClick: () => setEmailModal(true),
-                  hidden: !canDownload,
+                  hidden: !canDownload || user?.rol === 'cliente',
                 },
                 {
                   label: 'Excel',

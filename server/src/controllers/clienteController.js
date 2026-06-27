@@ -99,6 +99,11 @@ const listar = async (req, res) => {
       ];
     }
 
+    // Aislamiento para usuarios portal (rol=cliente): solo ven su propio cliente
+    if (req.user?.esCliente) {
+      where.id = req.user.cliente_id || -1;
+    }
+
     // Filtrar por clientes asignados para supervisores/operadores
     const clientesFiltrados = await obtenerClientesFiltrados(req);
     if (clientesFiltrados !== null) {

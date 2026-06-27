@@ -141,20 +141,20 @@ const ReporteInventarioUbicacion = () => {
             <AccionesDropdown
               acciones={[
                 { label: 'Actualizar', icon: RefreshCw, onClick: fetchData, disabled: !clienteId },
-                ...(user?.rol !== 'cliente'
+                {
+                  label: 'Excel',
+                  icon: FileSpreadsheet,
+                  onClick: () => handleExport('excel'),
+                  disabled: !clienteId,
+                },
+                {
+                  label: 'PDF',
+                  icon: FileText,
+                  onClick: () => handleExport('pdf'),
+                  disabled: !clienteId,
+                },
+                ...(!esPortal
                   ? [
-                      {
-                        label: 'Excel',
-                        icon: FileSpreadsheet,
-                        onClick: () => handleExport('excel'),
-                        disabled: !clienteId,
-                      },
-                      {
-                        label: 'PDF',
-                        icon: FileText,
-                        onClick: () => handleExport('pdf'),
-                        disabled: !clienteId,
-                      },
                       {
                         label: 'Enviar',
                         icon: Mail,
