@@ -441,7 +441,8 @@ const getDashboard = async (req, res) => {
   try {
     const hoy = new Date();
 
-    // Rango de fechas: prioridad fecha_desde/fecha_hasta, sino mes/año, sino mes actual
+    // Rango de fechas: prioridad fecha_desde/fecha_hasta, sino mes/año, sino sin restricción
+    const tieneFiltroFecha = !!(req.query.fecha_desde || req.query.fecha_hasta || req.query.mes || req.query.anio);
     let inicioMes, finMes;
     if (req.query.fecha_desde || req.query.fecha_hasta) {
       inicioMes = req.query.fecha_desde
@@ -450,12 +451,18 @@ const getDashboard = async (req, res) => {
       finMes = req.query.fecha_hasta
         ? new Date(req.query.fecha_hasta + 'T23:59:59')
         : new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0, 23, 59, 59);
-    } else {
+    } else if (req.query.mes || req.query.anio) {
       const mes = req.query.mes ? parseInt(req.query.mes) - 1 : hoy.getMonth();
       const anio = req.query.anio ? parseInt(req.query.anio) : hoy.getFullYear();
       inicioMes = new Date(anio, mes, 1);
       finMes = new Date(anio, mes + 1, 0, 23, 59, 59);
+    } else {
+      // Sin filtros: referencia al mes actual solo para el subtítulo "X este mes"
+      inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+      finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0, 23, 59, 59);
     }
+    // fechaFilter: vacío cuando no hay filtro → queries devuelven todo el historial
+    const fechaFilter = tieneFiltroFecha ? { created_at: { [Op.between]: [inicioMes, finMes] } } : {};
 
     const inicioSemana = new Date(hoy);
     inicioSemana.setDate(hoy.getDate() - hoy.getDay());
@@ -488,26 +495,26 @@ const getDashboard = async (req, res) => {
       }),
       Operacion.findAll({
         attributes: ['tipo', [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']],
-        where: { ...clienteFilter, created_at: { [Op.between]: [inicioMes, finMes] } },
+        where: { ...clienteFilter, ...fechaFilter },
         group: ['tipo'],
         raw: true,
       }),
       Operacion.findAll({
         attributes: ['estado', [sequelize.fn('COUNT', sequelize.col('id')), 'cantidad']],
-        where: { ...clienteFilter },
+        where: { ...clienteFilter, ...fechaFilter },
         group: ['estado'],
         raw: true,
       }),
-      // KPIs de auditoría — filtrados por el mismo rango de mes que el gráfico
+      // KPIs de auditoría — filtrados por el período seleccionado (o todo el historial si no hay filtro)
       Operacion.count({
-        where: { ...clienteFilter, tipo: 'ingreso', estado: 'pendiente', created_at: { [Op.between]: [inicioMes, finMes] } },
+        where: { ...clienteFilter, tipo: 'ingreso', estado: 'pendiente', ...fechaFilter },
       }),
       Operacion.count({
-        where: { ...clienteFilter, tipo: 'salida', estado: 'pendiente', created_at: { [Op.between]: [inicioMes, finMes] } },
+        where: { ...clienteFilter, tipo: 'salida', estado: 'pendiente', ...fechaFilter },
       }),
-      Operacion.count({ where: { ...clienteFilter, estado: 'en_proceso', created_at: { [Op.between]: [inicioMes, finMes] } } }),
+      Operacion.count({ where: { ...clienteFilter, estado: 'en_proceso', ...fechaFilter } }),
       Operacion.count({
-        where: { ...clienteFilter, estado: 'cerrado', created_at: { [Op.between]: [inicioMes, finMes] } },
+        where: { ...clienteFilter, estado: 'cerrado', ...fechaFilter },
       }),
     ]);
 
@@ -632,6 +639,62 @@ const getDashboard = async (req, res) => {
       }),
     ]);
 
+    // Clientes por operaciones (solo para usuarios internos) — sin límite, con desglose por tipo
+    const topPorClienteRaw = !esCliente
+      ? await Operacion.findAll({
+          attributes: [
+            'cliente_id',
+            [sequelize.fn('COUNT', sequelize.col('Operacion.id')), 'total'],
+            [sequelize.literal("SUM(CASE WHEN `Operacion`.`estado` IN ('pendiente','en_proceso') THEN 1 ELSE 0 END)"), 'pendientes'],
+            [sequelize.literal("SUM(CASE WHEN `Operacion`.`estado` = 'cerrado' THEN 1 ELSE 0 END)"), 'cerradas'],
+            [sequelize.literal("SUM(CASE WHEN `Operacion`.`tipo`='ingreso' AND `Operacion`.`estado` IN ('pendiente','en_proceso') THEN 1 ELSE 0 END)"), 'ingreso_pendientes'],
+            [sequelize.literal("SUM(CASE WHEN `Operacion`.`tipo`='ingreso' AND `Operacion`.`estado`='cerrado' THEN 1 ELSE 0 END)"), 'ingreso_cerradas'],
+            [sequelize.literal("SUM(CASE WHEN `Operacion`.`tipo`='salida' AND `Operacion`.`estado` IN ('pendiente','en_proceso') THEN 1 ELSE 0 END)"), 'salida_pendientes'],
+            [sequelize.literal("SUM(CASE WHEN `Operacion`.`tipo`='salida' AND `Operacion`.`estado`='cerrado' THEN 1 ELSE 0 END)"), 'salida_cerradas'],
+            [sequelize.literal("SUM(CASE WHEN `Operacion`.`tipo`='transferencia' AND `Operacion`.`estado` IN ('pendiente','en_proceso') THEN 1 ELSE 0 END)"), 'transferencia_pendientes'],
+            [sequelize.literal("SUM(CASE WHEN `Operacion`.`tipo`='transferencia' AND `Operacion`.`estado`='cerrado' THEN 1 ELSE 0 END)"), 'transferencia_cerradas'],
+            [sequelize.literal("SUM(CASE WHEN `Operacion`.`tipo`='ajuste' AND `Operacion`.`estado` IN ('pendiente','en_proceso') THEN 1 ELSE 0 END)"), 'ajuste_pendientes'],
+            [sequelize.literal("SUM(CASE WHEN `Operacion`.`tipo`='ajuste' AND `Operacion`.`estado`='cerrado' THEN 1 ELSE 0 END)"), 'ajuste_cerradas'],
+          ],
+          where: {
+            ...clienteFilter,
+            cliente_id: { [Op.not]: null },
+            ...fechaFilter,
+          },
+          include: [{ model: Cliente, as: 'cliente', attributes: ['razon_social', 'codigo_cliente'] }],
+          group: ['cliente_id', 'cliente.id'],
+          order: [[sequelize.literal('total'), 'DESC']],
+          subQuery: false,
+        })
+      : [];
+
+    const topPorCliente = topPorClienteRaw.map((row) => ({
+      cliente_id: row.cliente_id,
+      nombre: row.cliente?.razon_social || 'Sin cliente',
+      codigo: row.cliente?.codigo_cliente || '',
+      total: parseInt(row.getDataValue('total')) || 0,
+      pendientes: parseInt(row.getDataValue('pendientes')) || 0,
+      cerradas: parseInt(row.getDataValue('cerradas')) || 0,
+      porTipo: {
+        ingreso: {
+          pendientes: parseInt(row.getDataValue('ingreso_pendientes')) || 0,
+          cerradas: parseInt(row.getDataValue('ingreso_cerradas')) || 0,
+        },
+        salida: {
+          pendientes: parseInt(row.getDataValue('salida_pendientes')) || 0,
+          cerradas: parseInt(row.getDataValue('salida_cerradas')) || 0,
+        },
+        transferencia: {
+          pendientes: parseInt(row.getDataValue('transferencia_pendientes')) || 0,
+          cerradas: parseInt(row.getDataValue('transferencia_cerradas')) || 0,
+        },
+        ajuste: {
+          pendientes: parseInt(row.getDataValue('ajuste_pendientes')) || 0,
+          cerradas: parseInt(row.getDataValue('ajuste_cerradas')) || 0,
+        },
+      },
+    }));
+
     const formatOp = (op) => {
       const detalles = op.detalles || [];
       const lineas = op.total_referencias || detalles.length || 0;
@@ -683,6 +746,7 @@ const getDashboard = async (req, res) => {
         ultimasOperaciones: ultimasOperaciones || [],
         ultimasEntradas: ultimasEntradas.map(formatOp),
         ultimasSalidas: ultimasSalidas.map(formatOp),
+        topPorCliente,
       },
     });
   } catch (error) {

@@ -21,6 +21,7 @@ import {
   ArrowUpCircle,
   Activity,
   Mail,
+  Info,
 } from 'lucide-react';
 
 // Components
@@ -50,6 +51,7 @@ const ReporteDespachos = () => {
   const [comparativo, setComparativo] = useState(null);
   const [error, setError] = useState(null);
   const [emailModal, setEmailModal] = useState(false);
+  const [tooltip, setTooltip] = useState(null); // { x, y, tipos, row }
 
   const [filters, setFilters] = useState({
     fecha_desde: searchParams.get('fecha_desde') || '',
@@ -224,7 +226,7 @@ const ReporteDespachos = () => {
           <KpiCard
             title="Total Operaciones"
             value={operaciones.total || 0}
-            subtitle={`${operaciones.mes || 0} este mes`}
+            subtitle={filters.fecha_desde || filters.fecha_hasta ? `${operaciones.mes || 0} este mes` : 'acumulado total'}
             icon={Activity}
             iconBg="bg-blue-100 dark:bg-blue-900/30"
             iconColor="text-blue-600 dark:text-blue-400"
@@ -246,7 +248,7 @@ const ReporteDespachos = () => {
             iconColor="text-amber-600 dark:text-amber-400"
           />
           <KpiCard
-            title="Cerradas este Mes"
+            title={filters.fecha_desde || filters.fecha_hasta ? 'Cerradas este Mes' : 'Operaciones Cerradas'}
             value={operaciones.cerradasMes || 0}
             subtitle={`${porEstado.anulado || 0} anuladas`}
             icon={CheckCircle}
@@ -327,6 +329,89 @@ const ReporteDespachos = () => {
           </div>
         )}
 
+        {/* Operaciones por cliente */}
+        {stats?.topPorCliente?.length > 0 && (
+          <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-6">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">
+              Operaciones por cliente
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+              Pendientes y cerradas en el período seleccionado — pasa el cursor sobre{' '}
+              <Info size={12} className="inline" /> para ver el desglose por tipo
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-700 text-left">
+                    <th className="pb-3 pr-3 text-xs font-medium text-slate-400 w-8">#</th>
+                    <th className="pb-3 text-xs font-medium text-slate-400">Cliente</th>
+                    <th className="pb-3 text-xs font-medium text-slate-400 text-center">Pendientes</th>
+                    <th className="pb-3 text-xs font-medium text-slate-400 text-center">Cerradas</th>
+                    <th className="pb-3 text-xs font-medium text-slate-400 text-right">Total</th>
+                    <th className="pb-3 pl-3 w-8"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                  {stats.topPorCliente.map((row, i) => {
+                    const tipos = [
+                      { key: 'ingreso', label: 'Entradas' },
+                      { key: 'salida', label: 'Salidas' },
+                      { key: 'transferencia', label: 'Transfer.' },
+                      { key: 'ajuste', label: 'Ajustes' },
+                    ].filter((t) => {
+                      const d = row.porTipo?.[t.key];
+                      return d && (d.pendientes > 0 || d.cerradas > 0);
+                    });
+
+                    return (
+                      <tr
+                        key={row.cliente_id}
+                        className="hover:bg-slate-50 dark:hover:bg-centhrix-surface/40 transition-colors"
+                      >
+                        <td className="py-3 pr-3 text-xs font-mono text-slate-400">{i + 1}</td>
+                        <td className="py-3">
+                          <p className="font-medium text-slate-800 dark:text-slate-100 truncate max-w-[240px]">
+                            {row.nombre}
+                          </p>
+                          {row.codigo && (
+                            <p className="text-xs text-slate-400 mt-0.5">{row.codigo}</p>
+                          )}
+                        </td>
+                        <td className="py-3 text-center">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                            {row.pendientes}
+                          </span>
+                        </td>
+                        <td className="py-3 text-center">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                            {row.cerradas}
+                          </span>
+                        </td>
+                        <td className="py-3 text-right font-semibold text-slate-800 dark:text-slate-100">
+                          {row.total}
+                        </td>
+                        <td className="py-3 pl-3">
+                          {tipos.length > 0 && (
+                            <Info
+                              size={14}
+                              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-help"
+                              onMouseEnter={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setTooltip({ x: rect.left + rect.width / 2, y: rect.top, tipos, row });
+                              }}
+                              onMouseLeave={() => setTooltip(null)}
+                            />
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {/* Resumen */}
         <div className="bg-white dark:bg-centhrix-card rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
           <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-4">
@@ -372,6 +457,33 @@ const ReporteDespachos = () => {
           </div>
         </div>
       </main>
+
+      {/* Tooltip flotante para desglose por tipo — fuera del overflow-x-auto */}
+      {tooltip && (
+        <div
+          className="fixed z-50 pointer-events-none"
+          style={{ left: tooltip.x, top: tooltip.y - 8, transform: 'translate(-50%, -100%)' }}
+        >
+          <div className="bg-slate-800 text-white text-xs rounded-xl p-3 shadow-xl border border-slate-700 w-52">
+            <p className="font-semibold mb-2 text-slate-300">Desglose por tipo</p>
+            <div className="space-y-1.5">
+              {tooltip.tipos.map((t) => {
+                const d = tooltip.row.porTipo[t.key];
+                return (
+                  <div key={t.key} className="flex items-center justify-between gap-3">
+                    <span className="text-slate-400">{t.label}</span>
+                    <span className="flex gap-2">
+                      <span className="text-amber-400">{d.pendientes}p</span>
+                      <span className="text-emerald-400">{d.cerradas}c</span>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 w-3 h-3 bg-slate-800 rotate-45 border-r border-b border-slate-700" />
+          </div>
+        </div>
+      )}
 
       <EnviarReporteModal
         isOpen={emailModal}
