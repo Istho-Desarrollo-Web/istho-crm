@@ -345,9 +345,13 @@ async function _ejecutarPoll() {
         errores++;
         // Detallar campos que causaron la falla (Sequelize ValidationError incluye err.errors[])
         const errFields = err.errors?.map((e) => `${e.path}: ${e.message}`).join('; ') || '';
-        logger.error(
-          `[WmsPolling] Error procesando orden ${orden.id}: ${err.message}${errFields ? ` [${errFields}]` : ''}`
-        );
+        const msgCompleto = `[WmsPolling] Error procesando orden ${orden.id}: ${err.message}${errFields ? ` [${errFields}]` : ''}`;
+        // Clientes inactivos/suspendidos → warn (no es un error del sistema)
+        if (/está (inactivo|suspendido)/i.test(err.message)) {
+          logger.warn(msgCompleto);
+        } else {
+          logger.error(msgCompleto);
+        }
 
         const tipoLog = (orden.type === 2) ? 'polling_salida' : 'polling_entrada';
         await WmsSyncLog.create({
