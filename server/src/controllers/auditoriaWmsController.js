@@ -1080,11 +1080,17 @@ const cerrarAuditoria = async (req, res) => {
     // ACTUALIZAR OPERACIÓN
     // ════════════════════════════════════════════════════════════════════
 
+    // correo_enviado: null → el EmailCierreJob lo enviará a los 180s (garantiza que
+    // todas las evidencias ya estén en S3 antes de adjuntarlas).
+    // false → no hay destinatarios o el caller pidió no enviar.
+    const enviarPorJob = enviar_correo !== false && !!correosEnvio;
+
     await operacion.update({
       estado: 'cerrado',
       fecha_cierre: new Date(),
       cerrado_por: req.user?.id,
       correos_destino: correosEnvio || null,
+      correo_enviado: enviarPorJob ? null : false,
     });
 
     await Auditoria.registrar({
@@ -1106,54 +1112,16 @@ const cerrarAuditoria = async (req, res) => {
         });
       });
 
-    // ════════════════════════════════════════════════════════════════════
-    // ENVIAR CORREO ELECTRÓNICO
-    // ════════════════════════════════════════════════════════════════════
-
-    // Enviar correo en background (NO bloquea la respuesta)
-    const enviarEnBackground = enviar_correo !== false && correosEnvio;
-    if (enviarEnBackground) {
-      const opId = operacion.id;
-      setImmediate(async () => {
-        try {
-          await operacion.reload({
-            include: [
-              { model: Cliente, as: 'cliente' },
-              { model: OperacionDetalle, as: 'detalles' },
-              { model: OperacionDocumento, as: 'documentos' },
-              { model: OperacionAveria, as: 'averias' },
-              { model: Usuario, as: 'cerrador', attributes: ['id', 'nombre_completo'] },
-            ],
-          });
-          const resultado = await emailService.enviarCierreOperacion(
-            operacion,
-            correosEnvio,
-            plantilla_id || null
-          );
-          await operacion.update({
-            correo_enviado: resultado.success,
-            fecha_correo_enviado: resultado.success ? new Date() : null,
-          });
-          logger.info('[AUDITORIAS] Correo de cierre enviado en background:', {
-            operacion_id: opId,
-            destinatarios: correosEnvio,
-            success: resultado.success,
-          });
-        } catch (emailErr) {
-          logger.error('[AUDITORIAS] Error al enviar correo en background:', {
-            operacion_id: opId,
-            message: emailErr.message,
-          });
-          await Operacion.update({ correo_enviado: false }, { where: { id: opId } }).catch(
-            () => {}
-          );
-        }
+    if (enviarPorJob) {
+      logger.info('[AUDITORIAS] Correo de cierre en cola (EmailCierreJob lo enviará en ~3 min):', {
+        operacion_id: operacion.id,
+        destinatarios: correosEnvio,
       });
     }
 
     return successMessage(res, 'Auditoría cerrada correctamente', {
       numero_operacion: operacion.numero_operacion,
-      correo_enviado: enviarEnBackground ? 'enviando' : false,
+      correo_enviado: enviarPorJob ? 'en_cola' : false,
       correos_destino: correosEnvio || null,
     });
   } catch (err) {
