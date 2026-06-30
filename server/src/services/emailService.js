@@ -256,8 +256,13 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
         const logoKey = operacion.cliente.logo_url;
 
         if (s3Svc.isS3Key(logoKey)) {
-          // S3 key → URL presignada de 7 días (máximo para IAM role)
-          logoClienteUrl = await s3Svc.getUrl(logoKey, 604800);
+          // Descargar y embeber como CID — presigned URLs expiran en 7d (máx IAM role)
+          // y los emails se abren días o semanas después, rompiendo la imagen
+          const logoBuffer = await s3Svc.getBuffer(logoKey);
+          const extLogo = logoKey.split('.').pop().toLowerCase();
+          const mimeLogoCliente = extLogo === 'jpg' || extLogo === 'jpeg' ? 'image/jpeg' : 'image/png';
+          adjuntos.push({ nombre: 'logo-cliente', content: logoBuffer, tipo: mimeLogoCliente, cid: 'logo-cliente@istho.crm' });
+          logoClienteUrl = 'cid:logo-cliente@istho.crm';
         } else if (logoKey.startsWith('https://')) {
           // URL externa ya resuelta (Cloudinary legacy, S3 público, etc.)
           const LOGO_HOST_ALLOWLIST = [
@@ -407,11 +412,11 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
 
           const tipoMime = (archivo.tipo || 'application/octet-stream').toLowerCase();
           if (TIPOS_IMAGEN.has(tipoMime) && buffer.length > 200 * 1024) {
-            // Comprimir imágenes > 200 KB: máx 1920px, JPEG calidad 75
+            // Comprimir imágenes > 200 KB: máx 800px, JPEG calidad 60 (suficiente para email)
             try {
               const comprimido = await sharp(buffer)
-                .resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true })
-                .jpeg({ quality: 75, progressive: true })
+                .resize({ width: 800, height: 800, fit: 'inside', withoutEnlargement: true })
+                .jpeg({ quality: 60, progressive: true })
                 .toBuffer();
               logger.info(`Email cierre: imagen comprimida "${archivo.nombre}" ${Math.round(buffer.length / 1024)} KB → ${Math.round(comprimido.length / 1024)} KB`);
               return { nombre: archivo.nombre.replace(/\.(png|webp)$/i, '.jpg'), content: comprimido, tipo: 'image/jpeg' };

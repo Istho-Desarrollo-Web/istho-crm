@@ -19,8 +19,9 @@ async function _enviarPendientes() {
       getModels();
     const emailService = require('../services/emailService');
 
-    // Operaciones cerradas hace > 90s con correo pendiente (null = en cola)
-    const hace90s = new Date(Date.now() - 90 * 1000);
+    // Operaciones cerradas hace > 180s con correo pendiente (null = en cola)
+    // 180s para dar margen a que terminen todos los uploads de fotos/documentos
+    const hace90s = new Date(Date.now() - 180 * 1000);
     const hace24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const pendientes = await Operacion.findAll({
@@ -93,7 +94,7 @@ function iniciarEmailCierreJob() {
     scheduled: true,
     timezone: 'America/Bogota',
   });
-  logger.info('[EmailCierreJob] Job de correos de cierre iniciado (cada 1 min, delay 90s tras cierre)');
+  logger.info('[EmailCierreJob] Job de correos de cierre iniciado (cada 1 min, delay 180s tras cierre)');
 }
 
 function detenerEmailCierreJob() {
