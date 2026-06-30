@@ -412,11 +412,11 @@ const enviarCierreOperacion = async (operacion, correosDestino, plantillaId = nu
 
           const tipoMime = (archivo.tipo || 'application/octet-stream').toLowerCase();
           if (TIPOS_IMAGEN.has(tipoMime) && buffer.length > 200 * 1024) {
-            // Comprimir imágenes > 200 KB: máx 800px, JPEG calidad 60 (suficiente para email)
+            // Comprimir imágenes > 200 KB: máx 1200px, JPEG calidad 72
             try {
               const comprimido = await sharp(buffer)
-                .resize({ width: 800, height: 800, fit: 'inside', withoutEnlargement: true })
-                .jpeg({ quality: 60, progressive: true })
+                .resize({ width: 1200, height: 1200, fit: 'inside', withoutEnlargement: true })
+                .jpeg({ quality: 72, progressive: true })
                 .toBuffer();
               logger.info(`Email cierre: imagen comprimida "${archivo.nombre}" ${Math.round(buffer.length / 1024)} KB → ${Math.round(comprimido.length / 1024)} KB`);
               return { nombre: archivo.nombre.replace(/\.(png|webp)$/i, '.jpg'), content: comprimido, tipo: 'image/jpeg' };
