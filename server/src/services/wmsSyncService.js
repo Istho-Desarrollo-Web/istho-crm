@@ -232,14 +232,18 @@ const syncEntrada = async (data) => {
 
   const cliente = await findClienteByNit(nit);
 
-  // Verificar que no exista ya esta operación
+  // Verificar que no exista ya esta operación (dedup cruzada PUSH+PULL)
+  const condicionesEntrada = [{ documento_wms: documento_origen.toString().trim() }];
+  if (wms_order_id) condicionesEntrada.push({ wms_order_id });
   const existente = await Operacion.findOne({
-    where: { documento_wms: documento_origen.toString().trim() },
+    where: { [Op.or]: condicionesEntrada },
   });
   if (existente) {
-    throw new Error(
+    const err = new Error(
       `Ya existe una operación con documento WMS: ${documento_origen} (${existente.numero_operacion})`
     );
+    err.statusCode = 409;
+    throw err;
   }
 
   const transaction = await sequelize.transaction();
@@ -494,18 +498,23 @@ const syncSalida = async (data) => {
 
   const cliente = await findClienteByNit(nit);
 
-  // Verificar duplicados por picking
+  // Verificar duplicados por picking (dedup cruzada PUSH+PULL)
   const docRef = numero_picking || documento_wms;
+  const condicionesSalida = [];
   if (docRef) {
+    condicionesSalida.push({ numero_picking: docRef }, { documento_wms: docRef });
+  }
+  if (wms_order_id) condicionesSalida.push({ wms_order_id });
+  if (condicionesSalida.length > 0) {
     const existente = await Operacion.findOne({
-      where: {
-        [Op.or]: [{ numero_picking: docRef }, { documento_wms: docRef }],
-      },
+      where: { [Op.or]: condicionesSalida },
     });
     if (existente) {
-      throw new Error(
-        `Ya existe una operación con picking/documento: ${docRef} (${existente.numero_operacion})`
+      const err = new Error(
+        `Ya existe una operación con picking/documento: ${docRef || wms_order_id} (${existente.numero_operacion})`
       );
+      err.statusCode = 409;
+      throw err;
     }
   }
 
@@ -774,9 +783,11 @@ const syncKardex = async (data) => {
       where: { documento_wms: documento_origen.toString().trim(), tipo_documento_wms: 'CR' },
     });
     if (existente) {
-      throw new Error(
+      const err = new Error(
         `Ya existe un Kardex con documento: ${documento_origen} (${existente.numero_operacion})`
       );
+      err.statusCode = 409;
+      throw err;
     }
   }
 

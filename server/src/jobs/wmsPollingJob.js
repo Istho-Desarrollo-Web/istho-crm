@@ -205,6 +205,14 @@ async function _pollKardexHistorial() {
 // ─── Estado interno ───────────────────────────────────────────────────────────
 let _pollingJob = null;
 let _ejecutando = false;
+let _ultimoCiclo = {
+  inicio: null,
+  fin: null,
+  procesadas: 0,
+  errores: 0,
+  kardex_pallets_descubiertos: 0,
+  kardex_ajustes_procesados: 0,
+};
 
 // ─── Lógica principal ─────────────────────────────────────────────────────────
 async function _ejecutarPoll() {
@@ -214,6 +222,7 @@ async function _ejecutarPoll() {
   }
   _ejecutando = true;
 
+  const inicioCiclo = new Date();
   const { Operacion, WmsSyncLog } = getModels();
   let procesadas = 0;
   let errores = 0;
@@ -361,8 +370,34 @@ async function _ejecutarPoll() {
       }
     }
 
-    logger.info(`[WmsPolling] Ciclo completo — procesadas: ${procesadas}, errores: ${errores}`);
-    // El kardex se sincroniza solo manualmente — no se ejecuta en el ciclo automático.
+    logger.info(`[WmsPolling] Órdenes — procesadas: ${procesadas}, errores: ${errores}`);
+
+    // ── Kardex: descubrir pallets nuevos + sincronizar historial ─────────────
+    let pallets_descubiertos = 0;
+    let ajustes_procesados = 0;
+    try {
+      const { CajaInventario: CajaInv } = getModels();
+      const cajasSinId = await CajaInv.count({
+        where: { wms_pallet_id: null, numero_caja: { [Op.not]: null } },
+      });
+      if (cajasSinId > 0) {
+        await _descubrirPalletIds();
+        pallets_descubiertos = Math.min(cajasSinId, 10);
+      }
+      await _pollKardexHistorial();
+    } catch (kardexErr) {
+      logger.error('[WmsPolling] Error en ciclo kardex:', kardexErr.message);
+    }
+
+    _ultimoCiclo = {
+      inicio: inicioCiclo,
+      fin: new Date(),
+      procesadas,
+      errores,
+      kardex_pallets_descubiertos: pallets_descubiertos,
+      kardex_ajustes_procesados: ajustes_procesados,
+    };
+    logger.info(`[WmsPolling] Ciclo completo — órdenes: ${procesadas} ok / ${errores} err`);
   } finally {
     _ejecutando = false;
   }
@@ -409,6 +444,7 @@ function getEstadoPolling() {
   return {
     activo: _pollingJob !== null,
     ejecutando: _ejecutando,
+    ultimo_ciclo: _ultimoCiclo,
   };
 }
 

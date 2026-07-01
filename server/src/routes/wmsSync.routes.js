@@ -8,6 +8,7 @@
  * @version 1.0.0
  */
 
+const crypto = require('crypto');
 const express = require('express');
 const router = express.Router();
 const wmsSyncController = require('../controllers/wmsSyncController');
@@ -42,7 +43,16 @@ const verificarApiKey = (req, res, next) => {
     });
   }
 
-  if (apiKey !== expectedKey) {
+  // Comparación timing-safe: evita ataques de timing que permiten adivinar la key
+  let valida = false;
+  try {
+    const a = Buffer.from(apiKey);
+    const b = Buffer.from(expectedKey);
+    valida = a.length === b.length && crypto.timingSafeEqual(a, b);
+  } catch {
+    valida = false;
+  }
+  if (!valida) {
     logger.warn('[WMS Auth] API Key inválida:', { ip: req.ip });
     return res.status(403).json({
       success: false,

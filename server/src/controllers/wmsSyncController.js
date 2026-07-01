@@ -12,6 +12,8 @@ const wmsSyncService = require('../services/wmsSyncService');
 const { Auditoria, WmsSyncLog } = require('../models');
 const { getClientIP } = require('../utils/helpers');
 const logger = require('../utils/logger');
+// Lazy para evitar circular en startup (mismo patrón que wmsDashboardController)
+const getPollingJob = () => require('../jobs/wmsPollingJob');
 
 // ============================================================================
 // SYNC PRODUCTOS
@@ -77,7 +79,7 @@ const syncProductos = async (req, res) => {
       payload: req.body,
       ip_origen: ip,
     }).catch(() => {});
-    return res.status(400).json({
+    return res.status(error.statusCode || 400).json({
       success: false,
       message: error.message,
     });
@@ -153,7 +155,7 @@ const syncEntrada = async (req, res) => {
       payload: req.body,
       ip_origen: ip,
     }).catch(() => {});
-    return res.status(400).json({
+    return res.status(error.statusCode || 400).json({
       success: false,
       message: error.message,
     });
@@ -240,7 +242,7 @@ const syncSalida = async (req, res) => {
       payload: req.body,
       ip_origen: ip,
     }).catch(() => {});
-    return res.status(400).json({
+    return res.status(error.statusCode || 400).json({
       success: false,
       message: error.message,
     });
@@ -324,7 +326,7 @@ const syncKardex = async (req, res) => {
       payload: req.body,
       ip_origen: ip,
     }).catch(() => {});
-    return res.status(400).json({
+    return res.status(error.statusCode || 400).json({
       success: false,
       message: error.message,
     });
@@ -516,14 +518,31 @@ const syncBatch = async (req, res) => {
 
 /**
  * GET /api/v1/wms/sync/status
- * Verificar que el endpoint de sincronización está activo
+ * Estado del sistema de sincronización WMS
  */
 const status = async (req, res) => {
+  const polling = getPollingJob().getEstadoPolling();
   return res.json({
     success: true,
     message: 'WMS Sync API activa',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
+    polling: {
+      activo: polling.activo,
+      ejecutando: polling.ejecutando,
+      ultimo_ciclo: polling.ultimo_ciclo.inicio
+        ? {
+            inicio: polling.ultimo_ciclo.inicio,
+            fin: polling.ultimo_ciclo.fin,
+            duracion_ms: polling.ultimo_ciclo.fin
+              ? polling.ultimo_ciclo.fin - polling.ultimo_ciclo.inicio
+              : null,
+            ordenes_procesadas: polling.ultimo_ciclo.procesadas,
+            ordenes_errores: polling.ultimo_ciclo.errores,
+            kardex_pallets_descubiertos: polling.ultimo_ciclo.kardex_pallets_descubiertos,
+          }
+        : null,
+    },
   });
 };
 
