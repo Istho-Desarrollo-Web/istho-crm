@@ -373,20 +373,23 @@ async function _ejecutarPoll() {
     logger.info(`[WmsPolling] Órdenes — procesadas: ${procesadas}, errores: ${errores}`);
 
     // ── Kardex: descubrir pallets nuevos + sincronizar historial ─────────────
+    // Desactivado via WMS_KARDEX_POLLING_ENABLED=false (o ausencia de la var)
     let pallets_descubiertos = 0;
     let ajustes_procesados = 0;
-    try {
-      const { CajaInventario: CajaInv } = getModels();
-      const cajasSinId = await CajaInv.count({
-        where: { wms_pallet_id: null, numero_caja: { [Op.not]: null } },
-      });
-      if (cajasSinId > 0) {
-        await _descubrirPalletIds();
-        pallets_descubiertos = Math.min(cajasSinId, 10);
+    if (process.env.WMS_KARDEX_POLLING_ENABLED === 'true') {
+      try {
+        const { CajaInventario: CajaInv } = getModels();
+        const cajasSinId = await CajaInv.count({
+          where: { wms_pallet_id: null, numero_caja: { [Op.not]: null } },
+        });
+        if (cajasSinId > 0) {
+          await _descubrirPalletIds();
+          pallets_descubiertos = Math.min(cajasSinId, 10);
+        }
+        await _pollKardexHistorial();
+      } catch (kardexErr) {
+        logger.error('[WmsPolling] Error en ciclo kardex:', kardexErr.message);
       }
-      await _pollKardexHistorial();
-    } catch (kardexErr) {
-      logger.error('[WmsPolling] Error en ciclo kardex:', kardexErr.message);
     }
 
     _ultimoCiclo = {
